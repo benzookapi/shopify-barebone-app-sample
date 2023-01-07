@@ -51,10 +51,6 @@ const MONGO_URL = `${process.env.SHOPIFY_MONGO_URL}`;
 const MONGO_DB_NAME = `${process.env.SHOPIFY_MONGO_DB_NAME}`;
 const MONGO_COLLECTION = 'shops';
 
-// JWT token secret
-const JWT_SECRET = `${process.env.SHOPIFY_JWT_SECRET}`;
-
-
 router.get('/', async (ctx, next) => {
   console.log("+++++++++++++++ / +++++++++++++++");
   if (!checkSignature(ctx.request.query)) {
@@ -155,7 +151,7 @@ router.get('/configure', async (ctx, next) => {
   //console.log(`+++ query +++ ${JSON.stringify(ctx.request.query)}`);
 
   const action = ctx.request.query.action;
-  const data = decodeJWT(ctx.request.query.token);
+  const data = ctx.request.query.token;
   console.log(`+++ data +++ ${JSON.stringify(data)}`);
 
   const shop = data.shop;
@@ -278,16 +274,6 @@ const checkWebhookSignature = function (ctx, secret) {
     console.log(`checkWebhookSignature Created: ${signarure}`);
     return resolve(receivedSig === signarure ? true : false);
   });
-};
-
-/* --- Create JWT to pass data encoded through URL access --- */
-const createJWT = function (json) {
-  return jwt.sign(json, JWT_SECRET, { expiresIn: '1h' });
-};
-
-/* --- Decode JWT passed through URL access --- */
-const decodeJWT = function (token) {
-  return jwt.verify(token, JWT_SECRET);
 };
 
 /* --- Call Shopify GraphQL --- */
