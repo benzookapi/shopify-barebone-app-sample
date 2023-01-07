@@ -4,9 +4,6 @@
   "description": "",
   "main": "app.js",
   "dependencies": {
-    "@shopify/app-bridge": "^3.5.0",
-    "@shopify/app-bridge-utils": "^3.5.0",
-    "@shopify/polaris": "^10.18.0",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
     "koa-http-request": "^2.2.1",
@@ -14,8 +11,6 @@
     "koa-static": "^5.0.0",
     "koa-views": "^5.0.0",
     "mongodb": "^3.4.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "underscore": "^1.9.0"
   },
   "scripts": {
