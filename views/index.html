@@ -15,12 +15,12 @@
   </div>
   <script>
     const save = function () {
-      window.location.href = `/configure?action=save&token=<%= token %>&my_key=${document.getElementById('my_key').value}`;
+      window.location.href = `/configure?action=save&my_key=${document.getElementById('my_key').value}`;
     };
     document.getElementById('save').addEventListener('click', save);
 
     const cancel = function () {
-      window.location.href = `/configure?action=cancel&token=<%= token %>`;
+      window.location.href = `/configure?action=cancel`;
     };
     document.getElementById('cancel').addEventListener('click', cancel);
   </script>
