@@ -150,6 +150,45 @@ router.get('/callback', async (ctx, next) => {
 
 });
 
+router.get('/configure', async (ctx, next) => {
+  console.log("+++++++++++++++ /configure +++++++++++++++");
+  //console.log(`+++ query +++ ${JSON.stringify(ctx.request.query)}`);
+
+  const action = ctx.request.query.action;
+  const data = decodeJWT(ctx.request.query.token);
+  console.log(`+++ data +++ ${JSON.stringify(data)}`);
+
+  const shop = data.shop;
+
+  let shop_data = null;
+  try {
+    shop_data = await (getDB(shop));
+    if (shop_data == null) {
+      ctx.body = "No shop data";
+      ctx.status = 400;
+      return;
+    }
+  } catch (e) {
+    ctx.status = 500;
+    return;
+  }
+
+  if (action == 'save') {
+    shop_data.config = {
+      "my_key": ctx.request.query.my_key
+    };
+    setDB(shop, shop_data).then(function (api_res) {
+      callGraphql(ctx, shop, `mutation XXX`, null, GRAPHQL_PATH_ADMIN, {
+      }).then(function (api_res) { }).catch(function (e) { });
+    }).catch(function (e) { });
+  }
+
+  await ctx.render('index', {
+    my_key: ctx.request.query.my_key
+  });
+
+});
+
 /* 
  * 
  * --- GDPR Webhook for customer data request ---
