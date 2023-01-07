@@ -14,11 +14,6 @@
     <div><button id="save">Save</button>&nbsp;&nbsp;<button id="cancel">Cancel</button></div>
   </div>
 
-  <div id="root"></div>
-  <script type="module" src="main.jsx"></script>
-
-
-
   <script>
     const save = function () {
       window.location.href = `/configure?action=save&my_key=${document.getElementById('my_key').value}`;
