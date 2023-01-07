@@ -6,6 +6,7 @@
   "dependencies": {
     "@shopify/app-bridge": "^3.5.0",
     "@shopify/app-bridge-utils": "^3.5.0",
+    "@shopify/polaris": "^10.18.0",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
     "koa-http-request": "^2.2.1",
