@@ -1,3 +1,7 @@
+# Overview
+A sample code for Shopify app for scratch build. Read [this](https://shopify.dev/apps/auth/oauth/getting-started) first.
+
+
 # How to run
 Just pushing to Heroku or Render with the following system variables is the easiest way to run, or npm start locally maybe.
 
