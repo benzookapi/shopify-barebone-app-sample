@@ -89,15 +89,13 @@ router.get('/', async (ctx, next) => {
     return;
   }
 
-  let my_key = '';
+  /*let my_key = '';
   if (typeof shop_data.config !== UNDEFINED) {
     my_key = shop_data.config.my_key;
-  }
+  }*/
 
   ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
-  await ctx.render('index', {
-    my_key: my_key
-  });
+  await ctx.render('index', {});
 
 });
 
@@ -137,10 +135,16 @@ router.get('/callback', async (ctx, next) => {
     return;
   });
 
-  ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
-  await ctx.render('index', {
-    my_key: ''
-  });
+  let api_res = null;
+  try {
+    api_res = await (callGraphql(ctx, shop, `{
+        app {
+          handle
+         }
+      }`, res.access_token, GRAPHQL_PATH_ADMIN, null));
+  } catch (e) { }
+
+  ctx.redirect(`https://admin.shopify.com/store/${shop.replace('myshopify.com', '')}/apps/${api_res.data.app.handle}`);
 
 });
 
