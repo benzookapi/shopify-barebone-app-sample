@@ -80,6 +80,7 @@ router.get('/', async (ctx, next) => {
       }
     }
     if (install) {
+      // See https://shopify.dev/apps/auth/oauth/getting-started
       console.log(`Redirecting to OAuth flow for ${shop}...`);
       ctx.redirect(`https://${shop}/admin/oauth/authorize?client_id=${API_KEY}&scope=${API_SCOPES}&redirect_uri=https://${ctx.request.hostname}/callback&state=&grant_options[]=`);
       return;
@@ -89,11 +90,16 @@ router.get('/', async (ctx, next) => {
     return;
   }
 
+  // See https://shopify.dev/apps/store/security/iframe-protection
   ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
+
+  // See https://shopify.dev/apps/auth/oauth/update 
+  // (Do not redirect from this endppoint because this is embedded one and if you want to redirect, use client redirtection with AppBridge JS / React library)
   await ctx.render('index', {});
 
 });
 
+// See https://shopify.dev/apps/auth/oauth/getting-started
 router.get('/callback', async (ctx, next) => {
   console.log("+++++++++++++++ /callback +++++++++++++++");
   if (!checkSignature(ctx.request.query)) {
@@ -139,6 +145,7 @@ router.get('/callback', async (ctx, next) => {
       }`, res.access_token, GRAPHQL_PATH_ADMIN, null));
   } catch (e) { }
 
+  // See https://shopify.dev/apps/auth/oauth/update
   ctx.redirect(`https://admin.shopify.com/store/${shop.replace('.myshopify.com', '')}/apps/${api_res.data.app.handle}`);
 
 });

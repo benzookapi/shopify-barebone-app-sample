@@ -11,6 +11,7 @@ import React from 'react';
 // See https://www.npmjs.com/package/@shopify/polaris
 import '@shopify/polaris/build/esm/styles.css';
 
+// Copying from Polaris site snipets. https://polaris.shopify.com/components/app-provider
 function App() {
   return (
     <AppProvider
