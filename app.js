@@ -144,7 +144,7 @@ router.get('/callback', async (ctx, next) => {
       }`, res.access_token, GRAPHQL_PATH_ADMIN, null));
   } catch (e) { }
 
-  ctx.redirect(`https://admin.shopify.com/store/${shop.replace('myshopify.com', '')}/apps/${api_res.data.app.handle}`);
+  ctx.redirect(`https://admin.shopify.com/store/${shop.replace('.myshopify.com', '')}/apps/${api_res.data.app.handle}`);
 
 });
 
