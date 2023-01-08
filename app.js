@@ -89,11 +89,6 @@ router.get('/', async (ctx, next) => {
     return;
   }
 
-  /*let my_key = '';
-  if (typeof shop_data.config !== UNDEFINED) {
-    my_key = shop_data.config.my_key;
-  }*/
-
   ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
   await ctx.render('index', {});
 
@@ -148,15 +143,11 @@ router.get('/callback', async (ctx, next) => {
 
 });
 
-router.get('/configure', async (ctx, next) => {
-  console.log("+++++++++++++++ /configure +++++++++++++++");
+router.get('/serverfunctiondiscount', async (ctx, next) => {
+  console.log("+++++++++++++++ /serverfunctiondiscount +++++++++++++++");
   //console.log(`+++ query +++ ${JSON.stringify(ctx.request.query)}`);
 
-  const action = ctx.request.query.action;
-  const data = ctx.request.query.token;
-  console.log(`+++ data +++ ${JSON.stringify(data)}`);
-
-  const shop = data.shop;
+  const shop = ctx.request.query.shop;
 
   let shop_data = null;
   try {
@@ -171,7 +162,7 @@ router.get('/configure', async (ctx, next) => {
     return;
   }
 
-  if (action == 'save') {
+  //if (action == 'save') {
     shop_data.config = {
       "my_key": ctx.request.query.my_key
     };
@@ -179,7 +170,7 @@ router.get('/configure', async (ctx, next) => {
       callGraphql(ctx, shop, `mutation XXX`, null, GRAPHQL_PATH_ADMIN, {
       }).then(function (api_res) { }).catch(function (e) { });
     }).catch(function (e) { });
-  }
+ // }
 
   await ctx.render('index', {
     my_key: ctx.request.query.my_key
