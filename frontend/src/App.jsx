@@ -16,15 +16,16 @@ const config = {
 };
 
 function App() {
+
   return (
-    <Provider config={config}>
-      <BrowserRouter>
+    <BrowserRouter>
+      <Provider config={config}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/sessiontoken" element={<SessionToken />} />
         </Routes>
-      </BrowserRouter>
-    </Provider>
+      </Provider>
+    </BrowserRouter>
   );
 }
 

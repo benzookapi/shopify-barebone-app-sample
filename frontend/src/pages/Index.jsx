@@ -1,4 +1,5 @@
 import {useAppBridge} from '@shopify/app-bridge-react';
+import {Redirect} from '@shopify/app-bridge/actions';
 
 import {
     AppProvider,
@@ -14,6 +15,8 @@ import {CircleRightMajor} from '@shopify/polaris-icons';
 function Index() {
     const app = useAppBridge();
 
+    const redirect = Redirect.create(app);
+
     return (
         <AppProvider >
             <Page>
@@ -23,16 +26,18 @@ function Index() {
                         items={[
                             {
                                 id: 1,
-                                url: 'sessiontoken',
+                                onClick: (id) => {
+                                    redirect.dispatch(Redirect.Action.APP, '/sessiontoken');
+                                },
                                 name: 'Session Token',
                                 location: 'Session Token usage sameple with App Bridge',
                             },
                         ]}
                         renderItem={(item) => {
-                            const { id, url, name, location } = item;
+                            const { id, onClick, name, location } = item;
                             const media = <Icon source={CircleRightMajor} />;
                             return (
-                                <ResourceList.Item id={id} url={url} media={media} >
+                                <ResourceList.Item id={id} onClick={onClick} media={media} >
                                     <Text variant="bodyMd" fontWeight="bold" as="h3">
                                         {name}
                                     </Text>
