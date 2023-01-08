@@ -9,8 +9,6 @@ const serve = require('koa-static');
 
 const crypto = require('crypto');
 
-const fs = require('fs');
-
 const mongo = require('mongodb');
 
 const router = new Router();

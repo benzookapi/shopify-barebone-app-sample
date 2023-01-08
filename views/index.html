@@ -1,30 +1,14 @@
 <!DOCTYPE html>
-<html>
-
-<head>
-  <meta charset="UTF-8">
-  <title>My_Barebone_App</title>
-</head>
-
-<body>
-  <div style="margin-left: auto; margin-right: auto; width: 50%; text-align: center;">
-    <h1>My barebone app admin</h1>
-    <div>My key:<input id="my_key" type="text" value="<%= my_key %>"></div>
-    <br/>
-    <div><button id="save">Save</button>&nbsp;&nbsp;<button id="cancel">Cancel</button></div>
-  </div>
-
-  <script>
-    const save = function () {
-      window.location.href = `/configure?action=save&my_key=${document.getElementById('my_key').value}`;
-    };
-    document.getElementById('save').addEventListener('click', save);
-
-    const cancel = function () {
-      window.location.href = `/configure?action=cancel`;
-    };
-    document.getElementById('cancel').addEventListener('click', cancel);
-  </script>
-</body>
-
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React</title>
+    <script type="module" crossorigin src="/assets/index-a0a40d48.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>AAAAAAAAAAAA
+    
+  </body>
 </html>
