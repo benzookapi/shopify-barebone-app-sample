@@ -150,13 +150,16 @@ router.get('/callback', async (ctx, next) => {
 
 });
 
-router.get('/serverfunctiondiscount', async (ctx, next) => {
-  console.log("+++++++++++++++ /serverfunctiondiscount +++++++++++++++");
-  //console.log(`+++ query +++ ${JSON.stringify(ctx.request.query)}`);
+router.get('/sessiontoken', async (ctx, next) => {
+  console.log("+++++++++++++++ /sessiontoken +++++++++++++++");
+  if (!checkSignature(ctx.request.query)) {
+    ctx.status = 400;
+    return;
+  }
 
   const shop = ctx.request.query.shop;
 
-  let shop_data = null;
+  /*let shop_data = null;
   try {
     shop_data = await (getDB(shop));
     if (shop_data == null) {
@@ -167,23 +170,13 @@ router.get('/serverfunctiondiscount', async (ctx, next) => {
   } catch (e) {
     ctx.status = 500;
     return;
-  }
+  }*/
 
-  //if (action == 'save') {
-    shop_data.config = {
-      "my_key": ctx.request.query.my_key
-    };
-    setDB(shop, shop_data).then(function (api_res) {
-      callGraphql(ctx, shop, `mutation XXX`, null, GRAPHQL_PATH_ADMIN, {
-      }).then(function (api_res) { }).catch(function (e) { });
-    }).catch(function (e) { });
- // }
-
-  await ctx.render('index', {
-    my_key: ctx.request.query.my_key
-  });
+  ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
+  await ctx.render('index', {});
 
 });
+
 
 /* 
  * 

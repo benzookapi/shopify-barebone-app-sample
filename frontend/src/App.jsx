@@ -1,72 +1,30 @@
-import {
-  AppProvider,
-  Page,
-  Card,
-  ResourceList,
-  Avatar,
-  Text,
-} from '@shopify/polaris';
-import React from 'react';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import { Provider } from '@shopify/app-bridge-react';
 
 // See https://www.npmjs.com/package/@shopify/polaris
 import '@shopify/polaris/build/esm/styles.css';
 
-// Copying from Polaris site snipets. https://polaris.shopify.com/components/app-provider
+import Index from './pages/Index';
+import SessionToken from './pages/SessionToken';
+
+// See https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup
+const config = {
+  apiKey: API_KEY, // See ../vite.config.js
+  host: new URLSearchParams(location.search).get("host"),
+  forceRedirect: true
+};
+
 function App() {
   return (
-    <AppProvider
-      i18n={{
-        Polaris: {
-          ResourceList: {
-            sortingLabel: 'Sort by',
-            defaultItemSingular: 'item',
-            defaultItemPlural: 'items',
-            showing: 'Showing {itemsCount} {resource}',
-            Item: {
-              viewItem: 'View details for {itemName}',
-            },
-          },
-          Common: {
-            checkbox: 'checkbox',
-          },
-        },
-      }}
-    >
-      <Page>
-        <Card>
-          <ResourceList
-            showHeader
-            items={[
-              {
-                id: 341,
-                url: 'customers/341',
-                name: 'Mae Jemison',
-                location: 'AAAAADecatur, USA',
-              },
-              {
-                id: 256,
-                url: 'customers/256',
-                name: 'Ellen Ochoa',
-                location: 'Los Angeles, USA',
-              },
-            ]}
-            renderItem={(item) => {
-              const {id, url, name, location} = item;
-              const media = <Avatar customer size="medium" name={name} />;
-
-              return (
-                <ResourceList.Item id={id} url={url} media={media}>
-                  <Text variant="bodyMd" fontWeight="bold" as="h3">
-                    {name}
-                  </Text>
-                  <div>{location}</div>
-                </ResourceList.Item>
-              );
-            }}
-          />
-        </Card>
-      </Page>
-    </AppProvider>
+    <Provider config={config}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/sessiontoken" element={<SessionToken />} />
+        </Routes>
+      </BrowserRouter>
+    </Provider>
   );
 }
 
