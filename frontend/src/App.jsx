@@ -57,15 +57,15 @@ function App() {
       <TitleBar
         title="Welcome to my barebone app  &#x1f600;"
         breadcrumbs={[{ content: "Index", url: '/', target: "APP" }]}
-        primaryAction={{ content: 'Code on GitHub', url: 'https://github.com/benzookapi/shopify-barebone-app-sample', target: "REMOTE", external: true, loading: true }}
-        secondaryActions={[{ content: 'Dev. site', url: 'https://shopify.dev/', target: "REMOTE", external: true, loading: true }]}
-        actionGroups={[{ title: 'Shopify JP Blog', actions: [{ content: 'How to build apps / themes', url: 'https://www.shopify.com/jp/blog/partner-shopify-app-development', target: "REMOTE", external: true, loading: true }] }]}
+        primaryAction={{ content: 'Code on GitHub', url: 'https://github.com/benzookapi/shopify-barebone-app-sample', target: "REMOTE", external: true }}
+        secondaryActions={[{ content: 'Dev. site', url: 'https://shopify.dev/', target: "REMOTE", external: true }]}
+        actionGroups={[{ title: 'Shopify JP Blog', actions: [{ content: 'How to build apps / themes', url: 'https://www.shopify.com/jp/blog/partner-shopify-app-development', target: "REMOTE", external: true }] }]}
       />
       {/* Replacing <AppProvider i18n={translations}> for my own use case. */}
       <AppProvider i18n={{
         Polaris: {
           ResourceList: {
-            showing: 'Simple App Samples',
+            showing: 'Sample Code Index',
           },
         },
       }}>
