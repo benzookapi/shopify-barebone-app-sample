@@ -8,7 +8,6 @@ import { CircleRightMajor } from '@shopify/polaris-icons';
 function Index() {
     const app = useAppBridge();
     const redirect = Redirect.create(app);
-
     return (
         <Page>
             <Card>

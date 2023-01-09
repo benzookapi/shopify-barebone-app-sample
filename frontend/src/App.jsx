@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Provider } from '@shopify/app-bridge-react';
+import { Provider, NavigationMenu } from '@shopify/app-bridge-react';
 import { AppProvider } from '@shopify/polaris';
 
 // See https://www.npmjs.com/package/@shopify/polaris
@@ -23,11 +23,19 @@ const config = {
 // See https://shopify.dev/apps/tools/app-bridge/getting-started/using-react
 // See https://polaris.shopify.com/components/app-provider 
 function App() {
-
   return (
     // <Routes> needs to be inside <Provider>
     // Replacing <AppProvider i18n={translations}> for my own use case.   
     <Provider config={config}>
+      <NavigationMenu
+        navigationLinks={[
+          {
+            label: 'Top',
+            destination: '/',
+          },
+        ]}
+        matcher={(link, location) => link.destination === location.pathname}
+      />
       <AppProvider i18n={{
         Polaris: {
           ResourceList: {
@@ -35,6 +43,7 @@ function App() {
           },
         },
       }}>
+        	
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
