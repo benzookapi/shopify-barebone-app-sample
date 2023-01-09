@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
 import { Provider } from '@shopify/app-bridge-react';
 
 // See https://www.npmjs.com/package/@shopify/polaris

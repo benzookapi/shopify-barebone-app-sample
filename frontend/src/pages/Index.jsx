@@ -1,6 +1,5 @@
-import {useAppBridge} from '@shopify/app-bridge-react';
-import {Redirect} from '@shopify/app-bridge/actions';
-
+import { useAppBridge } from '@shopify/app-bridge-react';
+import { Redirect } from '@shopify/app-bridge/actions';
 import {
     AppProvider,
     Page,
@@ -9,9 +8,10 @@ import {
     Icon,
     Text,
 } from '@shopify/polaris';
-import {CircleRightMajor} from '@shopify/polaris-icons';
+import { CircleRightMajor } from '@shopify/polaris-icons';
 
-// Copying from Polaris site snipets. https://polaris.shopify.com/components/app-provider
+// All Polaris compoments which you can copy the React snipets from. https://polaris.shopify.com/components
+// AppProvider is the base layout compoment. https://polaris.shopify.com/components/app-provider
 function Index() {
     const app = useAppBridge();
 
@@ -27,6 +27,9 @@ function Index() {
                             {
                                 id: 1,
                                 onClick: (id) => {
+                                    // See https://shopify.dev/apps/tools/app-bridge/actions/navigation/redirect-navigate
+                                    // 'url' = simple link doesn't work due to lack of the right hmac signature.
+                                    // App Bridge redirect embeds it. 
                                     redirect.dispatch(Redirect.Action.APP, '/sessiontoken');
                                 },
                                 name: 'Session Token',
