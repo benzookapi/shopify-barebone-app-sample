@@ -26,25 +26,23 @@ function App() {
 
   return (
     // <Routes> needs to be inside <Provider>
-    // Replacing <AppProvider i18n={translations}> for my own use case.
-   
-      <Provider config={config}>
-        <AppProvider i18n={{
-          Polaris: {
-            ResourceList: {
-              showing: 'Simple App Samples',
-            },
+    // Replacing <AppProvider i18n={translations}> for my own use case.   
+    <Provider config={config}>
+      <AppProvider i18n={{
+        Polaris: {
+          ResourceList: {
+            showing: 'Simple App Samples',
           },
-        }}>
-           <BrowserRouter>
+        },
+      }}>
+        <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/sessiontoken" element={<SessionToken />} />
           </Routes>
-          </BrowserRouter>
-        </AppProvider>
-      </Provider>
-   
+        </BrowserRouter>
+      </AppProvider>
+    </Provider>
   );
 }
 
