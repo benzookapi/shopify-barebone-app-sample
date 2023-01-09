@@ -30,8 +30,28 @@ function App() {
       <NavigationMenu
         navigationLinks={[
           {
-            label: 'Top',
-            destination: '/',
+            label: 'Session Token',
+            destination: '/sessiontoken',
+          },
+          {
+            label: 'Theme App Extension',
+            destination: '/themeappextension',
+          },
+          {
+            label: 'Function Discount',
+            destination: '/functiondiscount',
+          },
+          {
+            label: 'Function Payment',
+            destination: '/functionpayment',
+          },
+          {
+            label: 'Web Pixel',
+            destination: '/webpixel',
+          },
+          {
+            label: 'Checkout Extension',
+            destination: '/checkoutextension',
           },
         ]}
         matcher={(link, location) => link.destination === location.pathname}
@@ -43,7 +63,6 @@ function App() {
           },
         },
       }}>
-        	
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
