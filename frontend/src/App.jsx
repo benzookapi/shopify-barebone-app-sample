@@ -27,7 +27,7 @@ function App() {
   return (
     // <Routes> needs to be inside <Provider>
     // Replacing <AppProvider i18n={translations}> for my own use case.
-    <BrowserRouter>
+   
       <Provider config={config}>
         <AppProvider i18n={{
           Polaris: {
@@ -36,13 +36,15 @@ function App() {
             },
           },
         }}>
+           <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/sessiontoken" element={<SessionToken />} />
           </Routes>
+          </BrowserRouter>
         </AppProvider>
       </Provider>
-    </BrowserRouter>
+   
   );
 }
 
