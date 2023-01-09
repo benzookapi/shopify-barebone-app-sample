@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Provider, NavigationMenu } from '@shopify/app-bridge-react';
+import { Provider, NavigationMenu, TitleBar } from '@shopify/app-bridge-react';
 import { AppProvider } from '@shopify/polaris';
 
 // See https://www.npmjs.com/package/@shopify/polaris
@@ -24,8 +24,6 @@ const config = {
 // See https://polaris.shopify.com/components/app-provider 
 function App() {
   return (
-    // <Routes> needs to be inside <Provider>
-    // Replacing <AppProvider i18n={translations}> for my own use case.   
     <Provider config={config}>
       <NavigationMenu
         navigationLinks={[
@@ -56,6 +54,14 @@ function App() {
         ]}
         matcher={(link, location) => link.destination === location.pathname}
       />
+      <TitleBar
+        title="Welcome to my barebone app  &#x1f600;"
+        breadcrumbs={[{ content: "Index", url: '/', target: "APP" }]}
+        primaryAction={{ content: 'Code on GitHub', url: 'https://github.com/benzookapi/shopify-barebone-app-sample', target: "REMOTE", external: true, loading: true }}
+        secondaryActions={[{ content: 'Dev. site', url: 'https://shopify.dev/', target: "REMOTE", external: true, loading: true }]}
+        actionGroups={[{ title: 'Shopify JP Blog', actions: [{ content: 'How to build apps / themes', url: 'https://www.shopify.com/jp/blog/partner-shopify-app-development', target: "REMOTE", external: true, loading: true }] }]}
+      />
+      {/* Replacing <AppProvider i18n={translations}> for my own use case. */}
       <AppProvider i18n={{
         Polaris: {
           ResourceList: {
@@ -63,12 +69,14 @@ function App() {
           },
         },
       }}>
+        {/* <Routes> needs to be inside <AppProvider> */}
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/sessiontoken" element={<SessionToken />} />
           </Routes>
         </BrowserRouter>
+        {/* Each page content comes here */}
       </AppProvider>
     </Provider>
   );
