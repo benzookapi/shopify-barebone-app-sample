@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { getSessionToken, authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, Button, Badge, TextContainer } from '@shopify/polaris';
+import { Page, Card, Layout, Link, Button, Badge, TextField } from '@shopify/polaris';
 
 import jwt_decode from "jwt-decode";
 
@@ -15,6 +15,21 @@ function SessionToken() {
   const [auth, setAuth] = useState('');
   const [res, setRes] = useState('');
 
+  const foldLongLine = function (line) {
+    let tmp = line;
+    let res = '';
+    while (tmp.length > 0) {
+      res += `${tmp.substring(0, 80)}\n`;
+      tmp = tmp.substring(80);
+    }
+    return res;
+  };
+
+  const [param, setParam] = useState('');
+  const [uri, setUri] = useState('');
+
+  const paramChange = useCallback((newParam) => setParam(newParam), []);
+
   return (
     <Page title="Getting started with session token authentication">
       <Card title="Step 1: Get a session token" sectioned={true}>
@@ -25,15 +40,8 @@ function SessionToken() {
           <Layout.Section>
             <Button onClick={() => {
               getSessionToken(app).then((sessionToken) => {
-                let token = JSON.stringify(sessionToken);
-                let rawToken = '';
-                while (token.length > 0) {
-                  rawToken += `${token.substring(0, 80)}\n`;
-                  token = token.substring(80);
-                }
-                let decodedToken = JSON.stringify(jwt_decode(JSON.stringify(sessionToken)), null, 4);
-                setRaw(rawToken);
-                setDecoded(decodedToken);
+                setRaw(foldLongLine(`${sessionToken}`));
+                setDecoded(JSON.stringify(jwt_decode(JSON.stringify(sessionToken)), null, 4));
               });
             }}>
               Run the code
@@ -42,7 +50,7 @@ function SessionToken() {
           <Layout.Section>
             <Badge>Raw Data:</Badge>
             <pre>{raw}</pre>
-            <Badge>Decoded Data:</Badge>
+            <Badge>Decoded Payload:</Badge>
             <pre>{decoded}</pre>
           </Layout.Section>
         </Layout>
@@ -53,15 +61,31 @@ function SessionToken() {
             <Link url="https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests" external={true}>Dev. doc</Link>
           </Layout.Section>
           <Layout.Section>
+            <TextField
+              label="Input your query params (e.g. my_key=1&my_val=aaa)"
+              value={param}
+              onChange={paramChange}
+              autoComplete="off"
+            />
+          </Layout.Section>
+          <Layout.Section>
             <Button onClick={() => {
-              authenticatedFetch(app)('/sessiontoken?my_key=1', {/*
+              setUri('');
+              setAuth('');
+              setRes('');
+              authenticatedFetch(app)(`/sessiontoken?${param}`, {/*
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: `{}`
             */}).then((response) => {
                 response.json().then((json) => {
                   console.log(JSON.stringify(json, null, 4));
-                  setAuth(JSON.stringify(json.request_authorization, null, 4));
+                  setUri(foldLongLine(json.request_uri));
+                  setAuth(foldLongLine(json.authentication_bearer));
+                  setRes(JSON.stringify(json.result, null, 4));
+                }).catch((e) => {
+                  console.log(`${e}`);
+                  setRes(`${e}`);
                 });
               });
             }}>
@@ -69,9 +93,11 @@ function SessionToken() {
             </Button>
           </Layout.Section>
           <Layout.Section>
-            <Badge>Decoded Authorizaton:</Badge>
+            <Badge>Request URI:</Badge>
+            <pre>{uri}</pre>
+            <Badge>Request Authentication Bearer:</Badge>
             <pre>{auth}</pre>
-            <Badge>GraphQL Response with Authorizaton Bear:</Badge>
+            <Badge>My OAuth 2.0 Authorization Result:</Badge>
             <pre>{res}</pre>
           </Layout.Section>
         </Layout>

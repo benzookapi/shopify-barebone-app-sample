@@ -159,43 +159,75 @@ router.get('/callback', async (ctx, next) => {
 // See https://shopify.dev/apps/auth/oauth/session-tokens
 router.get('/sessiontoken', async (ctx, next) => {
   console.log("+++++++++++++++ /sessiontoken +++++++++++++++");
+
   if (typeof ctx.request.header.authorization !== UNDEFINED) {
-    console.log("This is authenticatedFetch from App Bridge");
-    console.log(JSON.stringify(ctx.request, null, 4));
+    console.log("This is authenticatedFetch from App Bridge = My own OAuth 2.0 Flow");
+    console.log(`request: ${JSON.stringify(ctx.request, null, 4)}`);
 
-   const token = jwt_decode(ctx.request.header.authorization.replace('Bearer ',''));
+    // The token for request vrification usable for Admin API calls.
+    // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
+    // See https://www.rfc-editor.org/rfc/rfc6750
+    const token = ctx.request.header.authorization.replace('Bearer ', '');
 
-   console.log(`${JSON.stringify(token, null, 4)}`);  
+    ctx.set('Content-Type', 'application/json');
 
     ctx.body = {
-      "request_authorization": token,
-      "request_query": ctx.request.query
+      "request_uri": `https://${ctx.request.hostname}${ctx.request.url}`,
+      "authentication_bearer": token,
+      "result": {
+        "signature_verified": false,
+        "signature_generated": '',
+        "shop_from_payload": '',
+        "access_token": '',
+        "message": ''
+      }
     };
-    ctx.set('Content-Type','application/json');
+
+    // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#verify-the-session-tokens-signature    
+    const [verified, sig] = checkAuthFetchToken(token);
+    ctx.body.result.signature_generated = sig;
+    if (!verified) {
+      ctx.body.result.message = "Signature unmatched. Incorrect authentication bearer sent";
+      ctx.status = 400;
+      return;
+    }
+    ctx.body.result.signature_verified = true;
+
+    // If the signature gets verified, we trust the token payload to get stored token for the given shop.
+    // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#optional-obtain-session-details-and-verify-the-session-token-manually
+    const payload = jwt_decode(token);
+    console.log(`payload: ${JSON.stringify(payload, null, 4)}`);
+
+    const shop = payload.dest.replace('https://', '');
+    ctx.body.result.shop_from_payload = shop;
+
+    let shop_data = null;
+    try {
+      shop_data = await (getDB(shop));
+      if (shop_data == null) {
+        ctx.body.result.message = "Authorization failed. No shop data";
+        ctx.status = 400;
+        return;
+      }
+    } catch (e) {
+      ctx.body.result.message = "Internal error in retrieving shop data";
+      ctx.status = 500;
+      return;
+    }
+
+    // Return the stored access token for the given shop as my OAuth 2.0 flow suceess.
+    ctx.body.result.access_token = shop_data.access_token;
+    ctx.body.result.message = "Successfully authorized!";
     ctx.status = 200;
     return;
   }
 
+  // The followings are normal steps to render the React page.
   if (!checkSignature(ctx.request.query)) {
     ctx.status = 400;
     return;
   }
-
   const shop = ctx.request.query.shop;
-
-  /*let shop_data = null;
-  try {
-    shop_data = await (getDB(shop));
-    if (shop_data == null) {
-      ctx.body = "No shop data";
-      ctx.status = 400;
-      return;
-    }
-  } catch (e) {
-    ctx.status = 500;
-    return;
-  }*/
-
   ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
   await ctx.render('index', {});
 
@@ -272,9 +304,9 @@ const checkSignature = function (json) {
   //console.log(`checkSignature ${msg}`);
   const hmac = crypto.createHmac('sha256', HMAC_SECRET);
   hmac.update(msg);
-  let signarure = hmac.digest('hex');
-  console.log(`checkSignature ${signarure}`);
-  return signarure === sig ? true : false;
+  let signature = hmac.digest('hex');
+  console.log(`checkSignature ${signature}`);
+  return signature === sig ? true : false;
 };
 
 /* --- Check if the given signarure is corect or not for Webhook --- */
@@ -286,10 +318,23 @@ const checkWebhookSignature = function (ctx, secret) {
     if (receivedSig == null) return resolve(false);
     const hmac = crypto.createHmac('sha256', secret);
     hmac.update(Buffer.from(ctx.request.rawBody, 'utf8').toString('utf8'));
-    let signarure = hmac.digest('base64');
-    console.log(`checkWebhookSignature Created: ${signarure}`);
-    return resolve(receivedSig === signarure ? true : false);
+    let signature = hmac.digest('base64');
+    console.log(`checkWebhookSignature Created: ${signature}`);
+    return resolve(receivedSig === signature ? true : false);
   });
+};
+
+/* --- Check if the given signarure is corect or not for App Bridge authenticated requests --- */
+// See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#verify-the-session-tokens-signature
+const checkAuthFetchToken = function (token) {
+  const [header, payload, signature] = token.split("\.");
+  //console.log(`checkAuthFetchToken header: ${header} payload: ${payload} signature: ${signature}`);
+  const hmac = crypto.createHmac('sha256', HMAC_SECRET);
+  hmac.update(`${header}.${payload}`);
+  const encodeBase64 = function (b) { return b.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '') };
+  let sig = encodeBase64(hmac.digest('base64'));
+  console.log(`checkAuthFetchToken Recieved: ${signature} Created: ${sig}`);
+  return [(signature === sig ? true : false), sig];
 };
 
 /* --- Call Shopify GraphQL --- */

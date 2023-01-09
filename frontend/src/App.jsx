@@ -32,6 +32,10 @@ function App() {
             destination: '/sessiontoken',
           },
           {
+            label: 'Admin Link',
+            destination: '/adminlink',
+          },
+          {
             label: 'Theme App Extension',
             destination: '/themeappextension',
           },
