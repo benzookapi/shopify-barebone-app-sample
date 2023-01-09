@@ -11,6 +11,8 @@ const crypto = require('crypto');
 
 const mongo = require('mongodb');
 
+const jwt_decode = require('jwt-decode');
+
 const router = new Router();
 const app = module.exports = new Koa();
 
@@ -157,6 +159,23 @@ router.get('/callback', async (ctx, next) => {
 // See https://shopify.dev/apps/auth/oauth/session-tokens
 router.get('/sessiontoken', async (ctx, next) => {
   console.log("+++++++++++++++ /sessiontoken +++++++++++++++");
+  if (typeof ctx.request.header.authorization !== UNDEFINED) {
+    console.log("This is authenticatedFetch from App Bridge");
+    console.log(JSON.stringify(ctx.request, null, 4));
+
+   const token = jwt_decode(ctx.request.header.authorization.replace('Bearer ',''));
+
+   console.log(`${JSON.stringify(token, null, 4)}`);  
+
+    ctx.body = {
+      "request_authorization": token,
+      "request_query": ctx.request.query
+    };
+    ctx.set('Content-Type','application/json');
+    ctx.status = 200;
+    return;
+  }
+
   if (!checkSignature(ctx.request.query)) {
     ctx.status = 400;
     return;
@@ -181,7 +200,6 @@ router.get('/sessiontoken', async (ctx, next) => {
   await ctx.render('index', {});
 
 });
-
 
 /* 
  * 

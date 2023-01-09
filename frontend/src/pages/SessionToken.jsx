@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
-import { getSessionToken } from "@shopify/app-bridge-utils";
+import { getSessionToken, authenticatedFetch } from "@shopify/app-bridge-utils";
 import { Page, Card, Layout, Link, Button, Badge, TextContainer } from '@shopify/polaris';
 
 import jwt_decode from "jwt-decode";
@@ -9,10 +9,11 @@ import jwt_decode from "jwt-decode";
 // See https://shopify.dev/apps/auth/oauth/session-tokens
 function SessionToken() {
   const app = useAppBridge();
-  //const redirect = Redirect.create(app);
 
   const [raw, setRaw] = useState('');
   const [decoded, setDecoded] = useState('');
+  const [auth, setAuth] = useState('');
+  const [res, setRes] = useState('');
 
   return (
     <Page title="Getting started with session token authentication">
@@ -39,9 +40,9 @@ function SessionToken() {
             </Button>
           </Layout.Section>
           <Layout.Section>
-            <Badge>Raw data:</Badge>
+            <Badge>Raw Data:</Badge>
             <pre>{raw}</pre>
-            <Badge>Decoded data:</Badge>
+            <Badge>Decoded Data:</Badge>
             <pre>{decoded}</pre>
           </Layout.Section>
         </Layout>
@@ -53,9 +54,25 @@ function SessionToken() {
           </Layout.Section>
           <Layout.Section>
             <Button onClick={() => {
+              authenticatedFetch(app)('/sessiontoken?my_key=1', {/*
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: `{}`
+            */}).then((response) => {
+                response.json().then((json) => {
+                  console.log(JSON.stringify(json, null, 4));
+                  setAuth(JSON.stringify(json.request_authorization, null, 4));
+                });
+              });
             }}>
               Run the code
             </Button>
+          </Layout.Section>
+          <Layout.Section>
+            <Badge>Decoded Authorizaton:</Badge>
+            <pre>{auth}</pre>
+            <Badge>GraphQL Response with Authorizaton Bear:</Badge>
+            <pre>{res}</pre>
           </Layout.Section>
         </Layout>
       </Card>
