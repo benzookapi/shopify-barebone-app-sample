@@ -49,6 +49,8 @@ const MONGO_URL = `${process.env.SHOPIFY_MONGO_URL}`;
 const MONGO_DB_NAME = `${process.env.SHOPIFY_MONGO_DB_NAME}`;
 const MONGO_COLLECTION = 'shops';
 
+/* --- App top URL reigstered as the base one in the app settings in partner dashbord. --- */
+//See https://shopify.dev/apps/auth/oauth/getting-started
 router.get('/', async (ctx, next) => {
   console.log("+++++++++++++++ / +++++++++++++++");
   if (!checkSignature(ctx.request.query)) {
@@ -99,6 +101,7 @@ router.get('/', async (ctx, next) => {
 
 });
 
+/* --- Callback URL redirected by Shopify after the authentication which needs to be registered as the while listed URL in the app settings in partner dashboard. --- */
 // See https://shopify.dev/apps/auth/oauth/getting-started
 router.get('/callback', async (ctx, next) => {
   console.log("+++++++++++++++ /callback +++++++++++++++");
@@ -150,6 +153,8 @@ router.get('/callback', async (ctx, next) => {
 
 });
 
+/* --- Session Token sample endpoint --- */
+// See https://shopify.dev/apps/auth/oauth/session-tokens
 router.get('/sessiontoken', async (ctx, next) => {
   console.log("+++++++++++++++ /sessiontoken +++++++++++++++");
   if (!checkSignature(ctx.request.query)) {
