@@ -10,6 +10,7 @@ const serve = require('koa-static');
 const crypto = require('crypto');
 
 const mongo = require('mongodb');
+const { Client } = require('pg');
 
 const jwt_decode = require('jwt-decode');
 
@@ -56,6 +57,7 @@ const MONGO_COLLECTION = 'shops';
 
 // PostgreSQL Settings
 const POSTGRESQL_URL = `${process.env.SHOPIFY_POSTGRESQL_URL}`;
+const POSTGRESQL_TABLE = 'shops';
 
 /* --- App top URL reigstered as the base one in the app settings in partner dashbord. --- */
 //See https://shopify.dev/apps/auth/oauth/getting-started
@@ -410,7 +412,7 @@ const insertDB = function (key, data) {
   switch (DB_TYPE) {
     case 'POSTGRESQL':
       // PostgreSQL
-      break;
+      return insertDBPostgreSQL(key, data);
     case 'MYSQL':
     // MySQL
     //break;
@@ -425,7 +427,7 @@ const getDB = function (key) {
   switch (DB_TYPE) {
     case 'POSTGRESQL':
       // PostgreSQL
-      break;
+      return getDBPostgreSQL(key);
     case 'MYSQL':
     // MySQL
     //break;
@@ -440,7 +442,7 @@ const setDB = function (key, data) {
   switch (DB_TYPE) {
     case 'POSTGRESQL':
       // PostgreSQL
-      break;
+      return setDBPostgreSQL(key, data);
     case 'MYSQL':
     // MySQL
     //break;
@@ -513,6 +515,80 @@ const setDBMongo = function (key, data, collection = MONGO_COLLECTION) {
       });
     }).catch(function (e) {
       console.log(`setDBMongo Error ${e}`);
+      return reject(e);
+    });
+  });
+};
+
+/* --- Store Shopify data in database (PostgreSQL) --- */
+const insertDBPostgreSQL = function (key, data) {
+  return new Promise(function (resolve, reject) {
+    new Client({
+      connectionString: POSTGRESQL_URL
+    }).connect().then(function () {
+      //console.log(`insertDBPostgreSQL Connected: ${POSTGRESQL_URL}`);
+      const sql = `INSERT ${POSTGRESQL_TABLE} ( _id, data, created_at, updated_at ) ('${key}', '${JSON.stringify(data)}', '${new Date()}',  '${new Date()}')`;
+      console.log(`insertDBPostgreSQL:  ${sql}`);
+      this.query(sql).then(function (res) {
+        this.end();
+        return resolve(0);
+      }).catch(function (e) {
+        this.end();
+        console.log(`insertDBPostgreSQL Error ${e}`);
+        return reject(e);
+      });
+    }).catch(function (e) {
+      console.log(`insertDBPostgreSQL Error ${e}`);
+      return reject(e);
+    });
+  });
+};
+
+/* --- Retrive Shopify data in database (PostgreSQL) --- */
+const getDBPostgreSQL = function (key) {
+  return new Promise(function (resolve, reject) {
+    console.log(`getDBPostgreSQL XXXXX: ${POSTGRESQL_URL}`);
+    new Client({
+      connectionString: POSTGRESQL_URL
+    }).connect().then(function () {
+      //console.log(`getDBPostgreSQL Connected: ${POSTGRESQL_URL}`);
+      const sql = `SELECT data FROM ${POSTGRESQL_TABLE} WHERE _id = '${key}'`;
+      console.log(`getDBPostgreSQL:  ${sql}`);
+      this.query(sql).then(function (res) {
+        this.end();
+        if (res == null) return resolve(null);
+        return resolve(JSON.parse(res[0]));
+      }).catch(function (e) {
+        this.end();
+        console.log(`getDBPostgreSQL Error ${e}`);
+        return reject(e);
+      });
+    }).catch(function (e) {
+      console.log(`getDBPostgreSQL Error ${e}`);
+      return reject(e);
+    });
+  });
+};
+
+/* --- Update Shopify data in database (PostgreSQL) --- */
+const setDBPostgreSQL = function (key, data) {
+  return new Promise(function (resolve, reject) {
+    new Client({
+      connectionString: POSTGRESQL_URL
+    }).connect().then(function () {
+      //console.log(`setDBPostgreSQL Connected: ${POSTGRESQL_URL}`);
+      const sql = `UPDATE ${POSTGRESQL_TABLE} ( data, updated_at ) VALUES ('${JSON.stringify(data)}', '${new Date()}') WHERE _id = '${key}'`;
+      console.log(`setDBPostgreSQL:  ${sql}`);
+      this.query(sql).then(function (res) {
+        this.end();
+        return resolve(JSON.parse(res[0]));
+      }).catch(function (e) {
+        this.end();
+        console.log(`setDBPostgreSQL Error ${e}`);
+        return reject(e);
+      });
+    }).catch(function (e) {
+      console.log(`setDBPostgreSQL Error ${e}`);
       return reject(e);
     });
   });
