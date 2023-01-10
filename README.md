@@ -20,28 +20,21 @@ A sample code for Shopify app for scratch build. Read [this](https://shopify.dev
 
 # How to run
 
-Add the following environmental variables locally or cloud platform like Render / Heroku / Fly, etc.
+1. Add the following environmental variables locally or cloud platform like Render / Heroku / Fly, etc.
 
 ```
   SHOPIFY_API_KEY:              YOUR_API_KEY
-
   SHOPIFY_API_SECRET:           YOUR_API_SECRET
-
   SHOPIFY_API_VERSION:          2023-01
-
   SHOPIFY_API_SCOPES:           write_products,write_discounts,read_orders
 
-
-  SHOPIFY_DB_TYPE:              MONGODB (Default) / POSTGRESQL 
-
+  SHOPIFY_DB_TYPE:              MONGODB (Default) / POSTGRESQL
+  
   // The followings are required if you set SHOPIFY_DB_TYPE 'MONGODB'
-
   SHOPIFY_MONGO_DB_NAME:        YOUR_DB_NAME (any name is OK)
-
   SHOPIFY_MONGO_URL:            mongodb://YOUR_USER:YOUR_PASSWORD@YOUR_DOMAIN:YOUR_PORT/YOUR_DB_NAME
 
   // The followings are required if you set SHOPIFY_DB_TYPE 'POSTGRESQL'
-
   SHOPIFY_POSTGRESQL_URL:       postgres://YOUR_USER:YOUR_PASSWORD@YOUR_DOMAIN(:YOUR_PORT)/YOUR_DB_NAME
 ```
 
