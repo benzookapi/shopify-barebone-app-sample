@@ -523,17 +523,21 @@ const setDBMongo = function (key, data, collection = MONGO_COLLECTION) {
 /* --- Store Shopify data in database (PostgreSQL) --- */
 const insertDBPostgreSQL = function (key, data) {
   return new Promise(function (resolve, reject) {
-    new Client({
-      connectionString: POSTGRESQL_URL
-    }).connect().then(function () {
+    const client = new Client({
+      connectionString: POSTGRESQL_URL,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    });
+    client.connect().then(function () {
       //console.log(`insertDBPostgreSQL Connected: ${POSTGRESQL_URL}`);
-      const sql = `INSERT ${POSTGRESQL_TABLE} ( _id, data, created_at, updated_at ) ('${key}', '${JSON.stringify(data)}', '${new Date()}',  '${new Date()}')`;
+      const sql = `INSERT INTO ${POSTGRESQL_TABLE} ( _id, data, created_at, updated_at ) VALUES ('${key}', '${JSON.stringify(data)}', '${new Date().toISOString()}',  '${new Date().toISOString()}')`;
       console.log(`insertDBPostgreSQL:  ${sql}`);
-      this.query(sql).then(function (res) {
-        this.end();
+      client.query(sql).then(function (res) {
+        client.end();
         return resolve(0);
       }).catch(function (e) {
-        this.end();
+        client.end();
         console.log(`insertDBPostgreSQL Error ${e}`);
         return reject(e);
       });
@@ -547,19 +551,23 @@ const insertDBPostgreSQL = function (key, data) {
 /* --- Retrive Shopify data in database (PostgreSQL) --- */
 const getDBPostgreSQL = function (key) {
   return new Promise(function (resolve, reject) {
-    console.log(`getDBPostgreSQL XXXXX: ${POSTGRESQL_URL}`);
-    new Client({
-      connectionString: POSTGRESQL_URL
-    }).connect().then(function () {
+    console.log(`getDBPostgreSQL POSTGRESQL_URL ${POSTGRESQL_URL}`);
+    const client = new Client({
+      connectionString: POSTGRESQL_URL,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    });
+    client.connect().then(function () {
       //console.log(`getDBPostgreSQL Connected: ${POSTGRESQL_URL}`);
       const sql = `SELECT data FROM ${POSTGRESQL_TABLE} WHERE _id = '${key}'`;
       console.log(`getDBPostgreSQL:  ${sql}`);
-      this.query(sql).then(function (res) {
-        this.end();
-        if (res == null) return resolve(null);
-        return resolve(JSON.parse(res[0]));
+      client.query(sql).then(function (res) {
+        client.end();
+        if (res.rows.length == 0) return resolve(null);
+        return resolve(res.rows[0].data);
       }).catch(function (e) {
-        this.end();
+        client.end();
         console.log(`getDBPostgreSQL Error ${e}`);
         return reject(e);
       });
@@ -573,17 +581,21 @@ const getDBPostgreSQL = function (key) {
 /* --- Update Shopify data in database (PostgreSQL) --- */
 const setDBPostgreSQL = function (key, data) {
   return new Promise(function (resolve, reject) {
-    new Client({
-      connectionString: POSTGRESQL_URL
-    }).connect().then(function () {
+    const client = new Client({
+      connectionString: POSTGRESQL_URL,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    });
+    client.connect().then(function () {
       //console.log(`setDBPostgreSQL Connected: ${POSTGRESQL_URL}`);
-      const sql = `UPDATE ${POSTGRESQL_TABLE} ( data, updated_at ) VALUES ('${JSON.stringify(data)}', '${new Date()}') WHERE _id = '${key}'`;
+      const sql = `UPDATE ${POSTGRESQL_TABLE} ( data, updated_at ) VALUES ('${JSON.stringify(data)}', '${new Date().toISOString()}') WHERE _id = '${key}'`;
       console.log(`setDBPostgreSQL:  ${sql}`);
-      this.query(sql).then(function (res) {
-        this.end();
-        return resolve(JSON.parse(res[0]));
+      client.query(sql).then(function (res) {
+        client.end();
+        return resolve(res.rowCount);
       }).catch(function (e) {
-        this.end();
+        client.end();
         console.log(`setDBPostgreSQL Error ${e}`);
         return reject(e);
       });
