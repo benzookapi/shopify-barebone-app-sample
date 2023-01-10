@@ -36,7 +36,6 @@ A sample code for Shopify app for scratch build. Read [this](https://shopify.dev
 ```
 
 2. Build and run the app server locally or in cloud platforms. All settings are described in ./package.json.
-
 ```
 Build command = npm install && npm run build (= cd frontend && npm install && npm run build && rm -rf ../public && mv dist ../public && mv ../public/index.html ../views/index.html  *Replacing Koa view files with Vite buit code)
 
@@ -44,7 +43,6 @@ Start command = npm run start (= node app.js)
 ```
 
 3. If you run locally, you need to ngrok tunnel for public URL as follows (otherwise, the commands above are usable in Render or other platform settings).
-
 ```
 cd NGROK_DIR && ngrok http 3000
 ```
@@ -52,15 +50,12 @@ cd NGROK_DIR && ngrok http 3000
 4. Set `YOUR_APP_URL` (your ngrok or other platform URL) and `YOUR_APP_URL/callback` to your app settings.
 
 5. (For PostgreSQL user only,) create the used table in your database (in `psql` command or other tools).
-
 ```
 CREATE TABLE shops ( _id VARCHAR NOT NULL PRIMARY KEY, data json NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL );
 ```
 
 # How to install
-
 Access to the following endpoit.
-
 `https://SHOPIFY_SHOP_DOMAIN/admin/oauth/authorize?client_id=YOUR_API_KEY&scope=YOUR_API_SCOPES&redirect_uri=YOUR_APP_URL/callback&state=&grant_options[]=`　
 
 Or 
