@@ -3,7 +3,6 @@ A sample code for Shopify app for scratch build. Read [this](https://shopify.dev
 
 
 # Code structure
-
 ```
 ./app.js ... Koa Node.js app for backend for app install endpoints, GraphQL API calls, and DB access, etc. No Shopify libraries or CLI generated code used.
 
@@ -19,9 +18,7 @@ A sample code for Shopify app for scratch build. Read [this](https://shopify.dev
 ```
 
 # How to run
-
 1. Add the following environmental variables locally or in cloud platforms like Render / Heroku / Fly, etc.
-
 ```
   SHOPIFY_API_KEY:              YOUR_API_KEY (Copy and paste from your app settings in the partner dashbord)
   SHOPIFY_API_SECRET:           YOUR_API_SECRET (Copy and paste from your app settings in the partner dashbord)
@@ -73,12 +70,13 @@ Or
 # Map your webhook paths with GDRP webhooks
 https://shopify.dev/apps/webhooks/configuration/mandatory-webhooks
 
+```
 customers/data_request:  /webhookgdprcustomerreq
 
 customers/redact:  /webhookgdprcustomerdel
 
 shop/redact:  /webhookgdprshopdel
-
+```
 
 
 
