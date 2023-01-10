@@ -2,6 +2,19 @@
 A sample code for Shopify app for scratch build. Read [this](https://shopify.dev/apps/auth/oauth/getting-started) first.
 
 
+# Code structure
+
+```
+./app.js ... koa node.js app for backend for app install endpoints, GraphQL API calls, and DB access, etc. No Shopify libraries or CLI generated code used.
+
+./package.json ... app.js used npm libaries.
+
+./views ... holds index.html buit by vite below to be rendered by app.js above on server side.
+
+./frontend ... React code base to be built by vite. for app admin UI. All built code runs at the client = browser as minized JS + CSS.
+  -src ... React
+```
+
 # How to run
 Just pushing to Heroku or Render with the following system variables is the easiest way to run, or npm start locally maybe.
 
