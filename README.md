@@ -68,7 +68,7 @@ Access to the following endpoit.
 
 Or 
 
-`you can install to development stores from the app settings in the partner dashbard.`
+`you can install to development stores from the app settings in partner dashbard.`
 
 # Map your webhook paths with GDRP webhooks
 https://shopify.dev/apps/webhooks/configuration/mandatory-webhooks
