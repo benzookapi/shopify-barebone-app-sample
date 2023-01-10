@@ -20,16 +20,16 @@ A sample code for Shopify app for scratch build. Read [this](https://shopify.dev
 
 # How to run
 
-1. Add the following environmental variables locally or cloud platform like Render / Heroku / Fly, etc.
+1. Add the following environmental variables locally or in cloud platforms like Render / Heroku / Fly, etc.
 
 ```
-  SHOPIFY_API_KEY:              YOUR_API_KEY
-  SHOPIFY_API_SECRET:           YOUR_API_SECRET
+  SHOPIFY_API_KEY:              YOUR_API_KEY (Copy and paste from your app settings in the partner dashbord)
+  SHOPIFY_API_SECRET:           YOUR_API_SECRET (Copy and paste from your app settings in the partner dashbord)
   SHOPIFY_API_VERSION:          2023-01
   SHOPIFY_API_SCOPES:           write_products,write_discounts,read_orders
 
   SHOPIFY_DB_TYPE:              MONGODB (Default) / POSTGRESQL
-  
+
   // The followings are required if you set SHOPIFY_DB_TYPE 'MONGODB'
   SHOPIFY_MONGO_DB_NAME:        YOUR_DB_NAME (any name is OK)
   SHOPIFY_MONGO_URL:            mongodb://YOUR_USER:YOUR_PASSWORD@YOUR_DOMAIN:YOUR_PORT/YOUR_DB_NAME
@@ -38,10 +38,39 @@ A sample code for Shopify app for scratch build. Read [this](https://shopify.dev
   SHOPIFY_POSTGRESQL_URL:       postgres://YOUR_USER:YOUR_PASSWORD@YOUR_DOMAIN(:YOUR_PORT)/YOUR_DB_NAME
 ```
 
-# Installation Endpoint
+2. Build and run the app server locally or in cloud platforms. All settings are described in ./package.json.
+
+```
+Build Command = npm install && npm run build (= cd frontend && npm install && npm run build && rm -rf ../public && mv dist ../public && mv ../public/index.html ../views/index.html  *Replacing Koa view files with Vite buit code)
+
+Start command = npm run start (= node app.js)
+```
+
+*If you run locally, you need to ngrok tunnel for public URL as as follows.
+
+```
+cd NGROK_DIR && ngrok http 3000
+```
+
+Otherwise, set the commands above runnable in your chosen server like Render.
+
+3. Set `YOUR_APP_URL` (your Ngrok or other platform URL) and `YOUR_APP_URL/callback` endpoint to your app settings.
+
+4. (For PostgreSQL user only,) create the used table in tour database (in psql command or other tools).
+
+```
+CREATE TABLE shops ( _id VARCHAR NOT NULL PRIMARY KEY, data json NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL );
+```
+
+# How to install
+
+Access to the following endpoit.
+
 `https://SHOPIFY_SHOP_DOMAIN/admin/oauth/authorize?client_id=YOUR_API_KEY&scope=YOUR_API_SCOPES&redirect_uri=YOUR_APP_URL/callback&state=&grant_options[]=`　
 
-*Don't forget add `YOUR_APP_URL` and `YOUR_APP_URL/callback` endpoint to your app configration.
+Or 
+
+`you can install to development stores from the app settings in the partner dashbard.`
 
 # Map your webhook paths with GDRP webhooks
 https://shopify.dev/apps/webhooks/configuration/mandatory-webhooks
