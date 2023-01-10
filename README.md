@@ -5,7 +5,7 @@ A sample code for Shopify app for scratch build. Read [this](https://shopify.dev
 # Code structure
 
 ```
-./app.js ... koa node.js app for backend for app install endpoints, GraphQL API calls, and DB access, etc. No Shopify libraries or CLI generated code used.
+./app.js ... Koa Node.js app for backend for app install endpoints, GraphQL API calls, and DB access, etc. No Shopify libraries or CLI generated code used.
 
 ./package.json ... app.js used npm libaries.
 
@@ -20,8 +20,9 @@ A sample code for Shopify app for scratch build. Read [this](https://shopify.dev
 
 # How to run
 
-1. Add the following environmental variables locally or cloud platform like Render / Heroku / Fly, etc.
+Add the following environmental variables locally or cloud platform like Render / Heroku / Fly, etc.
 
+```
   SHOPIFY_API_KEY:              YOUR_API_KEY
 
   SHOPIFY_API_SECRET:           YOUR_API_SECRET
@@ -42,6 +43,7 @@ A sample code for Shopify app for scratch build. Read [this](https://shopify.dev
   // The followings are required if you set SHOPIFY_DB_TYPE 'POSTGRESQL'
 
   SHOPIFY_POSTGRESQL_URL:       postgres://YOUR_USER:YOUR_PASSWORD@YOUR_DOMAIN(:YOUR_PORT)/YOUR_DB_NAME
+```
 
 # Installation Endpoint
 `https://SHOPIFY_SHOP_DOMAIN/admin/oauth/authorize?client_id=YOUR_API_KEY&scope=YOUR_API_SCOPES&redirect_uri=YOUR_APP_URL/callback&state=&grant_options[]=`　
