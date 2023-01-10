@@ -44,6 +44,10 @@ function App() {
             destination: '/functiondiscount',
           },
           {
+            label: 'Function Shipping',
+            destination: '/functionshipping',
+          },
+          {
             label: 'Function Payment',
             destination: '/functionpayment',
           },

@@ -46,10 +46,16 @@ const UNDEFINED = 'undefined';
 // Admin path signature secret
 const HMAC_SECRET = API_SECRET;
 
-// Mongo URL and DB name for date store
+// DB type for data store
+const DB_TYPE = `${process.env.SHOPIFY_DB_TYPE}`;
+
+// Mongo Settings
 const MONGO_URL = `${process.env.SHOPIFY_MONGO_URL}`;
 const MONGO_DB_NAME = `${process.env.SHOPIFY_MONGO_DB_NAME}`;
 const MONGO_COLLECTION = 'shops';
+
+// PostgreSQL Settings
+const POSTGRESQL_URL = `${process.env.SHOPIFY_POSTGRESQL_URL}`;
 
 /* --- App top URL reigstered as the base one in the app settings in partner dashbord. --- */
 //See https://shopify.dev/apps/auth/oauth/getting-started
@@ -400,68 +406,113 @@ const accessEndpoint = function (ctx, endpoint, req, token = null, content_type 
 };
 
 /* --- Store Shopify data in database --- */
-const insertDB = function (key, data, collection = MONGO_COLLECTION) {
+const insertDB = function (key, data) {
+  switch (DB_TYPE) {
+    case 'POSTGRESQL':
+      // PostgreSQL
+      break;
+    case 'MYSQL':
+    // MySQL
+    //break;
+    default:
+      // MongoDB
+      return insertDBMongo(key, data);
+  }
+};
+
+/* --- Retrive Shopify data in database --- */
+const getDB = function (key) {
+  switch (DB_TYPE) {
+    case 'POSTGRESQL':
+      // PostgreSQL
+      break;
+    case 'MYSQL':
+    // MySQL
+    //break;
+    default:
+      // MongoDB
+      return getDBMongo(key);
+  }
+};
+
+/* --- Update Shopify data in database --- */
+const setDB = function (key, data) {
+  switch (DB_TYPE) {
+    case 'POSTGRESQL':
+      // PostgreSQL
+      break;
+    case 'MYSQL':
+    // MySQL
+    //break;
+    default:
+      // MongoDB
+      return setDBMongo(key, data);
+  }
+};
+
+/* --- Store Shopify data in database (MongoDB) --- */
+const insertDBMongo = function (key, data, collection = MONGO_COLLECTION) {
   return new Promise(function (resolve, reject) {
     mongo.MongoClient.connect(MONGO_URL).then(function (db) {
       //console.log(`insertDB Connected: ${MONGO_URL}`);
       var dbo = db.db(MONGO_DB_NAME);
-      console.log(`insertDB Used: ${MONGO_DB_NAME} - ${collection}`);
-      console.log(`insertDB insertOne, _id:${key}`);
+      console.log(`insertDBMongo Used: ${MONGO_DB_NAME} - ${collection}`);
+      console.log(`insertDBMongo insertOne, _id:${key}`);
       dbo.collection(collection).insertOne({ "_id": key, "data": data, "created_at": new Date(), "updated_at": new Date() }).then(function (res) {
         db.close();
         return resolve(0);
       }).catch(function (e) {
-        console.log(`insertDB Error ${e}`);
+        console.log(`insertDBMongo Error ${e}`);
         return reject(e);
       });
     }).catch(function (e) {
-      console.log(`insertDB Error ${e}`);
+      console.log(`insertDBMongo Error ${e}`);
       return reject(e);
     });
   });
 };
 
-/* --- Retrive Shopify data in database --- */
-const getDB = function (key, collection = MONGO_COLLECTION) {
+/* --- Retrive Shopify data in database (MongoDB) --- */
+const getDBMongo = function (key, collection = MONGO_COLLECTION) {
   return new Promise(function (resolve, reject) {
-    console.log(`getDB MONGO_URL ${MONGO_URL}`);
+    console.log(`getDBMongo MONGO_URL ${MONGO_URL}`);
     mongo.MongoClient.connect(MONGO_URL).then(function (db) {
       //console.log(`getDB Connected ${MONGO_URL}`);
       var dbo = db.db(MONGO_DB_NAME);
-      console.log(`getDB Used ${MONGO_DB_NAME} - ${collection}`);
-      console.log(`getDB findOne, _id:${key}`);
+      console.log(`getDBMongo Used ${MONGO_DB_NAME} - ${collection}`);
+      console.log(`getDBMongo findOne, _id:${key}`);
       dbo.collection(collection).findOne({ "_id": `${key}` }).then(function (res) {
         db.close();
         if (res == null) return resolve(null);
         return resolve(res.data);
       }).catch(function (e) {
-        console.log(`getDB Error ${e}`);
+        console.log(`getDBMongo Error ${e}`);
         return reject(e);
       });
     }).catch(function (e) {
-      console.log(`getDB Error ${e}`);
+      console.log(`getDBMongo Error ${e}`);
       return reject(e);
     });
   });
 };
 
-/* --- Update Shopify data in database --- */
-const setDB = function (key, data, collection = MONGO_COLLECTION) {
+/* --- Update Shopify data in database (MongoDB) --- */
+const setDBMongo = function (key, data, collection = MONGO_COLLECTION) {
   return new Promise(function (resolve, reject) {
     mongo.MongoClient.connect(MONGO_URL).then(function (db) {
       //console.log(`setDB Connected ${MONGO_URL}`);
       var dbo = db.db(MONGO_DB_NAME);
-      console.log(`setDB Used ${MONGO_DB_NAME} - ${collection}`);
-      console.log(`setDB findOneAndUpdate, _id:${key}`);
+      console.log(`setDBMongo Used ${MONGO_DB_NAME} - ${collection}`);
+      console.log(`setDBMongo findOneAndUpdate, _id:${key}`);
       dbo.collection(collection).findOneAndUpdate({ "_id": `${key}` }, { $set: { "data": data, "updated_at": new Date() } }, { new: true }).then(function (res) {
         db.close();
         return resolve(res);
       }).catch(function (e) {
-        console.log(`setDB Error ${e}`);
+        console.log(`setDBMongo Error ${e}`);
         return reject(e);
       });
     }).catch(function (e) {
-      console.log(`setDB Error ${e}`);
+      console.log(`setDBMongo Error ${e}`);
       return reject(e);
     });
   });
