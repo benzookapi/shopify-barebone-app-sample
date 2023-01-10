@@ -41,22 +41,20 @@ A sample code for Shopify app for scratch build. Read [this](https://shopify.dev
 2. Build and run the app server locally or in cloud platforms. All settings are described in ./package.json.
 
 ```
-Build Command = npm install && npm run build (= cd frontend && npm install && npm run build && rm -rf ../public && mv dist ../public && mv ../public/index.html ../views/index.html  *Replacing Koa view files with Vite buit code)
+Build command = npm install && npm run build (= cd frontend && npm install && npm run build && rm -rf ../public && mv dist ../public && mv ../public/index.html ../views/index.html  *Replacing Koa view files with Vite buit code)
 
 Start command = npm run start (= node app.js)
 ```
 
-If you run locally, you need to ngrok tunnel for public URL as follows.
+3. If you run locally, you need to ngrok tunnel for public URL as follows (commands above are usable in Render dashboard settings).
 
 ```
 cd NGROK_DIR && ngrok http 3000
 ```
 
-Build and Start Command above are usable for Render settings. https://dashboard.render.com/
+4. Set `YOUR_APP_URL` (your ngrok or other platform URL) and `YOUR_APP_URL/callback` endpoint to your app settings.
 
-3. Set `YOUR_APP_URL` (your Ngrok or other platform URL) and `YOUR_APP_URL/callback` endpoint to your app settings.
-
-4. (For PostgreSQL user only,) create the used table in tour database (in psql command or other tools).
+5. (For PostgreSQL user only,) create the used table in tour database (in psql command or other tools).
 
 ```
 CREATE TABLE shops ( _id VARCHAR NOT NULL PRIMARY KEY, data json NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL );
