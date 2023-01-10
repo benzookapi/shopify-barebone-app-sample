@@ -14,6 +14,7 @@ public/ ... holds static files hosted by app.js server code (for code running, t
 
 --- App client as frontend (React JS + CSS) ---
 frontend/ ... React code base to be built by Vite for app admin UI. All built code runs at the client = browser as minized JS + CSS.
+
   ./src/ ... React source code with JSX of Shopify App Bridge + Polaris.
   ./index.html ... replaces views/index.html as a Vite built file which renders the root React compoment.  
   ./public/ ... Static files used by React code.
