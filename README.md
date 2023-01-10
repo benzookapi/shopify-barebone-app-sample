@@ -12,7 +12,7 @@ package.json ... app.js used npm libaries and scripts for building and running t
 views/ ... holds index.html rendered by app.js server code (for code running, this need replaced with Vite built one below).
 public/ ... holds static files hosted by app.js server code (for code running, this need replaced with Vite built one below).
 
---- App client as frontend (React JS + CSS) ---
+--- App client as frontend (React) ---
 frontend/ ... React code base to be built by Vite for app admin UI. All built code runs at the client = browser as minized JS + CSS.
 
   ./src/ ... React source code with JSX of Shopify App Bridge + Polaris.
