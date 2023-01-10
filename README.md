@@ -52,9 +52,9 @@ Start command = npm run start (= node app.js)
 cd NGROK_DIR && ngrok http 3000
 ```
 
-4. Set `YOUR_APP_URL` (your ngrok or other platform URL) and `YOUR_APP_URL/callback` endpoint to your app settings.
+4. Set `YOUR_APP_URL` (your ngrok or other platform URL) and `YOUR_APP_URL/callback` to your app settings.
 
-5. (For PostgreSQL user only,) create the used table in tour database (in psql command or other tools).
+5. (For PostgreSQL user only,) create the used table in your database (in `psql` command or other tools).
 
 ```
 CREATE TABLE shops ( _id VARCHAR NOT NULL PRIMARY KEY, data json NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL );
