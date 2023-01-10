@@ -7,7 +7,7 @@ A sample code for Shopify app for scratch build. Read [this](https://shopify.dev
 --- App server as backend (Node.js) ---- 
 app.js ... Koa Node.js app for backend for app install endpoints, GraphQL API calls, and DB access, etc. No Shopify libraries or CLI generated code used.
 
-package.json ... app.js used npm libaries.
+package.json ... app.js used npm libaries and scripts for building and running this app.
 
 views/ ... holds index.html rendered by app.js server code (for code running, this need replaced with Vite built one below).
 public/ ... holds static files hosted by app.js server code (for code running, this need replaced with Vite built one below).
@@ -19,7 +19,7 @@ frontend/ ... React code base to be built by Vite for app admin UI. All built co
   ./index.html ... replaces views/index.html as a Vite built file which renders the root React compoment.  
   ./public/ ... Static files used by React code.
   
-  ./package.json ... All React code used npm libraries and scripts for running Vite.
+  ./package.json ... React code used npm libraries and scripts for building React code with Vite.
   ./vite.config.js ... Vite congfig file for building React code into real runnable minized JS + CSS on browsers.
 ```
 
