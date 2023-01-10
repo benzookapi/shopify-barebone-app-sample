@@ -46,13 +46,13 @@ Build Command = npm install && npm run build (= cd frontend && npm install && np
 Start command = npm run start (= node app.js)
 ```
 
-*If you run locally, you need to ngrok tunnel for public URL as as follows.
+If you run locally, you need to ngrok tunnel for public URL as follows.
 
 ```
 cd NGROK_DIR && ngrok http 3000
 ```
 
-Otherwise, set the commands above runnable in your chosen server like Render.
+Build and Start Command above are usable for Render settings. https://dashboard.render.com/
 
 3. Set `YOUR_APP_URL` (your Ngrok or other platform URL) and `YOUR_APP_URL/callback` endpoint to your app settings.
 
