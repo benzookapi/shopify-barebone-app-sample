@@ -46,7 +46,7 @@ Build command = npm install && npm run build (= cd frontend && npm install && np
 Start command = npm run start (= node app.js)
 ```
 
-3. If you run locally, you need to ngrok tunnel for public URL as follows (commands above are usable in Render dashboard settings).
+3. If you run locally, you need to ngrok tunnel for public URL as follows (otherwise, the commands above are usable in Render or other platform settings).
 
 ```
 cd NGROK_DIR && ngrok http 3000
