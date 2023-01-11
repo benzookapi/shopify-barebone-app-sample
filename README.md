@@ -4,7 +4,7 @@ A sample code for Shopify app for scratch build. Read [this](https://shopify.dev
 
 # Code structure
 ```
---- App server as backend (Node.js) ---- 
+*** App server as backend (Node.js) ***
 app.js ... Koa Node.js app for backend for app install endpoints, GraphQL API calls, and DB access, etc. No Shopify libraries or CLI generated code used.
 
 package.json ... app.js used npm libaries and scripts for building and running this app.
@@ -12,7 +12,7 @@ package.json ... app.js used npm libaries and scripts for building and running t
 views/ ... holds index.html rendered by app.js server code (for code running, this need replaced with Vite built one below).
 public/ ... holds static files hosted by app.js server code (for code running, this need replaced with Vite built one below).
 
---- App client as frontend (React) ---
+*** App client as frontend (React) ***
 frontend/ ... React code base to be built by Vite for app admin UI. All built code runs at the client = browser as minized JS + CSS.
 
   ./src/ ... React source code with JSX of Shopify App Bridge + Polaris.

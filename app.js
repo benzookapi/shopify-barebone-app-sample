@@ -172,7 +172,7 @@ router.get('/sessiontoken', async (ctx, next) => {
     console.log("This is authenticatedFetch from App Bridge = My own OAuth 2.0 Flow");
     console.log(`request: ${JSON.stringify(ctx.request, null, 4)}`);
 
-    // The token for request vrification usable for Admin API calls.
+    // The token is the same as the client session token given by App Bridge in 'Authorization Bearer' for OAuth 2.0 Flow which encodes shop, app id, etc for authorization.
     // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
     // See https://www.rfc-editor.org/rfc/rfc6750
     const token = ctx.request.header.authorization.replace('Bearer ', '');
