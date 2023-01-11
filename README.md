@@ -82,30 +82,30 @@ shop/redact:  /webhookgdprshopdel
 
 # Feature (Sample) list
 
-- Session Token: '/sessiontoken' 
-  - What'sApp Bridge session token about and how the authenticated request works.
-- Admin Link: '/adminlink' 
+- _Session Token_: '/sessiontoken' 
+  - What's App Bridge session token about and how the authenticated request works.
+- _Admin Link_: '/adminlink' 
   - How to manage admin and bulk link access. (TBD)
-- Theme App Extension: '/themeappextension' 
+- _Theme App Extension_: '/themeappextension' 
   - Basis usage with a theme editor (TBD)
-- Function Discount: '/functiondiscount' 
+- _Function Discount_: '/functiondiscount' 
   - Simple implementation with customer data (TBD, preveiw mode only as of 2023.01)
-- Function Shipping: '/functionshipping' 
+- _Function Shipping_: '/functionshipping' 
   - Basic usage (TBD, preveiw mode only as of 2023.01)
-- Function Payment: '/functionpayment' 
+- _Function Payment_: '/functionpayment' 
   - COD usage with its shipping rate (TBD, preveiw mode only as of 2023.01)
-- Web Pixel: '/webpixel' 
+- _Web Pixel_: '/webpixel' 
   - Basic usage (TBD)
-- Checkout Extension: '/checkoutextension' 
+- _Checkout Extension_: '/checkoutextension' 
   - Basic usage (TBD, Plus only for live)
-- Fulfillment: '/fulfillment' 
+- _Fulfillment_: '/fulfillment' 
   - How to create and control fulfillments (shipping) via API for a specific order (TBD)
-- Transaction: '/transaction' 
+- _Transaction_: '/transaction' 
   - How to create and control transactions (payments) via API for a specific order (TBD)
-- B2B: '/b2b' 
+- _B2B_: '/b2b' 
   - Sample for creating a company and its onwed customers for B2B checkout (TBD, Plus only for live)
-- Multipass: '/multipass' 
+- _Multipass_: '/multipass' 
   - Simple SSO login implementation (TBD, Plus only for live)
-- ShopifyQL: '/shopifyql' 
+- _ShopifyQL_: '/shopifyql' 
   - Your own ShopifyQL notebook with API. (TBD)
 
