@@ -5,7 +5,7 @@ Read [this](https://shopify.dev/apps/auth/oauth/getting-started) first.
 
 # Code structure
 ```
---------- App server as backend (Node.js) ---------
+--------- Backend process in a server (Node.js) ---------
 app.js ... Koa Node.js app for backend for app install endpoints, GraphQL API calls, and DB access, etc. No Shopify libraries or CLI generated code used.
 
 package.json ... app.js used npm libaries and scripts for building and running this app.
@@ -14,7 +14,7 @@ views/ ... holds Koa Node.js dynamic rendering htmls. This is a SPA app which us
   ./index.html ... Koa top page view rendered by app.js server code (for code running, this needs replaced with Vite built one).
 public/ ... holds static files hosted by app.js server code (for code running, this needs replaced with Vite built one).
 
---------- App client as frontend (React) ---------
+--------- Frontend UI in a browser (React) ---------
 frontend/ ... React code base to be built by Vite for app admin UI. All built code runs at the client = browser as minized JS + CSS.
 
   ./src/ ... React source code with JSX of Shopify App Bridge + Polaris.
