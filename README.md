@@ -69,7 +69,7 @@ Or
 
 `you can install to development stores from the app settings in partner dashbard.`
 
-# Map your webhook paths with GDRP webhooks
+# Map your webhook paths with GDPR webhooks
 https://shopify.dev/apps/webhooks/configuration/mandatory-webhooks
 
 ```
@@ -80,7 +80,16 @@ customers/redact:  /webhookgdprcustomerdel
 shop/redact:  /webhookgdprshopdel
 ```
 
-
-
-
-
+# Feature (Sample) list
+- Session Token: '/sessiontoken' What'sApp Bridge session token about and how the authenticated request works.
+- Admin Link: '/adminlink' How to manage admin and bulk link access. (TBD)
+- Theme App Extension: '/themeappextension' Basis usage with a theme editor (TBD)
+- Function Discount: '/functiondiscount' Simple implementation with customer data (TBD, you need preveiw mode dev. store as of 2023.01)
+- Function Shipping: '/functionshipping' Basic usage (TBD, you need preveiw mode dev. store as of 2023.01)
+- Function Payment: '/functionpayment' COD usage with its shipping rate (TBD, you need preveiw mode dev. store as of 2023.01)
+- Web Pixel: '/webpixel' Basic usage (TBD)
+- Checkout Extension: '/checkoutextension' Basic usage (TBD, You need Plus shop for live execution)
+- Fulfillment: '/fulfillment' How to create and control fulfillments (shipping) via API for a specific order (TBD)
+- Transaction: '/transaction' How to create and control transactions (payments) via API for a specific order (TBD)
+- B2B: '/b2b' Sample for creating a company and its onwed customers for B2B checkout (TBD, You need Plus shop for live execution)
+- ShopifyQL: '/shopifyql' Your own ShopifyQL notebook with API. (TBD)

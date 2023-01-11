@@ -59,6 +59,26 @@ function App() {
             label: 'Checkout Extension',
             destination: '/checkoutextension',
           },
+          {
+            label: 'Fulfillment',
+            destination: '/fulfillment',
+          },
+          {
+            label: 'Transaction',
+            destination: '/transaction',
+          },
+          {
+            label: 'B2B',
+            destination: '/b2b',
+          },
+          {
+            label: 'Multipass',
+            destination: '/multipass',
+          },
+          {
+            label: 'ShopifyQL',
+            destination: '/shopifyql',
+          },
         ]}
         matcher={(link, location) => link.destination === location.pathname}
       />
