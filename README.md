@@ -81,6 +81,7 @@ shop/redact:  /webhookgdprshopdel
 ```
 
 # Feature (Sample) list
+```
 - Session Token: '/sessiontoken' What'sApp Bridge session token about and how the authenticated request works.
 - Admin Link: '/adminlink' How to manage admin and bulk link access. (TBD)
 - Theme App Extension: '/themeappextension' Basis usage with a theme editor (TBD)
@@ -93,3 +94,4 @@ shop/redact:  /webhookgdprshopdel
 - Transaction: '/transaction' How to create and control transactions (payments) via API for a specific order (TBD)
 - B2B: '/b2b' Sample for creating a company and its onwed customers for B2B checkout (TBD, You need Plus shop for live execution)
 - ShopifyQL: '/shopifyql' Your own ShopifyQL notebook with API. (TBD)
+```
