@@ -1,6 +1,7 @@
 # Overview
-A sample code for Shopify app for scratch build. Read [this](https://shopify.dev/apps/auth/oauth/getting-started) first.
+A sample code for scratch building [Shopify app](https://shopify.dev/apps) WITHOUT [CLI automatic cocde generation](https://shopify.dev/apps/getting-started/create).
 
+Read [this](https://shopify.dev/apps/auth/oauth/getting-started) first.
 
 # Code structure
 ```
