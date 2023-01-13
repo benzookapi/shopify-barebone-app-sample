@@ -302,6 +302,7 @@ router.post('/webhookgdprshopdel', async (ctx, next) => {
 });
 
 /* --- Check if the given signature is correct or not --- */
+// See https://shopify.dev/apps/auth/oauth/getting-started#step-2-verify-the-installation-request
 const checkSignature = function (json) {
   let temp = JSON.parse(JSON.stringify(json));
   console.log(`checkSignature ${JSON.stringify(temp)}`);
@@ -318,6 +319,7 @@ const checkSignature = function (json) {
 };
 
 /* --- Check if the given signarure is corect or not for Webhook --- */
+// See https://shopify.dev/apps/webhooks/configuration/https#step-5-verify-the-webhook
 const checkWebhookSignature = function (ctx, secret) {
   return new Promise(function (resolve, reject) {
     console.log(`checkWebhookSignature Headers ${JSON.stringify(ctx.headers)}`);
