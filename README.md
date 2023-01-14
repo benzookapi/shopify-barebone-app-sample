@@ -103,10 +103,12 @@ shop/redact:  /webhookgdprshopdel
   - How to create and control fulfillments (shipping) via API for a specific order (TBD)
 - _Transaction_: '/transaction' 
   - How to create and control transactions (payments) via API for a specific order (TBD)
-- _B2B_: '/b2b' 
-  - Sample for creating a company and its onwed customers for B2B checkout (TBD, Plus only for live)
+- Metaobject: '/metaobject' 
+  - Basic usage (TBD)
 - _Multipass_: '/multipass' 
   - Simple SSO login implementation (TBD, Plus only for live)
+- _B2B_: '/b2b' 
+  - Sample for creating a company and its onwed customers for B2B checkout (TBD, Plus only for live)
 - _ShopifyQL_: '/shopifyql' 
   - Your own ShopifyQL notebook with API. (TBD)
 

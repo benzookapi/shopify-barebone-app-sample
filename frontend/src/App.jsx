@@ -68,13 +68,17 @@ function App() {
             destination: '/transaction',
           },
           {
-            label: 'B2B',
-            destination: '/b2b',
+            label: 'Metaobject',
+            destination: '/metaobject',
           },
           {
             label: 'Multipass',
             destination: '/multipass',
           },
+          {
+            label: 'B2B',
+            destination: '/b2b',
+          },          
           {
             label: 'ShopifyQL',
             destination: '/shopifyql',
