@@ -93,7 +93,7 @@ cd NGROK_DIR && ngrok http 3000
 ```
 CREATE TABLE shops ( _id VARCHAR NOT NULL PRIMARY KEY, data json NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL );
 ```
-6. For CLI generated extensions, execute `npm run dev --reset` to follow the instruction (choose your partner account, connecting to the exising app = not that it's not a new one, etc.) which registers a draft extensions to your exising app. After the command starts successfully, exit it with Ctrl+C and go to the created extension and enable the preview (for dev. store installs, it's enough for testing).
+6. For CLI generated extensions, execute `npm run dev --reset` to follow the instruction (choose your partner account, connecting to the exising app = not a new one, etc.) which registers a draft extensions to your exising app. After the command starts successfully, exit it with Ctrl+C and go to the created extension and enable the preview (for dev. store installs, it's enough for testing).
 
 7. For updating the extensions, execute `npm run deploy` to apply (upload) your local code into the created extensions.
 
@@ -124,7 +124,7 @@ shop/redact:  /webhookgdprshopdel
 - _Admin Link_: '/adminlink' 
   - How to manage and protect admin links regardless of embedded or unembedded.
 - _Theme App Extension_: '/themeappextension' 
-  - Basis usage with a theme editor (TBD)
+  - Basis usage with a theme editor
 - _Function Discount_: '/functiondiscount' 
   - Simple implementation with customer data (TBD, developer preveiw only as of 2023.01)
 - _Function Shipping_: '/functionshipping' 
