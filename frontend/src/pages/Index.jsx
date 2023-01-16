@@ -31,7 +31,7 @@ function Index() {
                                 redirect.dispatch(Redirect.Action.APP, '/adminlink');
                             },
                             name: 'Admin Link',
-                            location: 'Admin Link sample with embedded / nunembedded protection',
+                            location: 'Admin Link sample with embedded / unnembedded handling',
                         },
                     ]}
                     renderItem={(item) => {
