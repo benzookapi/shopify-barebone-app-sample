@@ -25,11 +25,11 @@ frontend/ ... React code base to be built by Vite for app admin UI. All built co
   ./vite.config.js ... Vite congfig file for building React code into real runnable minized JS + CSS on browsers.
 
 --------- Extensions with Shopify CLI generation and deployment (Liquid/JavaScript/Wasm, etc.) ---------
-extensions/ ... Automatically generated directory and code by Shopify CLI `npm run generate extension`.
+extensions/ ... automatically generated directory and code by Shopify CLI `npm run generate extension`.
 
-.env ... Automatically generated file by CLI above too.
+.env ... automatically generated file by CLI above too.
 
-shopify.app.toml ... Required file by CLI commands.
+shopify.app.toml ... required file by CLI commands.
 
 ```
 
@@ -42,18 +42,18 @@ For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and C
 
 In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/commands#generate-extension) have some hacky ways for applying to the existing non-CLI-generated codes as bellow.
 ```
-1. Execute `npm install --save @shopify/app @shopify/cli` instead of `npm init @shopify/app@latest`, to add those library dependencies to package.json avoiding overwriting the exising code.
+1. Execute `npm install --save @shopify/app @shopify/cli` instead of `npm init @shopify/app@latest`, to add those library dependencies to 'package.json' avoiding overwriting the exising code.
 
-2. Add the following script to package.json "scripts" from another npm init generated app to execute extension commands (e.g. `npm generate extension`).
+2. Add the following script to 'package.json' "scripts" from another npm init generated app to execute extension commands.
    "shopify": "shopify",
-    "dev": "shopify app dev",
-    "info": "shopify app info",
-    "generate": "shopify app generate",
-    "deploy": "shopify app deploy"
+   "dev": "shopify app dev",
+   "info": "shopify app info",
+   "generate": "shopify app generate",
+   "deploy": "shopify app deploy"
 
-3. Add shopify.app.toml copied from another generated code too.
+3. Add 'shopify.app.toml' copied from another generated code too.
 
-4. For creating extensions to new apps from exsiting codes in '/extensions/', execute `npm run dev --reset` to make draft apps, and enable Development Store Preview in the created app extension setting of partner dashboard.
+4. For creating extensions to new apps from exsiting codes in '/extensions/', execute `npm run dev --reset` to make a draft extension, and enable "Development Store Preview" in the created extension setting of your partner dashboard (NOTE THAT `npm generate extension` is for the initial code generation only, not required for the extension registration or push).
 ```
 
 # How to run
@@ -92,7 +92,7 @@ cd NGROK_DIR && ngrok http 3000
 ```
 CREATE TABLE shops ( _id VARCHAR NOT NULL PRIMARY KEY, data json NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL );
 ```
-6. For CLI generated extensions, execute `npm run dev --reset` to folow the instruction (choose your partner account, connecting to the exising app = not that it's not a new one, etc.) which create a draft extensions to your exising app. After the command starts successfully, exit it with Ctrl+C and go to the created extension and enable the development preview (For dev. stores, this is enough for testing).
+6. For CLI generated extensions, execute `npm run dev --reset` to follow the instruction (choose your partner account, connecting to the exising app = not that it's not a new one, etc.) which registers a draft extensions to your exising app. After the command starts successfully, exit it with Ctrl+C and go to the created extension and enable the preview (for dev. store installs, it's enough for testing).
 
 7. For updating the extensions, execute `npm run deploy` to apply (upload) your local code into the created extensions.
 
