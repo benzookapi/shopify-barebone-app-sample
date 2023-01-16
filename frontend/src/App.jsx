@@ -83,6 +83,10 @@ function App() {
             label: 'ShopifyQL',
             destination: '/shopifyql',
           },
+          {
+            label: 'Marketing Activity',
+            destination: '/marketingactivity',
+          },
         ]}
         matcher={(link, location) => link.destination === location.pathname}
       />

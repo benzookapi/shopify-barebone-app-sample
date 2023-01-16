@@ -241,6 +241,26 @@ router.get('/sessiontoken', async (ctx, next) => {
 
 });
 
+/* --- Admin Link sample endpoint --- */
+// See https://shopify.dev/apps/auth/oauth/session-tokens
+router.get('/adminlink', async (ctx, next) => {
+  console.log("+++++++++++++++ /adminlink +++++++++++++++");
+  console.log(`query ${JSON.stringify(ctx.request.query)}`);
+  const embedded = ctx.request.query.embedded;
+  // If the app is set embedded in the app settings, "embedded" is set "1", otherwise "0" or undefined.
+  // See. https://shopify.dev/apps/auth/oauth/getting-started#check-for-and-escape-the-iframe-embedded-apps-only
+  if (typeof embedded !== UNDEFINED && embedded == "1") {
+    if (!checkSignature(ctx.request.query)) {
+      ctx.status = 400;
+      return;
+    }
+  }  
+  const shop = ctx.request.query.shop;
+  ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
+  await ctx.render('index', {});
+
+});
+
 /* 
  * 
  * --- GDPR Webhook for customer data request ---

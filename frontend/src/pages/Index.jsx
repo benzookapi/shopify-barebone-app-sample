@@ -25,6 +25,14 @@ function Index() {
                             name: 'Session Token',
                             location: 'Session Token usage sameple with App Bridge',
                         },
+                        {
+                            id: 2,
+                            onClick: (id) => {
+                                redirect.dispatch(Redirect.Action.APP, '/adminlink');
+                            },
+                            name: 'Admin Link',
+                            location: 'Admin Link sample for embedded / non-embedded verification',
+                        },
                     ]}
                     renderItem={(item) => {
                         const { id, onClick, name, location } = item;

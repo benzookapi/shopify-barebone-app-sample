@@ -25,6 +25,10 @@ frontend/ ... React code base to be built by Vite for app admin UI. All built co
   ./vite.config.js ... Vite congfig file for building React code into real runnable minized JS + CSS on browsers.
 ```
 
+For creating React frontend, the following contents might help you.
+- [App Bridge Actions by React](https://shopify.dev/apps/tools/app-bridge/getting-started/using-react)
+- [Polaris Compoments by React](https://polaris.shopify.com/components)
+
 # How to run
 1. Add the following environmental variables locally or in cloud platforms like Render / Heroku / Fly, etc.
 ```
@@ -111,4 +115,7 @@ shop/redact:  /webhookgdprshopdel
   - Sample for creating a company and its onwed customers for B2B checkout (TBD, Plus only for live)
 - _ShopifyQL_: '/shopifyql' 
   - Your own ShopifyQL notebook with API. (TBD)
+- _Marketing Activity_: '/marketingactivity' 
+  - Basic usage. (TBD)
+
 
