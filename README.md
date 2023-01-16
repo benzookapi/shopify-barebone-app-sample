@@ -53,7 +53,8 @@ In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/co
 
 3. Add 'shopify.app.toml' copied from another generated code too.
 
-4. For creating extensions to new apps from exsiting codes in '/extensions/', execute `npm run dev --reset` to make a draft extension, and enable "Development Store Preview" in the created extension setting of your partner dashboard (NOTE THAT `npm generate extension` is for the initial code generation only, not required for the extension registration or push).
+4. For creating extensions to new apps from exsiting codes in '/extensions/', execute `npm run dev --reset` to make a draft extension, and enable "Development Store Preview" in the created extension setting of your partner dashboard 
+(NOTE THAT `npm generate extension` is for the initial code generation only, not required for the extension registration or push).
 ```
 
 # How to run
