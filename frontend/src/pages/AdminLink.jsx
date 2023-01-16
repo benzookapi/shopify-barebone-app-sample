@@ -7,14 +7,6 @@ import { Page, Card, Layout, Stack, Link, Badge, Text, Spinner } from '@shopify/
 // Admin link sample with App Bridge redirection
 // See https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup
 // See https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link
-
-function APIResult(props) {
-    if (Object.keys(props.res).length === 0) {
-        return <Spinner accessibilityLabel="Calling Order GraphQL" size="large" />;
-    }
-    return (<pre>{props.res}</pre>);
-}
-
 function AdminLink() {
     const app = useAppBridge();
     const redirect = Redirect.create(app);
@@ -93,6 +85,13 @@ function AdminLink() {
             </Card>
         </Page>
     );
+}
+
+function APIResult(props) {
+    if (Object.keys(props.res).length === 0) {
+        return <Spinner accessibilityLabel="Calling Order GraphQL" size="large" />;
+    }
+    return (<pre>{props.res}</pre>);
 }
 
 export default AdminLink
