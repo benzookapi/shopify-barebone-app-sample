@@ -124,7 +124,7 @@ shop/redact:  /webhookgdprshopdel
 - _Admin Link_: '/adminlink' 
   - How to manage and protect admin links regardless of embedded or unembedded.
 - _Theme App Extension_: '/themeappextension' 
-  - Basis usage with a theme editor
+  - Basis usage in combination with App Proxies and Theme Editor
 - _Function Discount_: '/functiondiscount' 
   - Simple implementation with customer data (TBD, developer preveiw only as of 2023.01)
 - _Function Shipping_: '/functionshipping' 
