@@ -46,7 +46,7 @@ function AdminLink() {
                         </Stack>
                     </Layout.Section>
                     <Layout.Section>
-                        <Badge status="attention">If you come from a <b>product detail page</b>, you must see the following GraphQL response of the given id</Badge>
+                        <Badge status="attention">If you come from a <b>product detail page</b>, you must see the following GraphQL response for the given id</Badge>
                     </Layout.Section>
                     <Layout.Section>
                         <Card>
