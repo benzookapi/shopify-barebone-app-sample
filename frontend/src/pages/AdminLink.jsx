@@ -7,9 +7,10 @@ import { Page, Card, Layout, Link, Button, Badge, TextField } from '@shopify/pol
 // See https://shopify.dev/apps/auth/oauth/session-tokens
 function AdminLink() {
     const app = useAppBridge();
+
   
     return (
-      <Page title="Getting started with session token authentication">
+      <Page title="Switch the request hanlding for embedded or unembedded.">
         <Card title="Step 1: Get a session token" sectioned={true}>
           
         </Card>

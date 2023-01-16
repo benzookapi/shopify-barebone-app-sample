@@ -90,7 +90,7 @@ shop/redact:  /webhookgdprshopdel
 - _Session Token_: '/sessiontoken' 
   - What's App Bridge session token about and how the authenticated request works.
 - _Admin Link_: '/adminlink' 
-  - How to manage admin and bulk link access. (TBD)
+  - How to manage and protect admin links regardless of embedded or unembedded.
 - _Theme App Extension_: '/themeappextension' 
   - Basis usage with a theme editor (TBD)
 - _Function Discount_: '/functiondiscount' 

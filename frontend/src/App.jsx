@@ -10,13 +10,21 @@ import '@shopify/polaris/build/esm/styles.css';
 
 import Index from './pages/Index';
 import SessionToken from './pages/SessionToken';
+import AdminLink from './pages/AdminLink';
 
 // See https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup
 const config = {
   apiKey: API_KEY, // See ../vite.config.js
-  host: new URLSearchParams(location.search).get("host"),
+  host: new URLSearchParams(window.location.search).get("host"),
   forceRedirect: true
+  // If false, the page accessed outside admin keeps the location where App Bridge doesn't work.
+  // Seehttps://shopify.dev/apps/tools/app-bridge/getting-started/app-setup#initialize-shopify-app-bridge-in-your-app
 };
+
+// If the page is accessed directly outside the admin unembedded, shop is used for the host.
+// See https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup#initialize-shopify-app-bridge-in-your-app
+if (config.host == null) config.host = window.btoa(`${new URLSearchParams(window.location.search).get("shop")}/admin`).replace('=', '');
+console.log(`Recieved host: ${config.host}`);
 
 // All Polaris compoments which you can copy the React snipets from. https://polaris.shopify.com/components
 // AppProvider is the base layout compoment. https://polaris.shopify.com/components/app-provider
@@ -78,7 +86,7 @@ function App() {
           {
             label: 'B2B',
             destination: '/b2b',
-          },          
+          },
           {
             label: 'ShopifyQL',
             destination: '/shopifyql',
@@ -110,6 +118,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/sessiontoken" element={<SessionToken />} />
+            <Route path="/adminlink" element={<AdminLink />} />
           </Routes>
         </BrowserRouter>
         {/* Each page content comes here */}

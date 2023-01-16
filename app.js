@@ -242,19 +242,23 @@ router.get('/sessiontoken', async (ctx, next) => {
 });
 
 /* --- Admin Link sample endpoint --- */
-// See https://shopify.dev/apps/auth/oauth/session-tokens
+// See https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link
 router.get('/adminlink', async (ctx, next) => {
   console.log("+++++++++++++++ /adminlink +++++++++++++++");
   console.log(`query ${JSON.stringify(ctx.request.query)}`);
   const embedded = ctx.request.query.embedded;
   // If the app is set embedded in the app settings, "embedded" is set "1", otherwise "0" or undefined.
   // See. https://shopify.dev/apps/auth/oauth/getting-started#check-for-and-escape-the-iframe-embedded-apps-only
-  if (typeof embedded !== UNDEFINED && embedded == "1") {
+  if (typeof embedded !== UNDEFINED && embedded == '1') {
     if (!checkSignature(ctx.request.query)) {
       ctx.status = 400;
       return;
     }
-  }  
+  } else {
+    // This page gets redirtected to the embedded Shopify admin app page regardess embbedded or not by App Bridge force redirection config,
+    // which is protected Shopify login if the access is by non logged in users or bot, etc. 
+    // Check the code of frontennd/src/App.jsx, forceRedirect: true.
+  }
   const shop = ctx.request.query.shop;
   ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
   await ctx.render('index', {});
