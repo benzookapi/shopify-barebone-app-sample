@@ -26,7 +26,7 @@ frontend/ ... React code base to be built by Vite for app admin UI. All built co
 ```
 
 For creating React frontend, the following contents might help you.
-- [App Bridge Actions by React](https://shopify.dev/apps/tools/app-bridge/getting-started/using-react)
+- [App Bridge Actions by React](https://shopify.dev/apps/tools/app-bridge/actions)
 - [Polaris Compoments by React](https://polaris.shopify.com/components)
 
 # How to run
