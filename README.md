@@ -27,7 +27,7 @@ frontend/ ... React code base to be built by Vite for app admin UI. All built co
 --------- Extensions with Shopify CLI generation and deployment (Liquid/JavaScript/Wasm, etc.) ---------
 extensions/ ... automatically generated directory and code by Shopify CLI `npm run generate extension`.
 
-.env ... automatically generated file by CLI above too.
+.env ... automatically generated file by CLI above too, which holds each generated extenstion id REUSABLE for other apps.
 
 shopify.app.toml ... required file by CLI commands.
 
