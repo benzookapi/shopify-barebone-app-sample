@@ -175,7 +175,7 @@ router.get('/sessiontoken', async (ctx, next) => {
     // The token is the same as the client session token given by App Bridge in 'Authorization Bearer' for OAuth 2.0 Flow which encodes shop, app id, etc for YOUR OWN authorization.
     // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
     // See https://www.rfc-editor.org/rfc/rfc6750
-    const token = ctx.request.header.authorization.replace('Bearer ', '');
+    const token = getTokenFromAuthHeader(ctx);
 
     ctx.set('Content-Type', 'application/json');
 
@@ -203,10 +203,7 @@ router.get('/sessiontoken', async (ctx, next) => {
 
     // If the signature gets verified, we trust the token payload to get stored token for the given shop.
     // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#optional-obtain-session-details-and-verify-the-session-token-manually
-    const payload = jwt_decode(token);
-    console.log(`payload: ${JSON.stringify(payload, null, 4)}`);
-
-    const shop = payload.dest.replace('https://', '');
+    const shop = getShopFromAuthToken(token);
     ctx.body.result.shop_from_payload = shop;
 
     let shop_data = null;
@@ -246,6 +243,7 @@ router.get('/sessiontoken', async (ctx, next) => {
 router.get('/adminlink', async (ctx, next) => {
   console.log("+++++++++++++++ /adminlink +++++++++++++++");
   console.log(`query ${JSON.stringify(ctx.request.query)}`);
+
   const embedded = ctx.request.query.embedded;
   // If the app is set embedded in the app settings, "embedded" is set "1", otherwise "0" or undefined.
   // See. https://shopify.dev/apps/auth/oauth/getting-started#check-for-and-escape-the-iframe-embedded-apps-only
@@ -255,10 +253,88 @@ router.get('/adminlink', async (ctx, next) => {
       return;
     }
   } else {
-    // This page gets redirtected to the embedded Shopify admin app page regardess embbedded or not by App Bridge force redirection config,
-    // which is protected Shopify login if the access is by non logged in users or bot, etc. 
-    // Check the code of frontennd/src/App.jsx, forceRedirect: true.
+    // Access by AppBride::authenticatedFetch
+    if (typeof ctx.request.header.authorization !== UNDEFINED) {
+      const token = getTokenFromAuthHeader(ctx);
+
+      if (!checkAuthFetchToken(token)[0]) {
+        ctx.body.result.message = "Signature unmatched. Incorrect authentication bearer sent";
+        ctx.status = 400;
+        return;
+      }
+
+      ctx.set('Content-Type', 'application/json');
+      ctx.body = {
+        "result": {
+          "message": "",
+          "response": {}
+        }
+      };
+
+      const shop = getShopFromAuthToken(token);
+
+      let shop_data = null;
+      try {
+        shop_data = await (getDB(shop));
+        if (shop_data == null) {
+          ctx.body.result.message = "Authorization failed. No shop data";
+          ctx.status = 400;
+          return;
+        }
+      } catch (e) {
+        ctx.body.result.message = "Internal error in retrieving shop data";
+        ctx.status = 500;
+        return;
+      }
+
+      const id = ctx.request.query.id;
+      // If an id is passed from the liked page like a product detail, retrieve its data by GraphQL.
+      if (typeof id !== UNDEFINED) {
+        let api_res = null;
+        try {
+          api_res = await (callGraphql(ctx, shop, `{
+          product (id: "gid://shopify/Product/${id}") {
+            id
+            handle
+            title
+            onlineStoreUrl
+            priceRangeV2 {
+              maxVariantPrice {
+                amount
+                currencyCode
+              }
+              minVariantPrice {
+                amount
+                currencyCode
+              }
+            }
+            variants(first:10) {
+              edges{
+                node {
+                  id
+                  title
+                  price           
+                }
+              }
+            }
+          }
+        }`, null, GRAPHQL_PATH_ADMIN, null));
+        } catch (e) {
+          console.log(`${JSON.stringify(e)}`);
+        }
+        ctx.body.result.response = api_res;
+      }
+
+      ctx.status = 200;
+      return;
+
+    }
   }
+
+  // If the access is not embedded or authenticated flow, 
+  // this page gets redirtected to the embedded Shopify admin app page regardess embbedded or not by App Bridge force redirection config,
+  // which is protected Shopify login if the access is by non logged in users or bot, etc. 
+  // Check the code of frontennd/src/App.jsx, forceRedirect: true.
   const shop = ctx.request.query.shop;
   ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
   await ctx.render('index', {});
@@ -356,6 +432,20 @@ const checkWebhookSignature = function (ctx, secret) {
     console.log(`checkWebhookSignature Created: ${signature}`);
     return resolve(receivedSig === signature ? true : false);
   });
+};
+
+/* --- Get a token string from a given authorization header --- */
+// See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
+const getTokenFromAuthHeader = function (ctx) {
+  return ctx.request.header.authorization.replace('Bearer ', '');
+};
+
+/* --- Get a shop from a token from a given authorization header --- */
+// See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#optional-obtain-session-details-and-verify-the-session-token-manually
+const getShopFromAuthToken = function (token) {
+  const payload = jwt_decode(token);
+  console.log(`payload: ${JSON.stringify(payload, null, 4)}`);
+  return payload.dest.replace('https://', '');
 };
 
 /* --- Check if the given signarure is corect or not for App Bridge authenticated requests --- */
