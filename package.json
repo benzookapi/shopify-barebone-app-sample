@@ -4,6 +4,8 @@
   "description": "",
   "main": "app.js",
   "dependencies": {
+    "@shopify/app": "^3.33.0",
+    "@shopify/cli": "^3.33.0",
     "jwt-decode": "^3.1.2",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
@@ -18,7 +20,12 @@
   "scripts": {
     "build": "cd frontend && npm install && npm run build && rm -rf ../public && mv dist ../public && mv ../public/index.html ../views/index.html",
     "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "shopify": "shopify",
+    "dev": "shopify app dev",
+    "info": "shopify app info",
+    "generate": "shopify app generate",
+    "deploy": "shopify app deploy"
   },
   "keywords": [],
   "author": "",

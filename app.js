@@ -418,6 +418,23 @@ const checkSignature = function (json) {
   return signature === sig ? true : false;
 };
 
+/* --- Check if the given signature is correct or not for app proxies --- */
+// See https://shopify.dev/apps/online-store/app-proxies#calculate-a-digital-signature
+const checkAppProxySignature = function(json) {
+  let temp = JSON.parse(JSON.stringify(json));
+  console.log(`checkAppProxySignature ${JSON.stringify(temp)}`);
+  if (typeof temp.signature === UNDEFINED) return false;
+  let sig = temp.signature;
+  delete temp.signature; 
+  let msg = Object.entries(temp).sort().map(e => e.join('=')).join('');
+  //console.log(`checkAppProxySignature ${msg}`);
+  const hmac = crypto.createHmac('sha256', HMAC_SECRET);
+  hmac.update(msg);
+  let signarure = hmac.digest('hex');
+  console.log(`checkAppProxySignature ${signarure}`);
+  return signarure === sig ? true : false;
+};
+
 /* --- Check if the given signarure is corect or not for Webhook --- */
 // See https://shopify.dev/apps/webhooks/configuration/https#step-5-verify-the-webhook
 const checkWebhookSignature = function (ctx, secret) {
