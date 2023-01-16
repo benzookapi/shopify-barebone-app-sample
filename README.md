@@ -85,7 +85,7 @@ customers/redact:  /webhookgdprcustomerdel
 shop/redact:  /webhookgdprshopdel
 ```
 
-# Feature (Sample) list
+# Sample list
 
 - _Session Token_: '/sessiontoken' 
   - What's App Bridge session token about and how the authenticated request works.
