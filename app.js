@@ -349,6 +349,25 @@ router.get('/adminlink', async (ctx, next) => {
 
 });
 
+/* --- App proxies sample endpoint --- */
+// See https://shopify.dev/apps/online-store/app-proxies
+router.get('/appproxy', async (ctx, next) => {
+  console.log("+++++++++++++++ /appproxy +++++++++++++++");
+  console.log(`request ${JSON.stringify(ctx.request)}`);
+  if (!checkAppProxySignature(ctx.request.query)) {
+    ctx.status = 400;
+    return;
+  }
+
+  const shop = ctx.request.query.shop;
+
+  //ctx.set('Content-Type', 'application/liquid');
+  //ctx.body = `{{template}}`;
+  ctx.set('Content-Type', 'application/json');
+  ctx.body = {};
+  
+});
+
 /* 
  * 
  * --- GDPR Webhook for customer data request ---
