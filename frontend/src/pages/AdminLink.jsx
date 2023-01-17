@@ -63,7 +63,7 @@ function AdminLink() {
             <Card title="Step 1: Turn off your embedding app" sectioned={true}>
                 <p>
                     If you turn your app embedding <b>OFF</b> in the opposite way of <Link url="https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup#turn-on-embedding-in-the-partner-dashboard" external={true}>
-                        this operation</Link> and click the <b>top page of the left app navigation menu</b>,
+                        this operation</Link> and click the <b>app name of the left navigation menu</b>,
                     you'll see this app's App Bridge integration forces the separated window open to redirect
                     within the admin with <Link url="https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup#initialize-shopify-app-bridge-in-your-app" external={true}>
                         forceRedirect: true</Link>.

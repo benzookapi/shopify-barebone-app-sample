@@ -3,7 +3,7 @@ import { useAppBridge } from '@shopify/app-bridge-react';
 import { getSessionToken, authenticatedFetch } from "@shopify/app-bridge-utils";
 import { Page, Card, Layout, Link, Button, Badge, TextField } from '@shopify/polaris';
 
-import jwt_decode from "jwt-decode";
+import { _decodeSessionToken } from "../utils/my_util";
 
 // App Bridge Session Token sample
 // See https://shopify.dev/apps/auth/oauth/session-tokens
@@ -41,7 +41,7 @@ function SessionToken() {
             <Button onClick={() => {
               getSessionToken(app).then((sessionToken) => {
                 setRaw(foldLongLine(`${sessionToken}`));
-                setDecoded(JSON.stringify(jwt_decode(JSON.stringify(sessionToken)), null, 4));
+                setDecoded(JSON.stringify(_decodeSessionToken(sessionToken), null, 4));
               });
             }}>
               Run the code

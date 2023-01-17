@@ -1,13 +1,21 @@
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
+import { getSessionToken } from "@shopify/app-bridge-utils";
 import { Page, Card, ResourceList, Icon, Text } from '@shopify/polaris';
 import { CircleRightMajor } from '@shopify/polaris-icons';
+
+import { _decodeSessionToken } from "../utils/my_util";
 
 // Index for all sample UIs using ResourceList as a link list.
 // See https://polaris.shopify.com/components/resource-list
 function Index() {
     const app = useAppBridge();
     const redirect = Redirect.create(app);
+    // Just using a session token for this? https://shopify.dev/apps/auth/oauth/session-tokens
+    getSessionToken(app).then((sessionToken) => {
+        console.log(`getSessionToken ${JSON.stringify(_decodeSessionToken(sessionToken), null, 4)}`);
+    });
+
     return (
         <Page>
             <Card>

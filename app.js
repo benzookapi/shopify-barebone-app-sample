@@ -73,6 +73,7 @@ router.get('/', async (ctx, next) => {
   const shop = ctx.request.query.shop;
 
   let shop_data = null;
+  let api_res = null;
   try {
     shop_data = await (getDB(shop));
     let install = false;
@@ -80,12 +81,14 @@ router.get('/', async (ctx, next) => {
       console.log("No shop data");
       install = true;
     } else {
-      let api_res = null;
       try {
         api_res = await (callGraphql(ctx, shop, `{
         shop {
           name
         }
+        app {
+          handle
+         }
       }`, null, GRAPHQL_PATH_ADMIN, null));
       } catch (e) { }
       if (api_res == null || typeof api_res.data.shop.name === UNDEFINED) {
@@ -104,12 +107,15 @@ router.get('/', async (ctx, next) => {
     return;
   }
 
-  // See https://shopify.dev/apps/store/security/iframe-protection
-  ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
-
+  // If this is an embedded access, rendering the page directly withiout redirection.
   // See https://shopify.dev/apps/auth/oauth/update 
-  // (Do not redirect from this endppoint because this is embedded one and if you want to redirect, use client redirtection with AppBridge JS / React library)
-  await ctx.render('index', {});
+  if (checkEmbedded(ctx)) {
+    // See https://shopify.dev/apps/store/security/iframe-protection
+    ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
+    return ctx.render('index', {});
+  }
+  // Otherwise, this is not embedded = full window outside iframe and use direct redirection. 
+  ctx.redirect(`https://admin.shopify.com/store/${getIdFromShop(shop)}/apps/${api_res.data.app.handle}`);
 
 });
 
@@ -161,7 +167,8 @@ router.get('/callback', async (ctx, next) => {
   } catch (e) { }
 
   // See https://shopify.dev/apps/auth/oauth/update
-  ctx.redirect(`https://admin.shopify.com/store/${shop.replace('.myshopify.com', '')}/apps/${api_res.data.app.handle}`);
+  // Do server side redirection because this is NOT embedded ("embedded" parameter is not passed).
+  ctx.redirect(`https://admin.shopify.com/store/${getIdFromShop(shop)}/apps/${api_res.data.app.handle}`);
 
 });
 
@@ -422,12 +429,12 @@ const checkSignature = function (json) {
 
 /* --- Check if the given signature is correct or not for app proxies --- */
 // See https://shopify.dev/apps/online-store/app-proxies#calculate-a-digital-signature
-const checkAppProxySignature = function(json) {
+const checkAppProxySignature = function (json) {
   let temp = JSON.parse(JSON.stringify(json));
   console.log(`checkAppProxySignature ${JSON.stringify(temp)}`);
   if (typeof temp.signature === UNDEFINED) return false;
   let sig = temp.signature;
-  delete temp.signature; 
+  delete temp.signature;
   let msg = Object.entries(temp).sort().map(e => e.join('=')).join('');
   //console.log(`checkAppProxySignature ${msg}`);
   const hmac = crypto.createHmac('sha256', HMAC_SECRET);
@@ -478,6 +485,20 @@ const checkAuthFetchToken = function (token) {
   let sig = encodeBase64(hmac.digest('base64'));
   console.log(`checkAuthFetchToken Recieved: ${signature} Created: ${sig}`);
   return [(signature === sig ? true : false), sig];
+};
+
+/* --- Check if the given request is embedded inside Shopify Admin or not --- */
+// See. https://shopify.dev/apps/auth/oauth/getting-started#check-for-and-escape-the-iframe-embedded-apps-only
+const checkEmbedded = function (ctx) {
+  const embedded = ctx.request.query.embedded;
+  // If the app is set embedded in the app settings, "embedded" is set "1", otherwise "0" or undefined.  
+  if (typeof embedded !== UNDEFINED && embedded == '1') return true;
+  return false;
+};
+
+/* --- Get the id from shop domain --- */
+const getIdFromShop = function (shop) {
+  return shop.replace('.myshopify.com', '');
 };
 
 /* --- Call Shopify GraphQL --- */
@@ -724,7 +745,7 @@ const setDBPostgreSQL = function (key, data) {
     });
     client.connect().then(function () {
       //console.log(`setDBPostgreSQL Connected: ${POSTGRESQL_URL}`);
-      const sql = `UPDATE ${POSTGRESQL_TABLE} ( data, updated_at ) VALUES ('${JSON.stringify(data)}', '${new Date().toISOString()}') WHERE _id = '${key}'`;
+      const sql = `UPDATE ${POSTGRESQL_TABLE} SET data = '${JSON.stringify(data)}', updated_at = '${new Date().toISOString()}' WHERE _id = '${key}'`;
       console.log(`setDBPostgreSQL:  ${sql}`);
       client.query(sql).then(function (res) {
         client.end();
