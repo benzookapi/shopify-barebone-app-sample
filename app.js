@@ -351,9 +351,10 @@ router.get('/adminlink', async (ctx, next) => {
 
 /* --- App proxies sample endpoint --- */
 // See https://shopify.dev/apps/online-store/app-proxies
+// NOTE THAT ngrok blocks the proxy by default, you have to use other platforms like Render, Fly.io, etc.
 router.get('/appproxy', async (ctx, next) => {
   console.log("+++++++++++++++ /appproxy +++++++++++++++");
-  console.log(`request ${JSON.stringify(ctx.request)}`);
+  console.log(`request ${JSON.stringify(ctx.request, null, 4)}`);
   if (!checkAppProxySignature(ctx.request.query)) {
     ctx.status = 400;
     return;
@@ -365,7 +366,7 @@ router.get('/appproxy', async (ctx, next) => {
   //ctx.body = `{{template}}`;
   ctx.set('Content-Type', 'application/json');
   ctx.body = {};
-  
+
 });
 
 /* 
