@@ -109,7 +109,7 @@ router.get('/', async (ctx, next) => {
 
   // If this is an embedded access, rendering the page directly withiout redirection.
   // See https://shopify.dev/apps/auth/oauth/update 
-  if (checkEmbedded(ctx)) {
+  if (isEmbedded(ctx)) {
     // See https://shopify.dev/apps/store/security/iframe-protection
     ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
     return ctx.render('index', {});
@@ -253,10 +253,9 @@ router.get('/adminlink', async (ctx, next) => {
   console.log("+++++++++++++++ /adminlink +++++++++++++++");
   console.log(`query ${JSON.stringify(ctx.request.query)}`);
 
-  const embedded = ctx.request.query.embedded;
   // If the app is set embedded in the app settings, "embedded" is set "1", otherwise "0" or undefined.
   // See. https://shopify.dev/apps/auth/oauth/getting-started#check-for-and-escape-the-iframe-embedded-apps-only
-  if (typeof embedded !== UNDEFINED && embedded == '1') {
+  if (isEmbedded(ctx)) {
     if (!checkSignature(ctx.request.query)) {
       ctx.status = 400;
       return;
@@ -487,9 +486,9 @@ const checkAuthFetchToken = function (token) {
   return [(signature === sig ? true : false), sig];
 };
 
-/* --- Check if the given request is embedded inside Shopify Admin or not --- */
+/* --- Whether the given request is embedded inside Shopify Admin or not --- */
 // See. https://shopify.dev/apps/auth/oauth/getting-started#check-for-and-escape-the-iframe-embedded-apps-only
-const checkEmbedded = function (ctx) {
+const isEmbedded = function (ctx) {
   const embedded = ctx.request.query.embedded;
   // If the app is set embedded in the app settings, "embedded" is set "1", otherwise "0" or undefined.  
   if (typeof embedded !== UNDEFINED && embedded == '1') return true;
