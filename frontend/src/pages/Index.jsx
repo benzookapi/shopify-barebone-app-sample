@@ -3,8 +3,6 @@ import { Redirect } from '@shopify/app-bridge/actions';
 import { Page, Card, ResourceList, Icon, Text } from '@shopify/polaris';
 import { CircleRightMajor } from '@shopify/polaris-icons';
 
-import { _decodeSessionToken } from "../utils/my_util";
-
 // Index for all sample UIs using ResourceList as a link list.
 // See https://polaris.shopify.com/components/resource-list
 function Index() {
