@@ -26,6 +26,7 @@ frontend/ ... React code base to be built by Vite for app admin UI. All built co
 
 --------- Extensions with Shopify CLI generation and deployment (Liquid/JavaScript/Wasm, etc.) ---------
 extensions/ ... automatically generated directory and code by Shopify CLI `npm run generate extension`.
+
   ./my-theme-app-ext ... Theme App Extensions sample following this turotial. https://shopify.dev/apps/online-store/theme-app-extensions/getting-started
 
 .env ... automatically generated file by CLI above too, which holds each generated extenstion id REUSABLE for other apps.
@@ -97,7 +98,7 @@ cd NGROK_DIR && ngrok http 3000
 ```
 CREATE TABLE shops ( _id VARCHAR NOT NULL PRIMARY KEY, data json NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL );
 ```
-6. For CLI generated extensions, execute `npm run dev -- --reset` and follow its instruction (choose your partner account, connecting to the exising app, etc.) which registers a draft extensions to your exising app. After the command starts successfully, exit with Ctrl+C and go to the created extension and enable the preview (it's enough for testing at development  stores).
+6. For CLI generated extensions, execute `npm run dev -- --reset` and follow its instruction (choose your partner account, connecting to the exising app, etc.) which registers a draft extensions to your exising app. After the command starts successfully, exit with Ctrl+C and go to the created extension in your partner dashboard and enable its dev. preview (it's enough for testing in development stores).
 
 7. For updating the extensions, execute `npm run deploy` to apply (upload) your local code to the created extensions.
 
