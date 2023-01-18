@@ -68,8 +68,8 @@ In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/co
 # How to run
 1. Add the following environmental variables locally or in cloud platforms like Render / Heroku / Fly, etc.
 ```
-  SHOPIFY_API_KEY:              YOUR_API_KEY (Copy and paste from your app settings in the partner dashbord)
-  SHOPIFY_API_SECRET:           YOUR_API_SECRET (Copy and paste from your app settings in the partner dashbord)
+  SHOPIFY_API_KEY:              YOUR_API_KEY (Copy and paste from your app settings in partner dashboard)
+  SHOPIFY_API_SECRET:           YOUR_API_SECRET (Copy and paste from your app settings in partner dashboard)
   SHOPIFY_API_VERSION:          2023-01
   SHOPIFY_API_SCOPES:           write_products,write_discounts,read_orders
 
