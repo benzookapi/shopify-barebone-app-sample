@@ -1,7 +1,11 @@
 # Overview
-A sample code for scratch building [Shopify app](https://shopify.dev/apps) _WITHOUT_ [CLI automatic cocde generation](https://shopify.dev/apps/getting-started/create).
+This is an unoffical sample code pakcage for scratch building [Shopify app](https://shopify.dev/apps) _WITHOUT_ [CLI automatic cocde generation](https://shopify.dev/apps/getting-started/create) for learing how it works with simple React and GraphQL knowledge.
 
-Read [this](https://shopify.dev/apps/auth/oauth/getting-started) first.
+Making clear, simple, and fewest code is this purpose that's why it doesn't use the CLI generated code.
+
+Reading [Shopify OAuth flow](https://shopify.dev/apps/auth/oauth/getting-started) might help you to grab the basic.
+
+For quick start with automatically generated code by the CLI, go to [this official CLI tutorial](https://shopify.dev/apps/getting-started/build-app-example).
 
 # Code structure
 ```
