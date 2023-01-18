@@ -47,7 +47,6 @@ For creating React frontend, the following contents might help you.
 - [Polaris Compoments by React](https://polaris.shopify.com/components)
 
 For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and Checkout Extensions, refer to the [app extensions](https://shopify.dev/apps/app-extensions) page.
-- 
 
 In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/commands#generate-extension) are given the following patch to fit to the existing non-CLI-generated codes.
 ```
