@@ -1,5 +1,5 @@
 # Overview
-This is _unoffical_ sample code for scratch building [Shopify app](https://shopify.dev/apps) _WITHOUT_ [CLI automatic cocde generation](https://shopify.dev/apps/getting-started/create) for learing how it works with simple React and GraphQL knowledge.
+This is _unoffical_ sample code for scratch building [Shopify app](https://shopify.dev/apps) _without_ [CLI automatic cocde generation](https://shopify.dev/apps/getting-started/create) for learing how it works with simple React and GraphQL knowledge.
 
 Making clear, simple, and fewest code is this purpose that's why it doesn't use the CLI generated code.
 
