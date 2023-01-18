@@ -105,7 +105,7 @@ CREATE TABLE shops ( _id VARCHAR NOT NULL PRIMARY KEY, data json NOT NULL, creat
 
 7. For updating the extensions, execute `npm run deploy` to apply (upload) your local code to the created extensions.
 
-8. (For live stores only, you need to create a version of the extension and publish it. See [this step](https://shopify.dev/apps/online-store/theme-app-extensions/getting-started#step-7-publish-the-theme-app-extension).)
+8. (For live stores only, you need to create a version of the extension and publish it. See [this step](https://shopify.dev/apps/deployment/extension).)
 
 
 # How to install
