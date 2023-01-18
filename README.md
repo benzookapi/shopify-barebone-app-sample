@@ -83,14 +83,14 @@ In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/co
   SHOPIFY_POSTGRESQL_URL:       postgres://YOUR_USER:YOUR_PASSWORD@YOUR_DOMAIN(:YOUR_PORT)/YOUR_DB_NAME
 ```
 
-2. Build and run the app server locally or in cloud platforms. All settings are described in ./package.json.
+2. Build and run the app server locally or in cloud platforms. All settings are described in 'package.json'.
 ```
 Build command = npm install && npm run build (= cd frontend && npm install && npm run build && rm -rf ../public && mv dist ../public && mv ../public/index.html ../views/index.html  *Replacing Koa view files with Vite buit code)
 
 Start command = npm run start (= node app.js)
 ```
 
-3. If you run locally, you need to ngrok tunnel for public URL as follows (otherwise, the commands above are usable in Render or other platform settings).
+3. If you run locally, you need to ngrok tunnel for public URL as follows (otherwise, the command lines above are usable in Render or other cloud platform deploy scripts).
 ```
 cd NGROK_DIR && ngrok http 3000
 ```
