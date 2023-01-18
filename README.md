@@ -26,6 +26,7 @@ frontend/ ... React code base to be built by Vite for app admin UI. All built co
 
 --------- Extensions with Shopify CLI generation and deployment (Liquid/JavaScript/Wasm, etc.) ---------
 extensions/ ... automatically generated directory and code by Shopify CLI `npm run generate extension`.
+  ./my-theme-app-ext ... Theme App Extensions sample following this turotial. https://shopify.dev/apps/online-store/theme-app-extensions/getting-started
 
 .env ... automatically generated file by CLI above too, which holds each generated extenstion id REUSABLE for other apps.
 
@@ -43,20 +44,20 @@ For creating React frontend, the following contents might help you.
 For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and Checkout Extensions, refer to the following page.
 - [App extensions](https://shopify.dev/apps/app-extensions)
 
-In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/commands#generate-extension) have some hacky ways for applying to the existing non-CLI-generated codes as bellow.
+In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/commands#generate-extension) are given the following patch to fit to the existing non-CLI-generated codes.
 ```
-1. Execute `npm install --save @shopify/app @shopify/cli` instead of `npm init @shopify/app@latest`, to add those library dependencies to 'package.json' avoiding overwriting the exising code.
+1. Execute `npm install --save @shopify/app @shopify/cli` instead of `npm init @shopify/app@latest`, to add those library to 'package.json' dependencies only, to avoid overwriting the exising code.
 
-2. Add the following script to 'package.json' "scripts" from another npm init generated app to execute extension commands.
+2. Copy the following script to "scripts" in 'package.json' to execute extension commands from the result of `npm init @shopify/app@latest` in another directory.
    "shopify": "shopify",
    "dev": "shopify app dev",
    "info": "shopify app info",
    "generate": "shopify app generate",
    "deploy": "shopify app deploy"
 
-3. Add 'shopify.app.toml' copied from another generated code too.
+3. Copy 'shopify.app.toml' to the root path from the result directory above too.
 
-4. For creating extensions to new apps from exsiting codes in '/extensions/', execute `npm run dev -- --reset` to make a draft extension, and enable "Development Store Preview" in the created extension setting of your partner dashboard 
+4. To register extensions to new apps from exsiting codes in '/extensions/', execute `npm run dev -- --reset` to make a draft extension, and enable "Development Store Preview" in the created extension in your partner dashboard 
 (NOTE THAT `npm generate extension` is for the initial code generation only, not required for the extension registration or push).
 ```
 
@@ -96,9 +97,11 @@ cd NGROK_DIR && ngrok http 3000
 ```
 CREATE TABLE shops ( _id VARCHAR NOT NULL PRIMARY KEY, data json NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL );
 ```
-6. For CLI generated extensions, execute `npm run dev -- --reset` to follow the instruction (choose your partner account, connecting to the exising app, etc.) which registers a draft extensions to your exising app. After the command starts successfully, exit with Ctrl+C and go to the created extension and enable the preview (for dev. store installs, it's enough for testing).
+6. For CLI generated extensions, execute `npm run dev -- --reset` and follow its instruction (choose your partner account, connecting to the exising app, etc.) which registers a draft extensions to your exising app. After the command starts successfully, exit with Ctrl+C and go to the created extension and enable the preview (it's enough for testing at development  stores).
 
 7. For updating the extensions, execute `npm run deploy` to apply (upload) your local code to the created extensions.
+
+8. (For live stores only, you need to create a version of the extension and publish it. See [this step](https://shopify.dev/apps/online-store/theme-app-extensions/getting-started#step-7-publish-the-theme-app-extension).)
 
 
 # How to install

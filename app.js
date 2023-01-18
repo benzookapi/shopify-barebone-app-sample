@@ -533,7 +533,7 @@ const setContentSecurityPolicy = function (ctx, shop) {
       }
     }
   }`, null, GRAPHQL_PATH_ADMIN, null).then(function (api_res) {
-    // In the future, dev. shop will be migrated to the admin below. In that time, this swtich will be no longer used.
+    // In the future, dev. shop will be migrated to the admin below. At that time, this swtich will be no longer used.
     if (api_res.data.shop.plan.partnerDevelopment == true) {
       ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop}`);
     } else {
