@@ -111,7 +111,8 @@ router.get('/', async (ctx, next) => {
   // See https://shopify.dev/apps/auth/oauth/update 
   if (isEmbedded(ctx)) {
     // See https://shopify.dev/apps/store/security/iframe-protection
-    ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
+    ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop}`);
+    //ctx.response.set('Content-Security-Policy', `frame-ancestors https://admin.shopify.com;`);
     return ctx.render('index', {});
   }
   // Otherwise, this is not embedded = full window outside iframe and use direct redirection. 
