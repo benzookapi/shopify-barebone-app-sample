@@ -97,11 +97,11 @@ cd NGROK_DIR && ngrok http 3000
 
 4. Set `YOUR_APP_URL` (your ngrok or other platform URL) and `YOUR_APP_URL/callback` to your app settings in [partner dashboard](https://partners.shopify.com/).
 
-5. (For PostgreSQL user only,) create the used table in your database (in `psql` command or other tools).
+5. (For PostgreSQL user only,) create the following table in your database (in `psql` command or other tools).
 ```
 CREATE TABLE shops ( _id VARCHAR NOT NULL PRIMARY KEY, data json NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL );
 ```
-6. For CLI generated extensions, execute `npm run dev -- --reset` and follow its instruction (choose your partner account, connecting to the exising app, etc.) which registers a draft extensions to your exising app. After the command starts successfully, exit with Ctrl+C and go to the created extension in your partner dashboard and enable its dev. preview (it's enough for testing in development stores).
+6. For CLI generated extensions, execute `npm run dev -- --reset` and follow its instruction (choose your partner account, connecting to the exising app, etc.) which registers a draft extensions to your exising app. After the command starts successfully, exit with Ctrl+C and go to the created extension in your [partner dashboard](https://partners.shopify.com/) and enable its dev. preview (it's enough for testing in development stores).
 
 7. For updating the extensions, execute `npm run deploy` to apply (upload) your local code to the created extensions.
 
