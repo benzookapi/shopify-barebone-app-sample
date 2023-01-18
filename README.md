@@ -95,7 +95,7 @@ Start command = npm run start (= node app.js)
 cd NGROK_DIR && ngrok http 3000
 ```
 
-4. Set `YOUR_APP_URL` (your ngrok or other platform URL) and `YOUR_APP_URL/callback` to your app settings.
+4. Set `YOUR_APP_URL` (your ngrok or other platform URL) and `YOUR_APP_URL/callback` to your app settings in [partner dashboard](https://partners.shopify.com/).
 
 5. (For PostgreSQL user only,) create the used table in your database (in `psql` command or other tools).
 ```
