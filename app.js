@@ -111,8 +111,7 @@ router.get('/', async (ctx, next) => {
   // See https://shopify.dev/apps/auth/oauth/update 
   if (isEmbedded(ctx)) {
     // See https://shopify.dev/apps/store/security/iframe-protection
-    //ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop}`);
-    ctx.response.set('Content-Security-Policy', `frame-ancestors https://admin.shopify.com;`);
+    setContentSecurityPolicy(ctx, shop);
     return ctx.render('index', {});
   }
   // Otherwise, this is not embedded = full window outside iframe and use direct redirection. 
@@ -243,7 +242,7 @@ router.get('/sessiontoken', async (ctx, next) => {
     return;
   }
   const shop = ctx.request.query.shop;
-  ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
+  setContentSecurityPolicy(ctx, shop);
   await ctx.render('index', {});
 
 });
@@ -345,7 +344,7 @@ router.get('/adminlink', async (ctx, next) => {
   // which is protected Shopify login if the access is by non logged in users or bot, etc. 
   // Check the code of frontennd/src/App.jsx, forceRedirect: true.
   const shop = ctx.request.query.shop;
-  ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
+  setContentSecurityPolicy(ctx, shop);
   await ctx.render('index', {});
 
 });
@@ -519,6 +518,30 @@ const isEmbedded = function (ctx) {
 /* --- Get the id from shop domain --- */
 const getIdFromShop = function (shop) {
   return shop.replace('.myshopify.com', '');
+};
+
+/* --- Set Content-Security-Policy header based on admin URL structure. --- */
+// See https://shopify.dev/apps/store/security/iframe-protection
+const setContentSecurityPolicy = function (ctx, shop) {
+  let api_res = null;
+  try {
+    api_res = await(callGraphql(ctx, shop, `{
+    shop {
+      name
+      plan {
+        displayName
+        partnerDevelopment
+        shopifyPlus
+      }
+    }
+  }`, null, GRAPHQL_PATH_ADMIN, null));
+  } catch (e) { }
+  // In the future, dev. shop will be migrated to the admin below. In that time, this swtich will be no longer used.
+  if (api_res.data.shop.plan.partnerDevelopment == true) {
+    ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop}`);
+  } else {
+    ctx.response.set('Content-Security-Policy', `frame-ancestors https://admin.shopify.com;`);
+  }
 };
 
 /* --- Call Shopify GraphQL --- */
