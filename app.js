@@ -257,6 +257,7 @@ router.get('/adminlink', async (ctx, next) => {
   // If the app is set embedded in the app settings, "embedded" is set "1", otherwise "0" or undefined.
   // See. https://shopify.dev/apps/auth/oauth/getting-started#check-for-and-escape-the-iframe-embedded-apps-only
   if (isEmbedded(ctx)) {
+    console.log('Embedded access');
     if (!checkSignature(ctx.request.query)) {
       ctx.status = 400;
       return;
@@ -264,6 +265,7 @@ router.get('/adminlink', async (ctx, next) => {
   } else {
     // Access by AppBride::authenticatedFetch
     if (typeof ctx.request.header.authorization !== UNDEFINED) {
+      console.log('Authenticated fetch');
       const token = getTokenFromAuthHeader(ctx);
 
       if (!checkAuthFetchToken(token)[0]) {
@@ -498,7 +500,7 @@ const getShopFromAuthToken = function (token) {
 // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#verify-the-session-tokens-signature
 const checkAuthFetchToken = function (token) {
   const [header, payload, signature] = token.split("\.");
-  //console.log(`checkAuthFetchToken header: ${header} payload: ${payload} signature: ${signature}`);
+  console.log(`checkAuthFetchToken header: ${header} payload: ${payload} signature: ${signature}`);
   const hmac = crypto.createHmac('sha256', HMAC_SECRET);
   hmac.update(`${header}.${payload}`);
   const encodeBase64 = function (b) { return b.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '') };
