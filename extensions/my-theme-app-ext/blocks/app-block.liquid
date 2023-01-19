@@ -13,7 +13,8 @@ https://github.com/Shopify/theme-extension-getting-started
     Barebone Theme App Extension with
     <a href="https://shopify.dev/apps/online-store/app-proxies" target="_blank">App Proxies</a>
   </h2>
-  <p>This is in `blocks/app-block.liquid'.</p>
+  <p>This is in
+    <b>`blocks/app-block.liquid'</b>.</p>
 </span>
 
 {% if request.design_mode %}
@@ -26,18 +27,22 @@ https://github.com/Shopify/theme-extension-getting-started
 <p>
   This is an
   <a href="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#app-blocks" target="_blank">
-    App block
+    App Block
   </a>
   because this schmema has "target": "section".
 </p>
 
 <div>
-  <h3>The selected product in the theme editor settings</h3>
-  <p>Title:
+  <h3>Your theme editor settings</h3>
+  <p>Product (id / title / price):
+    <b>{{ block.settings.product.id }}</b>
+    /
     <b>{{ block.settings.product.title }}</b>
+    /
+    <b>{{ block.settings.product.price }}</b>
   </p>
   <p>Text:
-    <b>{{ block.settings.text.value }}</b>
+    <b>{{ block.settings.text }}</b>
   </p>
 
   <p>
@@ -56,7 +61,7 @@ NOTE THAT if you add this app block to the home page, the product picker shows a
 without a metafield dynamic source, but if in the product page, the picker shows simple selector and metafield ones both.
 See the condtion in the document above.
 
-"target": "section" in schema means this is an app block as portable session anywhere in theme pages.
+"target": "section" in schema means this is an "App Block" as portable session anywhere in theme pages.
 
 In this sample, "type": "product" and "type": "text" are supposed to be metafields in product data.
 
@@ -80,8 +85,7 @@ In this sample, "type": "product" and "type": "text" are supposed to be metafiel
     }, {
       "type": "text",
       "id": "text",
-      "label": "Text",
-      "default": "Barebone app block message"
+      "label": "Text"
     }
   ]
 }
