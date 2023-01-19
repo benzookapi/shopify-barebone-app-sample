@@ -353,7 +353,7 @@ router.get('/adminlink', async (ctx, next) => {
 });
 
 /* --- Theme App Extension sample endpoint --- */
-// See 
+// See https://shopify.dev/apps/online-store/theme-app-extensions
 router.get('/themeappextension', async (ctx, next) => {
   console.log("+++++++++++++++ /themeappextension +++++++++++++++");
   //console.log(`query ${JSON.stringify(ctx.request.query)}`);

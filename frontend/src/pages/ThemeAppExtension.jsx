@@ -5,6 +5,7 @@ import { authenticatedFetch } from "@shopify/app-bridge-utils";
 import { Page, Card, Layout, Stack, Link, Badge, Text, Spinner } from '@shopify/polaris';
 
 // Theme App Extension sample with App Proxies
+// See https://shopify.dev/apps/online-store/theme-app-extensions
 function ThemeAppExtension() {
     const app = useAppBridge();
     //const redirect = Redirect.create(app);
