@@ -1,0 +1,35 @@
+<!-- barebone app: app-embed-block.liquid -->
+
+<!--
+See the useful documents.
+
+https://shopify.dev/themes/architecture/sections/app-blocks
+https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework
+
+https://github.com/Shopify/theme-extension-getting-started
+
+--><div style="position: fixed; bottom: 0; right: 0" class="_my_barebone_app_sample"> {{ "barebone.png" | asset_url | img_tag }}
+</div>
+
+
+<!--
+
+"target": "body" or "head" in schema means this is an app embed block as a theme wide fixed code.
+
+--><script>// NOTE THAT you cannot call external functions defined in 'assets/barebone.js' in <script> of blocks.
+</script>{% schema %}
+{
+  "name": "Barebone App Embed",
+  "target": "body",
+  "stylesheet": "barebone.css",
+  "javascript": "barebone.js",
+  "settings": [
+    {
+      "type": "text",
+      "id": "my_text",
+      "label": "Your message",
+      "default": "Barebone app embed block message"
+    }
+  ]
+}
+{% endschema %}

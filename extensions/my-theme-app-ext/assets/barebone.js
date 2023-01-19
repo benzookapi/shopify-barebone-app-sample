@@ -1,3 +1,3 @@
-function barebone_app_text (text) {
+const barebone_ext_func = function (text) {
     alert(text);
-};
+}

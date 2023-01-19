@@ -1,11 +1,19 @@
-<span style="color: {{ block.settings.color }}">
-  <p>
-    Barebone Theme App Extension Sample with
+<!-- barebone app: app-block.liquid -->
+
+<!--
+See the useful documents.
+
+https://shopify.dev/themes/architecture/sections/app-blocks
+https://shopify.dev/themes/architecture/settings/input-settings
+https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework
+
+https://github.com/Shopify/theme-extension-getting-started
+
+--><span style="color: {{ block.settings.color }}"> <h2>
+    Barebone Theme App Extension with
     <a href="https://shopify.dev/apps/online-store/app-proxies" target="_blank">App Proxies</a>
-  </p>
-  <p>
-    This is in `blocks/app-block.liquid' with the font color set by the color selector.
-  </p>
+  </h2>
+  <p>This is in `blocks/app-block.liquid'.</p>
 </span>
 
 {% if request.design_mode %}
@@ -13,21 +21,68 @@
   <p>I think you are viewing this app block within theme editor, right? &#x1f609</p>
 {% endif %}
 
-{% render "barebone_snippet" %}
+{% render 'barebone_snippet' %}
 
-{% schema %}
-  {
-    "name": "Barebone App Sample",
-    "target": "section",
-    "stylesheet": "barebone.css",
-    "javascript": "barebone.js",
-    "settings": [
-      {
-        "label": "Color",
-        "id": "color",
-        "type": "color",
-        "default": "#000000"
-      }
-    ]
-  }
+<p>
+  This is an
+  <a href="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#app-blocks" target="_blank">
+    App block
+  </a>
+  because this schmema has "target": "section".
+</p>
+
+<div>
+  <h3>The selected product in the theme editor settings</h3>
+  <p>Title:
+    <b>{{ block.settings.product.title }}</b>
+  </p>
+  <p>Text:
+    <b>{{ block.settings.text.value }}</b>
+  </p>
+
+  <p>
+    For details of Liquid, refer to the
+    <a href="https://shopify.dev/api/liquid" target="_blank">reference</a>
+  </p>
+</div>
+
+<!--
+See the useful documents.
+
+https://shopify.dev/themes/architecture/settings#dynamic-sources
+https://help.shopify.com/en/manual/data-extensions/metafields/displaying-metafields-on-your-online-store
+
+NOTE THAT if you add this app block to the home page, the product picker shows a simpple product selector only 
+without a metafield dynamic source, but if in the product page, the picker shows simple selector and metafield ones both.
+See the condtion in the document above.
+
+"target": "section" in schema means this is an app block as portable session anywhere in theme pages.
+
+In this sample, "type": "product" and "type": "text" are supposed to be metafields in product data.
+
+--><script>// NOTE THAT you cannot call external functions defined in 'assets/barebone.js' in <script> of blocks.
+</script>{% schema %}
+{
+  "name": "Barebone App Block",
+  "target": "section",
+  "stylesheet": "barebone.css",
+  "javascript": "barebone.js",
+  "settings": [
+    {
+      "label": "Color",
+      "id": "color",
+      "type": "color",
+      "default": "#000000"
+    }, {
+      "type": "product",
+      "id": "product",
+      "label": "Product"
+    }, {
+      "type": "text",
+      "id": "text",
+      "label": "Text",
+      "default": "Barebone app block message"
+    }
+  ]
+}
 {% endschema %}
