@@ -11,6 +11,7 @@ import '@shopify/polaris/build/esm/styles.css';
 import Index from './pages/Index';
 import SessionToken from './pages/SessionToken';
 import AdminLink from './pages/AdminLink';
+import ThemeAppExtension from './pages/ThemeAppExtension';
 
 // See https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup
 const config = {
@@ -118,6 +119,7 @@ function App() {
             <Route path="/" element={<Index />} />
             <Route path="/sessiontoken" element={<SessionToken />} />
             <Route path="/adminlink" element={<AdminLink />} />
+            <Route path="/themeappextension" element={<ThemeAppExtension />} />
           </Routes>
         </BrowserRouter>
         {/* Each page content comes here */}

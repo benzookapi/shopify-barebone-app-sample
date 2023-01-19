@@ -352,6 +352,22 @@ router.get('/adminlink', async (ctx, next) => {
 
 });
 
+/* --- Theme App Extension sample endpoint --- */
+// See 
+router.get('/themeappextension', async (ctx, next) => {
+  console.log("+++++++++++++++ /themeappextension +++++++++++++++");
+  //console.log(`query ${JSON.stringify(ctx.request.query)}`);
+  if (!checkSignature(ctx.request.query)) {
+    ctx.status = 400;
+    return;
+  }
+
+  const shop = ctx.request.query.shop;
+  setContentSecurityPolicy(ctx, shop);
+  await ctx.render('index', {});
+
+});
+
 /* --- App proxies sample endpoint --- */
 // See https://shopify.dev/apps/online-store/app-proxies
 // NOTE THAT ngrok blocks the proxy by default, you have to use other platforms like Render, Fly.io, etc.

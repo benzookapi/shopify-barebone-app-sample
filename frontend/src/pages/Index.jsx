@@ -34,6 +34,14 @@ function Index() {
                             name: 'Admin Link',
                             location: 'Admin Link sample with embedded / unnembedded handling',
                         },
+                        {
+                            id: 3,
+                            onClick: (id) => {
+                                redirect.dispatch(Redirect.Action.APP, '/themeappextension');
+                            },
+                            name: 'Theme App Extension',
+                            location: 'Theme App Extension with App Aproxies use cases',
+                        },
                     ]}
                     renderItem={(item) => {
                         const { id, onClick, name, location } = item;
