@@ -1,3 +1,13 @@
-._my_barebone_app_sample {
-    background-color: #ccffcc;
+._my_app_snippet {
+    background-color: #ccffcc;   
+}
+
+._my_app_embed_block {
+    position: fixed; bottom: 0; right: 0;
+    background-color: #e4d2a8;    
+}
+
+._my_app_embed_block_child {
+    width:400px;  
+    padding: 10px;
 }

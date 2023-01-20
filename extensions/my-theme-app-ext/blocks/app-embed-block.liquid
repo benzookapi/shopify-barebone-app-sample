@@ -4,32 +4,54 @@
 See the useful documents.
 
 https://shopify.dev/themes/architecture/sections/app-blocks
+
 https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework
+
+https://shopify.dev/themes/architecture/settings/input-settings
 
 https://github.com/Shopify/theme-extension-getting-started
 
---><div style="position: fixed; bottom: 0; right: 0" class="_my_barebone_app_sample"> {{ "barebone.png" | asset_url | img_tag }}
+--><div class="_my_app_embed_block"> {{ "barebone.png" | asset_url | img_tag }}
+  <div class="_my_app_embed_block_child">shown in
+    <b>`blocks/app-embed-block.liquid'</b><br/>
+    as
+    <a href="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#app-embed-blocks" target="_blank">
+      App Embed Block
+    </a>
+    with
+    <b>"target": "body"</b><br/>
+    in the color defined by value of
+    <b>'assets/barebone.css'</b>.
+
+    <h3>Values of
+      <b>'block.settings.text'</b>
+    </h3>
+    <p>Your message:
+      <b>{{ block.settings.text }}</b>
+    </p>
+  </div>
 </div>
-
-
 <!--
 
 "target": "body" or "head" in schema means this is an "App Embed Block" as a theme wide fixed code.
 
---><script>// NOTE THAT you cannot call external functions defined in 'assets/barebone.js' in <script> of blocks.
-</script>{% schema %}
-{
-  "name": "Barebone App Embed",
-  "target": "body",
-  "stylesheet": "barebone.css",
-  "javascript": "barebone.js",
-  "settings": [
-    {
-      "type": "text",
-      "id": "text",
-      "label": "Your message",
-      "default": "Barebone app embed block message"
-    }
-  ]
-}
+--><script>
+  // NOTE THAT you cannot call external functions defined in 'assets/***.js' in <script> of blocks.
+  console.log("blocks/app-embed-block.liquid");
+</script>
+{% schema %}
+  {
+    "name": "Barebone App Embed",
+    "target": "body",
+    "stylesheet": "barebone.css",
+    "javascript": "barebone.js",
+    "settings": [
+      {
+        "type": "text",
+        "id": "text",
+        "label": "Your message",
+        "default": "Barebone app embed block message"
+      }
+    ]
+  }
 {% endschema %}

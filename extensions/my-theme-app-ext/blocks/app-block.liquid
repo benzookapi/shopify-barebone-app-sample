@@ -4,36 +4,44 @@
 See the useful documents.
 
 https://shopify.dev/themes/architecture/sections/app-blocks
-https://shopify.dev/themes/architecture/settings/input-settings
+
 https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework
+
+https://shopify.dev/themes/architecture/settings/input-settings
 
 https://github.com/Shopify/theme-extension-getting-started
 
---><span style="color: {{ block.settings.color }}"> <h2>
-    Barebone Theme App Extension with
-    <a href="https://shopify.dev/apps/online-store/app-proxies" target="_blank">App Proxies</a>
-  </h2>
-  <p>This is in
-    <b>`blocks/app-block.liquid'</b>.</p>
+--><h2>
+  Barebone Theme App Extension with
+    <a href="https://shopify.dev/apps/online-store/app-proxies" target="_blank"> App Proxies</a>
+</h2>
+<!-- NOTE THAT you cannot write liquid variables in 'assets/***.css' like "span { color: {{ block.settings.color }}; } -->
+<span style="color: {{ block.settings.color }}">
+  <p>shown in
+    <b>`blocks/app-block.liquid'</b>
+    as
+    <a href="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#app-blocks" target="_blank">
+      App Block
+    </a>
+    with
+    <b>"target": "section"</b>
+    in the color defined by value of
+    <b>'block.settings.color'</b>.
+  </p>
 </span>
 
 {% if request.design_mode %}
   <!-- This will only render in the theme editor -->
-  <p>I think you are viewing this app block within theme editor, right? &#x1f609</p>
+  <p>"I think you are viewing this app block within theme editor, right? &#x1f609"</p>
 {% endif %}
 
-{% render 'barebone_snippet' %}
-
-<p>
-  This is an
-  <a href="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#app-blocks" target="_blank">
-    App Block
-  </a>
-  because this schmema has "target": "section".
-</p>
-
 <div>
-  <h3>Your theme editor settings</h3>
+  <h3>Values of
+    <b>'block.settings.product'</b>
+    and
+    <b>'block.settings.text'</b>
+  </h3>
+  <!-- See https://shopify.dev/api/liquid -->
   <p>Product (id / title / price):
     <b>{{ block.settings.product.id }}</b>
     /
@@ -44,17 +52,20 @@ https://github.com/Shopify/theme-extension-getting-started
   <p>Text:
     <b>{{ block.settings.text }}</b>
   </p>
-
-  <p>
-    For details of Liquid, refer to the
-    <a href="https://shopify.dev/api/liquid" target="_blank">reference</a>
-  </p>
 </div>
+
+<!-- Including snippets -->
+{% render 'barebone_snippet' %}
+
+
 
 <!--
 See the useful documents.
 
+https://shopify.dev/themes/architecture/sections/app-blocks
+
 https://shopify.dev/themes/architecture/settings#dynamic-sources
+
 https://help.shopify.com/en/manual/data-extensions/metafields/displaying-metafields-on-your-online-store
 
 NOTE THAT if you add this app block to the home page, the product picker shows a simpple product selector only 
@@ -65,28 +76,31 @@ See the condtion in the document above.
 
 In this sample, "type": "product" and "type": "text" are supposed to be metafields in product data.
 
---><script>// NOTE THAT you cannot call external functions defined in 'assets/barebone.js' in <script> of blocks.
-</script>{% schema %}
-{
-  "name": "Barebone App Block",
-  "target": "section",
-  "stylesheet": "barebone.css",
-  "javascript": "barebone.js",
-  "settings": [
-    {
-      "label": "Color",
-      "id": "color",
-      "type": "color",
-      "default": "#000000"
-    }, {
-      "type": "product",
-      "id": "product",
-      "label": "Product"
-    }, {
-      "type": "text",
-      "id": "text",
-      "label": "Text"
-    }
-  ]
-}
+--><script>
+  // NOTE THAT you cannot call external functions defined in 'assets/***.js' in <script> of blocks.
+  console.log("blocks/app-block.liquid");
+</script>
+{% schema %}
+  {
+    "name": "Barebone App Block",
+    "target": "section",
+    "stylesheet": "barebone.css",
+    "javascript": "barebone.js",
+    "settings": [
+      {
+        "label": "Color",
+        "id": "color",
+        "type": "color",
+        "default": "#000000"
+      }, {
+        "type": "product",
+        "id": "product",
+        "label": "Product"
+      }, {
+        "type": "text",
+        "id": "text",
+        "label": "Text"
+      }
+    ]
+  }
 {% endschema %}
