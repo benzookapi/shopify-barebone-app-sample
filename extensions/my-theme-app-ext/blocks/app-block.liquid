@@ -17,7 +17,7 @@ https://github.com/Shopify/theme-extension-getting-started
 </h2>
 <!-- NOTE THAT you cannot write liquid variables in 'assets/***.css' like "span { color: {{ block.settings.color }}; } -->
 <span style="color: {{ block.settings.color }}">
-  <p>shown in
+  <p class="_my_app_block">shown in
     <b>`blocks/app-block.liquid'</b>
     as
     <a href="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#app-blocks" target="_blank">
@@ -32,10 +32,10 @@ https://github.com/Shopify/theme-extension-getting-started
 
 {% if request.design_mode %}
   <!-- This will only render in the theme editor -->
-  <p>"I think you are viewing this app block within theme editor, right? &#x1f609"</p>
+  <p class="_my_app_block_editor">"I think you are viewing this app block within theme editor, right? &#x1f609"</p>
 {% endif %}
 
-<div>
+<div class="_my_app_block">
   <!-- See https://shopify.dev/api/liquid -->
   <p>
     <b>'block.settings.product'</b>

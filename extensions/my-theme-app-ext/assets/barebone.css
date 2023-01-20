@@ -1,3 +1,11 @@
+._my_app_block {
+    border-style: solid;
+}
+
+._my_app_block_editor {
+    border-style: dotted;
+}
+
 ._my_app_snippet {
     background-color: #ccffcc;   
 }
@@ -11,3 +19,4 @@
     width:400px;  
     padding: 10px;
 }
+
