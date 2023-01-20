@@ -1,5 +1,7 @@
 ._my_app_block {
     border-style: solid;
+    padding: 10px;
+    margin: 10px;
 }
 
 ._my_app_block_editor {
@@ -7,7 +9,8 @@
 }
 
 ._my_app_snippet {
-    background-color: #ccffcc;   
+    background-color: #ccffcc; 
+    padding: 10px;  
 }
 
 ._my_app_embed_block {

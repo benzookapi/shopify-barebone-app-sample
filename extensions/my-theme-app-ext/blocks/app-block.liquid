@@ -11,55 +11,57 @@ https://shopify.dev/themes/architecture/settings/input-settings
 
 https://github.com/Shopify/theme-extension-getting-started
 
---><h2>
-  Barebone Theme App Extension with
-    <a href="https://shopify.dev/apps/online-store/app-proxies" target="_blank"> App Proxies</a>
-</h2>
-<!-- NOTE THAT you cannot write liquid variables in 'assets/***.css' like "span { color: {{ block.settings.color }}; } -->
-<span style="color: {{ block.settings.color }}">
-  <p class="_my_app_block">shown in
-    <b>`blocks/app-block.liquid'</b>
-    as
-    <a href="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#app-blocks" target="_blank">
-      App Block
-    </a>
-    with
-    <b>"target": "section"</b>
-    in the color defined by value of
-    <b>'block.settings.color'</b>.
-  </p>
+--><!-- NOTE THAT you cannot write liquid variables in 'assets/***.css' like "span { color: {{ block.settings.color }}; } -->
+  <span style="color: {{ block.settings.color }}"> <div class="_my_app_block">
+
+    <h2>
+      Barebone Theme App Extension with
+      <a href="https://shopify.dev/apps/online-store/app-proxies" target="_blank">
+        App Proxies</a>
+    </h2>
+
+    <p>shown in
+      <b>`blocks/app-block.liquid'</b>
+      as an
+      <a href="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#app-blocks" target="_blank">
+        app block
+      </a>
+      with
+      <b>"target": "section"</b>
+      with the color defined by value of
+      <b>'block.settings.color'</b>.
+    </p>
+
+
+    {% if request.design_mode %}
+      <!-- This will only render in the theme editor -->
+      <p class="_my_app_block_editor">"I think you are viewing this app block within theme editor, right? &#x1f609"</p>
+    {% endif %}
+
+    <!-- See https://shopify.dev/api/liquid -->
+    <p>
+      <b>'block.settings.product'</b>
+      in "Product":
+      <b>{{ block.settings.product.id }}</b>
+      (id) 
+      /
+      <b>{{ block.settings.product.title }}</b>
+      (title) 
+      /
+      <b>{{ block.settings.product.price }}</b>
+      (price)
+    </p>
+    <p>
+      <b>'block.settings.text'</b>
+      in "Text":
+      <b>{{ block.settings.text }}</b>
+    </p>
+
+    <!-- Including snippets -->
+    {% render 'barebone_snippet' %}
+
+  </div>
 </span>
-
-{% if request.design_mode %}
-  <!-- This will only render in the theme editor -->
-  <p class="_my_app_block_editor">"I think you are viewing this app block within theme editor, right? &#x1f609"</p>
-{% endif %}
-
-<div class="_my_app_block">
-  <!-- See https://shopify.dev/api/liquid -->
-  <p>
-    <b>'block.settings.product'</b>
-    in "Product":
-    <b>{{ block.settings.product.id }}</b>
-    (id) 
-    /
-    <b>{{ block.settings.product.title }}</b>
-    (title) 
-    /
-    <b>{{ block.settings.product.price }}</b>
-    (price)
-  </p>
-  <p>
-    <b>'block.settings.text'</b>
-    in "Text":
-    <b>{{ block.settings.text }}</b>
-  </p>
-</div>
-
-<!-- Including snippets -->
-{% render 'barebone_snippet' %}
-
-
 
 <!--
 See the useful documents.
