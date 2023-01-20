@@ -1,3 +1,7 @@
+/*
+You cannot write code like "color: {{block.settings.color}};" with liquid here.
+*/
+
 ._my_app_block {
     border-style: solid;
     padding: 10px;

@@ -13,25 +13,20 @@ https://github.com/Shopify/theme-extension-getting-started
 
 --><!-- NOTE THAT you cannot write liquid variables in 'assets/***.css' like "span { color: {{ block.settings.color }}; } -->
   <span style="color: {{ block.settings.color }}"> <div class="_my_app_block">
-
-    <h2>
-      Barebone Theme App Extension with
-      <a href="https://shopify.dev/apps/online-store/app-proxies" target="_blank">
-        App Proxies</a>
-    </h2>
-
-    <p>shown in
-      <b>`blocks/app-block.liquid'</b>
-      as an
+    <p>
+      Theme App Extension
       <a href="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#app-blocks" target="_blank">
         App Block
       </a>
       with
       <b>"target": "section"</b>
+    </p>
+    <p>
+      in
+      <b>`blocks/app-block.liquid'</b>
       with the color defined by value of
       <b>'block.settings.color'</b>.
     </p>
-
 
     {% if request.design_mode %}
       <!-- This will only render in the theme editor -->
@@ -39,23 +34,25 @@ https://github.com/Shopify/theme-extension-getting-started
     {% endif %}
 
     <!-- See https://shopify.dev/api/liquid -->
-    <p>
-      <b>'block.settings.product'</b>
-      in "Product":
-      <b>{{ block.settings.product.id }}</b>
-      (id) 
-      /
-      <b>{{ block.settings.product.title }}</b>
-      (title) 
-      /
-      <b>{{ block.settings.product.price }}</b>
-      (price)
-    </p>
-    <p>
-      <b>'block.settings.text'</b>
-      in "Text":
-      <b>{{ block.settings.text }}</b>
-    </p>
+    <ul>
+      <li>
+        <b>'block.settings.product'</b>
+        in "Product":
+        <b>{{ block.settings.product.id }}</b>
+        (id) 
+        /
+        <b>{{ block.settings.product.title }}</b>
+        (title) 
+        /
+        <b>{{ block.settings.product.price }}</b>
+        (price)
+      </li>
+      <li>
+        <b>'block.settings.text'</b>
+        in "Text":
+        <b>{{ block.settings.text }}</b>
+      </li>
+    </ul>
 
     <!-- Including snippets -->
     {% render 'barebone_snippet' %}

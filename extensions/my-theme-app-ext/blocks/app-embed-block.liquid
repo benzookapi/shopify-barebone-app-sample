@@ -12,22 +12,28 @@ https://shopify.dev/themes/architecture/settings/input-settings
 https://github.com/Shopify/theme-extension-getting-started
 
 --><div class="_my_app_embed_block"> {{ "barebone.png" | asset_url | img_tag }}
-  <div class="_my_app_embed_block_child">shown in
-    <b>`blocks/app-embed-block.liquid'</b><br/>
-    as an
-    <a href="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#app-embed-blocks" target="_blank">
-      App Embed Block
-    </a>
-    with
-    <b>"target": "body"</b><br/>
-    with the back ground color defined by value of
-    <b>'assets/barebone.css'</b>.
-
+  <div class="_my_app_embed_block_child">
     <p>
-      <b>'block.settings.text'</b>
-      in "Your message":
-      <b>{{ block.settings.text }}</b>
+      Theme App Extension
+      <a href="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#app-embed-blocks" target="_blank">
+        App Embed Block
+      </a>
+      with
+      <b>"target": "body"</b>
     </p>
+    <p>
+      in
+      <b>`blocks/app-embed-block.liquid'</b>
+      with the back ground color defined by value of
+      <b>'assets/barebone.css'</b>.
+    </p>
+    <ul>
+      <li>
+        <b>'block.settings.text'</b>
+        in "Your message":
+        <b>{{ block.settings.text }}</b>
+      </li>
+    </ul>
   </div>
 </div>
 <!--
