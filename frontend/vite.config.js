@@ -8,6 +8,7 @@ export default defineConfig({
   },
   plugins: [react()],
   define: {
-    "API_KEY": JSON.stringify(process.env.SHOPIFY_API_KEY)
+    "API_KEY": JSON.stringify(process.env.SHOPIFY_API_KEY),
+    "MY_THEME_APP_EXT_ID": JSON.stringify(process.env.SHOPIFY_MY_THEME_APP_EXT_ID)
   },
 })

@@ -81,6 +81,9 @@ In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/co
 
   // The followings are required if you set SHOPIFY_DB_TYPE 'POSTGRESQL'
   SHOPIFY_POSTGRESQL_URL:       postgres://YOUR_USER:YOUR_PASSWORD@YOUR_DOMAIN(:YOUR_PORT)/YOUR_DB_NAME
+
+  SHOPIFY_JWT_SECRET            YOUR_PREFERRED_ASCII_TEXT (e.g. benzookapi, 12345678, etc)
+  SHOPIFY_MY_THEME_APP_EXT_ID   Copy the value from '.env'
 ```
 
 2. Build and run the app server locally or in cloud platforms. All settings are described in 'package.json'.
