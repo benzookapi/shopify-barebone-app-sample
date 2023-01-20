@@ -36,20 +36,22 @@ https://github.com/Shopify/theme-extension-getting-started
 {% endif %}
 
 <div>
-  <h3>Values of
-    <b>'block.settings.product'</b>
-    and
-    <b>'block.settings.text'</b>
-  </h3>
   <!-- See https://shopify.dev/api/liquid -->
-  <p>Product (id / title / price):
+  <p>
+    <b>'block.settings.product'</b>
+    in "Product":
     <b>{{ block.settings.product.id }}</b>
+    (id) 
     /
     <b>{{ block.settings.product.title }}</b>
+    (title) 
     /
     <b>{{ block.settings.product.price }}</b>
+    (price)
   </p>
-  <p>Text:
+  <p>
+    <b>'block.settings.text'</b>
+    in "Text":
     <b>{{ block.settings.text }}</b>
   </p>
 </div>
