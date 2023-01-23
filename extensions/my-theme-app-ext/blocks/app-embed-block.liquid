@@ -34,9 +34,6 @@ https://github.com/Shopify/theme-extension-getting-started
         <b>{{ block.settings.text }}</b>
       </li>
     </ul>
-
-    <div id="_my_app_embed_block_js_respose"></div>
-
   </div>
 </div>
 <!--
@@ -44,8 +41,24 @@ https://github.com/Shopify/theme-extension-getting-started
 "target": "body" or "head" in schema means this is an "App Embed Block" as a theme wide fixed code.
 
 --><script>
-  // NOTE THAT you cannot call external functions defined in 'assets/***.js' in <script> of blocks.
+  // Note that you cannot call external functions defined in 'assets/***.js' in <script> of blocks.
+// App embed block is singleton, so this <script> must be inserted one time.
+
   console.log("blocks/app-embed-block.liquid");
+
+  const shopUrl = '{{shop.secure_url}}';
+
+// App proxy path for each shop can be edit by merchants, so you need to get the path from config or other way for real apps.
+  const appProxyUrl = `${shopUrl}/apps/bareboneproxy`;
+
+  console.log(`Accessing ${appProxyUrl} ...`);
+
+  var httpClient = new XMLHttpRequest();
+  httpClient.open("GET", appProxyUrl, false);
+  httpClient.send(null);
+  const res = JSON.parse(httpClient.responseText);
+
+  console.log(JSON.stringify(res, null, 4));
 </script>
 {% schema %}
   {

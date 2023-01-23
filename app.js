@@ -12,10 +12,6 @@ const crypto = require('crypto');
 const mongo = require('mongodb');
 const { Client } = require('pg');
 
-// Server side JWT encoding / decoding with our secret key.
-const jwt = require('jsonwebtoken');
-
-// Client side JWT shared with App Brige React code
 const jwt_decode = require('jwt-decode');
 
 const router = new Router();
@@ -62,9 +58,6 @@ const MONGO_COLLECTION = 'shops';
 // PostgreSQL Settings
 const POSTGRESQL_URL = `${process.env.SHOPIFY_POSTGRESQL_URL}`;
 const POSTGRESQL_TABLE = 'shops';
-
-// Server side JWT token secret
-const JWT_SECRET = `${process.env.SHOPIFY_JWT_SECRET}`;
 
 /* --- App top URL reigstered as the base one in the app settings in partner dashbord. --- */
 // See https://shopify.dev/apps/auth/oauth/getting-started
@@ -554,16 +547,6 @@ const setContentSecurityPolicy = function (ctx, shop) {
   } else {
     ctx.response.set('Content-Security-Policy', `frame-ancestors 'none';`);
   }
-};
-
-/* --- Create JWT to pass data encoded through URL access --- */
-const createJWT = function (json) {
-  return jwt.sign(json, JWT_SECRET, { expiresIn: '1h' });
-};
-
-/* --- Decode JWT passed through URL access --- */
-const decodeJWT = function (token) {
-  return jwt.verify(token, JWT_SECRET);
 };
 
 /* --- Call Shopify GraphQL --- */

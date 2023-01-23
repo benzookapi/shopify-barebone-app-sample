@@ -57,7 +57,8 @@ https://github.com/Shopify/theme-extension-getting-started
     <!-- Including snippets -->
     {% render 'barebone_snippet' %}
 
-    <div id="_my_app_block_js_respose"></div>
+    <!-- Note that app embed is a section which can be some in the whole theme storefornt HTML in browsers, so you canot use 'id'. -->
+    <div class="barebone_app_proxy_response"></div>
 
   </div>
 </span>
@@ -79,9 +80,14 @@ See the condtion in the document above.
 
 In this sample, "type": "product" and "type": "text" are supposed to be metafields in product data.
 
---><script type="text/javascript" defer="defer">
-  // NOTE THAT you cannot call external functions defined in 'assets/***.js' in <script> of blocks.
-  console.log("blocks/app-block.liquid");  
+--><script type="text/javascript">
+  // Note that you cannot call external functions defined in 'assets/***.js' in <script> of blocks.  
+  // Also,imported script files by each block are global in theme storefront in browsers, which means 
+  // any object are global scopes that cannot conflicts with others.
+  // For exmple, this <script> is possible to be inserted multiply if the merchant add multiple sections in the theme editor.
+
+  console.log("blocks/app-block.liquid");    
+
 </script>
 {% schema %}
   {
