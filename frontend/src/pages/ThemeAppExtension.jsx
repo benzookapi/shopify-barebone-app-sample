@@ -40,7 +40,7 @@ function ThemeAppExtension() {
                             <List.Item>Go to the app block section in the theme editor to set color and products using the metafields above with
                                 <Link url={`https://help.shopify.com/en/manual/online-store/themes/theme-structure/sections-and-blocks`} external={true}>Dynamic sources</Link></List.Item>
                             <List.Item>
-                                Don't forget to set each metafield to each product which you test to show its value in the theme app extension in theme.
+                                Don't forget to set Metafields to <Link url={`https://${_getAdminFromShop(shop)}/products`} external={true}>Products</Link> to show its value in the theme app extension in theme.
                             </List.Item>
                         </List>
                     </Layout.Section>
