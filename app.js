@@ -99,7 +99,8 @@ router.get('/', async (ctx, next) => {
     if (install) {
       // See https://shopify.dev/apps/auth/oauth/getting-started
       console.log(`Redirecting to OAuth flow for ${shop}...`);
-      ctx.redirect(`https://${shop}/admin/oauth/authorize?client_id=${API_KEY}&scope=${API_SCOPES}&redirect_uri=https://${ctx.request.hostname}/callback&state=&grant_options[]=`);
+      //ctx.redirect(`https://${shop}/admin/oauth/authorize?client_id=${API_KEY}&scope=${API_SCOPES}&redirect_uri=https://${ctx.request.hostname}/callback&state=&grant_options[]=`);
+      ctx.redirect(`https://${getAdminFromShop(shop)}/oauth/authorize?client_id=${API_KEY}&scope=${API_SCOPES}&redirect_uri=https://${ctx.request.hostname}/callback&state=&grant_options[]=`);
       return;
     }
   } catch (e) {
@@ -115,7 +116,7 @@ router.get('/', async (ctx, next) => {
     return ctx.render('index', {});
   }
   // Otherwise, this is not embedded = full window outside iframe and use direct redirection. 
-  ctx.redirect(`https://admin.shopify.com/store/${getIdFromShop(shop)}/apps/${api_res.data.app.handle}`);
+  ctx.redirect(`https://${getAdminFromShop(shop)}/apps/${api_res.data.app.handle}`);
 
 });
 
@@ -136,6 +137,7 @@ router.get('/callback', async (ctx, next) => {
 
   let res = null;
   try {
+    // API endpoints including this access token one keep the myshopify.com domains.
     res = await (accessEndpoint(ctx, `https://${shop}/admin/oauth/access_token`, req, null, CONTENT_TYPE_FORM));
     if (typeof res.access_token === UNDEFINED) {
       ctx.status = 500;
@@ -558,6 +560,13 @@ const isEmbedded = function (ctx) {
 /* --- Get the id from shop domain --- */
 const getIdFromShop = function (shop) {
   return shop.replace('.myshopify.com', '');
+};
+
+/* --- Get Admin domain and path from shop domain --- */
+// See https://shopify.dev/apps/tools/app-bridge/updating-overview#ensure-compatibility-with-the-new-shopify-admin-domain
+// See https://www.shopify.com/partners/blog/september-product-updates-for-partners-and-developers
+const getAdminFromShop = function(shop) {
+  return `admin.shopify.com/store/${getIdFromShop(shop)}`;
 };
 
 /* --- Set Content-Security-Policy header for admin embedded types --- */
