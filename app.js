@@ -171,7 +171,7 @@ router.get('/callback', async (ctx, next) => {
   // See https://shopify.dev/apps/auth/oauth/update
   // Do server side redirection because this is NOT embedded ("embedded" parameter is not passed).
   // See https://shopify.dev/apps/tools/app-bridge/updating-overview#ensure-compatibility-with-the-new-shopify-admin-domain
-  ctx.redirect(`https://admin.shopify.com/store/${getIdFromShop(shop)}/apps/${api_res.data.app.handle}`);
+  ctx.redirect(`https://${getAdminFromShop(shop)}/apps/${api_res.data.app.handle}`);
 
 });
 
@@ -565,7 +565,7 @@ const getIdFromShop = function (shop) {
 /* --- Get Admin domain and path from shop domain --- */
 // See https://shopify.dev/apps/tools/app-bridge/updating-overview#ensure-compatibility-with-the-new-shopify-admin-domain
 // See https://www.shopify.com/partners/blog/september-product-updates-for-partners-and-developers
-const getAdminFromShop = function(shop) {
+const getAdminFromShop = function (shop) {
   return `admin.shopify.com/store/${getIdFromShop(shop)}`;
 };
 
