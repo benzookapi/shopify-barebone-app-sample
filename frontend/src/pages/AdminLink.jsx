@@ -4,7 +4,7 @@ import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
 import { Page, Card, Layout, Stack, Link, Badge, Text, Spinner } from '@shopify/polaris';
 
-import { _decodeSessionToken, _getShopFromQuery } from "../utils/my_util";
+import { _decodeSessionToken, _getAdminFromShop, _getShopFromQuery } from "../utils/my_util";
 
 // Admin link sample with App Bridge redirection
 // See https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup
@@ -81,7 +81,7 @@ function AdminLink() {
             <Card title="Step 3: Add an admin link" sectioned={true}>
                 <p>
                     Add <Badge>{`${rawUrl}`}</Badge> to <Link url="https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link" external={true}>Admin Link extension</Link> on the app extension settings and
-                    go to your linked pages like <Link url={`https://admin.shopify.com/store/${shop.replace('.myshopify.com', '')}/products`} external={true}>Products</Link>.
+                    go to your linked pages like <Link url={`https://${_getAdminFromShop(shop)}/products`} external={true}>Products</Link>.
                     Once you click your extension label in <Badge status="info">More actions</Badge>, this page shows up again in a diffrent UI checking if the <Badge status="info">id</Badge> parameter (<b>note that "id" is given by detail page links only</b>) is given from there.
                 </p>
             </Card>

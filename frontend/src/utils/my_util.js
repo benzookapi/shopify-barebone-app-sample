@@ -8,3 +8,6 @@ export function _getShopFromQuery(window) {
     return new URLSearchParams(window.location.search).get("shop");
 }
 
+export function _getAdminFromShop(shop) {
+    return `admin.shopify.com/store/${shop.replace('.myshopify.com', '')}`;
+}

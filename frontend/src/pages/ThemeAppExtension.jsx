@@ -2,7 +2,7 @@ import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { Page, Card, Layout, Link, Badge, List, Button } from '@shopify/polaris';
 
-import { _getShopFromQuery } from "../utils/my_util";
+import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
 // Theme App Extension sample with App Proxies
 // See https://shopify.dev/apps/online-store/theme-app-extensions
@@ -35,9 +35,10 @@ function ThemeAppExtension() {
                     </Layout.Section>
                     <Layout.Section>
                         <List type="bullet">
-                            <List.Item>Yellow shirt</List.Item>
-                            <List.Item>Red shirt</List.Item>
-                            <List.Item>Green shirt</List.Item>
+                            <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/metafields`} external={true}>Metafields</Link> for products as
+                             in type of <Badge>Product</Badge> and <Badge>Text</Badge></List.Item>
+                             <List.Item>Go to the app block section in the theme editor to set color and products using the metafields anove with 
+                                <Link url={`https://help.shopify.com/en/manual/online-store/themes/theme-structure/sections-and-blocks`} external={true}>Dynamic sources</Link></List.Item>
                         </List>
                     </Layout.Section>
                 </Layout>

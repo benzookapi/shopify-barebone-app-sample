@@ -13,6 +13,8 @@ import SessionToken from './pages/SessionToken';
 import AdminLink from './pages/AdminLink';
 import ThemeAppExtension from './pages/ThemeAppExtension';
 
+import { _getAdminFromShop } from "./utils/my_util";
+
 // See https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup
 const config = {
   apiKey: API_KEY, // See ../vite.config.js
@@ -26,7 +28,7 @@ const config = {
 // See https://shopify.dev/apps/auth/oauth/getting-started#step-6-redirect-to-your-apps-ui
 if (config.host == null) {
   console.log(`The config.host is null, being set from 'shop'.`);
-  config.host = window.btoa(`admin.shopify.com/store/${new URLSearchParams(window.location.search).get("shop").replace('.myshopify.com', '')}`).replace('=', '');
+  config.host = window.btoa(_getAdminFromShop(new URLSearchParams(window.location.search).get("shop"))).replace('=', '');
 }
 
 console.log(`AppBrige settings: config.apiKey [${config.apiKey}] config.host [${config.host}] config.forceRedirect [${config.forceRedirect}]`);
