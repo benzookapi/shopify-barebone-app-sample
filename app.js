@@ -382,12 +382,19 @@ router.get('/appproxy', async (ctx, next) => {
     return;
   }
 
-  const shop = ctx.request.query.shop;
+  // Use this for API calls.
+  //const shop = ctx.request.query.shop;
+  //const customerId = ctx.request.query.logged_in_customer_id;
 
-  //ctx.set('Content-Type', 'application/liquid');
-  //ctx.body = `{{template}}`;
+  const format = ctx.request.query.format;
+  if (typeof format !== UNDEFINED && format == 'liquid') {
+    ctx.set('Content-Type', 'application/liquid');
+    ctx.body = `Liquid object data: \{\{template\}\}: {{template}}`;
+    return;
+  }
+
   ctx.set('Content-Type', 'application/json');
-  ctx.body = {};
+  ctx.body = ctx.request.query;
 
 });
 

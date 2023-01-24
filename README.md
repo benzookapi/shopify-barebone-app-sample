@@ -61,7 +61,7 @@ In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/co
 
 3. Copy 'shopify.app.toml' to the root path from the result directory above too.
 
-4. To register extensions to new apps from exsiting codes in '/extensions/', execute `npm run dev -- --reset` to make a draft extension, and enable "Development Store Preview" in the created extension in your partner dashboard 
+4. To register extensions to new apps from exsiting codes in '/extensions/', execute `npm run deploy -- --reset` to make a draft extension, and enable "Development Store Preview" in the created extension in your partner dashboard 
 (NOTE THAT `npm generate extension` is for the initial code generation only, not required for the extension registration or push).
 ```
 
@@ -105,9 +105,9 @@ cd NGROK_DIR && ngrok http 3000
 ```
 CREATE TABLE shops ( _id VARCHAR NOT NULL PRIMARY KEY, data json NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL );
 ```
-6. For CLI generated extensions, execute `npm run dev -- --reset` and follow its instruction (choose your partner account, connecting to the exising app, etc.) which registers a draft extensions to your exising app. After the command starts successfully, exit with Ctrl+C and go to the created extension in your [partner dashboard](https://partners.shopify.com/) and enable its dev. preview (it's enough for testing in development stores).
+6. For CLI generated extensions, execute `npm run deploy -- --reset` and follow its instruction (choose your partner account, connecting to the exising app, etc.) which registers a draft extensions to your exising app. After the command ends  successfully, go to the created extension in your [partner dashboard](https://partners.shopify.com/) and enable its dev. preview (it's enough for testing in development stores).
 
-7. For updating the extensions, execute `npm run deploy` to apply (upload) your local code to the created extensions.
+7. For updating the extensions, execute `npm run deploy` (without `-- --reset`) to apply (upload) your local modified files to the created extensions (`-- --reset` is used for changing your targeted app only).
 
 8. (For live stores only, you need to create a version of the extension and publish it. See [this step](https://shopify.dev/apps/deployment/extension).)
 
