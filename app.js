@@ -98,8 +98,8 @@ router.get('/', async (ctx, next) => {
     }
     if (install) {
       // See https://shopify.dev/apps/auth/oauth/getting-started
-      //const redirectUrl = `https://${shop}/admin/oauth/authorize?client_id=${API_KEY}&scope=${API_SCOPES}&redirect_uri=https://${ctx.request.hostname}/callback&state=&grant_options[]=`;
-      const redirectUrl = `https://${getAdminFromShop(shop)}/oauth/authorize?client_id=${API_KEY}&scope=${API_SCOPES}&redirect_uri=https://${ctx.request.hostname}/callback&state=&grant_options[]=`;
+      const redirectUrl = `https://${shop}/admin/oauth/authorize?client_id=${API_KEY}&scope=${API_SCOPES}&redirect_uri=https://${ctx.request.hostname}/callback&state=&grant_options[]=`;
+      //const redirectUrl = `https://${getAdminFromShop(shop)}/oauth/authorize?client_id=${API_KEY}&scope=${API_SCOPES}&redirect_uri=https://${ctx.request.hostname}/callback&state=&grant_options[]=`;
       console.log(`Redirecting to ${redirectUrl} for OAuth flow...`);
       ctx.redirect(redirectUrl);
       return;
