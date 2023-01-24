@@ -392,7 +392,7 @@ router.get('/appproxy', async (ctx, next) => {
     ctx.body = `<h2>Liquid object data rendered in App Proxy Liquid response:</h2> 
       <ul>
         <li>&#123;&#123;shop.name&#125;&#125;: {{shop.name}}</li>    
-        <li>&#123;&#123;template&#125;&#125;: {{template}}</li>
+        <li>&#123;&#123;template.name&#125;&#125;: {{template.name}}</li>
         <li>&#123;&#123;customer.email&#125;&#125;: {{customer.email}}</li>
         <li>&#123;&#123;product.title&#125;&#125;: {{product.title}}</li>
       </ul>
