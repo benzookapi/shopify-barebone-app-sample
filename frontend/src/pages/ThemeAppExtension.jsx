@@ -2,7 +2,7 @@ import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { Page, Card, Layout, Link, Badge, List, Button } from '@shopify/polaris';
 
-import { _decodeSessionToken } from "../utils/my_util";
+import { _getShopFromQuery } from "../utils/my_util";
 
 // Theme App Extension sample with App Proxies
 // See https://shopify.dev/apps/online-store/theme-app-extensions
