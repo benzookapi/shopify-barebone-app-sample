@@ -159,6 +159,8 @@ shop/redact:  /webhookgdprshopdel
   - Simple SSO login implementation (TBD, Plus only for live)
 - _B2B_: '/b2b' 
   - Sample for creating a company and its onwed customers for B2B checkout (TBD, Plus only for live)
+- _Bulk Operation_: '/bulkoperation' 
+  - Creating large size of data for testing and learing how to manage bulk operation. (TBD)
 - _ShopifyQL_: '/shopifyql' 
   - Your own ShopifyQL notebook with API. (TBD)
 - _Marketing Activity_: '/marketingactivity' 

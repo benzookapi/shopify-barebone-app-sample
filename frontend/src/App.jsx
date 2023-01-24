@@ -24,7 +24,12 @@ const config = {
 
 // If the page is accessed directly outside the admin unembedded, shop is used for the host.
 // See https://shopify.dev/apps/auth/oauth/getting-started#step-6-redirect-to-your-apps-ui
-if (config.host == null) config.host = window.btoa(`${new URLSearchParams(window.location.search).get("shop")}/admin`).replace('=', '');
+if (config.host == null) {
+  console.log(`The config.host is null, being set from 'shop'.`);
+  config.host = window.btoa(`${new URLSearchParams(window.location.search).get("shop")}/admin`).replace('=', '');
+}
+
+console.log(`AppBrige settings: config.apiKey [${config.apiKey}] config.host [${config.host}] config.forceRedirect [${config.forceRedirect}]`);
 
 // All Polaris compoments which you can copy the React snipets from. https://polaris.shopify.com/components
 // AppProvider is the base layout compoment. https://polaris.shopify.com/components/app-provider
@@ -86,6 +91,10 @@ function App() {
           {
             label: 'B2B',
             destination: '/b2b',
+          },
+          {
+            label: 'Bulk Operation',
+            destination: '/bulkoperation',
           },
           {
             label: 'ShopifyQL',
