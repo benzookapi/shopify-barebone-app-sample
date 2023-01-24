@@ -53,14 +53,16 @@ https://github.com/Shopify/theme-extension-getting-started
 
   console.log(`Accessing ${appProxyUrl} ...`);
 
-  var httpClient = new XMLHttpRequest();
+  const httpClient = new XMLHttpRequest();
   httpClient.open("GET", appProxyUrl, false);
   httpClient.send(null);
   const res = JSON.parse(httpClient.responseText);
-
-
-
   console.log(JSON.stringify(res, null, 4));
+
+  const resList = document.getElementsByClassName("barebone_app_proxy_response");
+  for (let i = 0; i < resList.length; i++) {
+    resList[i].innerHTML = JSON.stringify(res, null, 4);
+  }
 </script>
 {% schema %}
   {
