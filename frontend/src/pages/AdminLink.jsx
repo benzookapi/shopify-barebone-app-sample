@@ -4,6 +4,8 @@ import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
 import { Page, Card, Layout, Stack, Link, Badge, Text, Spinner } from '@shopify/polaris';
 
+import { _decodeSessionToken, _getShopFromQuery } from "../utils/my_util";
+
 // Admin link sample with App Bridge redirection
 // See https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup
 // See https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link
@@ -14,7 +16,7 @@ function AdminLink() {
     // Raw endpoint of this menu
     const rawUrl = `${window.location.href.split('?')[0]}`;
 
-    const shop = new URLSearchParams(window.location.search).get("shop");
+    const shop = _getShopFromQuery(window);
 
     // This query parameter is supposed to be given by Admin Link extensions.
     const id = new URLSearchParams(window.location.search).get("id");

@@ -57,15 +57,17 @@ https://github.com/Shopify/theme-extension-getting-started
     <!-- Including snippets -->
     {% render 'barebone_snippet' %}
 
-    <!-- Note that app embed is a section which can be some in the whole theme storefornt HTML in browsers, so you canot use 'id'. -->
-    <p>
-      <h2>Response of the app proxy (Ajax access of "{{shop.secure_url}}/apps/bareboneproxy")</h2>
-      You check the difference of response data by login / logout.
-      <pre class="barebone_app_proxy_response"></pre>
-    </p>
-    <p>
-      <a href="/apps/bareboneproxy?format=liquid">Check the Liquid rendering in the app proxy responded page too.</a>
-    </p>
+    <ul>
+      <li>
+        <b><a href="/apps/bareboneproxy" target="_blank">Ajax access of the app proxy</a></b> 
+        (You check the difference of response data by login / logout)
+        <!-- Note that app embed is a section which can be some in the whole theme storefornt HTML in browsers, so you canot use 'id'. -->
+        <pre class="barebone_app_proxy_response"></pre>
+      </li>
+      <li>
+        <b><a href="/apps/bareboneproxy?format=liquid">Page trasition of the app proxy rendered as a Liquid file</a></b>
+      </li>
+    </ul>
 
   </div>
 </span>
