@@ -37,8 +37,11 @@ function ThemeAppExtension() {
                         <List type="bullet">
                             <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/metafields`} external={true}>Metafields</Link> for products as
                                 in type of <Badge>Product</Badge> and <Badge>Text</Badge></List.Item>
-                            <List.Item>Go to the app block section in the theme editor to set color and products using the metafields anove with
+                            <List.Item>Go to the app block section in the theme editor to set color and products using the metafields above with
                                 <Link url={`https://help.shopify.com/en/manual/online-store/themes/theme-structure/sections-and-blocks`} external={true}>Dynamic sources</Link></List.Item>
+                            <List.Item>
+                                Don't forget to set each metafield to each product which you test to show its value in the theme app extension in theme.
+                            </List.Item>
                         </List>
                     </Layout.Section>
                 </Layout>
