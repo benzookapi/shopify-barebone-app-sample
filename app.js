@@ -389,7 +389,7 @@ router.get('/appproxy', async (ctx, next) => {
   const format = ctx.request.query.format;
   if (typeof format !== UNDEFINED && format == 'liquid') {
     ctx.set('Content-Type', 'application/liquid');
-    ctx.body = `<h2>Liquid object data rendered by the app proxy in 'Content-Type application/liquid'</h2> 
+    ctx.body = `<h2>Liquid objects rendered by the app proxy in 'Content-Type application/liquid'</h2> 
       <ul>
         <li>&#123;&#123;shop.name&#125;&#125;: {{shop.name}}</li>    
         <li>&#123;&#123;template.name&#125;&#125;: {{template.name}}</li>
