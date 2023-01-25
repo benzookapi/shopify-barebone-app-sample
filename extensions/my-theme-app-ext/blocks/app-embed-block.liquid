@@ -48,8 +48,11 @@ https://github.com/Shopify/theme-extension-getting-started
 
   const shopUrl = '{{shop.secure_url}}';
 
+// Demonstrate how the 1st party cookie can be passed to the app proxy as query.
+  cosnt cookieParam = document.cookie;
+
 // App proxy path for each shop can be edit by merchants, so you need to get the path from config or other way for real apps.
-  const appProxyUrl = `${shopUrl}/apps/bareboneproxy`;
+  const appProxyUrl = `${shopUrl}/apps/bareboneproxy?cookie=${cookieParam}`;
 
   console.log(`Accessing ${appProxyUrl} ...`);
 

@@ -37,7 +37,7 @@ function ThemeAppExtension() {
                         <List type="bullet">
                             <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/metafields`} external={true}>Metafields</Link> for products as
                                 in type of <Badge>Product</Badge> and <Badge>Text</Badge></List.Item>
-                            <List.Item>Go to the app block section in the theme editor to set color and products using the metafields above with
+                            <List.Item>Go to the app block section in the theme editor ('Home page' and 'Default product')to set color and products using the metafields above with
                                 <Link url={`https://help.shopify.com/en/manual/online-store/themes/theme-structure/sections-and-blocks`} external={true}>Dynamic sources</Link></List.Item>
                             <List.Item>
                                 Don't forget to set Metafields to <Link url={`https://${_getAdminFromShop(shop)}/products`} external={true}>Products</Link> to show its value in the theme app extension in theme.
@@ -66,7 +66,7 @@ function ThemeAppExtension() {
                                 newContext: true
                             });
                         }}>
-                            Check your theme storefront
+                            Check your theme storefront to see how your set extensions show up switching the pages of home and products.
                         </Button>
                     </Layout.Section>
                 </Layout>

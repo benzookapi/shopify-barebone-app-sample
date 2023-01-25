@@ -373,7 +373,7 @@ router.get('/themeappextension', async (ctx, next) => {
 
 /* --- App proxies sample endpoint --- */
 // See https://shopify.dev/apps/online-store/app-proxies
-// NOTE THAT ngrok blocks the proxy by default, you have to use other platforms like Render, Fly.io, etc.
+// Note that ngrok blocks the proxy by default, you have to use other platforms like Render, Fly.io, etc.
 router.get('/appproxy', async (ctx, next) => {
   console.log("+++++++++++++++ /appproxy +++++++++++++++");
   console.log(`request ${JSON.stringify(ctx.request, null, 4)}`);
@@ -396,6 +396,7 @@ router.get('/appproxy', async (ctx, next) => {
         <li>&#123;&#123;customer.email&#125;&#125;: {{customer.email}}</li>
         <li>&#123;&#123;product.title&#125;&#125;: {{product.title}}</li>
       </ul>
+      <pre>${JSON.stringify(ctx.request.query, null, 4)}</pre>
     `;
     return;
   }
