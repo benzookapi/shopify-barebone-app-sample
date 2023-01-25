@@ -56,7 +56,9 @@ https://github.com/Shopify/theme-extension-getting-started
   const cookieParam = document.cookie;
 
 // App proxy path for each shop can be edit by merchants, so you need to get the path from config or other way for real apps.
-  const appProxyUrl = `${shopUrl}/apps/bareboneproxy?_1st_party_cookie_sent_by_me=${cookieParam}`;
+  const appProxyUrl = `${shopUrl}/apps/bareboneproxy?_1st_party_cookie_sent_by_me=${
+    encodeURIComponent(cookieParam)
+  }`;
 
   console.log(`Accessing ${appProxyUrl} ...`);
 

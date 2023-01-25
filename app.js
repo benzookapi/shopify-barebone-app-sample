@@ -396,6 +396,7 @@ router.get('/appproxy', async (ctx, next) => {
         <li>&#123;&#123;customer.email&#125;&#125;: {{customer.email}}</li>
         <li>&#123;&#123;product.title&#125;&#125;: {{product.title}}</li>
       </ul>
+      <h2>Request query from the app proxy to my app endpoint</h2> 
       <pre>${JSON.stringify(ctx.request.query, null, 4)}</pre>
     `;
     return;
