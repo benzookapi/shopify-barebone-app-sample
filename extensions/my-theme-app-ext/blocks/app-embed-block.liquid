@@ -27,6 +27,10 @@ https://github.com/Shopify/theme-extension-getting-started
       with the back ground color defined by value of
       <b>'assets/barebone.css'</b>.
     </p>
+    <p>
+      <b>&#123;&#123;template.name&#125;&#125;:</b>
+      {{ template.name }}
+    </p>
     <ul>
       <li>
         <b>'block.settings.text'</b>
@@ -52,7 +56,7 @@ https://github.com/Shopify/theme-extension-getting-started
   const cookieParam = document.cookie;
 
 // App proxy path for each shop can be edit by merchants, so you need to get the path from config or other way for real apps.
-  const appProxyUrl = `${shopUrl}/apps/bareboneproxy?_1st_party_cookie_set_by_me=${cookieParam}`;
+  const appProxyUrl = `${shopUrl}/apps/bareboneproxy?_1st_party_cookie_sent_by_me=${cookieParam}`;
 
   console.log(`Accessing ${appProxyUrl} ...`);
 
@@ -67,9 +71,13 @@ https://github.com/Shopify/theme-extension-getting-started
     resList[i].innerHTML = JSON.stringify(res, null, 4);
   }
 
-  const aList = document.getElementsByClassName("barebone_app_proxy_liquid");
+  let aList = document.getElementsByClassName("barebone_app_proxy_json");
   for (let i = 0; i < aList.length; i++) {
-    raList[i].setAttribute('href', `${appProxyUrl}&format=liquid`);
+    aList[i].setAttribute('href', `${appProxyUrl}`);
+  }
+  aList = document.getElementsByClassName("barebone_app_proxy_liquid");
+  for (let i = 0; i < aList.length; i++) {
+    aList[i].setAttribute('href', `${appProxyUrl}&format=liquid`);
   }
 </script>
 {% schema %}

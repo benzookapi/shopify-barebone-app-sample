@@ -28,6 +28,11 @@ https://github.com/Shopify/theme-extension-getting-started
       <b>'block.settings.color'</b>.
     </p>
 
+    <p>
+      <b>&#123;&#123;product.title&#125;&#125;:</b>
+      {{ product.title }}
+    </p>
+
     {% if request.design_mode %}
       <!-- This will only render in the theme editor -->
       <p class="_my_app_block_editor">"I think you are viewing this app block within theme editor, right? &#x1f609"</p>
@@ -59,7 +64,7 @@ https://github.com/Shopify/theme-extension-getting-started
 
     <ul>
       <li>
-        <b><a href="/apps/bareboneproxy" target="_blank">Ajax response of the app proxy</a></b> 
+        <b><a href="" target="_blank" class="barebone_app_proxy_json">Ajax response of the app proxy</a></b> 
         (You can check the difference of response data by login / logout)
         <!-- Note that app embed is a section which can be some in the whole theme storefornt HTML in browsers, so you canot use 'id'. -->
         <pre class="barebone_app_proxy_response"></pre>
