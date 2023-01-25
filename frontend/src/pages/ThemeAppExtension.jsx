@@ -54,9 +54,8 @@ function ThemeAppExtension() {
                     </Layout.Section>
                     <Layout.Section>
                         <List type="bullet">
-                            <List.Item>Subpath prefix: <Badge>apps</Badge></List.Item>
-                            <List.Item>Subpath: <Badge>bareboneproxy</Badge></List.Item>
-                            <List.Item>Proxy URL: <Badge>https://{window.location.hostname}/appproxy</Badge></List.Item>
+                            <List.Item>Subpath prefix: <Badge>apps</Badge> Subpath: <Badge>bareboneproxy</Badge> Proxy URL: <Badge>https://{window.location.hostname}/appproxy</Badge></List.Item>
+                            <List.Item><Link url={`https://${shop}/apps/bareboneproxy?your_param=your_value`} external={true}>Test your proxy</Link></List.Item>
                         </List>
                     </Layout.Section>
                     <Layout.Section>

@@ -386,6 +386,13 @@ router.get('/appproxy', async (ctx, next) => {
   //const shop = ctx.request.query.shop;
   //const customerId = ctx.request.query.logged_in_customer_id;
 
+  // App Proxies are supposed to be public within theme or other public sforefronts, so its external endpoint like 
+  // `https://${shop}.myshopify.dom/apps/bareboneproxy` has no validation or authentication where you shouldn't return private data.
+  const res = {
+    "message": "CAUTION! DO NOT RETURN PRIVATE DATA OVER APP PROXY, THIS IS FULLY PUBLIC.",
+    "query": ctx.request.query
+  }
+
   const format = ctx.request.query.format;
   if (typeof format !== UNDEFINED && format == 'liquid') {
     ctx.set('Content-Type', 'application/liquid');
@@ -397,13 +404,13 @@ router.get('/appproxy', async (ctx, next) => {
         <li>&#123;&#123;product.title&#125;&#125;: {{product.title}}</li>
       </ul>
       <h2>Request query from the app proxy to my app endpoint</h2> 
-      <pre>${JSON.stringify(ctx.request.query, null, 4)}</pre>
+      <pre>${JSON.stringify(res, null, 4)}</pre>
     `;
     return;
   }
 
   ctx.set('Content-Type', 'application/json');
-  ctx.body = ctx.request.query;
+  ctx.body = res;
 
 });
 
