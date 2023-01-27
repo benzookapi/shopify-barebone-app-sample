@@ -12,6 +12,7 @@ import Index from './pages/Index';
 import SessionToken from './pages/SessionToken';
 import AdminLink from './pages/AdminLink';
 import ThemeAppExtension from './pages/ThemeAppExtension';
+import FunctionDiscount from './pages/FunctionDiscount';
 
 import { _getAdminFromShop } from "./utils/my_util";
 
@@ -131,6 +132,7 @@ function App() {
             <Route path="/sessiontoken" element={<SessionToken />} />
             <Route path="/adminlink" element={<AdminLink />} />
             <Route path="/themeappextension" element={<ThemeAppExtension />} />
+            <Route path="/functiondiscount" element={<FunctionDiscount />} />
           </Routes>
         </BrowserRouter>
         {/* Each page content comes here */}

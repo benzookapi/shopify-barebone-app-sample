@@ -42,6 +42,14 @@ function Index() {
                             name: 'Theme App Extension',
                             location: 'Theme App Extension with App Aproxies use cases',
                         },
+                        {
+                            id: 4,
+                            onClick: (id) => {
+                                redirect.dispatch(Redirect.Action.APP, '/functiondiscount');
+                            },
+                            name: 'Function Discount',
+                            location: 'Simple implementation with customer data',
+                        },
                     ]}
                     renderItem={(item) => {
                         const { id, onClick, name, location } = item;

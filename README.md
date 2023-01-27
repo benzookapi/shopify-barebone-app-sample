@@ -140,7 +140,7 @@ shop/redact:  /webhookgdprshopdel
 - _Theme App Extension_: '/themeappextension' 
   - Basis usage in combination with App Proxies and Theme Editor
 - _Function Discount_: '/functiondiscount' 
-  - Simple implementation with customer data (TBD, developer preveiw only as of 2023.01)
+  - Simple implementation with customer data
 - _Function Shipping_: '/functionshipping' 
   - Basic usage (TBD, developer preveiw only as of 2023.01)
 - _Function Payment_: '/functionpayment' 
