@@ -371,6 +371,22 @@ router.get('/themeappextension', async (ctx, next) => {
 
 });
 
+/* --- Function Discount sample endpoint --- */
+// See https://shopify.dev/apps/discounts
+router.get('/functiondiscount', async (ctx, next) => {
+  console.log("+++++++++++++++ /functiondiscount +++++++++++++++");
+  //console.log(`query ${JSON.stringify(ctx.request.query)}`);
+  if (!checkSignature(ctx.request.query)) {
+    ctx.status = 400;
+    return;
+  }
+
+  const shop = ctx.request.query.shop;
+  setContentSecurityPolicy(ctx, shop);
+  await ctx.render('index', {});
+
+});
+
 /* --- App proxies sample endpoint --- */
 // See https://shopify.dev/apps/online-store/app-proxies
 // Note that ngrok blocks the proxy by default, you have to use other platforms like Render, Fly.io, etc.

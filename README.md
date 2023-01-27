@@ -33,7 +33,7 @@ extensions/ ... automatically generated directory and code by Shopify CLI `npm r
 
   ./my-theme-app-ext ... Theme App Extensions sample following this turotial. https://shopify.dev/apps/online-store/theme-app-extensions/getting-started
 
-.env ... automatically generated file by CLI above too, which holds each generated extenstion id REUSABLE for other apps.
+  ./my-function-discount-ext ... Shopify Functions for dicounts Extensions sample using Cargo with Rust https://shopify.dev/apps/discounts/create#step-4-add-and-deploy-a-product-discount-extension
 
 shopify.app.toml ... required file by CLI commands.
 
