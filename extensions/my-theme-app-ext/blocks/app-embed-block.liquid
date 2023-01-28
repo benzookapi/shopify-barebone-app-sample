@@ -11,7 +11,11 @@ https://shopify.dev/themes/architecture/settings/input-settings
 
 https://github.com/Shopify/theme-extension-getting-started
 
---><div class="_my_app_embed_block"> {{ "barebone.png" | asset_url | img_tag }}
+--><div class="_my_app_embed_block"> <img
+    src="{{ "barebone.png" | asset_url }}"
+    width="200"
+    height="200"
+    loading="lazy" />
   <div class="_my_app_embed_block_child">
     <p>
       Theme App Extension
