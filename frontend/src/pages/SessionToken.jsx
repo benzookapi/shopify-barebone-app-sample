@@ -44,7 +44,7 @@ function SessionToken() {
                 setDecoded(JSON.stringify(_decodeSessionToken(sessionToken), null, 4));
               });
             }}>
-              Run the code
+              Show the current session token data
             </Button>
           </Layout.Section>
           <Layout.Section>
@@ -62,10 +62,11 @@ function SessionToken() {
           </Layout.Section>
           <Layout.Section>
             <TextField
-              label="Input your query params (e.g. my_key=1&my_val=aaa)"
+              label="Input your query params"
               value={param}
               onChange={paramChange}
               autoComplete="off"
+              placeholder="Example: my_key=1&my_val=aaa"
             />
           </Layout.Section>
           <Layout.Section>
@@ -92,7 +93,7 @@ function SessionToken() {
                 });
               });
             }}>
-              Run the code
+              Get your stored access token with the payload above in OAuth flow
             </Button>
           </Layout.Section>
           <Layout.Section>
@@ -100,7 +101,7 @@ function SessionToken() {
             <pre>{uri}</pre>
             <Badge>Request Authentication Bearer:</Badge>
             <pre>{auth}</pre>
-            <Badge>My OAuth 2.0 Authorization Result:</Badge>
+            <Badge>My OAuth Authorization Result:</Badge>
             <pre>{res}</pre>
           </Layout.Section>
         </Layout>

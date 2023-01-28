@@ -32,14 +32,7 @@ function FunctionDiscount() {
           <Layout.Section>
             <List type="number">
               <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/metafields`} external={true}>Metafields</Link> for <Badge>Customers</Badge> as
-                in type of <Badge>Integer</Badge>
-              </List.Item>
-              <List.Item>
-                Set the Metafields to <Link url={`https://${_getAdminFromShop(shop)}/customers`} external={true}>Customers</Link> to specify how much discounted they get as a number
-                (e.g. 30 = 30% discounted)
-              </List.Item>
-              <List.Item>
-                Input the Metafield <Badge>Namespace and key</Badge>
+                in type of <Badge>Integer</Badge> and input your Metafield <Badge>Namespace and key</Badge>
                 <TextField
                   label=""
                   value={meta}
@@ -47,6 +40,10 @@ function FunctionDiscount() {
                   autoComplete="off"
                   placeholder="Example: custom.my_customer_metafield_1"
                 />
+              </List.Item>
+              <List.Item>
+                Set the Metafields to <Link url={`https://${_getAdminFromShop(shop)}/customers`} external={true}>Customers</Link> to specify how much discounted they get as a number
+                (e.g. 30 = 30% discounted)
               </List.Item>
             </List>
           </Layout.Section>
@@ -60,7 +57,7 @@ function FunctionDiscount() {
           <Layout.Section>
             <List type="number">
               <List.Item>
-                Input your <Badge>Shopify Functions ID</Badge> available in your app extension overview in <Link url="https://shopify.dev/api/functions/errors#debugging" external={true}>partner dashboard</Link>
+                Input your <Badge>Shopify Functions ID</Badge> available in your app extension overview in <Link url="https://shopify.dev/api/functions/errors#debugging" external={true}>partner dashboard</Link> given by <Badge>`npm run deploy`</Badge>
                 <TextField
                   label=""
                   value={id}
@@ -83,8 +80,7 @@ function FunctionDiscount() {
                 </Button>
               </List.Item>
               <List.Item>
-                Go to <Link url={`https://${_getAdminFromShop(shop)}/discounts`} external={true}>Discounts</Link> to active.
-                (e.g. 30 = 30% discounted).
+                Go to <Link url={`https://${_getAdminFromShop(shop)}/discounts`} external={true}>Discounts</Link> to active and check <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your discount works with your specified customers
               </List.Item>
             </List>
           </Layout.Section>

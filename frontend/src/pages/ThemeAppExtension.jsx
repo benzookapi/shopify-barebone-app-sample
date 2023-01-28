@@ -18,7 +18,7 @@ function ThemeAppExtension() {
     const idChange = useCallback((newId) => setId(newId), []);
 
     return (
-        <Page title="Theme App Extension usage of Schema, Metafields and App proxies for server communication">
+        <Page title="Theme App Extension usage of Schema, Metafields and App Proxies for server communication">
             <Card title="Step 1: Cofigure and activate your Theme App Extension in the theme editor" sectioned={true}>
                 <Layout>
                     <Layout.Section>
@@ -50,16 +50,10 @@ function ThemeAppExtension() {
                                 </Button>
 
                             </List.Item>
-                        </List>
-                    </Layout.Section>
-                    <Layout.Section>
-                        <List type="bullet">
                             <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/metafields`} external={true}>Metafields</Link> for products as
-                                in type of <Badge>Product</Badge> and <Badge>Text</Badge></List.Item>
-                            <List.Item>Go to the app block section in the theme editor ('Home page' and 'Default product')to set color and products using the metafields above with
-                                <Link url={`https://help.shopify.com/en/manual/online-store/themes/theme-structure/sections-and-blocks`} external={true}>Dynamic sources</Link></List.Item>
-                            <List.Item>
-                                Don't forget to set Metafields to <Link url={`https://${_getAdminFromShop(shop)}/products`} external={true}>Products</Link> to show its value in the theme app extension in theme
+                                in type of <Badge>Product</Badge> and <Badge>Text</Badge> and go to the app block section in the theme editor ('Home page' and 'Default product') to set the metafields above with
+                                <Link url={`https://help.shopify.com/en/manual/online-store/themes/theme-structure/sections-and-blocks`} external={true}>Dynamic sources</Link>
+                                (don't forget to set Metafields to <Link url={`https://${_getAdminFromShop(shop)}/products`} external={true}>Products</Link>)
                             </List.Item>
                         </List>
                     </Layout.Section>
@@ -72,20 +66,17 @@ function ThemeAppExtension() {
                         <Link url="https://shopify.dev/apps/online-store/app-proxies" external={true}>Dev. doc</Link>
                     </Layout.Section>
                     <Layout.Section>
-                        <List type="bullet">
-                            <List.Item>Subpath prefix: <Badge>apps</Badge> Subpath: <Badge>bareboneproxy</Badge> Proxy URL: <Badge>https://{window.location.hostname}/appproxy</Badge></List.Item>
-                            <List.Item><Link url={`https://${shop}/apps/bareboneproxy?your_param=your_value`} external={true}>Test your proxy</Link></List.Item>
+                        <List type="number">
+                            <List.Item>
+                                Subpath prefix: <Badge>apps</Badge> Subpath: <Badge>bareboneproxy</Badge> Proxy URL: <Badge>https://{window.location.hostname}/appproxy</Badge>
+                            </List.Item>
+                            <List.Item>
+                                <Link url={`https://${shop}/apps/bareboneproxy?your_param=your_value`} external={true}>Test your proxy</Link>
+                            </List.Item>
+                            <List.Item>
+                                Check <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your set extensions show up switching the pages of home and products.
+                            </List.Item>
                         </List>
-                    </Layout.Section>
-                    <Layout.Section>
-                        <Button primary onClick={() => {
-                            redirect.dispatch(Redirect.Action.REMOTE, {
-                                url: `https://${shop}`,
-                                newContext: true
-                            });
-                        }}>
-                            Check your theme storefront to see how your set extensions show up switching the pages of home and products.
-                        </Button>
                     </Layout.Section>
                 </Layout>
             </Card>
