@@ -38,7 +38,7 @@ function SessionToken() {
             <Link url="https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-1-get-a-session-token" external={true}>Dev. doc</Link>
           </Layout.Section>
           <Layout.Section>
-            <Button onClick={() => {
+            <Button primary onClick={() => {
               getSessionToken(app).then((sessionToken) => {
                 setRaw(foldLongLine(`${sessionToken}`));
                 setDecoded(JSON.stringify(_decodeSessionToken(sessionToken), null, 4));
@@ -69,7 +69,7 @@ function SessionToken() {
             />
           </Layout.Section>
           <Layout.Section>
-            <Button onClick={() => {
+            <Button primary onClick={() => {
               setUri('');
               setAuth('');
               setRes('');

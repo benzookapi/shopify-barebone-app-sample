@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 //import { Redirect } from '@shopify/app-bridge/actions';
 //import { getSessionToken, authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, List, Badge, TextField } from '@shopify/polaris';
+import { Page, Card, Layout, Link, List, Badge, TextField, Button } from '@shopify/polaris';
 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
@@ -32,19 +32,20 @@ function FunctionDiscount() {
           <Layout.Section>
             <List type="number">
               <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/metafields`} external={true}>Metafields</Link> for <Badge>Customers</Badge> as
-                in type of <Badge>Integer</Badge>.
+                in type of <Badge>Integer</Badge>
               </List.Item>
               <List.Item>
                 Set the Metafields to <Link url={`https://${_getAdminFromShop(shop)}/customers`} external={true}>Customers</Link> to specify how much discounted they get as a number
-                (e.g. 30 = 30% discounted).
+                (e.g. 30 = 30% discounted)
               </List.Item>
               <List.Item>
-                Input the Metafield <Badge>Namespace and key</Badge> here.
+                Input the Metafield <Badge>Namespace and key</Badge>
                 <TextField
                   label=""
                   value={meta}
                   onChange={metaChange}
                   autoComplete="off"
+                  placeholder="Example: custom.my_customer_metafield_1"
                 />
               </List.Item>
             </List>
@@ -59,16 +60,17 @@ function FunctionDiscount() {
           <Layout.Section>
             <List type="number">
               <List.Item>
-                Input your <Badge>Shopify Functions ID</Badge> here (the id is available in your app extension overview in partner dashboard).
+                Input your <Badge>Shopify Functions ID</Badge> available in your app extension overview in <Link url="https://shopify.dev/api/functions/errors#debugging" external={true}>partner dashboard</Link>
                 <TextField
                   label=""
                   value={id}
                   onChange={idChange}
                   autoComplete="off"
+                  placeholder="Example: 01GQVSPSWHVQDASZXCTXYSBHH9"
                 />
               </List.Item>
               <List.Item>
-                <Button onClick={() => {
+                <Button primary onClick={() => {
                   // See https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#simplified-installation-flow-with-deep-linking
                   const path = `/themes/current/editor?context=apps&activateAppId=${MY_THEME_APP_EXT_ID}/app-embed-block`;
                   console.log(path);
@@ -77,35 +79,14 @@ function FunctionDiscount() {
                     newContext: true
                   });
                 }}>
-                  Register
+                  Register your discount!
                 </Button>
               </List.Item>
               <List.Item>
-                Set the Metafields to <Link url={`https://${_getAdminFromShop(shop)}/customers`} external={true}>Customers</Link> to specify how much discounted they get as a number
+                Go to <Link url={`https://${_getAdminFromShop(shop)}/discounts`} external={true}>Discounts</Link> to active.
                 (e.g. 30 = 30% discounted).
               </List.Item>
-              <List.Item>
-                Input the Metafield <Badge>Namespace and key</Badge> here.
-                <TextField
-                  label=""
-                  value={meta}
-                  onChange={metaChange}
-                  autoComplete="off"
-                />
-              </List.Item>
-              <List.Item>
-
-                <TextField
-                  label=""
-                  value={meta}
-                  onChange={metaChange}
-                  autoComplete="off"
-                />
-              </List.Item>
             </List>
-          </Layout.Section>
-          <Layout.Section>
-
           </Layout.Section>
         </Layout>
       </Card>
