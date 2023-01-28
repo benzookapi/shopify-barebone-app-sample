@@ -1,5 +1,5 @@
 name = "my-function-discount-ext"
-type = "product_discounts"
+type = "order_discounts"
 api_version = "2023-01"
 
 [build]

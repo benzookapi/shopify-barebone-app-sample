@@ -360,6 +360,26 @@ type CompanyLocation implements HasMetafields {
 }
 
 """
+The condition to apply the discount.
+"""
+input Condition @oneOf {
+  """
+  The condition for checking the minimum subtotal amount of the order.
+  """
+  orderMinimumSubtotal: OrderMinimumSubtotal
+
+  """
+  The condition for checking the minimum quantity of a product.
+  """
+  productMinimumQuantity: ProductMinimumQuantity
+
+  """
+  The condition for checking the minimum subtotal amount of the product.
+  """
+  productMinimumSubtotal: ProductMinimumSubtotal
+}
+
+"""
 A country.
 """
 type Country {
@@ -2549,12 +2569,20 @@ The discount to be applied.
 """
 input Discount {
   """
+  The condition to apply the discount.
+  """
+  conditions: [Condition!]
+
+  """
   The discount message.
   """
   message: String
 
   """
   The targets of the discount.
+
+  The value is validated against: targets should contain only one type of `Target`.
+  For example, targets that contain a list of `ProductVariantTarget` targets are valid.
   """
   targets: [Target!]!
 
@@ -2609,14 +2637,6 @@ input FixedAmount {
   The amount must be greater than or equal to 0.
   """
   amount: Decimal!
-
-  """
-  Whether to apply the value to each entitled item.
-
-  The default value is `false`, which causes the value to be applied once across the entitled items.
-  When the value is `true`, the value will be applied to each of the entitled items.
-  """
-  appliesToEachItem: Boolean
 }
 
 """
@@ -3519,6 +3539,38 @@ type MutationRoot {
 }
 
 """
+The condition for checking the minimum subtotal amount of the order.
+"""
+input OrderMinimumSubtotal {
+  """
+  Variant IDs with a merchandise line price that's excluded to calculate the minimum subtotal amount of the order.
+  """
+  excludedVariantIds: [ID!]!
+
+  """
+  The minimum subtotal amount of the order.
+  """
+  minimumAmount: Decimal!
+
+  """
+  The target type of the condition.
+
+   The value is validated against: = "ORDER_SUBTOTAL".
+  """
+  targetType: TargetType!
+}
+
+"""
+The subtotal of the target order.
+"""
+input OrderSubtotalTarget {
+  """
+  Variant IDs with a merchandise line price that's excluded for the minimum subtotal condition of the order.
+  """
+  excludedVariantIds: [ID!]!
+}
+
+"""
 A percentage value.
 """
 input Percentage {
@@ -3593,6 +3645,50 @@ type Product implements HasMetafields {
   The name of the product's vendor.
   """
   vendor: String
+}
+
+"""
+The condition for checking the minimum quantity of a product.
+"""
+input ProductMinimumQuantity {
+  """
+  Variant IDs with a merchandise line price that's included to calculate the minimum quantity of the product.
+  """
+  ids: [ID!]!
+
+  """
+  The minimum quantity of a product.
+  """
+  minimumQuantity: Int!
+
+  """
+  The target type of the condition.
+
+  The value is validated against: = "PRODUCT_VARIANT".
+  """
+  targetType: TargetType!
+}
+
+"""
+The condition for checking the minimum subtotal amount of the product.
+"""
+input ProductMinimumSubtotal {
+  """
+  Variant IDs with a merchandise line price that's included to calculate the minimum subtotal amount of a product.
+  """
+  ids: [ID!]!
+
+  """
+  The minimum subtotal amount of the product.
+  """
+  minimumAmount: Decimal!
+
+  """
+  The target type of the condition.
+
+  The value is validated against: = "PRODUCT_VARIANT".
+  """
+  targetType: TargetType!
 }
 
 """
@@ -3688,13 +3784,33 @@ The target of the discount.
 """
 input Target @oneOf {
   """
+  The subtotal of the target order.
+  """
+  orderSubtotal: OrderSubtotalTarget
+
+  """
   The target product variant.
   """
   productVariant: ProductVariantTarget
 }
 
 """
-The value of the discount.
+The target type of a condition.
+"""
+enum TargetType {
+  """
+  The target is the subtotal of the order.
+  """
+  ORDER_SUBTOTAL
+
+  """
+  The target is a product variant.
+  """
+  PRODUCT_VARIANT
+}
+
+"""
+The discount value.
 """
 input Value @oneOf {
   """

@@ -9,6 +9,7 @@ import { _decodeSessionToken } from "../utils/my_util";
 // See https://shopify.dev/apps/discounts
 // This sample doesn't use Shopify given libraries for the app UX, create an extention manually. 
 // See https://shopify.dev/apps/discounts/create#step-4-add-and-deploy-a-product-discount-extension
+// See https://shopify.dev/api/functions/reference/product-discounts
 function FunctionDiscount() {
   const app = useAppBridge();
 
