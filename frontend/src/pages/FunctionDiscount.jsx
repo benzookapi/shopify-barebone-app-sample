@@ -76,7 +76,7 @@ function FunctionDiscount() {
                     newContext: true
                   });
                 }}>
-                  Register your discount!
+                  Register your discount
                 </Button>
               </List.Item>
               <List.Item>

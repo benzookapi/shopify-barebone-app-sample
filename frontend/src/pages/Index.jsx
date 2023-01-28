@@ -40,7 +40,7 @@ function Index() {
                                 redirect.dispatch(Redirect.Action.APP, '/themeappextension');
                             },
                             name: 'Theme App Extension',
-                            location: 'Theme App Extension with App Aproxies use cases',
+                            location: 'Theme App Extension with App Proxies use cases',
                         },
                         {
                             id: 4,
