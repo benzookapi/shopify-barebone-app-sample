@@ -70,8 +70,8 @@ In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/co
 ```
   SHOPIFY_API_KEY:              YOUR_API_KEY (Copy and paste from your app settings in partner dashboard)
   SHOPIFY_API_SECRET:           YOUR_API_SECRET (Copy and paste from your app settings in partner dashboard)
-  SHOPIFY_API_VERSION:          2023-01
-  SHOPIFY_API_SCOPES:           write_products,write_discounts,read_orders
+  SHOPIFY_API_VERSION:          2023-04
+  SHOPIFY_API_SCOPES:           write_products,write_discounts,read_orders,write_payment_customizations
 
   SHOPIFY_DB_TYPE:              MONGODB (Default) / POSTGRESQL
 
@@ -138,11 +138,11 @@ shop/redact:  /webhookgdprshopdel
 - _Theme App Extension_: '/themeappextension' 
   - Basis usage in combination with App Proxies and Theme Editor
 - _Function Discount_: '/functiondiscount' 
-  - Simple implementation with customer data
+  - Discount implementation by Shopify Functions in combination with customer metafields
 - _Function Shipping_: '/functionshipping' 
-  - Basic usage (TBD, developer preveiw only as of 2023.01)
+  - Shipping (Delivery option) switching by Shopify Functions in combination with customer metafields
 - _Function Payment_: '/functionpayment' 
-  - COD usage with its shipping rate (TBD, developer preveiw only as of 2023.01)
+  - Payment method switching by Shopify Functions in combination with selected delivery options
 - _Web Pixel_: '/webpixel' 
   - Basic usage (TBD)
 - _Checkout Extension_: '/checkoutextension' 

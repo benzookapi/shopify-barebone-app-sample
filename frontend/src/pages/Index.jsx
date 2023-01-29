@@ -57,7 +57,23 @@ function Index() {
                                 redirect.dispatch(Redirect.Action.APP, '/functiondiscount');
                             },
                             name: 'Function Discount',
-                            location: 'Simple implementation with customer data',
+                            location: 'Function implementation for discounts based on customer matafields',
+                        },
+                        {
+                            id: 5,
+                            onClick: (id) => {
+                                redirect.dispatch(Redirect.Action.APP, '/functionshipping');
+                            },
+                            name: 'Function Shipping',
+                            location: 'Function implementation for shipping (delivery option)',
+                        },
+                        {
+                            id: 6,
+                            onClick: (id) => {
+                                redirect.dispatch(Redirect.Action.APP, '/functionpayment');
+                            },
+                            name: 'Function Payment',
+                            location: 'Function implementation for payment methods based on selected delivery options',
                         },
                     ]}
                     renderItem={(item) => {
