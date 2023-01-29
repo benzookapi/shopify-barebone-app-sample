@@ -41,7 +41,7 @@ function FunctionDiscount() {
                   value={meta}
                   onChange={metaChange}
                   autoComplete="off"
-                  placeholder="Example: custom.my_customer_metafield_1"
+                  placeholder="Example: barebone_app.my_customer_discount_rate"
                 />
               </List.Item>
               <List.Item>

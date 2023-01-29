@@ -10,7 +10,7 @@ function Index() {
     const app = useAppBridge();
     const redirect = Redirect.create(app);
 
-    // Supposed to be redirect to the external mock service login to connect the current shop and their users.
+    // Redirect to the external mock service login to connect the current shop and their users by Session Token validation.
     if (new URLSearchParams(window.location.search).get("external") != null) {
         getSessionToken(app).then((sessionToken) => {
             redirect.dispatch(Redirect.Action.REMOTE, `https://${window.location.hostname}/mocklogin?sessiontoken=${sessionToken}`);
@@ -33,7 +33,7 @@ function Index() {
                                 redirect.dispatch(Redirect.Action.APP, '/sessiontoken');
                             },
                             name: 'Session Token',
-                            location: 'Session Token usage sameple with App Bridge',
+                            location: 'Session Token sameple with App Bridge for authentication and external site validation',
                         },
                         {
                             id: 2,

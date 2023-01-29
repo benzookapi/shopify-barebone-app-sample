@@ -405,6 +405,8 @@ router.get('/functiondiscount', async (ctx, next) => {
     const meta = ctx.request.query.meta;
     const id = ctx.request.query.id;
 
+    const [namespace, key] = meta.split('.');
+
     let api_res = null;
     try {
       api_res = await (callGraphql(ctx, shop, `mutation discountAutomaticAppCreate($automaticAppDiscount: DiscountAutomaticAppInput!) {
@@ -440,8 +442,11 @@ router.get('/functiondiscount', async (ctx, next) => {
               //"id": "",
               "key": "customer_meta",
               "namespace": "barebone_app_function_discount",
-              "type": "single_line_text_field",
-              "value": meta
+              "type": "json",
+              "value": JSON.stringify({
+                "namespace": namespace,
+                "key": key
+              })
             }
           ],
           "startsAt": new Date().toISOString(),
@@ -536,6 +541,10 @@ router.get('/mocklogin', async (ctx, next) => {
     details = `<p><b>The following is the received session token with the shop data above which you can never falsify</b> 
     (try it in <a href="https://jwt.io" target="_blank">jwt.io</a> by copying the text below and change the shop to paste to '?sessiontoken=' above).</p>
     <pre>${token}</pre>
+    <ul>
+    <li>For the validation details, see <a href="https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-3-decode-session-tokens-for-incoming-requests" target="_blank">this document</a></li>
+    <li>If you don't want to reveal the token in the query, you can use body POST approach with a hidden tag, too</li>
+    </ul>
     <p><a href="https://${getAdminFromShop(shop)}">Go back to Shopify admin</a></p>`;
   }
 

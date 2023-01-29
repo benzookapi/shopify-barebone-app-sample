@@ -9,3 +9,9 @@ path = "target/wasm32-wasi/release/my-function-discount-ext.wasm"
 [ui.paths]
 create = "/functiondiscount"
 details = "/functiondiscount"
+
+
+# https://shopify.dev/api/functions/input-query-variables
+[input.variables]
+namespace = "barebone_app_function_discount"
+key = "customer_meta"

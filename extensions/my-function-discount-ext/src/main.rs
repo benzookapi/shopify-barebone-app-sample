@@ -3,6 +3,9 @@ use shopify_function::Result;
 
 use serde::{Deserialize, Serialize};
 
+// Use stderr for debug logging
+use std::io::{self, Write};
+
 generate_types!(
     query_path = "./input.graphql",
     schema_path = "./schema.graphql"
@@ -28,14 +31,37 @@ fn function(input: input::ResponseData) -> Result<output::FunctionResult> {
         discount_application_strategy: output::DiscountApplicationStrategy::FIRST,
     };
 
+    // See https://shopify.dev/apps/checkout/delivery-customizations/getting-started
+    
+
+    // Debug logging
+    io::stderr().write_all(b"hello world")?;
+
+
     let _config = match input.discount_node.metafield {
         Some(input::InputDiscountNodeMetafield { value }) => 
             Configuration::from_str(&value),
         None => return Ok(no_discount),
-    };
+    };   
 
+   // See https://shopify.dev/api/functions/reference/order-discounts/graphql/functionresult
     Ok(output::FunctionResult {
-        discounts: vec![],
+        discounts: vec![output::Discount {
+            message: Some("Function order discount worked!".to_string()),
+            targets: vec![output::Target{
+                order_subtotal: Some(output::OrderSubtotalTarget {
+                    excluded_variant_ids: vec![]
+                }),
+                product_variant: None
+            }],
+            value: output::Value {
+                percentage: Some(output::Percentage {
+                    value: "30.0".to_string()
+                }),
+                fixed_amount: None
+            },
+            conditions: None
+        }],
         discount_application_strategy: output::DiscountApplicationStrategy::FIRST,
     })
 }

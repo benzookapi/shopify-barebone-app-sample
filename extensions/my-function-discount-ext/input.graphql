@@ -1,11 +1,10 @@
-query Input {
+query Input($namespace: String!, $key: String!) {
   cart {
     buyerIdentity {
       customer {
         email
-        metafield {
-          namespace
-          key
+        metafield (namespace: $namespace, key: $key) {
+          type
           value
         }
       }
