@@ -111,7 +111,7 @@ router.get('/', async (ctx, next) => {
 
   // See https://shopify.dev/apps/store/security/iframe-protection
   setContentSecurityPolicy(ctx, shop);
-  return ctx.render('index', {});
+  await ctx.render('index', {});
 
 });
 
