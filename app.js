@@ -599,6 +599,7 @@ router.get('/mocklogin', async (ctx, next) => {
   let details = '';
 
   // Get the shop data from the session token supposed to be passed from AppBridge which can never be falsified.
+  // For productinon code, this endpoint should be POST method to receive the token in the body, not the query.
   if (typeof ctx.request.query.sessiontoken !== UNDEFINED) {
     console.log('Session Token given');
     const token = ctx.request.query.sessiontoken;
