@@ -1,5 +1,6 @@
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
+import { getSessionToken } from "@shopify/app-bridge-utils";
 import { Page, Card, ResourceList, Icon, Text } from '@shopify/polaris';
 import { CircleRightMajor } from '@shopify/polaris-icons';
 
@@ -8,6 +9,14 @@ import { CircleRightMajor } from '@shopify/polaris-icons';
 function Index() {
     const app = useAppBridge();
     const redirect = Redirect.create(app);
+
+    // Supposed to be redirect to the external mock service login to connect the current shop and their users.
+    if (new URLSearchParams(window.location.search).get("external") != null) {
+        getSessionToken(app).then((sessionToken) => {
+            redirect.dispatch(Redirect.Action.REMOTE, `https://${window.location.hostname}/mocklogin?sessiontoken=${sessionToken}`);
+        });
+        return (<span></span>);
+    }
 
     return (
         <Page>

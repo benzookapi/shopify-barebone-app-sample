@@ -109,15 +109,9 @@ router.get('/', async (ctx, next) => {
     return;
   }
 
-  // If this is an embedded access, rendering the page directly withiout redirection.
-  // See https://shopify.dev/apps/auth/oauth/update 
-  if (isEmbedded(ctx)) {
-    // See https://shopify.dev/apps/store/security/iframe-protection
-    setContentSecurityPolicy(ctx, shop);
-    return ctx.render('index', {});
-  }
-  // Otherwise, this is not embedded = full window outside iframe and use direct redirection. 
-  ctx.redirect(`https://${getAdminFromShop(shop)}/apps/${api_res.data.app.handle}`);
+  // See https://shopify.dev/apps/store/security/iframe-protection
+  setContentSecurityPolicy(ctx, shop);
+  return ctx.render('index', {});
 
 });
 
@@ -302,6 +296,7 @@ router.get('/adminlink', async (ctx, next) => {
       }
 
       const id = ctx.request.query.id;
+
       // If an id is passed from the liked page like a product detail, retrieve its data by GraphQL.
       if (typeof id !== UNDEFINED) {
         let api_res = null;
@@ -338,13 +333,10 @@ router.get('/adminlink', async (ctx, next) => {
         }
         ctx.body.result.response = api_res;
       }
-
       ctx.status = 200;
       return;
-
     }
   }
-
   // If the access is not embedded or authenticated flow, 
   // this page gets redirtected to the embedded Shopify admin app page regardess embbedded or not by App Bridge force redirection config,
   // which is protected Shopify login if the access is by non logged in users or bot, etc. 
@@ -598,6 +590,42 @@ router.post('/webhookcommon', async (ctx, next) => {
   ctx.status = 200;
 });
 
+/* --- Mock login for external service connection demo --- */
+router.get('/mocklogin', async (ctx, next) => {
+  console.log("------------ mocklogin ------------");
+  console.log(`query ${JSON.stringify(ctx.request.query)}`);
+
+  let target = '';
+  let details = '';
+
+  // Get the shop data from the session token supposed to be passed from AppBridge which can never be falsified.
+  if (typeof ctx.request.query.sessiontoken !== UNDEFINED) {
+    console.log('Session Token given');
+    const token = ctx.request.query.sessiontoken;
+    if (!checkAuthFetchToken(token)[0]) {
+      ctx.body = "Signature unmatched. Incorrect session token sent";
+      ctx.status = 400;
+      return;
+    }
+    const shop = getShopFromAuthToken(token);
+
+    target = `<p>You are connecting to: <h3>${shop}</h3></p>`;
+
+    details = `<p><b>The following is the received session token with the shop data above which you can never falsify</b> 
+    (try it in <a href="https://jwt.io" target="_blank">jwt.io</a> by copying the text below and change the shop to paste to '?sessiontoken=' above).</p>
+    <pre>${token}</pre>
+    <p><a href="https://${getAdminFromShop(shop)}">Go back to Shopify admin</a></p>`;
+  }
+
+  ctx.body = `<h1>Welcome to my mock login for my dummy service</h1> 
+      ${target}
+      <p>Your email: <input /></p>
+      <p>Your password: <input /></p>
+      <p><button onClick="javascript:window.location.href='./mocklogin';">Login</button></p>
+      ${details}
+    `;
+
+});
 
 /* --- Check if the given signature is correct or not --- */
 // See https://shopify.dev/apps/auth/oauth/getting-started#step-2-verify-the-installation-request
