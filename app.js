@@ -375,7 +375,95 @@ router.get('/themeappextension', async (ctx, next) => {
 // See https://shopify.dev/apps/discounts
 router.get('/functiondiscount', async (ctx, next) => {
   console.log("+++++++++++++++ /functiondiscount +++++++++++++++");
-  //console.log(`query ${JSON.stringify(ctx.request.query)}`);
+  console.log(`query ${JSON.stringify(ctx.request.query)}`);
+
+  // Access by AppBride::authenticatedFetch
+  if (typeof ctx.request.header.authorization !== UNDEFINED) {
+    console.log('Authenticated fetch');
+    const token = getTokenFromAuthHeader(ctx);
+    if (!checkAuthFetchToken(token)[0]) {
+      ctx.body.result.message = "Signature unmatched. Incorrect authentication bearer sent";
+      ctx.status = 400;
+      return;
+    }
+
+    ctx.set('Content-Type', 'application/json');
+    ctx.body = {
+      "result": {
+        "message": "",
+        "response": {}
+      }
+    };
+
+    const shop = getShopFromAuthToken(token);
+    let shop_data = null;
+    try {
+      shop_data = await (getDB(shop));
+      if (shop_data == null) {
+        ctx.body.result.message = "Authorization failed. No shop data";
+        ctx.status = 400;
+        return;
+      }
+    } catch (e) {
+      ctx.body.result.message = "Internal error in retrieving shop data";
+      ctx.status = 500;
+      return;
+    }
+
+    const meta = ctx.request.query.meta;
+    const id = ctx.request.query.id;
+
+    let api_res = null;
+    try {
+      api_res = await (callGraphql(ctx, shop, `mutation discountAutomaticAppCreate($automaticAppDiscount: DiscountAutomaticAppInput!) {
+        discountAutomaticAppCreate(automaticAppDiscount: $automaticAppDiscount) {
+          automaticAppDiscount {
+            appDiscountType {
+              functionId
+              targetType
+            }
+            discountClass
+            discountId
+            title
+            startsAt
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+      `, null, GRAPHQL_PATH_ADMIN, {
+        "automaticAppDiscount": {
+          "combinesWith": {
+            "orderDiscounts": false,
+            "productDiscounts": false,
+            "shippingDiscounts": false
+          },
+          //"endsAt": "",
+          "functionId": id,
+          "metafields": [
+            {
+              "description": "Discount rate by customer metafields",
+              //"id": "",
+              "key": "customer_meta",
+              "namespace": "barebone_app_function_discount",
+              "type": "single_line_text_field",
+              "value": meta
+            }
+          ],
+          "startsAt": new Date().toISOString(),
+          "title": `Barebone App Function Discount`
+        }
+      }));
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+    }
+    ctx.body.result.response = api_res;
+    ctx.status = 200;
+    return;
+  }
+
   if (!checkSignature(ctx.request.query)) {
     ctx.status = 400;
     return;

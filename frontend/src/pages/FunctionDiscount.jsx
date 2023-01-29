@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 //import { Redirect } from '@shopify/app-bridge/actions';
-//import { getSessionToken, authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, List, Badge, TextField, Button } from '@shopify/polaris';
+import { authenticatedFetch } from "@shopify/app-bridge-utils";
+import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, Stack } from '@shopify/polaris';
 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
@@ -21,6 +21,9 @@ function FunctionDiscount() {
 
   const [id, setId] = useState('');
   const idChange = useCallback((newId) => setId(newId), []);
+
+  const [result, setResult] = useState('');
+  const [accessing, setAccessing] = useState(false);
 
   return (
     <Page title="Create your original order discount with Shopify Functions">
@@ -67,20 +70,33 @@ function FunctionDiscount() {
                 />
               </List.Item>
               <List.Item>
-                <Button primary onClick={() => {
-                  // See https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#simplified-installation-flow-with-deep-linking
-                  const path = `/themes/current/editor?context=apps&activateAppId=${MY_THEME_APP_EXT_ID}/app-embed-block`;
-                  console.log(path);
-                  redirect.dispatch(Redirect.Action.ADMIN_PATH, {
-                    path: path,
-                    newContext: true
-                  });
-                }}>
-                  Register your discount
-                </Button>
+                <Stack spacing="loose">
+                  <Button primary onClick={() => {
+                    setAccessing(true);
+                    // See https://shopify.dev/api/admin-graphql/2023-01/mutations/discountAutomaticAppCreate"
+                    authenticatedFetch(app)(`/functiondiscount?meta=${meta}&id=${id}`).then((response) => {
+                      response.json().then((json) => {
+                        console.log(JSON.stringify(json, null, 4));
+                        setAccessing(false);
+                        if (json.result.response.data.discountAutomaticAppCreate.userErrors.length == 0) {
+                          setResult('Success!');
+                        } else {
+                          setResult('Error!');
+                        }
+                      }).catch((e) => {
+                        console.log(`${e}`);
+                        setAccessing(false);
+                        setResult('Error!');
+                      });
+                    });
+                  }}>
+                    Register your discount
+                  </Button>
+                  <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
+                </Stack>
               </List.Item>
               <List.Item>
-                Go to <Link url={`https://${_getAdminFromShop(shop)}/discounts`} external={true}>Discounts</Link> to active and check <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your discount works with your specified customers
+                Go to <Link url={`https://${_getAdminFromShop(shop)}/discounts`} external={true}>Discounts</Link> to check if the discount is activated and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your discount works with your specified customers
               </List.Item>
             </List>
           </Layout.Section>
@@ -88,6 +104,13 @@ function FunctionDiscount() {
       </Card>
     </Page>
   );
+}
+
+function APIResult(props) {
+  if (props.loading) {
+    return <Spinner accessibilityLabel="Calling Order GraphQL" size="small" />;
+  }
+  return (<span>{props.res}</span>);
 }
 
 export default FunctionDiscount

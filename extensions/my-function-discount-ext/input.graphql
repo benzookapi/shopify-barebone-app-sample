@@ -1,6 +1,18 @@
 query Input {
+  cart {
+    buyerIdentity {
+      customer {
+        email
+        metafield {
+          namespace
+          key
+          value
+        }
+      }
+    }
+  }
   discountNode {
-    metafield(namespace: "my-function-discount-ext", key: "function-configuration") {
+    metafield(namespace: "barebone_app_function_discount", key: "customer_meta") {
       value
     }
   }

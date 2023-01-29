@@ -7,5 +7,5 @@ command = "cargo wasi build --release"
 path = "target/wasm32-wasi/release/my-function-discount-ext.wasm"
 
 [ui.paths]
-create = "/"
-details = "/"
+create = "/functiondiscount"
+details = "/functiondiscount"
