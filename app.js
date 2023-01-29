@@ -510,6 +510,45 @@ router.get('/appproxy', async (ctx, next) => {
 
 });
 
+/* --- Mock login for external service connection demo --- */
+// See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
+router.get('/mocklogin', async (ctx, next) => {
+  console.log("------------ mocklogin ------------");
+  console.log(`query ${JSON.stringify(ctx.request.query)}`);
+
+  let target = '';
+  let details = '';
+
+  // Get the shop data from the session token supposed to be passed from AppBridge which can never be falsified.
+  // For productinon code, this endpoint should be POST method to receive the token in the body, not the query.
+  if (typeof ctx.request.query.sessiontoken !== UNDEFINED) {
+    console.log('Session Token given');
+    const token = ctx.request.query.sessiontoken;
+    if (!checkAuthFetchToken(token)[0]) {
+      ctx.body = "Signature unmatched. Incorrect session token sent";
+      ctx.status = 400;
+      return;
+    }
+    const shop = getShopFromAuthToken(token);
+
+    target = `<p>You are connecting to: <h3>${shop}</h3></p>`;
+
+    details = `<p><b>The following is the received session token with the shop data above which you can never falsify</b> 
+    (try it in <a href="https://jwt.io" target="_blank">jwt.io</a> by copying the text below and change the shop to paste to '?sessiontoken=' above).</p>
+    <pre>${token}</pre>
+    <p><a href="https://${getAdminFromShop(shop)}">Go back to Shopify admin</a></p>`;
+  }
+
+  ctx.body = `<h1>Welcome to my mock login for my dummy service</h1> 
+      ${target}
+      <p>Your email: <input /></p>
+      <p>Your password: <input /></p>
+      <p><button onClick="javascript:window.location.href='./mocklogin';">Login</button></p>
+      ${details}
+    `;
+
+});
+
 /* 
  * 
  * --- GDPR Webhook for customer data request ---
@@ -588,44 +627,6 @@ router.post('/webhookcommon', async (ctx, next) => {
   }
 
   ctx.status = 200;
-});
-
-/* --- Mock login for external service connection demo --- */
-router.get('/mocklogin', async (ctx, next) => {
-  console.log("------------ mocklogin ------------");
-  console.log(`query ${JSON.stringify(ctx.request.query)}`);
-
-  let target = '';
-  let details = '';
-
-  // Get the shop data from the session token supposed to be passed from AppBridge which can never be falsified.
-  // For productinon code, this endpoint should be POST method to receive the token in the body, not the query.
-  if (typeof ctx.request.query.sessiontoken !== UNDEFINED) {
-    console.log('Session Token given');
-    const token = ctx.request.query.sessiontoken;
-    if (!checkAuthFetchToken(token)[0]) {
-      ctx.body = "Signature unmatched. Incorrect session token sent";
-      ctx.status = 400;
-      return;
-    }
-    const shop = getShopFromAuthToken(token);
-
-    target = `<p>You are connecting to: <h3>${shop}</h3></p>`;
-
-    details = `<p><b>The following is the received session token with the shop data above which you can never falsify</b> 
-    (try it in <a href="https://jwt.io" target="_blank">jwt.io</a> by copying the text below and change the shop to paste to '?sessiontoken=' above).</p>
-    <pre>${token}</pre>
-    <p><a href="https://${getAdminFromShop(shop)}">Go back to Shopify admin</a></p>`;
-  }
-
-  ctx.body = `<h1>Welcome to my mock login for my dummy service</h1> 
-      ${target}
-      <p>Your email: <input /></p>
-      <p>Your password: <input /></p>
-      <p><button onClick="javascript:window.location.href='./mocklogin';">Login</button></p>
-      ${details}
-    `;
-
 });
 
 /* --- Check if the given signature is correct or not --- */
