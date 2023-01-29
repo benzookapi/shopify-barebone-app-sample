@@ -97,7 +97,7 @@ Note that the built React code contains SHOPIFY_API_KEY value from its envrionme
 cd NGROK_DIR && ngrok http 3000
 ```
 
-4. Set `YOUR_APP_URL` (your ngrok or other platform URL) and `YOUR_APP_URL/callback` to your app settings in [partner dashboard](https://partners.shopify.com/) (_TIPS:_ If you add `?external=true` parameter to `YOUR_APP_URL`, the app UX turns into an service connector trying to bind Shopify ID and their uses). 
+4. Set `YOUR_APP_URL` (your ngrok or other platform URL) and `YOUR_APP_URL/callback` to your app settings in [partner dashboard](https://partners.shopify.com/) (if you add `?external=true` parameter to `YOUR_APP_URL`, the app UX turns into an service connector which try to connect Shopify stores and their users). 
 
 5. (For PostgreSQL user only,) create the following table in your database (in `psql` command or other tools).
 ```
