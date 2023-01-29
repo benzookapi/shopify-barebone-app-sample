@@ -440,6 +440,8 @@ router.get('/functiondiscount', async (ctx, next) => {
             {
               "description": "Discount rate by customer metafields",
               //"id": "",
+              // See https://shopify.dev/api/functions/input-query-variables
+              // Setting this metafield enables no code input data filtering.
               "key": "customer_meta",
               "namespace": "barebone_app_function_discount",
               "type": "json",
