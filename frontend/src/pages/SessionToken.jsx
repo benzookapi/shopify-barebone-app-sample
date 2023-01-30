@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { getSessionToken, authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, Button, Badge, TextField, List } from '@shopify/polaris';
+import { Page, Card, Layout, Link, Button, Badge, TextField } from '@shopify/polaris';
 
 import { _decodeSessionToken } from "../utils/my_util";
 
@@ -111,16 +111,11 @@ function SessionToken() {
       <Card title="Step 3: Use the session token validation for external service connection outside Shopify" sectioned={true}>
         <Layout>
           <Layout.Section>
-            <List type="bullet">
-              <List.Item>
-                If you want to connect to your own service like <Link url={`https://${window.location.hostname}/mocklogin`} external={true}>this</Link> outside Shopify Admin,
-                you can use the session token validation for getting target <Badge status="info">shop</Badge>in the secure way as follows.
-              </List.Item>
-              <List.Item>
-                If you add the same parameter to <Link url="https://shopify.dev/apps/deployment/web#step-5-update-urls-in-the-partner-dashboard" external={true}>YOUR_APP_URL</Link> (<Badge>https://{window.location.hostname}/?external=true</Badge>),
-                you can see it in the <b>app install flow and top page access</b>.
-              </List.Item>
-            </List>
+            <p>
+              If you want to connect to your own service like<Link url={`https://${window.location.hostname}/mocklogin`} external={true}>your own service</Link> outside Shopify Admin, 
+              for the validation of requests to external services who try to connect Shopify stores and their user accounts.
+              If you add the same parameter to <Link url="https://shopify.dev/apps/deployment/web#step-5-update-urls-in-the-partner-dashboard" external={true}>YOUR_APP_URL</Link> (<Badge>https://{window.location.hostname}/?external=true</Badge>), you can see it during the install too.
+            </p>
           </Layout.Section>
           <Layout.Section>
             <Button primary onClick={() => {
@@ -129,7 +124,7 @@ function SessionToken() {
                 // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
                 redirect.dispatch(Redirect.Action.REMOTE, { url: `https://${window.location.hostname}/mocklogin?sessiontoken=${sessionToken}`, newContext: true });
               });
-            }}>Connect to your service with the session token
+            }}>Connect to your service
             </Button>
           </Layout.Section>
         </Layout>
