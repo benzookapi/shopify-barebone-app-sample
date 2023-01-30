@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { getSessionToken, authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, Button, Badge, TextField } from '@shopify/polaris';
+import { Page, Card, Layout, Link, Button, Badge, TextField, List } from '@shopify/polaris';
 
 import { _decodeSessionToken } from "../utils/my_util";
 
@@ -14,6 +14,8 @@ function SessionToken() {
 
   const [raw, setRaw] = useState('');
   const [decoded, setDecoded] = useState('');
+
+  const [url, setUrl] = useState('');
   const [auth, setAuth] = useState('');
   const [res, setRes] = useState('');
 
@@ -28,7 +30,6 @@ function SessionToken() {
   };
 
   const [param, setParam] = useState('');
-  const [uri, setUri] = useState('');
 
   const paramChange = useCallback((newParam) => setParam(newParam), []);
 
@@ -73,7 +74,7 @@ function SessionToken() {
           </Layout.Section>
           <Layout.Section>
             <Button primary onClick={() => {
-              setUri('');
+              setUrl('');
               setAuth('');
               setRes('');
               // The external site access is blocked by CORS policy with the following error.
@@ -86,7 +87,7 @@ function SessionToken() {
               }).then((response) => {
                 response.json().then((json) => {
                   console.log(JSON.stringify(json, null, 4));
-                  setUri(foldLongLine(json.request_uri));
+                  setUrl(json.request_url);
                   setAuth(foldLongLine(json.authentication_bearer));
                   setRes(JSON.stringify(json.result, null, 4));
                 }).catch((e) => {
@@ -99,8 +100,8 @@ function SessionToken() {
             </Button>
           </Layout.Section>
           <Layout.Section>
-            <Badge>Request URI:</Badge>
-            <pre>{uri}</pre>
+            <Badge>Request URL:</Badge>
+            <pre>{url}</pre>
             <Badge>Request Authentication Bearer:</Badge>
             <pre>{auth}</pre>
             <Badge>My OAuth Authorization Result:</Badge>
@@ -111,11 +112,16 @@ function SessionToken() {
       <Card title="Step 3: Use the session token validation for external service connection outside Shopify" sectioned={true}>
         <Layout>
           <Layout.Section>
-            <p>
-              If you want to connect to your own service like<Link url={`https://${window.location.hostname}/mocklogin`} external={true}>your own service</Link> outside Shopify Admin, 
-              for the validation of requests to external services who try to connect Shopify stores and their user accounts.
-              If you add the same parameter to <Link url="https://shopify.dev/apps/deployment/web#step-5-update-urls-in-the-partner-dashboard" external={true}>YOUR_APP_URL</Link> (<Badge>https://{window.location.hostname}/?external=true</Badge>), you can see it during the install too.
-            </p>
+            <List type="bullet">
+              <List.Item>
+                If you want to connect to your own service like <Link url={`https://${window.location.hostname}/mocklogin`} external={true}>this</Link> outside Shopify Admin,
+                you can use the session token validation for getting target <Badge status="info">shop</Badge>in the secure way as follows.
+              </List.Item>
+              <List.Item>
+                If you add the same parameter to <Link url="https://shopify.dev/apps/deployment/web#step-5-update-urls-in-the-partner-dashboard" external={true}>YOUR_APP_URL</Link> (<Badge>https://{window.location.hostname}/?external=true</Badge>),
+                you can see it in the <b>app install flow and top page access</b>.
+              </List.Item>
+            </List>
           </Layout.Section>
           <Layout.Section>
             <Button primary onClick={() => {
@@ -124,7 +130,7 @@ function SessionToken() {
                 // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
                 redirect.dispatch(Redirect.Action.REMOTE, { url: `https://${window.location.hostname}/mocklogin?sessiontoken=${sessionToken}`, newContext: true });
               });
-            }}>Connect to your service
+            }}>Connect to your service with the session token
             </Button>
           </Layout.Section>
         </Layout>

@@ -195,7 +195,7 @@ router.get('/sessiontoken', async (ctx, next) => {
     ctx.set('Content-Type', 'application/json');
 
     ctx.body = {
-      "request_uri": `https://${ctx.request.hostname}${ctx.request.url}`,
+      "request_url": ctx.request.url,
       "authentication_bearer": token,
       "result": {
         "signature_verified": false,
