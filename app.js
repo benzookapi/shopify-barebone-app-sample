@@ -11,6 +11,7 @@ const crypto = require('crypto');
 
 const mongo = require('mongodb');
 const { Client } = require('pg');
+const mysql = require('mysql');
 
 const jwt_decode = require('jwt-decode');
 
@@ -58,6 +59,13 @@ const MONGO_COLLECTION = 'shops';
 // PostgreSQL Settings
 const POSTGRESQL_URL = `${process.env.SHOPIFY_POSTGRESQL_URL}`;
 const POSTGRESQL_TABLE = 'shops';
+
+// MySQL Settings
+const MYSQL_HOST = `${process.env.SHOPIFY_MYSQL_HOST}`;
+const MYSQL_USER = `${process.env.SHOPIFY_MYSQL_USER}`;
+const MYSQL_PASSWORD = `${process.env.SHOPIFY_MYSQL_PASSWORD}`;
+const MYSQL_DATABASE = `${process.env.SHOPIFY_MYSQL_DATABASE}`;
+const MYSQL_TABLE = 'shops';
 
 /* --- App top URL reigstered as the base one in the app settings in partner dashbord. --- */
 // See https://shopify.dev/apps/auth/oauth/getting-started
@@ -929,8 +937,8 @@ const insertDB = function (key, data) {
       // PostgreSQL
       return insertDBPostgreSQL(key, data);
     case 'MYSQL':
-    // MySQL
-    //break;
+      // MySQL
+      return insertDBMySQL(key, data);
     default:
       // MongoDB
       return insertDBMongo(key, data);
@@ -944,8 +952,8 @@ const getDB = function (key) {
       // PostgreSQL
       return getDBPostgreSQL(key);
     case 'MYSQL':
-    // MySQL
-    //break;
+      // MySQL
+      return getDBMySQL(key);
     default:
       // MongoDB
       return getDBMongo(key);
@@ -959,8 +967,8 @@ const setDB = function (key, data) {
       // PostgreSQL
       return setDBPostgreSQL(key, data);
     case 'MYSQL':
-    // MySQL
-    //break;
+      // MySQL
+      return setDBMySQL(key, data);
     default:
       // MongoDB
       return setDBMongo(key, data);
@@ -1117,6 +1125,102 @@ const setDBPostgreSQL = function (key, data) {
     }).catch(function (e) {
       console.log(`setDBPostgreSQL Error ${e}`);
       return reject(e);
+    });
+  });
+};
+
+/* --- Store Shopify data in database (MySQL) --- */
+const insertDBMySQL = function (key, data) {
+  return new Promise(function (resolve, reject) {
+    const connection = mysql.createConnection({
+      host: MYSQL_HOST,
+      user: MYSQL_USER,
+      password: MYSQL_PASSWORD,
+      database: MYSQL_DATABASE
+    });
+    connection.connect((e) => {
+      if (e) {
+        console.log(`insertDBMySQL Error ${e}`);
+        return reject(e);
+      }
+      //console.log(`insertDBMySQL Connected: ${MYSQL_HOST}`);
+      const sql = `INSERT INTO ${MYSQL_TABLE} ( _id, data, created_at, updated_at ) VALUES ('${key}', '${JSON.stringify(data)}', '${new Date().toISOString().replace('T', ' ').replace('Z', '')}',  '${new Date().toISOString().replace('T', ' ').replace('Z', '')}')`;
+      console.log(`insertDBMySQL:  ${sql}`);
+      connection.query(
+        sql,
+        (e, res) => {
+          if (e) {
+            console.log(`insertDBMySQL Error ${e}`);
+            return reject(e);
+          }
+          return resolve(0);
+        }
+      );
+    });
+  });
+};
+
+/* --- Retrive Shopify data in database (MySQL) --- */
+const getDBMySQL = function (key) {
+  return new Promise(function (resolve, reject) {
+    console.log(`getDBMySQL MYSQL_HOST ${MYSQL_HOST}`);
+    const connection = mysql.createConnection({
+      host: MYSQL_HOST,
+      user: MYSQL_USER,
+      password: MYSQL_PASSWORD,
+      database: MYSQL_DATABASE
+    });
+    connection.connect((e) => {
+      //console.log(`getDBMySQL Connected: ${MYSQL_HOST}`);
+      if (e) {
+        console.log(`getDBMySQL Error ${e}`);
+        return reject(e);
+      }
+      const sql = `SELECT data FROM ${MYSQL_TABLE} WHERE _id = '${key}'`;
+      console.log(`getDBMySQL:  ${sql}`);
+      connection.query(
+        sql,
+        (e, res) => {
+          if (e) {
+            console.log(`getDBMySQL Error ${e}`);
+            return reject(e);
+          }
+          if (res.length == 0) return resolve(null);
+          return resolve(JSON.parse(res[0].data));
+        }
+      );
+    });
+  });
+};
+
+/* --- Update Shopify data in database (MySQL) --- */
+const setDBMySQL = function (key, data) {
+  return new Promise(function (resolve, reject) {
+    console.log(`setDBMySQL MYSQL_HOST ${MYSQL_HOST}`);
+    const connection = mysql.createConnection({
+      host: MYSQL_HOST,
+      user: MYSQL_USER,
+      password: MYSQL_PASSWORD,
+      database: MYSQL_DATABASE
+    });
+    connection.connect((e) => {
+      //console.log(`setDBMySQL Connected: ${MYSQL_HOST}`);
+      const sql = `UPDATE ${MYSQL_TABLE} SET data = '${JSON.stringify(data)}', updated_at = '${new Date().toISOString().replace('T', ' ').replace('Z', '')}' WHERE _id = '${key}'`;
+      console.log(`setDBMySQL:  ${sql}`);
+      if (e) {
+        console.log(`setDBMySQL Error ${e}`);
+        return reject(e);
+      }
+      connection.query(
+        sql,
+        (e, res) => {
+          if (e) {
+            console.log(`setDBMySQL Error ${e}`);
+            return reject(e);
+          }
+          return resolve(res.affectedRows);
+        }
+      );
     });
   });
 };

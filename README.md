@@ -73,7 +73,7 @@ In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/co
   SHOPIFY_API_VERSION:          2023-04
   SHOPIFY_API_SCOPES:           write_products,write_discounts,read_orders,write_payment_customizations
 
-  SHOPIFY_DB_TYPE:              MONGODB (Default) / POSTGRESQL
+  SHOPIFY_DB_TYPE:              MONGODB (Default) / POSTGRESQL / MYSQL
 
   // The followings are required if you set SHOPIFY_DB_TYPE 'MONGODB'
   SHOPIFY_MONGO_DB_NAME:        YOUR_DB_NAME (any name is OK)
@@ -81,6 +81,13 @@ In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/co
 
   // The followings are required if you set SHOPIFY_DB_TYPE 'POSTGRESQL'
   SHOPIFY_POSTGRESQL_URL:       postgres://YOUR_USER:YOUR_PASSWORD@YOUR_DOMAIN(:YOUR_PORT)/YOUR_DB_NAME
+
+  // The followings are required if you set SHOPIFY_DB_TYPE 'MYSQL'
+  SHOPIFY_MYSQL_HOST:           YOUR_DOMAIN
+  SHOPIFY_MYSQL_USER:           YOUR_USER
+  SHOPIFY_MYSQL_PASSWORD:       YOUR_PASSWORD
+  SHOPIFY_MYSQL_DATABASE:       YOUR_DB_NAME
+
 ```
 
 2. Build and run the app server locally or in cloud platforms. All settings are described in 'package.json'.
@@ -99,9 +106,16 @@ cd NGROK_DIR && ngrok http 3000
 
 4. Set `YOUR_APP_URL` (your ngrok or other platform `root` URL) and `YOUR_APP_URL/callback` to your app settings in [partner dashboard](https://partners.shopify.com/) (if you add `?external=true` parameter to `YOUR_APP_URL`, the app UX turns into a service connector which tries to connect Shopify stores and their users). 
 
-5. (For PostgreSQL user only,) create the following table in your database (in `psql` command or other tools).
+5. (For PostgreSQL or MySQL users only,) create the following table in your database (in `psql` or `mysql` command or other tools).
 ```
+For PostgreSQL:
+
 CREATE TABLE shops ( _id VARCHAR NOT NULL PRIMARY KEY, data json NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL );
+
+For MySQL:
+
+CREATE TABLE shops ( _id VARCHAR(500) NOT NULL PRIMARY KEY, data JSON NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL );
+
 ```
 6. For CLI generated extensions, execute `npm run deploy -- --reset` and follow its instruction (choose your partner account, connecting to the exising app, etc.) which registers extensions to your exising app and create `/.env` file which has extensiton ids used by this sample app. After the command ends  successfully, go to the created extension in your [partner dashboard](https://partners.shopify.com/) and enable its dev. preview if available (it's enough for testing in development stores).
 
