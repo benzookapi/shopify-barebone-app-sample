@@ -1,6 +1,18 @@
 query Input {
+  cart {
+    deliveryGroups {
+      selectedDeliveryOption {
+        title
+        handle
+      }
+    }
+  }
+  paymentMethods {
+    id
+    name
+  }
   paymentCustomization {
-    metafield(namespace: "my-function-payment-ext", key: "function-configuration") {
+    metafield(namespace: "barebone_app_function_payment", key: "filter") {
       value
     }
   }

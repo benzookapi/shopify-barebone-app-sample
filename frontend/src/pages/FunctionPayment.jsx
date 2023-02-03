@@ -37,13 +37,13 @@ function FunctionPayment() {
           </Layout.Section>
           <Layout.Section>
             <List type="number">
-              <List.Item>Input a <Badge>payment method name</Badge> which you want to show only, from <Link url={`https://${_getAdminFromShop(shop)}/settings/payments`} external={true}>payment settings</Link> or <Link url={`https://${_getAdminFromShop(shop)}/orders`} external={true}>past orders</Link>
+              <List.Item>Input a <Badge>payment method name</Badge> which you want to show only, from <Link url={`https://${shop}`} external={true}>your checkout page</Link> (note that the method name needs to be <b>the buyer facing one</b>, not admin).
                 <TextField
                   label=""
                   value={method}
                   onChange={methodChange}
                   autoComplete="off"
-                  placeholder="Example: MyTestPay2"
+                  placeholder="Example: MyTestAppBuyer"
                 />
               </List.Item>
               <List.Item>Input a <Badge>shipping rate name</Badge> which buyers select when the payment method shows up above, from <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} external={true}>shipping settings</Link> or <Link url={`https://${_getAdminFromShop(shop)}/orders`} external={true}>past orders</Link>
@@ -103,7 +103,7 @@ function FunctionPayment() {
                 </Stack>
               </List.Item>
               <List.Item>
-                Go to <Link url={`https://${_getAdminFromShop(shop)}/discounts`} external={true}>Discounts</Link> to check if the discount is activated and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your discount works with your specified customers
+                Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/payments`} external={true}>payment settings</Link> to check if the customization is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your customization works with your selected shipping rate.
               </List.Item>
             </List>
           </Layout.Section>

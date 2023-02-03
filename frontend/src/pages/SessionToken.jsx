@@ -29,10 +29,6 @@ function SessionToken() {
     return res;
   };
 
-  const [param, setParam] = useState('');
-
-  const paramChange = useCallback((newParam) => setParam(newParam), []);
-
   return (
     <Page title="Getting started with session token authentication">
       <Card title="Step 1: Get a session token" sectioned={true}>
@@ -64,15 +60,6 @@ function SessionToken() {
             <Link url="https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests" external={true}>Dev. doc</Link>
           </Layout.Section>
           <Layout.Section>
-            <TextField
-              label="Input your query params"
-              value={param}
-              onChange={paramChange}
-              autoComplete="off"
-              placeholder="Example: my_key=1&my_val=aaa"
-            />
-          </Layout.Section>
-          <Layout.Section>
             <Button primary onClick={() => {
               setUrl('');
               setAuth('');
@@ -80,7 +67,7 @@ function SessionToken() {
               // The external site access is blocked by CORS policy with the following error.
               // "Access to fetch at 'https://XXX' from origin 'https://YYY' has been blocked by CORS policy:"
               //authenticatedFetch(app)(`https://shopify-barebone-app-sample.onrender.com/sessiontoken?${param}`, {
-              authenticatedFetch(app)(`/sessiontoken?${param}`, {
+              authenticatedFetch(app)(`/authenticated`, {
                 /*method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: `{}`*/

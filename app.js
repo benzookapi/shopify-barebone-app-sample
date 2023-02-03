@@ -182,67 +182,6 @@ router.get('/callback', async (ctx, next) => {
 // See https://shopify.dev/apps/auth/oauth/session-tokens
 router.get('/sessiontoken', async (ctx, next) => {
   console.log("+++++++++++++++ /sessiontoken +++++++++++++++");
-
-  if (typeof ctx.request.header.authorization !== UNDEFINED) {
-    console.log("This is authenticatedFetch from App Bridge = My own OAuth 2.0 Flow");
-    console.log(`request: ${JSON.stringify(ctx.request, null, 4)}`);
-
-    // The token is the same as the client session token given by App Bridge in 'Authorization Bearer' for OAuth 2.0 Flow which encodes shop, app id, etc for YOUR OWN authorization.
-    // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
-    // See https://www.rfc-editor.org/rfc/rfc6750
-    const token = getTokenFromAuthHeader(ctx);
-
-    ctx.set('Content-Type', 'application/json');
-
-    ctx.body = {
-      "request_url": ctx.request.url,
-      "authentication_bearer": token,
-      "result": {
-        "signature_verified": false,
-        "signature_generated": '',
-        "shop_from_payload": '',
-        "access_token": '',
-        "message": ''
-      }
-    };
-
-    // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#verify-the-session-tokens-signature    
-    const [verified, sig] = checkAuthFetchToken(token);
-    ctx.body.result.signature_generated = sig;
-    if (!verified) {
-      ctx.body.result.message = "Signature unmatched. Incorrect authentication bearer sent";
-      ctx.status = 400;
-      return;
-    }
-    ctx.body.result.signature_verified = true;
-
-    // If the signature gets verified, we trust the token payload to get stored token for the given shop.
-    // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#optional-obtain-session-details-and-verify-the-session-token-manually
-    const shop = getShopFromAuthToken(token);
-    ctx.body.result.shop_from_payload = shop;
-
-    let shop_data = null;
-    try {
-      shop_data = await (getDB(shop));
-      if (shop_data == null) {
-        ctx.body.result.message = "Authorization failed. No shop data";
-        ctx.status = 400;
-        return;
-      }
-    } catch (e) {
-      ctx.body.result.message = "Internal error in retrieving shop data";
-      ctx.status = 500;
-      return;
-    }
-
-    // Return the stored access token for the given shop as my OAuth 2.0 flow suceess.
-    ctx.body.result.access_token = shop_data.access_token;
-    ctx.body.result.message = "Successfully authorized!";
-    ctx.status = 200;
-    return;
-  }
-
-  // The followings are normal steps to render the React page.
   if (!checkSignature(ctx.request.query)) {
     ctx.status = 400;
     return;
@@ -250,6 +189,67 @@ router.get('/sessiontoken', async (ctx, next) => {
   const shop = ctx.request.query.shop;
   setContentSecurityPolicy(ctx, shop);
   await ctx.render('index', {});
+
+});
+
+/* --- authenticated fetch endpoint --- */
+// See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
+router.get('/authenticated', async (ctx, next) => {
+  console.log("+++++++++++++++ /authenticated +++++++++++++++");
+  console.log(`request: ${JSON.stringify(ctx.request, null, 4)}`);
+
+  // The token is the same as the client session token given by App Bridge in 'Authorization Bearer' for OAuth 2.0 Flow which encodes shop, app id, etc for YOUR OWN authorization.
+  // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
+  // See https://www.rfc-editor.org/rfc/rfc6750
+  const token = getTokenFromAuthHeader(ctx);
+
+  ctx.set('Content-Type', 'application/json');
+
+  ctx.body = {
+    "request_url": ctx.request.url,
+    "authentication_bearer": token,
+    "result": {
+      "signature_verified": false,
+      "signature_generated": '',
+      "shop_from_payload": '',
+      "access_token": '',
+      "message": ''
+    }
+  };
+
+  // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#verify-the-session-tokens-signature    
+  const [verified, sig] = checkAuthFetchToken(token);
+  ctx.body.result.signature_generated = sig;
+  if (!verified) {
+    ctx.body.result.message = "Signature unmatched. Incorrect authentication bearer sent";
+    ctx.status = 400;
+    return;
+  }
+  ctx.body.result.signature_verified = true;
+
+  // If the signature gets verified, we trust the token payload to get stored token for the given shop.
+  // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#optional-obtain-session-details-and-verify-the-session-token-manually
+  const shop = getShopFromAuthToken(token);
+  ctx.body.result.shop_from_payload = shop;
+
+  let shop_data = null;
+  try {
+    shop_data = await (getDB(shop));
+    if (shop_data == null) {
+      ctx.body.result.message = "Authorization failed. No shop data";
+      ctx.status = 400;
+      return;
+    }
+  } catch (e) {
+    ctx.body.result.message = "Internal error in retrieving shop data";
+    ctx.status = 500;
+    return;
+  }
+
+  // Return the stored access token for the given shop as my OAuth 2.0 flow suceess.
+  ctx.body.result.access_token = shop_data.access_token;
+  ctx.body.result.message = "Successfully authorized!";
+  ctx.status = 200;
 
 });
 
@@ -359,12 +359,10 @@ router.get('/adminlink', async (ctx, next) => {
 // See https://shopify.dev/apps/online-store/theme-app-extensions
 router.get('/themeappextension', async (ctx, next) => {
   console.log("+++++++++++++++ /themeappextension +++++++++++++++");
-  //console.log(`query ${JSON.stringify(ctx.request.query)}`);
   if (!checkSignature(ctx.request.query)) {
     ctx.status = 400;
     return;
   }
-
   const shop = ctx.request.query.shop;
   setContentSecurityPolicy(ctx, shop);
   await ctx.render('index', {});
@@ -556,20 +554,15 @@ router.get('/functionpayment', async (ctx, next) => {
           "functionId": id,
           "metafields": [
             {
-              "description": "Payment method to show",
+              "description": "Payment method and shipping rate filter",
               //"id": "",
-              "key": "payment_method",
+              "key": "filter",
               "namespace": "barebone_app_function_payment",
-              "type": "single_line_text_field",
-              "value": method
-            },
-            {
-              "description": "Used shipping rate",
-              //"id": "",
-              "key": "shipping_rate",
-              "namespace": "barebone_app_function_payment",
-              "type": "single_line_text_field",
-              "value": rate
+              "type": "json",
+              "value": JSON.stringify({
+                "method": method,
+                "rate": rate
+              })
             }
           ],
           "title": "Barebone App Function Payment"
