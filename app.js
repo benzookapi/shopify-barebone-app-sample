@@ -519,15 +519,15 @@ router.get('/functionshipping', async (ctx, next) => {
       return;
     }
 
-    const method = ctx.request.query.method;
     const rate = ctx.request.query.rate;
+    const zip = ctx.request.query.zip;
     const id = ctx.request.query.id;
 
     let api_res = null;
     try {
-      api_res = await (callGraphql(ctx, shop, `mutation paymentCustomizationCreate($paymentCustomization: PaymentCustomizationInput!) {
-        paymentCustomizationCreate(paymentCustomization: $paymentCustomization) {
-          paymentCustomization {
+      api_res = await (callGraphql(ctx, shop, `mutation deliveryCustomizationCreate($deliveryCustomization: DeliveryCustomizationInput!) {
+        deliveryCustomizationCreate(deliveryCustomization: $deliveryCustomization) {
+          deliveryCustomization {
             enabled
             id
             functionId
@@ -549,23 +549,23 @@ router.get('/functionshipping', async (ctx, next) => {
         }
       }
       `, null, GRAPHQL_PATH_ADMIN, {
-        "paymentCustomization": {
+        "deliveryCustomization": {
           "enabled": true,
           "functionId": id,
           "metafields": [
             {
-              "description": "Payment method and shipping rate filter",
+              "description": "Shipping rate and zip code filter",
               //"id": "",
               "key": "filter",
-              "namespace": "barebone_app_function_payment",
+              "namespace": "barebone_app_function_shipping",
               "type": "json",
               "value": JSON.stringify({
-                "method": method,
-                "rate": rate
+                "rate": rate,
+                "zip": zip
               })
             }
           ],
-          "title": "Barebone App Function Payment"
+          "title": "Barebone App Function Shipping"
         }
       }));
     } catch (e) {

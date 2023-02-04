@@ -46,7 +46,7 @@ fn function(input: input::ResponseData) -> Result<output::FunctionResult> {
 
     // See https://shopify.dev/apps/checkout/payment-customizations/getting-started
     let hide_payment_method = input.payment_methods.iter()
-    .find(|&method| {
+    .find(|&method| { // find = return the 1st one
         if is_hide {
             method.name.to_string().ne(&_config.method)
         } else {

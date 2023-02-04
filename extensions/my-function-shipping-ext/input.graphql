@@ -1,6 +1,17 @@
 query Input {
+  cart {
+    deliveryGroups {
+      deliveryAddress {
+        zip
+      }
+      deliveryOptions {
+        handle
+        title
+      }
+    }
+  }
   deliveryCustomization {
-    metafield(namespace: "my-function-shipping-ext", key: "function-configuration") {
+    metafield(namespace: "barebone_app_function_shipping", key: "filter") {
       value
     }
   }
