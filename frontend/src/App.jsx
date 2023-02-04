@@ -16,7 +16,7 @@ import FunctionDiscount from './pages/FunctionDiscount';
 import FunctionShipping from './pages/FunctionShipping';
 import FunctionPayment from './pages/FunctionPayment';
 
-import { _getAdminFromShop } from "./utils/my_util";
+import { _getAdminFromShop, _getShopFromQuery } from "./utils/my_util";
 
 // See https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup
 const config = {
@@ -31,7 +31,7 @@ const config = {
 // See https://shopify.dev/apps/auth/oauth/getting-started#step-6-redirect-to-your-apps-ui
 if (config.host == null) {
   console.log(`The config.host is null, being set from 'shop'.`);
-  config.host = window.btoa(_getAdminFromShop(new URLSearchParams(window.location.search).get("shop"))).replace('=', '');
+  config.host = window.btoa(_getAdminFromShop(_getShopFromQuery(window))).replace(/=/g, '');
 }
 
 console.log(`AppBrige settings: config.apiKey [${config.apiKey}] config.host [${config.host}] config.forceRedirect [${config.forceRedirect}]`);
