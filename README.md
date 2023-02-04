@@ -145,13 +145,13 @@ shop/redact:  /webhookgdprshopdel
 
 # Sample list
 
-- _Session Token_: '/sessiontoken' 
+- _Session Token_: ['/sessiontoken'](https://user-images.githubusercontent.com/899580/216690835-a8615fb0-0a91-4357-9548-e551a46093f7.mp4) 
   - What's App Bridge session token about and how the authenticated request works.
-- _Admin Link_: '/adminlink' 
+- _Admin Link_: ['/adminlink'](https://user-images.githubusercontent.com/899580/216701356-63f44dbe-8525-4d53-a721-6a729b0cd126.mp4) 
   - How to manage and protect admin links regardless of embedded or unembedded.
-- _Theme App Extension_: '/themeappextension' 
+- _Theme App Extension_: ['/themeappextension'](https://user-images.githubusercontent.com/899580/216705808-70d3b6ad-f7b7-4091-95ec-c45cc9a79502.mp4) 
   - Basis usage in combination with App Proxies and Theme Editor
-- _Function Discount_: '/functiondiscount' 
+- _Function Discount_: ['/functiondiscount'](https://user-images.githubusercontent.com/899580/216708433-be7bbfbd-30aa-480e-a165-e528f33f5901.mp4) 
   - Discount implementation by Shopify Functions in combination with customer metafields
 - _Function Shipping_: '/functionshipping' 
   - Shipping (Delivery option) switching by Shopify Functions in combination with customer metafields
