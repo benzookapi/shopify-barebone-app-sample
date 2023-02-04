@@ -480,6 +480,113 @@ router.get('/functiondiscount', async (ctx, next) => {
 
 });
 
+/* --- Function Shipping method sample endpoint --- */
+// See https://shopify.dev/apps/checkout/delivery-customizations
+router.get('/functionshipping', async (ctx, next) => {
+  console.log("+++++++++++++++ /functionshipping +++++++++++++++");
+  console.log(`query ${JSON.stringify(ctx.request.query)}`);
+
+  // Access by AppBride::authenticatedFetch
+  if (typeof ctx.request.header.authorization !== UNDEFINED) {
+    console.log('Authenticated fetch');
+    const token = getTokenFromAuthHeader(ctx);
+    if (!checkAuthFetchToken(token)[0]) {
+      ctx.body.result.message = "Signature unmatched. Incorrect authentication bearer sent";
+      ctx.status = 400;
+      return;
+    }
+
+    ctx.set('Content-Type', 'application/json');
+    ctx.body = {
+      "result": {
+        "message": "",
+        "response": {}
+      }
+    };
+
+    const shop = getShopFromAuthToken(token);
+    let shop_data = null;
+    try {
+      shop_data = await (getDB(shop));
+      if (shop_data == null) {
+        ctx.body.result.message = "Authorization failed. No shop data";
+        ctx.status = 400;
+        return;
+      }
+    } catch (e) {
+      ctx.body.result.message = "Internal error in retrieving shop data";
+      ctx.status = 500;
+      return;
+    }
+
+    const method = ctx.request.query.method;
+    const rate = ctx.request.query.rate;
+    const id = ctx.request.query.id;
+
+    let api_res = null;
+    try {
+      api_res = await (callGraphql(ctx, shop, `mutation paymentCustomizationCreate($paymentCustomization: PaymentCustomizationInput!) {
+        paymentCustomizationCreate(paymentCustomization: $paymentCustomization) {
+          paymentCustomization {
+            enabled
+            id
+            functionId
+            title
+            metafields (first: 10) {
+              edges {
+                node {
+                  namespace
+                  key
+                  value
+                }
+              }
+            }
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+      `, null, GRAPHQL_PATH_ADMIN, {
+        "paymentCustomization": {
+          "enabled": true,
+          "functionId": id,
+          "metafields": [
+            {
+              "description": "Payment method and shipping rate filter",
+              //"id": "",
+              "key": "filter",
+              "namespace": "barebone_app_function_payment",
+              "type": "json",
+              "value": JSON.stringify({
+                "method": method,
+                "rate": rate
+              })
+            }
+          ],
+          "title": "Barebone App Function Payment"
+        }
+      }));
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+    }
+    ctx.body.result.response = api_res;
+    ctx.status = 200;
+    return;
+  }
+
+  if (!checkSignature(ctx.request.query)) {
+    ctx.status = 400;
+    return;
+  }
+
+  const shop = ctx.request.query.shop;
+  setContentSecurityPolicy(ctx, shop);
+  await ctx.render('index', {});
+
+});
+
 /* --- Function Payment method sample endpoint --- */
 // See https://shopify.dev/apps/checkout/payment-customizations
 router.get('/functionpayment', async (ctx, next) => {

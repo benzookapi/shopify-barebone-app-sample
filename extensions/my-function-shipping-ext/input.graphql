@@ -1,0 +1,7 @@
+query Input {
+  deliveryCustomization {
+    metafield(namespace: "my-function-shipping-ext", key: "function-configuration") {
+      value
+    }
+  }
+}

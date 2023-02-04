@@ -13,6 +13,7 @@ import SessionToken from './pages/SessionToken';
 import AdminLink from './pages/AdminLink';
 import ThemeAppExtension from './pages/ThemeAppExtension';
 import FunctionDiscount from './pages/FunctionDiscount';
+import FunctionShipping from './pages/FunctionShipping';
 import FunctionPayment from './pages/FunctionPayment';
 
 import { _getAdminFromShop } from "./utils/my_util";
@@ -134,6 +135,7 @@ function App() {
             <Route path="/adminlink" element={<AdminLink />} />
             <Route path="/themeappextension" element={<ThemeAppExtension />} />
             <Route path="/functiondiscount" element={<FunctionDiscount />} />
+            <Route path="/functionshipping" element={<FunctionShipping />} />
             <Route path="/functionpayment" element={<FunctionPayment />} />
           </Routes>
         </BrowserRouter>

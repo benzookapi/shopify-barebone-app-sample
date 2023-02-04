@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
-//import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
 import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, Stack } from '@shopify/polaris';
 
@@ -12,7 +11,6 @@ import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 // See https://shopify.dev/api/functions/reference/order-discounts/
 function FunctionDiscount() {
   const app = useAppBridge();
-  //const redirect = Redirect.create(app);
 
   const shop = _getShopFromQuery(window);
 

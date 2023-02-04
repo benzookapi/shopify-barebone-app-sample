@@ -5,20 +5,20 @@ import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, Stac
 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
-// Shopify Functions for payment method sample
-// See https://shopify.dev/apps/checkout/payment-customizations
+// Shopify Functions for shipping method sample
+// See https://shopify.dev/apps/checkout/delivery-instructions
 // This sample doesn't use Shopify given libraries for the app UX, create an extention manually. 
-// See https://shopify.dev/api/functions/reference/payment-customization
-function FunctionPayment() {
+// See https://shopify.dev/api/functions/reference/delivery-customization
+function FunctionShipping() {
   const app = useAppBridge();
 
   const shop = _getShopFromQuery(window);
 
-  const [method, setMethod] = useState('');
-  const methodChange = useCallback((newMethod) => setMethod(newMethod), []);
-
   const [rate, setRate] = useState('');
   const rateChange = useCallback((newRate) => setRate(newRate), []);
+
+  const [zip, setZip] = useState('');
+  const zipChange = useCallback((newZip) => setZip(newZip), []);
 
   const [id, setId] = useState('');
   const idChange = useCallback((newId) => setId(newId), []);
@@ -27,24 +27,15 @@ function FunctionPayment() {
   const [accessing, setAccessing] = useState(false);
 
   return (
-    <Page title="Create your original payment method filtering with Shopify Functions">
-      <Card title="Step 1: Specify which payment method shows up only with which shipping rate used" sectioned={true}>
+    <Page title="Create your original shipping rate filtering with Shopify Functions">
+      <Card title="Step 1: Specify which shipping rate shows up only with which zip code input" sectioned={true}>
         <Layout>
           <Layout.Section>
-            <Link url="https://shopify.dev/apps/checkout/payment-customizations" external={true}>Dev. doc</Link>
+            <Link url="https://shopify.dev/apps/checkout/delivery-instructions" external={true}>Dev. doc</Link>
           </Layout.Section>
           <Layout.Section>
             <List type="number">
-              <List.Item>Input a <Badge>payment method name</Badge> which you want to show only, from <Link url={`https://${shop}`} external={true}>your checkout page</Link> (note that the method name needs to be <b>the buyer facing one</b>, not admin).
-                <TextField
-                  label=""
-                  value={method}
-                  onChange={methodChange}
-                  autoComplete="off"
-                  placeholder="Example: MyTestAppBuyer"
-                />
-              </List.Item>
-              <List.Item>Input a <Badge>shipping rate name</Badge> which buyers select when the payment method shows up above, from <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} external={true}>shipping settings</Link> or <Link url={`https://${_getAdminFromShop(shop)}/orders`} external={true}>past orders</Link>
+              <List.Item>Input a <Badge>shipping rate name</Badge> which you want to show only, from <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} external={true}>shipping settings</Link>.
                 <TextField
                   label=""
                   value={rate}
@@ -53,14 +44,23 @@ function FunctionPayment() {
                   placeholder="Example: Standard"
                 />
               </List.Item>
+              <List.Item>Input a <Badge>zip code</Badge> which buyers input in their shipping address when the shipping rate shows up above.
+                <TextField
+                  label=""
+                  value={zip}
+                  onChange={zipChange}
+                  autoComplete="off"
+                  placeholder="Example: 107-6245"
+                />
+              </List.Item>
             </List>
           </Layout.Section>
         </Layout>
       </Card>
-      <Card title="Step 2: Create your payment customization and active it" sectioned={true}>
+      <Card title="Step 2: Create your delivery customization and active it" sectioned={true}>
         <Layout>
           <Layout.Section>
-            <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/paymentCustomizationCreate" external={true}>Dev. doc</Link>
+            <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/deliveryCustomizationCreate" external={true}>Dev. doc</Link>
           </Layout.Section>
           <Layout.Section>
             <List type="number">
@@ -71,19 +71,19 @@ function FunctionPayment() {
                   value={id}
                   onChange={idChange}
                   autoComplete="off"
-                  placeholder="Example: 01GQZ4VR42WB6BHKZQ9XME2SN4"
+                  placeholder="Example: 01GRE5XPEP3WDTNA1H8EV8ZMV9"
                 />
               </List.Item>
               <List.Item>
                 <Stack spacing="loose">
                   <Button primary onClick={() => {
                     setAccessing(true);
-                    // See https://shopify.dev/api/admin-graphql/2023-04/mutations/paymentCustomizationCreate"
-                    authenticatedFetch(app)(`/functionpayment?method=${method}&rate=${rate}&id=${id}`).then((response) => {
+                    // See https://shopify.dev/api/admin-graphql/2023-04/mutations/deliveryCustomizationCreate"
+                    authenticatedFetch(app)(`/functionshipping?rate=${rate}&zip=${zip}&id=${id}`).then((response) => {
                       response.json().then((json) => {
                         console.log(JSON.stringify(json, null, 4));
                         setAccessing(false);
-                        if (json.result.response.data.paymentCustomizationCreate.userErrors.length == 0) {
+                        if (json.result.response.data.deliveryCustomizationCreate.userErrors.length == 0) {
                           setResult('Success!');
                         } else {
                           setResult('Error!');
@@ -95,13 +95,13 @@ function FunctionPayment() {
                       });
                     });
                   }}>
-                    Create your payment customization
+                    Create your delivery customization
                   </Button>
                   <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
                 </Stack>
               </List.Item>
               <List.Item>
-                Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/payments`} external={true}>payment settings</Link> to check if the customization is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your customization works with your selected shipping rate.
+                Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/shippings`} external={true}>shipping settings</Link> to check if the customization is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your customization works with your input zip code.
               </List.Item>
             </List>
           </Layout.Section>
@@ -118,4 +118,4 @@ function APIResult(props) {
   return (<span>{props.res}</span>);
 }
 
-export default FunctionPayment
+export default FunctionShipping

@@ -1,0 +1,11 @@
+name = "my-function-shipping-ext"
+type = "delivery_customization"
+api_version = "2023-04"
+
+[build]
+command = "cargo wasi build --release"
+path = "target/wasm32-wasi/release/my-function-shipping-ext.wasm"
+
+[ui.paths]
+create = "/"
+details = "/"
