@@ -65,18 +65,10 @@ function Index() {
                                 redirect.dispatch(Redirect.Action.APP, '/functionshipping');
                             },
                             name: 'Function Shipping',
-                            location: 'Function implementation for shipping (delivery option)',
+                            location: 'Function implementation for shipping rates based on delivery address zip code',
                         },
                         {
                             id: 6,
-                            onClick: (id) => {
-                                redirect.dispatch(Redirect.Action.APP, '/functionshipping');
-                            },
-                            name: 'Function Shipping',
-                            location: 'Function implementation for shipping methods based on delivery address zip code',
-                        },
-                        {
-                            id: 7,
                             onClick: (id) => {
                                 redirect.dispatch(Redirect.Action.APP, '/functionpayment');
                             },

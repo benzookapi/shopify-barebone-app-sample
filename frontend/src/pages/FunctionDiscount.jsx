@@ -53,7 +53,7 @@ function FunctionDiscount() {
       <Card title="Step 2: Register your discount and active it" sectioned={true}>
         <Layout>
           <Layout.Section>
-            <Link url="https://shopify.dev/api/admin-graphql/2023-01/mutations/discountAutomaticAppCreate" external={true}>Dev. doc</Link>
+            <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/discountAutomaticAppCreate" external={true}>Dev. doc</Link>
           </Layout.Section>
           <Layout.Section>
             <List type="number">

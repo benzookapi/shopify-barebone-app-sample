@@ -6,7 +6,7 @@ import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, Stac
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
 // Shopify Functions for shipping method sample
-// See https://shopify.dev/apps/checkout/delivery-instructions
+// See https://shopify.dev/apps/checkout/delivery-customizations
 // This sample doesn't use Shopify given libraries for the app UX, create an extention manually. 
 // See https://shopify.dev/api/functions/reference/delivery-customization
 function FunctionShipping() {
@@ -31,7 +31,7 @@ function FunctionShipping() {
       <Card title="Step 1: Specify which shipping rate shows up only with which zip code input" sectioned={true}>
         <Layout>
           <Layout.Section>
-            <Link url="https://shopify.dev/apps/checkout/delivery-instructions" external={true}>Dev. doc</Link>
+            <Link url="https://shopify.dev/api/functions/reference/delivery-customization" external={true}>Dev. doc</Link>
           </Layout.Section>
           <Layout.Section>
             <List type="number">
@@ -101,7 +101,7 @@ function FunctionShipping() {
                 </Stack>
               </List.Item>
               <List.Item>
-                Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/shippings`} external={true}>shipping settings</Link> to check if the customization is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your customization works with your input zip code.
+                Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} external={true}>shipping settings</Link> to check if the customization is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your customization works with your input zip code.
               </List.Item>
             </List>
           </Layout.Section>

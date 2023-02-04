@@ -31,7 +31,7 @@ function FunctionPayment() {
       <Card title="Step 1: Specify which payment method shows up only with which shipping rate used" sectioned={true}>
         <Layout>
           <Layout.Section>
-            <Link url="https://shopify.dev/apps/checkout/payment-customizations" external={true}>Dev. doc</Link>
+            <Link url="https://shopify.dev/api/functions/reference/payment-customization" external={true}>Dev. doc</Link>
           </Layout.Section>
           <Layout.Section>
             <List type="number">
