@@ -35,6 +35,8 @@ extensions/ ... automatically generated directory and code by Shopify CLI `npm r
 
   ./my-function-discount-ext ... Shopify Functions for Dicounts Extensions sample using Cargo with Rust https://shopify.dev/apps/discounts/create#step-4-add-and-deploy-a-product-discount-extension
 
+  ./my-function-shipping-ext ... Shopify Functions for Delivery Extensions sample using Cargo with Rust https://shopify.dev/apps/checkout/delivery-customizations/getting-started
+
   ./my-function-payment-ext ... Shopify Functions for Payment Extensions sample using Cargo with Rust https://shopify.dev/apps/checkout/payment-customizations/getting-started
 
 shopify.app.toml ... required file by CLI commands.
@@ -155,10 +157,10 @@ shop/redact:  /webhookgdprshopdel
   - Basis usage in combination with App Proxies and Theme Editor
 - _Function Discount_: ['/functiondiscount'](https://user-images.githubusercontent.com/899580/216708433-be7bbfbd-30aa-480e-a165-e528f33f5901.mp4) 
   - Discount implementation by Shopify Functions in combination with customer metafields
-- _Function Shipping_: '/functionshipping' 
-  - Shipping (Delivery option) switching by Shopify Functions in combination with customer metafields
+- _Function Shipping_: ['/functionshipping'](https://user-images.githubusercontent.com/899580/216774947-bfe6ccf2-aed8-413c-9931-6dc5d3d240a1.mp4) 
+  - Shipping rate filtering by Shopify Functions with input zip codes
 - _Function Payment_: ['/functionpayment'](https://user-images.githubusercontent.com/899580/216765424-238f91c8-ad63-43b6-959f-94632cdf1ac4.mp4) 
-  - Payment method switching by Shopify Functions in combination with selected delivery options
+  - Payment method filtering by Shopify Functions with selected shipping rates
 - _Web Pixel_: '/webpixel' 
   - Basic usage (TBD)
 - _Checkout Extension_: '/checkoutextension' 
