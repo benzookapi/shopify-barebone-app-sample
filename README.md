@@ -33,7 +33,9 @@ extensions/ ... automatically generated directory and code by Shopify CLI `npm r
 
   ./my-theme-app-ext ... Theme App Extensions sample following this turotial. https://shopify.dev/apps/online-store/theme-app-extensions/getting-started
 
-  ./my-function-discount-ext ... Shopify Functions for dicounts Extensions sample using Cargo with Rust https://shopify.dev/apps/discounts/create#step-4-add-and-deploy-a-product-discount-extension
+  ./my-function-discount-ext ... Shopify Functions for Dicounts Extensions sample using Cargo with Rust https://shopify.dev/apps/discounts/create#step-4-add-and-deploy-a-product-discount-extension
+
+  ./my-function-payment-ext ... Shopify Functions for Payment Extensions sample using Cargo with Rust https://shopify.dev/apps/checkout/payment-customizations/getting-started
 
 shopify.app.toml ... required file by CLI commands.
 
@@ -119,6 +121,8 @@ CREATE TABLE shops ( _id VARCHAR(500) NOT NULL PRIMARY KEY, data JSON NOT NULL, 
 ```
 6. For CLI generated extensions, execute `npm run deploy -- --reset` and follow its instruction (choose your partner account, connecting to the exising app, etc.) which registers extensions to your exising app and create `/.env` file which has extensiton ids used by this sample app. After the command ends  successfully, go to the created extension in your [partner dashboard](https://partners.shopify.com/) and enable its dev. preview if available (it's enough for testing in development stores).
 
+For [Shopify Functions](https://shopify.dev/api/functions) deployment using [Rust](https://www.rust-lang.org/), you need [Cargo](https://doc.rust-lang.org/cargo/) installed first by `cargo install cargo-wasi`.
+
 7. For updating the extensions, execute `npm run deploy` (without `-- --reset`) to apply (upload) your local modified files to the created extensions (`-- --reset` is used for changing your targeted app only).
 
 8. (For live stores only, you need to create a version of the extension and publish it. See [this step](https://shopify.dev/apps/deployment/extension).)
@@ -155,7 +159,7 @@ shop/redact:  /webhookgdprshopdel
   - Discount implementation by Shopify Functions in combination with customer metafields
 - _Function Shipping_: '/functionshipping' 
   - Shipping (Delivery option) switching by Shopify Functions in combination with customer metafields
-- _Function Payment_: '/functionpayment' 
+- _Function Payment_: ['/functionpayment'](https://user-images.githubusercontent.com/899580/216765424-238f91c8-ad63-43b6-959f-94632cdf1ac4.mp4) 
   - Payment method switching by Shopify Functions in combination with selected delivery options
 - _Web Pixel_: '/webpixel' 
   - Basic usage (TBD)
