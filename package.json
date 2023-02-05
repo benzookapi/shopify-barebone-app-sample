@@ -6,6 +6,7 @@
   "dependencies": {
     "@shopify/app": "^3.38.0",
     "@shopify/cli": "^3.38.0",
+    "@shopify/web-pixels-extension": "^0.1.6",
     "jwt-decode": "^3.1.2",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",

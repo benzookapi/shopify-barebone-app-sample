@@ -75,7 +75,7 @@ In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/co
   SHOPIFY_API_KEY:              YOUR_API_KEY (Copy and paste from your app settings in partner dashboard)
   SHOPIFY_API_SECRET:           YOUR_API_SECRET (Copy and paste from your app settings in partner dashboard)
   SHOPIFY_API_VERSION:          2023-04
-  SHOPIFY_API_SCOPES:           write_products,write_discounts,read_orders,write_payment_customizations,write_delivery_customizations
+  SHOPIFY_API_SCOPES:           write_products,write_discounts,read_orders,write_payment_customizations,write_delivery_customizations,write_pixels,read_customer_events
 
   SHOPIFY_DB_TYPE:              MONGODB (Default) / POSTGRESQL / MYSQL
 
@@ -190,5 +190,5 @@ shop/redact:  /webhookgdprshopdel
 
 # Disclaimer
 
-- This code is fully _unofficial_ and NOT guaranteed to pass [the public app review](https://shopify.dev/apps/store) for Shopify app store. The official requirements are described [here](https://shopify.dev/apps/store/requirements). 
+- This code is fully _unofficial_ and NOT guaranteed to pass [the public app review](https://shopify.dev/apps/store/review) for Shopify app store. The official requirements are described [here](https://shopify.dev/apps/store/requirements). 
 - You need to follow [Shopi API Licene and Terms of Use](https://www.shopify.com/legal/api-terms) even for custom app usage.

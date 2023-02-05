@@ -1,0 +1,17 @@
+{{ block.settings.textarea }}
+
+
+{% schema %}
+  {
+    "name": "Barebone App Embed TP",
+    "target": "head",
+    "settings": [
+      {
+        "type": "textarea",
+        "id": "textarea",
+        "label": "Tag to insert to the header",
+        "default": "<script>\n//This is a transparent app embed block for inserting tags to the header.\n//Write your code like GA tag, etc.\n</script>"
+      }
+    ]
+  }
+{% endschema %}
