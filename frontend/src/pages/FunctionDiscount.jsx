@@ -32,7 +32,7 @@ function FunctionDiscount() {
           </Layout.Section>
           <Layout.Section>
             <List type="number">
-              <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/metafields`} external={true}>Metafields</Link> for <Badge>Customers</Badge> as
+              <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/metafields`} external={true}>Metafields</Link> for <Badge>Customers</Badge> 
                 in type of <Badge>Integer</Badge> and input your Metafield <Badge>Namespace and key</Badge>
                 <TextField
                   label=""

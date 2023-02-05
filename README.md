@@ -108,7 +108,7 @@ Note that the built React code contains SHOPIFY_API_KEY value from its envrionme
 cd NGROK_DIR && ngrok http 3000
 ```
 
-4. Set `YOUR_APP_URL` (your ngrok or other platform `root` URL) and `YOUR_APP_URL/callback` to your app settings in [partner dashboard](https://partners.shopify.com/) (if you add `?external=true` parameter to `YOUR_APP_URL`, the app UX turns into a service connector which tries to connect Shopify stores and their users). 
+4. Set `YOUR_APP_URL` (your ngrok or other platform `root` URL) and `YOUR_APP_URL/callback` to your app settings in [partner dashboard](https://partners.shopify.com/) (if you add `?external=true` parameter to `YOUR_APP_URL`, the app UX turns into a [service connector](https://user-images.githubusercontent.com/899580/215689359-724b5000-cf86-4b6c-92bf-71b724632059.mp4) which tries to connect Shopify stores and their users). 
 
 5. (For PostgreSQL or MySQL users only,) create the following table in your database (in `psql` or `mysql` command or other tools).
 ```
@@ -187,3 +187,8 @@ shop/redact:  /webhookgdprshopdel
 - If you see the error page with the message like `"YOUR_APP_NAME is expired, this is an old app which no logner works after..."` during top page rendering in Shopify admin, check and fix the following major issues.
   - Do not use redirection to the old admin URL of "https://XXX.myshopify.com/admin". Use the new one of "https://admin.shopify.com/store/XXX", instead. Refer to the [migration document](https://shopify.dev/apps/tools/app-bridge/updating-overview#ensure-compatibility-with-the-new-shopify-admin-domain).
   - Your server needs to render the top page at acceptable speed in the right way. Too slow access, error HTTP codes, or server shutdown causes the error above in live stores (not in development ones). Some cloud plarform like Render, Heroku, etc do the very slow response for the first time in a while with free plans, so you need to swtich to ngrok hosting or pay those services for higher performence. 
+
+  # Disclaimer
+
+  - This code is fully _unofficial_ and NOT guaranteed to pass [the public app review](https://shopify.dev/apps/store) for Shopify app store. The official requirements are described [here](https://shopify.dev/apps/store/requirements). 
+  - You need to follow [Shopi API Licene and Terms of Use](https://www.shopify.com/legal/api-terms) even for custom app usage too.
