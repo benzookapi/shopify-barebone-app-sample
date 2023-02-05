@@ -188,7 +188,7 @@ shop/redact:  /webhookgdprshopdel
   - Do not use redirection to the old admin URL of "https://XXX.myshopify.com/admin". Use the new one of "https://admin.shopify.com/store/XXX", instead. Refer to the [migration document](https://shopify.dev/apps/tools/app-bridge/updating-overview#ensure-compatibility-with-the-new-shopify-admin-domain).
   - Your server needs to render the top page at acceptable speed in the right way. Too slow access, error HTTP codes, or server shutdown causes the error above in live stores (not in development ones). Some cloud plarform like Render, Heroku, etc do the very slow response for the first time in a while with free plans, so you need to swtich to ngrok hosting or pay those services for higher performence. 
 
-  # Disclaimer
+# Disclaimer
 
-  - This code is fully _unofficial_ and NOT guaranteed to pass [the public app review](https://shopify.dev/apps/store) for Shopify app store. The official requirements are described [here](https://shopify.dev/apps/store/requirements). 
-  - You need to follow [Shopi API Licene and Terms of Use](https://www.shopify.com/legal/api-terms) even for custom app usage too.
+- This code is fully _unofficial_ and NOT guaranteed to pass [the public app review](https://shopify.dev/apps/store) for Shopify app store. The official requirements are described [here](https://shopify.dev/apps/store/requirements). 
+- You need to follow [Shopi API Licene and Terms of Use](https://www.shopify.com/legal/api-terms) even for custom app usage.
