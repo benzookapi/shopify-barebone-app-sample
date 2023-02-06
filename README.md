@@ -162,6 +162,8 @@ shop/redact:  /webhookgdprshopdel
 - _Function Payment_: ['/functionpayment'](https://user-images.githubusercontent.com/899580/216765424-238f91c8-ad63-43b6-959f-94632cdf1ac4.mp4) 
   - Payment method filtering by Shopify Functions with selected shipping rates
 - _Web Pixel_: '/webpixel' 
+  - Store customer event data incluing checkout sending them to GA4 data streaming too.
+- _Post Purchase_: '/postpurchase' 
   - Basic usage (TBD)
 - _Checkout Extension_: '/checkoutextension' 
   - Basic usage (TBD, Plus only for live)

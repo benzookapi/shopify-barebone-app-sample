@@ -16,6 +16,7 @@ import FunctionDiscount from './pages/FunctionDiscount';
 import FunctionShipping from './pages/FunctionShipping';
 import FunctionPayment from './pages/FunctionPayment';
 import WebPixel from './pages/WebPixel';
+import PostPurchase from './pages/PostPurchase';
 
 import { _getAdminFromShop, _getShopFromQuery } from "./utils/my_util";
 
@@ -73,6 +74,10 @@ function App() {
           {
             label: 'Web Pixel',
             destination: '/webpixel',
+          },
+          {
+            label: 'Post Purchase',
+            destination: '/postpurchase',
           },
           {
             label: 'Checkout Extension',
@@ -139,6 +144,7 @@ function App() {
             <Route path="/functionshipping" element={<FunctionShipping />} />
             <Route path="/functionpayment" element={<FunctionPayment />} />
             <Route path="/webpixel" element={<WebPixel />} />
+            <Route path="/postpurchase" element={<PostPurchase />} />
           </Routes>
         </BrowserRouter>
         {/* Each page content comes here */}

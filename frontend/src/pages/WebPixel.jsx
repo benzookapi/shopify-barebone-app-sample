@@ -35,7 +35,7 @@ function WebPixel() {
   const [data, setData] = useState('');
   const [showing, setShowing] = useState(false);
 
-  const showData = () => {
+  const showData = function () {
     setShowing(true);
     authenticatedFetch(app)(`/webpixel?show=true`).then((response) => {
       response.json().then((json) => {
@@ -48,8 +48,6 @@ function WebPixel() {
       });
     });
   };
-
-  //showData();
 
   return (
     <Page title="Web Pixel basic usage for storing customer events and Google Tag event passing">
@@ -118,7 +116,9 @@ function WebPixel() {
       <Card title="Step 2: Check your stored data" sectioned={true}>
         <Layout>
           <Layout.Section>
-            <Button primary onClick={showData()}>
+            <Button primary onClick={() => {
+              showData();
+            }}>
               Refresh
             </Button>
           </Layout.Section>
