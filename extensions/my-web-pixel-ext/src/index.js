@@ -19,12 +19,20 @@ register(({ analytics, browser, settings, init }) => {
 
     console.log(`Web Pixel sending beacon to: ${url}`);
 
-    const httpClient = new XMLHttpRequest();
+    /*const httpClient = new XMLHttpRequest();
     httpClient.open("GET", url, false);
     httpClient.send(null);
-    const res = JSON.parse(httpClient.responseText);
+    const res = JSON.parse(httpClient.responseText);*/
 
-    console.log(`Web Pixel beacon responded: ${JSON.stringify(res)}`);
+    fetch(url, {
+      mode: 'cors'
+    }).then((res) => {
+      res.json()
+    }).then((data) => {
+      console.log(`Web Pixel beacon responded: ${JSON.stringify(data)}`)
+    });
+
+
 
   });
 
