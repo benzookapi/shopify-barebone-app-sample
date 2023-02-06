@@ -1,4 +1,22 @@
-{{ block.settings.textarea }}
+<script>
+
+  console.log("blocks/app-embed-block-transparent.liquid");
+
+
+// See https://shopify.dev/api/pixels/customer-events#publishing-custom-events
+
+
+// THE FOLLOWING CODE CANNOT RUN IN APP-EMBED-BLOCK WITH THE ERROR: Uncaught TypeError: Cannot read properties of undefined (reading 'publish')
+// RUUNABLE IN APP-BLOCK ONLY!
+
+/*Shopify.analytics.publish("barebone_app_custom_event", {
+    "my_item": Math.random(),
+    "my_timestamp": new Date().toISOString()
+  });*/
+</script>
+
+
+{{ block.settings.barebone_app_tag }}
 
 
 {% schema %}
@@ -8,7 +26,7 @@
     "settings": [
       {
         "type": "textarea",
-        "id": "textarea",
+        "id": "barebone_app_tag",
         "label": "Tag to insert to the header",
         "default": "<script>\n//This is a transparent app embed block for inserting tags to the header.\n//Write your code like GA tag, etc.\n</script>"
       }

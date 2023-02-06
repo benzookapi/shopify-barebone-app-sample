@@ -694,6 +694,100 @@ router.get('/functionpayment', async (ctx, next) => {
 
 });
 
+/* --- Web Pixel sample endpoint --- */
+// See https://shopify.dev/apps/marketing/pixels
+router.get('/webpixel', async (ctx, next) => {
+  console.log("+++++++++++++++ /webpixel +++++++++++++++");
+  console.log(`query ${JSON.stringify(ctx.request.query)}`);
+
+  const create = ctx.request.query.create;
+  const show = ctx.request.query.show;
+
+  // Access by AppBride::authenticatedFetch
+  if (typeof ctx.request.header.authorization !== UNDEFINED) {
+    console.log('Authenticated fetch');
+    const token = getTokenFromAuthHeader(ctx);
+    if (!checkAuthFetchToken(token)[0]) {
+      ctx.body.result.message = "Signature unmatched. Incorrect authentication bearer sent";
+      ctx.status = 400;
+      return;
+    }
+
+    ctx.set('Content-Type', 'application/json');
+    ctx.body = {
+      "result": {
+        "message": "",
+        "response": {}
+      }
+    };
+
+    const shop = getShopFromAuthToken(token);
+    let shop_data = null;
+    try {
+      shop_data = await (getDB(shop));
+      if (shop_data == null) {
+        ctx.body.result.message = "Authorization failed. No shop data";
+        ctx.status = 400;
+        return;
+      }
+    } catch (e) {
+      ctx.body.result.message = "Internal error in retrieving shop data";
+      ctx.status = 500;
+      return;
+    }
+
+    if (typeof create !== UNDEFINED) {
+      // Create a Web Pixel
+      const ga4 = ctx.request.query.ga4;
+      let api_res = null;
+      try {
+        api_res = await (callGraphql(ctx, shop, `mutation webPixelCreate($webPixel: WebPixelInput!) {
+          webPixelCreate(webPixel: $webPixel) {
+            userErrors {
+              field
+              message
+            }
+            webPixel {
+              settings
+              id
+            }
+          }
+        }
+        
+      `, null, GRAPHQL_PATH_ADMIN, {
+          "webPixel": {
+            "settings": JSON.stringify({              
+              "ga4": ga4             
+            })
+          }
+        }));
+      } catch (e) {
+        console.log(`${JSON.stringify(e)}`);
+      }
+      ctx.body.result.response = api_res;
+
+    } else if (typeof show !== UNDEFINED) {
+      // Show the stored data from Web Pixel
+      const pixels = shop_data.pixels;
+      if (typeof pixels !== UNDEFINED) ctx.body.result.response = shop_data.pixels;
+
+    }
+
+    ctx.status = 200;
+    return;
+  }
+
+  if (!checkSignature(ctx.request.query)) {
+    ctx.status = 400;
+    return;
+  }
+
+  const shop = ctx.request.query.shop;
+  setContentSecurityPolicy(ctx, shop);
+  await ctx.render('index', {});
+
+});
+
 /* --- App proxies sample endpoint --- */
 // See https://shopify.dev/apps/online-store/app-proxies
 // Note that ngrok blocks the proxy by default, you have to use other platforms like Render, Fly.io, etc.
@@ -703,6 +797,52 @@ router.get('/appproxy', async (ctx, next) => {
   if (!checkAppProxySignature(ctx.request.query)) {
     ctx.status = 400;
     return;
+  }
+
+  if (typeof ctx.request.query.pixel !== UNDEFINED) {
+    ctx.set('Content-Type', 'application/json');
+    ctx.body = {
+      "result": {
+        "message": "",
+        "response": {}
+      }
+    };
+
+    const shop = ctx.request.query.shop;
+
+    let shop_data = null;
+    try {
+      shop_data = await (getDB(shop));
+      if (shop_data == null) {
+        ctx.body.result.message = "No shop data";
+        ctx.status = 400;
+        return;
+      }
+
+      let pixel = shop_data.pixel;
+      if (typeof pixel == UNDEFINED) pixel = {};
+
+      const evet_data = JSON.parse(ctx.request.query.evet_data);
+
+      let pixel_event = pixel[`${evet_data.name}`];
+      if (typeof pixel_event == UNDEFINED) pixel_event = {
+        "count": 0,
+        "last_event_data": {}
+      };
+      pixel_event.count = pixel_event.count + 1;
+      pixel_event.last_event_data = evet_data;
+
+      pixel[`${evet_data.name}`] = pixel_event;
+
+      shop_data.pixel = pixel;
+
+      setDB(shop, shop_data).then(function (r) { }).catch(function (e) { });
+    } catch (e) {
+      ctx.body.result.message = "Internal error in retrieving shop data";
+      ctx.status = 500;
+      return;
+    }
+
   }
 
   // Use this for API calls.

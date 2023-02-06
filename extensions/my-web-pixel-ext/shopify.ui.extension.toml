@@ -6,10 +6,12 @@ runtime_context = "strict"
 [settings]
 type = "object"
 
-[settings.fields.accountID]
-name = "Account ID"
-description = "Account ID"
+[settings.fields.ga4]
+name = "GA4"
+description = "GA4 enabled or not"
 type = "single_line_text_field"
 validations =  [
   { name = "min", value = "1" }
 ]
+
+

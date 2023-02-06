@@ -15,6 +15,7 @@ import ThemeAppExtension from './pages/ThemeAppExtension';
 import FunctionDiscount from './pages/FunctionDiscount';
 import FunctionShipping from './pages/FunctionShipping';
 import FunctionPayment from './pages/FunctionPayment';
+import WebPixel from './pages/WebPixel';
 
 import { _getAdminFromShop, _getShopFromQuery } from "./utils/my_util";
 
@@ -137,6 +138,7 @@ function App() {
             <Route path="/functiondiscount" element={<FunctionDiscount />} />
             <Route path="/functionshipping" element={<FunctionShipping />} />
             <Route path="/functionpayment" element={<FunctionPayment />} />
+            <Route path="/webpixel" element={<WebPixel />} />
           </Routes>
         </BrowserRouter>
         {/* Each page content comes here */}

@@ -1,0 +1,25 @@
+<script>
+
+  console.log("blocks/app-block.liquid");
+
+// See https://shopify.dev/api/pixels/customer-events#publishing-custom-events
+// THIS CUSTOM WEB PIXEL EVENT RUNNABLE IN APP-BLOCK ONLY, NOT IN APP-EMBED-BLOCK.
+  Shopify.analytics.publish("{{block.settings.barebone_app_event}}", {
+    "template": "{{template}}",
+    "timestamp": new Date().toISOString()
+  });
+</script>
+{% schema %}
+  {
+    "name": "Barebone App Block TP",
+    "target": "section",
+    "settings": [
+      {
+        "type": "text",
+        "id": "barebone_app_event",
+        "label": "Input your custom Pixel event name",
+        "default": "barebone_app_custom_event"
+      }
+    ]
+  }
+{% endschema %}

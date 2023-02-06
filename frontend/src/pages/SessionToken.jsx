@@ -64,9 +64,6 @@ function SessionToken() {
               setUrl('');
               setAuth('');
               setRes('');
-              // The external site access is blocked by CORS policy with the following error.
-              // "Access to fetch at 'https://XXX' from origin 'https://YYY' has been blocked by CORS policy:"
-              //authenticatedFetch(app)(`https://shopify-barebone-app-sample.onrender.com/sessiontoken?${param}`, {
               authenticatedFetch(app)(`/authenticated`, {
                 /*method: "POST",
                 headers: { "Content-Type": "application/json" },

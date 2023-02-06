@@ -75,6 +75,14 @@ function Index() {
                             name: 'Function Payment',
                             location: 'Function implementation for payment methods based on selected delivery options',
                         },
+                        {
+                            id: 7,
+                            onClick: (id) => {
+                                redirect.dispatch(Redirect.Action.APP, '/webpixel');
+                            },
+                            name: 'Web Pixel',
+                            location: 'Web Pixel sameple for storing customer event data and GA 4 integration',
+                        },
                     ]}
                     renderItem={(item) => {
                         const { id, onClick, name, location } = item;
