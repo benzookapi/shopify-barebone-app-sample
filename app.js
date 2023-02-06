@@ -837,11 +837,15 @@ router.get('/appproxy', async (ctx, next) => {
       shop_data.pixel = pixel;
 
       setDB(shop, shop_data).then(function (r) { }).catch(function (e) { });
+
     } catch (e) {
       ctx.body.result.message = "Internal error in retrieving shop data";
       ctx.status = 500;
       return;
     }
+
+    ctx.body.result.response = pixel;
+    return;
 
   }
 

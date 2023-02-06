@@ -7,17 +7,18 @@ register(({ analytics, browser, settings, init }) => {
   //console.log(`Web Pixel register: analytics ${JSON.stringify(analytics, null, 4)}`);
   //console.log(`Web Pixel register: browser ${JSON.stringify(browser, null, 4)}`);
   console.log(`Web Pixel register: settings ${JSON.stringify(settings, null, 4)}`);
-  console.log(`Web Pixel register: init ${JSON.stringify(init, null, 4)}`);  
+  console.log(`Web Pixel register: init ${JSON.stringify(init, null, 4)}`);
 
   // See https://shopify.dev/api/pixels/customer-events
   analytics.subscribe('all_events', (event) => {
     console.log(`Web Pixel event received: ${JSON.stringify(event, null, 4)}`);
+    const shop = event.context.document.location.host;
     const event_data = event;
-    event_data.cotext = {};
-    const url = `https://${event.context.document.host}/apps/bareboneproxy?pixel=true&event_data=${JSON.stringify(event_data)}`;
+    event_data.context = {};
+    const url = `https://${shop}/apps/bareboneproxy?pixel=true&event_data=${JSON.stringify(event_data)}`;
 
     console.log(`Web Pixel sending beacon to: ${url}`);
-    
+
     const httpClient = new XMLHttpRequest();
     httpClient.open("GET", url, false);
     httpClient.send(null);
