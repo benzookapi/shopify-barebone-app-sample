@@ -149,6 +149,8 @@ shop/redact:  /webhookgdprshopdel
 
 # Sample list
 
+All sample video is available [Wiki](/wiki).
+
 - _Session Token_: ['/sessiontoken'](https://user-images.githubusercontent.com/899580/216690835-a8615fb0-0a91-4357-9548-e551a46093f7.mp4) 
   - What's App Bridge session token about and how the authenticated request works.
 - _Admin Link_: ['/adminlink'](https://user-images.githubusercontent.com/899580/216701356-63f44dbe-8525-4d53-a721-6a729b0cd126.mp4) 
@@ -162,7 +164,7 @@ shop/redact:  /webhookgdprshopdel
 - _Function Payment_: ['/functionpayment'](https://user-images.githubusercontent.com/899580/216765424-238f91c8-ad63-43b6-959f-94632cdf1ac4.mp4) 
   - Payment method filtering by Shopify Functions with selected shipping rates
 - _Web Pixel_: '/webpixel' 
-  - Store customer event data incluing checkout sending them to GA4 data streaming too.
+  - Store customer event data incluing checkout sending them to GA4 data streaming
 - _Post Purchase_: '/postpurchase' 
   - Basic usage (TBD)
 - _Checkout Extension_: '/checkoutextension' 
