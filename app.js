@@ -21,11 +21,11 @@ const jwt_decode = require('jwt-decode');
 const router = new Router();
 const app = module.exports = new Koa();
 
-
+app.use(cors()); // For CORS allowed to be acessed by Web Workers like Web Pixel, etc.
 
 app.use(bodyParser());
 
-app.use(cors()); // For CORS allowed to be acessed by Web Workers like Web Pixel, etc.
+
 
 app.use(koaRequest({
 
@@ -892,7 +892,7 @@ router.get('/mocklogin', async (ctx, next) => {
 
 });
 
-
+/*
 router.options('/mockpixel', async (ctx, next) => {
   console.log("------------ mockpixel (options) ------------");
   console.log(`request ${JSON.stringify(ctx.request)}`);
@@ -914,6 +914,7 @@ router.get('/mockpixel', async (ctx, next) => {
   ctx.status = 200;
 
 });
+*/
 
 /* --- Mock Pixel for storing Web Pixel event data demo --- */
 // See https://shopify.dev/apps/marketing/pixels
