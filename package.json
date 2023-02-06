@@ -4,6 +4,7 @@
   "description": "",
   "main": "app.js",
   "dependencies": {
+    "@koa/cors": "^2.2.3",
     "@shopify/app": "^3.38.0",
     "@shopify/cli": "^3.38.0",
     "@shopify/web-pixels-extension": "^0.1.6",

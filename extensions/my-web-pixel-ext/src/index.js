@@ -15,7 +15,9 @@ register(({ analytics, browser, settings, init }) => {
     const shop = event.context.document.location.host;
     const event_data = event;
     event_data.context = {};
-    const url = `https://${shop}/apps/bareboneproxy?pixel=true&event_data=${JSON.stringify(event_data)}`;
+    //const url = `${settings.pixelUrl}/apps/bareboneproxy?pixel=true&event_data=${JSON.stringify(event_data)}`;
+
+    const url = `${settings.pixelUrl}?shop=${shop}`;
 
     console.log(`Web Pixel sending beacon to: ${url}`);
 
@@ -25,7 +27,8 @@ register(({ analytics, browser, settings, init }) => {
     const res = JSON.parse(httpClient.responseText);*/
 
     fetch(url, {
-      mode: 'cors'
+      method: 'POST',
+      body: JSON.stringify(event_data)
     }).then((res) => {
       res.json()
     }).then((data) => {
