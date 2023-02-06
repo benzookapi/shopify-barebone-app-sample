@@ -756,8 +756,8 @@ router.get('/webpixel', async (ctx, next) => {
         
       `, null, GRAPHQL_PATH_ADMIN, {
           "webPixel": {
-            "settings": JSON.stringify({              
-              "ga4": ga4             
+            "settings": JSON.stringify({
+              "ga4": ga4
             })
           }
         }));
