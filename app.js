@@ -7,7 +7,7 @@ const koaRequest = require('koa-http-request');
 const views = require('koa-views');
 const serve = require('koa-static');
 
-const cors = require('@koa/cors');
+const cors = require('@koa/cors'); // For CORS allowed to be acessed by Web Workers like Web Pixel, etc.
 
 const crypto = require('crypto');
 
@@ -20,7 +20,7 @@ const jwt_decode = require('jwt-decode');
 const router = new Router();
 const app = module.exports = new Koa();
 
-app.use(cors());
+app.use(cors()); // For CORS allowed to be acessed by Web Workers like Web Pixel, etc.
 
 app.use(bodyParser());
 
@@ -883,6 +883,8 @@ router.get('/mocklogin', async (ctx, next) => {
 // See https://shopify.dev/apps/marketing/pixels
 // THIS ENDPOINT NEEDS TO ACCEPT OVER CORS ACCESS BECAUSE WEB PIXEL IS A WEB WORKER WHICH RUNS IN A SANDBOX BACKEND PROCESS.
 // See https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS 
+// For CORS handling, this needs to be POST only, but the parameters need to come in the query, not the body.
+// Check 'my-web-pixel-ext/src/index.js' code too.
 router.post('/mockpixel', async (ctx, next) => {
   console.log("------------ mockpixel ------------");
   console.log(`query ${JSON.stringify(ctx.request.query)}`);
@@ -915,7 +917,7 @@ router.post('/mockpixel', async (ctx, next) => {
   let pixel = shop_data.pixel;
   if (typeof pixel == UNDEFINED) pixel = {};
 
-  const event_data = JSON.parse(ctx.request.body);
+  const event_data = JSON.parse(ctx.request.query.event_data);
 
   let pixel_event = pixel[`${event_data.name}`];
   if (typeof pixel_event == UNDEFINED) pixel_event = {
@@ -932,7 +934,7 @@ router.post('/mockpixel', async (ctx, next) => {
   setDB(shop, shop_data).then(function (r) { }).catch(function (e) { });
 
   ctx.body.result.response = pixel;
-  return;
+  ctx.status = 200;
 
 });
 
