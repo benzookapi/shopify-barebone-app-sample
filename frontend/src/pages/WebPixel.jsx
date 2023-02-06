@@ -50,7 +50,7 @@ function WebPixel() {
   };
 
   return (
-    <Page title="Web Pixel basic usage for storing customer events and Google Tag event passing">
+    <Page title="Web Pixel basic usage for storing customer events and GA4 event passing">
       <Card title="Step 1: Create your Web Pixel to store the data" sectioned={true}>
         <Layout>
           <Layout.Section>
@@ -59,14 +59,19 @@ function WebPixel() {
           <Layout.Section>
             <List type="number">
               <List.Item>
+                <p>
+                  If you have a <Badge>GA4 tracking</Badge> in <Link url="https://analytics.google.com" external={true}>Google Analytics</Link>,
+                  you can send checkout events like <Badge>checkout_started</Badge> which cannot be sent by
+                  Theme App Extention or manual insertion of <Badge>header</Badge> GA tag using Web Pixel events given the following data.
+                </p>
+                <Checkbox label="Send checkout events to your GA4" checked={ga4} onChange={ga4Change} />
                 <Stack spacing="loose">
-                  <Checkbox label="Pass GA4 tag event" checked={ga4} onChange={ga4Change} />
                   <TextField
                     label="GA4 Measurement ID"
                     value={ga4Id}
                     onChange={ga4IdChange}
                     autoComplete="off"
-                    placeholder="Example: `G-XXXXXXXXXX"
+                    placeholder="G-XXXXXXXXXX"
                     disabled={disabled}
                   />
                   <TextField
@@ -74,18 +79,20 @@ function WebPixel() {
                     value={ga4Sec}
                     onChange={ga4SecChange}
                     autoComplete="off"
-                    placeholder="Example: sXXXXXXXX-rX_XXXXXXX"
+                    placeholder="sXXXXXXXX-rX_XXXXXXX"
                     disabled={disabled}
                   />
-                  <p>If you check this, enable the <Link url={`https://${_getAdminFromShop(shop)}/themes/current/editor?context=apps`} external={true}>transparent theme app embed block ("Barebone App Embed TP")</Link> to insert your GA tag manually.</p>
                 </Stack>
+                <p>The values above come from <Link url="https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?hl=ja&client_type=gtag" external={true}>
+                  Google Analytics Data Streams</Link>.
+                </p>
               </List.Item>
               <List.Item>
                 <Stack spacing="loose">
                   <Button primary onClick={() => {
                     setAccessing(true);
                     // See https://shopify.dev/api/admin-graphql/2023-04/mutations/webPixelCreate"
-                    authenticatedFetch(app)(`/webpixel?create=true&ga4=${ga4}`).then((response) => {
+                    authenticatedFetch(app)(`/webpixel?create=true&ga4=${ga4}&ga4Id=${ga4Id}&ga4Sec=${ga4Sec}`).then((response) => {
                       response.json().then((json) => {
                         console.log(JSON.stringify(json, null, 4));
                         setAccessing(false);
