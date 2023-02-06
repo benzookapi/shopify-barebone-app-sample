@@ -149,7 +149,7 @@ shop/redact:  /webhookgdprshopdel
 
 # Sample list
 
-All sample video are available [Wiki](https://github.com/benzookapi/shopify-barebone-app-sample/wiki).
+All sample videos are available at [Wiki](https://github.com/benzookapi/shopify-barebone-app-sample/wiki).
 
 - _Session Token_: ['/sessiontoken'](https://user-images.githubusercontent.com/899580/216690835-a8615fb0-0a91-4357-9548-e551a46093f7.mp4) 
   - What's App Bridge session token about and how the authenticated request works.
