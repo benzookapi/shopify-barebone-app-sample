@@ -818,7 +818,6 @@ router.get('/appproxy', async (ctx, next) => {
         ctx.status = 400;
         return;
       }
-
     } catch (e) {
       ctx.body.result.message = "Internal error in retrieving shop data";
       ctx.status = 500;
@@ -828,17 +827,17 @@ router.get('/appproxy', async (ctx, next) => {
     let pixel = shop_data.pixel;
     if (typeof pixel == UNDEFINED) pixel = {};
 
-    const evet_data = JSON.parse(JSON.stringify(ctx.request.query.evet_data));
+    const event_data = JSON.parse(JSON.stringify(ctx.request.query.event_data));
 
-    let pixel_event = pixel[`${evet_data.name}`];
+    let pixel_event = pixel[`${event_data.name}`];
     if (typeof pixel_event == UNDEFINED) pixel_event = {
       "count": 0,
       "last_event_data": {}
     };
     pixel_event.count = pixel_event.count + 1;
-    pixel_event.last_event_data = evet_data;
+    pixel_event.last_event_data = event_data;
 
-    pixel[`${evet_data.name}`] = pixel_event;
+    pixel[`${event_data.name}`] = pixel_event;
 
     shop_data.pixel = pixel;
 
