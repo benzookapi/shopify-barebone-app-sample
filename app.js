@@ -828,7 +828,7 @@ router.get('/appproxy', async (ctx, next) => {
     let pixel = shop_data.pixel;
     if (typeof pixel == UNDEFINED) pixel = {};
 
-    const evet_data = JSON.parse(ctx.request.query.evet_data);
+    const evet_data = JSON.parse(JSON.stringify(ctx.request.query.evet_data));
 
     let pixel_event = pixel[`${evet_data.name}`];
     if (typeof pixel_event == UNDEFINED) pixel_event = {
