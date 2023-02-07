@@ -13,17 +13,6 @@ function WebPixel() {
 
   const shop = _getShopFromQuery(window);
 
-  const [disabled, setDisabled] = useState(true);
-  const [ga4, setGA4] = useState(false);
-  const ga4Change = useCallback((newGA4) => {
-    setGA4(newGA4);
-    if (newGA4) {
-      setDisabled(false)
-    } else {
-      setDisabled(true)
-    }
-  }, []);
-
   const [ga4Id, setGA4Id] = useState('');
   const ga4IdChange = useCallback((newGA4Id) => setGA4Id(newGA4Id), []);
   const [ga4Sec, setGA4Sec] = useState('');
@@ -31,27 +20,10 @@ function WebPixel() {
 
   const [result, setResult] = useState('');
   const [accessing, setAccessing] = useState(false);
-
-  const [data, setData] = useState('');
-  const [showing, setShowing] = useState(false);
-
-  const showData = function () {
-    setShowing(true);
-    authenticatedFetch(app)(`/webpixel?show=true`).then((response) => {
-      response.json().then((json) => {
-        setShowing(false);
-        console.log(JSON.stringify(json, null, 4));
-        setData(JSON.stringify(json.result.response, null, 4));
-      }).catch((e) => {
-        console.log(`${e}`);
-        setData(``);
-      });
-    });
-  };
-
+  
   return (
-    <Page title="Web Pixel basic usage for storing customer events and GA4 event passing">
-      <Card title="Step 1: Create your Web Pixel to store the data" sectioned={true}>
+    <Page title="Web Pixel basic usage for GA4 event passing">
+      <Card title="Step 1: Create your Web Pixel with GA4 data" sectioned={true}>
         <Layout>
           <Layout.Section>
             <Link url="https://shopify.dev/apps/marketing/pixels/getting-started" external={true}>Dev. doc</Link>
@@ -60,31 +32,30 @@ function WebPixel() {
             <List type="number">
               <List.Item>
                 <p>
-                  If you have a <Badge>GA4 tracking</Badge> in <Link url="https://analytics.google.com" external={true}>Google Analytics</Link>,
-                  you can send checkout events like <Badge>checkout_started</Badge> which cannot be sent by
-                  Theme App Extention or manual insertion of <Badge>header</Badge> GA tag using Web Pixel events given the following data.
-                </p>
-                <Checkbox label="Send checkout events to your GA4" checked={ga4} onChange={ga4Change} />
+                  Set up your <Link url="https://support.google.com/analytics/answer/9303323" external={true}>Data Streams</Link> in <Link url="https://analytics.google.com" external={true}>Google Analytics</Link> 
+                  to send checkout events like <Badge status="info">checkout_started</Badge> within Web Pixel <Link url="https://www.w3schools.com/html/html5_webworkers.asp" external={true}>Web Workers</Link> which cannot be done by
+                  Theme App Extention or manual insertion of <Badge>header GA Tag</Badge>. 
+                  Other events outside checkouts like page views, adding to carts can be sent by the GA tag insertion automatically which can be tested by 
+                  <Link url={`https://${_getAdminFromShop(shop)}/themes/current/editor?context=apps`} external={true}>Theme App Extension named 'TP' (transparent) of this app</Link>.
+                </p>  
                 <Stack spacing="loose">
                   <TextField
-                    label="GA4 Measurement ID"
+                    label="Input your GA4 Measurement ID"
                     value={ga4Id}
                     onChange={ga4IdChange}
                     autoComplete="off"
                     placeholder="G-XXXXXXXXXX"
-                    disabled={disabled}
                   />
                   <TextField
-                    label="GA4 API Secret"
+                    label="Input your GA4 API Secret"
                     value={ga4Sec}
                     onChange={ga4SecChange}
                     autoComplete="off"
                     placeholder="sXXXXXXXX-rX_XXXXXXX"
-                    disabled={disabled}
                   />
                 </Stack>
                 <p>The values above come from <Link url="https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?hl=ja&client_type=gtag" external={true}>
-                  Google Analytics Data Streams</Link>.
+                  Google Analytics Data Stream settings</Link>.
                 </p>
               </List.Item>
               <List.Item>
@@ -92,7 +63,7 @@ function WebPixel() {
                   <Button primary onClick={() => {
                     setAccessing(true);
                     // See https://shopify.dev/api/admin-graphql/2023-04/mutations/webPixelCreate"
-                    authenticatedFetch(app)(`/webpixel?create=true&ga4=${ga4}&ga4Id=${ga4Id}&ga4Sec=${ga4Sec}`).then((response) => {
+                    authenticatedFetch(app)(`/webpixel?ga4Id=${ga4Id}&ga4Sec=${ga4Sec}`).then((response) => {
                       response.json().then((json) => {
                         console.log(JSON.stringify(json, null, 4));
                         setAccessing(false);
@@ -114,23 +85,17 @@ function WebPixel() {
                 </Stack>
               </List.Item>
               <List.Item>
-                Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/customer_events`} external={true}>customer events</Link> to check if the app pixel is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to create customer events like adding carts, completing checkout, etc.
+                Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/customer_events`} external={true}>customer events</Link> to check if the app pixel is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> with 
+                <Badge>Developer Console</Badge> on to see which event triggered by Web Pixel.
               </List.Item>
             </List>
           </Layout.Section>
         </Layout>
       </Card>
-      <Card title="Step 2: Check your stored data" sectioned={true}>
+      <Card title="Step 2: Check your Google Data Streams" sectioned={true}>
         <Layout>
           <Layout.Section>
-            <Button primary onClick={() => {
-              showData();
-            }}>
-              Refresh
-            </Button>
-          </Layout.Section>
-          <Layout.Section>
-            <ShowResult data={data} loading={showing} />
+            <p>You can check which events were sent in <Link url="https://analytics.google.com" external={true}>Google Analytics</Link> dashboard.</p>
           </Layout.Section>
         </Layout>
       </Card>
@@ -143,13 +108,6 @@ function APIResult(props) {
     return <Spinner accessibilityLabel="Calling Order GraphQL" size="small" />;
   }
   return (<span>{props.res}</span>);
-}
-
-function ShowResult(props) {
-  if (props.loading) {
-    return <Spinner accessibilityLabel="Getting stored data" size="large" />;
-  }
-  return (<pre>{props.data}</pre>);
 }
 
 export default WebPixel

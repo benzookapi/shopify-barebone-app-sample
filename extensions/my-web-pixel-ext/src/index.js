@@ -15,33 +15,8 @@ register(({ analytics, browser, settings, init }) => {
 
     const name = event.name;
 
-    // Exclude 'page_view' events to avoid to many dump.
-    if (name == 'page_viewed') return;
-
-    const shop = event.context.document.location.host;
-    const event_data = event;
-    //event_data.context = {};
-    const url = `${settings.pixelUrl}?shop=${shop}&event_data=${JSON.stringify(event_data)}`;
-
-    console.log(`Web Pixel sending beacon to: ${url}`);
-
-    // See https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-    fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(event_data)
-    }).then((res) => {
-      res.json()
-    }).then((data) => {
-      console.log(`Web Pixel beacon responded:`)
-    });
-
-    const ga4 = `${settings.ga4}`;
-
-    if (ga4 != 'true') return;
-
     const ga4Id = `${settings.ga4Id}`;
     const ga4Sec = `${settings.ga4Sec}`;
-
 
     switch (name) {
       case 'checkout_started':

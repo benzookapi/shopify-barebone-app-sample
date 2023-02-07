@@ -6,22 +6,6 @@ runtime_context = "strict"
 [settings]
 type = "object"
 
-[settings.fields.pixelUrl]
-name = "Pixel Url"
-description = "Pixel Url to pass event data"
-type = "single_line_text_field"
-validations =  [
-  { name = "min", value = "1" }
-]
-
-[settings.fields.ga4]
-name = "GA4"
-description = "GA4 enabled or not"
-type = "single_line_text_field"
-validations =  [
-  { name = "min", value = "1" }
-]
-
 [settings.fields.ga4Id]
 name = "GA4 ID"
 description = "GA4 Measurement ID"

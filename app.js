@@ -7,9 +7,6 @@ const koaRequest = require('koa-http-request');
 const views = require('koa-views');
 const serve = require('koa-static');
 
-const cors = require('@koa/cors'); // For CORS allowed to be acessed by Web Workers like Web Pixel, etc.
-//const cors = require('koa-cors');
-
 const crypto = require('crypto');
 
 const mongo = require('mongodb');
@@ -21,17 +18,11 @@ const jwt_decode = require('jwt-decode');
 const router = new Router();
 const app = module.exports = new Koa();
 
-app.use(cors()); // For CORS allowed to be acessed by Web Workers like Web Pixel, etc.
-
 app.use(bodyParser());
-
-
 
 app.use(koaRequest({
 
 }));
-
-
 
 app.use(views(__dirname + '/views', {
   map: {
@@ -40,8 +31,6 @@ app.use(views(__dirname + '/views', {
 }));
 
 app.use(serve(__dirname + '/public'));
-
-
 
 // Shopify API info.
 const API_KEY = `${process.env.SHOPIFY_API_KEY}`;
@@ -77,8 +66,6 @@ const MYSQL_USER = `${process.env.SHOPIFY_MYSQL_USER}`;
 const MYSQL_PASSWORD = `${process.env.SHOPIFY_MYSQL_PASSWORD}`;
 const MYSQL_DATABASE = `${process.env.SHOPIFY_MYSQL_DATABASE}`;
 const MYSQL_TABLE = 'shops';
-
-
 
 /* --- App top URL reigstered as the base one in the app settings in partner dashbord. --- */
 // See https://shopify.dev/apps/auth/oauth/getting-started
@@ -713,9 +700,6 @@ router.get('/webpixel', async (ctx, next) => {
   console.log("+++++++++++++++ /webpixel +++++++++++++++");
   console.log(`query ${JSON.stringify(ctx.request.query)}`);
 
-  const create = ctx.request.query.create;
-  const show = ctx.request.query.show;
-
   // Access by AppBride::authenticatedFetch
   if (typeof ctx.request.header.authorization !== UNDEFINED) {
     console.log('Authenticated fetch');
@@ -749,14 +733,13 @@ router.get('/webpixel', async (ctx, next) => {
       return;
     }
 
-    if (typeof create !== UNDEFINED) {
-      // Create a Web Pixel
-      const ga4 = ctx.request.query.ga4;
-      const ga4Id = ctx.request.query.ga4Id;
-      const ga4Sec = ctx.request.query.ga4Sec;
-      let api_res = null;
-      try {
-        api_res = await (callGraphql(ctx, shop, `mutation webPixelCreate($webPixel: WebPixelInput!) {
+    // Create a Web Pixel
+    const ga4 = ctx.request.query.ga4;
+    const ga4Id = ctx.request.query.ga4Id;
+    const ga4Sec = ctx.request.query.ga4Sec;
+    let api_res = null;
+    try {
+      api_res = await (callGraphql(ctx, shop, `mutation webPixelCreate($webPixel: WebPixelInput!) {
           webPixelCreate(webPixel: $webPixel) {
             userErrors {
               field
@@ -770,27 +753,19 @@ router.get('/webpixel', async (ctx, next) => {
         }
         
       `, null, GRAPHQL_PATH_ADMIN, {
-          "webPixel": {
-            "settings": JSON.stringify({
-              "pixelUrl": `https://${ctx.request.host}/mockpixel`,
-              "ga4": ga4,
-              "ga4Id": ga4Id,
-              "ga4Sec": ga4Sec
-            })
-          }
-        }));
-      } catch (e) {
-        console.log(`${JSON.stringify(e)}`);
-      }
-      ctx.body.result.response = api_res;
-
-    } else if (typeof show !== UNDEFINED) {
-      // Show the stored data from Web Pixel
-      const pixel = shop_data.pixel;
-      if (typeof pixel !== UNDEFINED) ctx.body.result.response = pixel;
-
+        "webPixel": {
+          "settings": JSON.stringify({
+            "pixelUrl": `https://${ctx.request.host}/mockpixel`,
+            "ga4": ga4,
+            "ga4Id": ga4Id,
+            "ga4Sec": ga4Sec
+          })
+        }
+      }));
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
     }
-
+    ctx.body.result.response = api_res;
     ctx.status = 200;
     return;
   }
@@ -889,93 +864,6 @@ router.get('/mocklogin', async (ctx, next) => {
       <p><button onClick="javascript:window.location.href='./mocklogin';">Login</button></p>
       ${details}
     `;
-
-});
-
-/*
-router.options('/mockpixel', async (ctx, next) => {
-  console.log("------------ mockpixel (options) ------------");
-  console.log(`request ${JSON.stringify(ctx.request)}`);
-
-  ctx.set('Access-Control-Allow-Origin', '*');
-  ctx.set('Access-Control-Allow-Methods', 'GET,HEAD,PUT,POST,DELETE');
-  ctx.set('Access-Control-Allow-Headers', '*');
-  ctx.status = 200;
-
-});
-
-router.get('/mockpixel', async (ctx, next) => {
-  console.log("------------ mockpixel (get) ------------");
-  console.log(`request ${JSON.stringify(ctx.request)}`);
-
-  ctx.set('Access-Control-Allow-Origin', '*');
-  ctx.set('Access-Control-Allow-Methods', 'GET,HEAD,PUT,POST,DELETE');
-  ctx.set('Access-Control-Allow-Headers', '*');
-  ctx.status = 200;
-
-});
-*/
-
-/* --- Mock Pixel for storing Web Pixel event data demo --- */
-// See https://shopify.dev/apps/marketing/pixels
-// THIS ENDPOINT NEEDS TO ACCEPT OVER CORS ACCESS BECAUSE WEB PIXEL IS A WEB WORKER WHICH RUNS IN A SANDBOX BACKEND PROCESS.
-// See https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS 
-// For CORS handling, this needs to be POST only, but the parameters need to come in the query, not the body.
-// Check 'my-web-pixel-ext/src/index.js' code too.
-router.post('/mockpixel', async (ctx, next) => {
-  console.log("------------ mockpixel ------------");
-  console.log(`query ${JSON.stringify(ctx.request.query)}`);
-  console.log(`body ${JSON.stringify(ctx.request.body)}`);
-
-  ctx.set('Content-Type', 'application/json');
-  ctx.set('Access-Control-Allow-Origin', '*');
-  ctx.set('Access-Control-Allow-Methods', 'GET,HEAD,PUT,POST,DELETE');
-  ctx.set('Access-Control-Allow-Headers', '*');
-
-  ctx.body = {
-    "result": {
-      "message": "",
-      "response": {}
-    }
-  };
-
-  const shop = ctx.request.query.shop;
-
-  let shop_data = null;
-  try {
-    shop_data = await (getDB(shop));
-    if (shop_data == null) {
-      ctx.body.result.message = "No shop data";
-      ctx.status = 400;
-      return;
-    }
-  } catch (e) {
-    ctx.body.result.message = "Internal error in retrieving shop data";
-    ctx.status = 500;
-    return;
-  }
-
-  let pixel = shop_data.pixel;
-  if (typeof pixel == UNDEFINED) pixel = {};
-
-  const event_data = JSON.parse(ctx.request.query.event_data);
-
-  let pixel_event = pixel[`${event_data.name}`];
-  if (typeof pixel_event == UNDEFINED) pixel_event = {
-    "count": 0,
-    "last_event_data": {}
-  };
-  pixel_event.count = pixel_event.count + 1;
-  pixel_event.last_event_data = event_data;
-
-  pixel[`${event_data.name}`] = pixel_event;
-
-  shop_data.pixel = pixel;
-
-  setDB(shop, shop_data).then(function (r) { }).catch(function (e) { });
-
-  ctx.body.result.response = pixel;
-  ctx.status = 200;
 
 });
 

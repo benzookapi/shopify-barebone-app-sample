@@ -81,7 +81,7 @@ function Index() {
                                 redirect.dispatch(Redirect.Action.APP, '/webpixel');
                             },
                             name: 'Web Pixel',
-                            location: 'Web Pixel sameple for storing customer event data and GA 4 integration',
+                            location: 'Web Pixel sameple for GA4 integration',
                         },
                     ]}
                     renderItem={(item) => {
