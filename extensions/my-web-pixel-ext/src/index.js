@@ -18,6 +18,12 @@ register(({ analytics, browser, settings, init }) => {
     const ga4Id = `${settings.ga4Id}`;
     const ga4Sec = `${settings.ga4Sec}`;
 
+    // NOTE THAT IF YOU WANT TO SEND THIS EVENT DATA TO YOUR APP, YOU NEED IT CORS-FREE ACCESSIBLE 
+    // BECAUSE THIS WEB WORKER IS A SANDBOX, A STANDALONE BACKEND PROCESS IN BROWSERS 
+    // WITH ALL EXTERNAL ACCESS TAKEN FOR CROSS-ORIGIN.
+    // See https://developer.mozilla.org/en-US/docs/Glossary/CORS
+    // See https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+
     switch (name) {
       case 'checkout_started':
         // See https://shopify.dev/api/pixels/customer-events#checkout_started
