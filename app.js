@@ -755,8 +755,6 @@ router.get('/webpixel', async (ctx, next) => {
       `, null, GRAPHQL_PATH_ADMIN, {
         "webPixel": {
           "settings": JSON.stringify({
-            "pixelUrl": `https://${ctx.request.host}/mockpixel`,
-            "ga4": ga4,
             "ga4Id": ga4Id,
             "ga4Sec": ga4Sec
           })

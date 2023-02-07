@@ -36,7 +36,7 @@ function WebPixel() {
                   to send checkout events like <Badge status="info">checkout_started</Badge> within Web Pixel <Link url="https://www.w3schools.com/html/html5_webworkers.asp" external={true}>Web Workers</Link> which cannot be done by
                   Theme App Extention or manual insertion of <Badge>header GA Tag</Badge>. 
                   Other events outside checkouts like page views, adding to carts can be sent by the GA tag insertion automatically which can be tested by 
-                  <Link url={`https://${_getAdminFromShop(shop)}/themes/current/editor?context=apps`} external={true}>Theme App Extension named 'TP' (transparent) of this app</Link>.
+                  <Link url={`https://${_getAdminFromShop(shop)}/themes/current/editor?context=apps`} external={true}>the app embed block named 'Barebone App Embed TP' of this app</Link>.
                 </p>  
                 <Stack spacing="loose">
                   <TextField
@@ -86,7 +86,8 @@ function WebPixel() {
               </List.Item>
               <List.Item>
                 Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/customer_events`} external={true}>customer events</Link> to check if the app pixel is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> with 
-                <Badge>Developer Console</Badge> on to see which event triggered by Web Pixel.
+                <Badge>Developer Console</Badge> on to see which event triggered by Web Pixel. If you add <Link url={`https://${_getAdminFromShop(shop)}/themes/current/editor`} external={true}>the app block named 'Barebone App Block TP' of this app</Link> to your theme app sections, 
+                you can see <Badge>your own custom event</Badge> triggered in the pages you add the section, too.
               </List.Item>
             </List>
           </Layout.Section>

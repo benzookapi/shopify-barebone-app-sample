@@ -36,7 +36,7 @@ register(({ analytics, browser, settings, init }) => {
         const measurement_id = ga4Id;
         const api_secret = ga4Sec;
 
-        const items = event_data.data.checkout.lineItems.map((item, i) => {
+        const items = event.data.checkout.lineItems.map((item, i) => {
           return {
             "item_name": `${item.title}`,
             "item_id": `${item.id}`,
@@ -47,15 +47,15 @@ register(({ analytics, browser, settings, init }) => {
             //"item_category3": "Shirts",
             //"item_category4": "Tshirts",
             "item_variant": `${item.variant.product.title}`,
-            "item_list_name": `${event_data.context.document.location.href}`,
-            "item_list_id": `${event_data.context.document.location.pathname}`,
+            "item_list_name": `${event.context.document.location.href}`,
+            "item_list_id": `${event.context.document.location.pathname}`,
             "index": i,
             "quantity": item.quantity
           }
         });
 
         const body = {
-          client_id: `${event_data.clientId}`,
+          client_id: `${event.clientId}`,
           events: [{
             name: 'begin_checkout',
             params: {
@@ -66,7 +66,7 @@ register(({ analytics, browser, settings, init }) => {
           }]
         };
 
-        body.params.ecommerce.items = items;
+        body.events[0].params.ecommerce.items = items;
 
         consolr.log(`Web Pixel sending 'begin_checkout' of GA4... ${JSON.stringify(body, null, 4)}`);
 
