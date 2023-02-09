@@ -101,7 +101,7 @@ Build command = npm install && npm run build (= cd frontend && npm install && np
 Start command = npm run start (= node app.js)
 ```
   
-    Note that the built React code contains `SHOPIFY_API_KEY` value from its envrionment variable, so if you run it with your own app, you have to run the Build command above at least one time.
+  Note that the built React code contains `SHOPIFY_API_KEY` value from its envrionment variable, so if you run it with your own app, you have to run the Build command above at least one time.
 
 3. If you run locally, you need to ngrok tunnel for public URL as follows (otherwise, the command lines above are usable in Render or other cloud platform deploy scripts).
 ```
