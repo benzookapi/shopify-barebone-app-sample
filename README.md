@@ -72,25 +72,25 @@ In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/co
 # How to run
 1. Add the following environmental variables locally or in cloud platforms like Render / Heroku / Fly, etc.
 ```
-  SHOPIFY_API_KEY:              YOUR_API_KEY (Copy and paste from your app settings in partner dashboard)
-  SHOPIFY_API_SECRET:           YOUR_API_SECRET (Copy and paste from your app settings in partner dashboard)
-  SHOPIFY_API_VERSION:          2023-04
-  SHOPIFY_API_SCOPES:           write_products,write_discounts,read_orders,write_payment_customizations,write_delivery_customizations,write_pixels,read_customer_events
+SHOPIFY_API_KEY:              YOUR_API_KEY (Copy and paste from your app settings in partner dashboard)
+SHOPIFY_API_SECRET:           YOUR_API_SECRET (Copy and paste from your app settings in partner dashboard)
+SHOPIFY_API_VERSION:          2023-04
+SHOPIFY_API_SCOPES:           write_products,write_discounts,read_orders,write_payment_customizations,write_delivery_customizations,write_pixels,read_customer_events
 
-  SHOPIFY_DB_TYPE:              MONGODB (Default) / POSTGRESQL / MYSQL
+SHOPIFY_DB_TYPE:              MONGODB (Default) / POSTGRESQL / MYSQL
 
-  // The followings are required if you set SHOPIFY_DB_TYPE 'MONGODB'
-  SHOPIFY_MONGO_DB_NAME:        YOUR_DB_NAME (any name is OK)
-  SHOPIFY_MONGO_URL:            mongodb://YOUR_USER:YOUR_PASSWORD@YOUR_DOMAIN:YOUR_PORT/YOUR_DB_NAME
+// The followings are required if you set SHOPIFY_DB_TYPE 'MONGODB'
+SHOPIFY_MONGO_DB_NAME:        YOUR_DB_NAME (any name is OK)
+SHOPIFY_MONGO_URL:            mongodb://YOUR_USER:YOUR_PASSWORD@YOUR_DOMAIN:YOUR_PORT/YOUR_DB_NAME
 
-  // The followings are required if you set SHOPIFY_DB_TYPE 'POSTGRESQL'
-  SHOPIFY_POSTGRESQL_URL:       postgres://YOUR_USER:YOUR_PASSWORD@YOUR_DOMAIN(:YOUR_PORT)/YOUR_DB_NAME
+// The followings are required if you set SHOPIFY_DB_TYPE 'POSTGRESQL'
+SHOPIFY_POSTGRESQL_URL:       postgres://YOUR_USER:YOUR_PASSWORD@YOUR_DOMAIN(:YOUR_PORT)/YOUR_DB_NAME
 
-  // The followings are required if you set SHOPIFY_DB_TYPE 'MYSQL'
-  SHOPIFY_MYSQL_HOST:           YOUR_DOMAIN
-  SHOPIFY_MYSQL_USER:           YOUR_USER
-  SHOPIFY_MYSQL_PASSWORD:       YOUR_PASSWORD
-  SHOPIFY_MYSQL_DATABASE:       YOUR_DB_NAME
+// The followings are required if you set SHOPIFY_DB_TYPE 'MYSQL'
+SHOPIFY_MYSQL_HOST:           YOUR_DOMAIN
+SHOPIFY_MYSQL_USER:           YOUR_USER
+SHOPIFY_MYSQL_PASSWORD:       YOUR_PASSWORD
+SHOPIFY_MYSQL_DATABASE:       YOUR_DB_NAME
 
 ```
 
