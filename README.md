@@ -94,14 +94,12 @@ SHOPIFY_MYSQL_DATABASE:       YOUR_DB_NAME
 
 ```
 
-2. Build and run the app server locally or in cloud platforms. All settings are described in 'package.json'.
+2. Build and run the app server locally or in cloud platforms. All settings are described in 'package.json' (Note that the built React code contains `SHOPIFY_API_KEY` value from its envrionment variable, so if you run it with your own app, you have to run the Build command below at least one time).
 ```
 Build command = npm install && npm run build (= cd frontend && npm install && npm run build && rm -rf ../public && mv dist ../public && mv ../public/index.html ../views/index.html  *Replacing Koa view files with Vite buit code)
 
 Start command = npm run start (= node app.js)
 ```
-  
-  Note that the built React code contains `SHOPIFY_API_KEY` value from its envrionment variable, so if you run it with your own app, you have to run the Build command above at least one time.
 
 3. If you run locally, you need to ngrok tunnel for public URL as follows (otherwise, the command lines above are usable in Render or other cloud platform deploy scripts).
 ```
