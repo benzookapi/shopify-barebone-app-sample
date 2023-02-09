@@ -183,6 +183,8 @@ All sample videos are available at [Wiki](https://github.com/benzookapi/shopify-
   - Your own ShopifyQL notebook with API. (TBD)
 - _Marketing Activity_: '/marketingactivity' 
   - Basic usage. (TBD)
+- _Tokengating_: '/tokengating' 
+  - Basic usage. (TBD)
 
 # Trouble shooting
 

@@ -115,6 +115,10 @@ function App() {
             label: 'Marketing Activity',
             destination: '/marketingactivity',
           },
+          {
+            label: 'Tokengating',
+            destination: '/tokengating',
+          },
         ]}
         matcher={(link, location) => link.destination === location.pathname}
       />
