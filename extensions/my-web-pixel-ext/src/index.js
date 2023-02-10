@@ -77,6 +77,22 @@ register(({ analytics, browser, settings, init }) => {
           }
         });
         break;
+      case 'checkout_completed':
+        name = 'purchase';
+        items = event.data.checkout.lineItems.map((item, i) => {
+          return {
+            "item_name": `${item.title}`,
+            "item_id": `${item.id}`,
+            "price": item.variant.price.amount,
+            "item_brand": `${item.variant.product.vendor}`,
+            "item_variant": `${item.variant.product.title}`,
+            "item_list_name": `${event.context.document.location.href}`,
+            "item_list_id": `${event.context.document.location.pathname}`,
+            "index": i,
+            "quantity": item.quantity
+          }
+        });
+        break;
       default:
         // Other events     
         break;
@@ -86,6 +102,16 @@ register(({ analytics, browser, settings, init }) => {
 
     body.events[0].name = name;
     body.events[0].params.ecommerce.items = items;
+
+    if (name == 'purchase') {
+      body.events[0].params.ecommerce.transaction_id = event.data.checkout.token;
+      //body.events[0].params.ecommerce.affiliation = '';
+      body.events[0].params.ecommerce.value = event.data.checkout.totalPrice.amount;
+      body.events[0].params.ecommerce.tax = event.data.checkout.totalTax.amount;
+      body.events[0].params.ecommerce.shipping = event.data.checkout.shippingLine.price.amount;
+      body.events[0].params.ecommerce.currency = event.data.checkout.currencyCode;
+      //body.events[0].params.ecommerce.coupon = '';
+    }
 
     console.log(`Web Pixel sending 'begin_checkout' of GA4... ${JSON.stringify(body, null, 4)} to ${ga4Url}`);
     fetch(ga4Url, {
