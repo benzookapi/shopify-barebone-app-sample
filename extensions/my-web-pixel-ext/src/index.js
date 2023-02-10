@@ -113,7 +113,7 @@ register(({ analytics, browser, settings, init }) => {
       //body.events[0].params.ecommerce.coupon = '';
     }
 
-    console.log(`Web Pixel sending 'begin_checkout' of GA4... ${JSON.stringify(body, null, 4)} to ${ga4Url}`);
+    console.log(`Web Pixel sending '${name}' of GA4... ${JSON.stringify(body, null, 4)} to ${ga4Url}`);
     fetch(ga4Url, {
       method: "POST",
       headers: {
