@@ -123,9 +123,9 @@ register(({ analytics, browser, settings, init }) => {
       },
       body: JSON.stringify(body)
     }).then(res => {
-      console.log(`${JSON.stringify(res, null, 4)}`);
+      console.log(`GA4 response: ${JSON.stringify(res, null, 4)}`);
     }).catch(e => {
-      console.log(`${e}`);
+      console.log(`GA4 error: ${e}`);
     });
 
   });
