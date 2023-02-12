@@ -737,6 +737,7 @@ router.get('/webpixel', async (ctx, next) => {
     const ga4 = ctx.request.query.ga4;
     const ga4Id = ctx.request.query.ga4Id;
     const ga4Sec = ctx.request.query.ga4Sec;
+    const ga4Debug = ctx.request.query.ga4Debug;
     let api_res = null;
     try {
       api_res = await (callGraphql(ctx, shop, `mutation webPixelCreate($webPixel: WebPixelInput!) {
@@ -756,7 +757,8 @@ router.get('/webpixel', async (ctx, next) => {
         "webPixel": {
           "settings": JSON.stringify({
             "ga4Id": ga4Id,
-            "ga4Sec": ga4Sec
+            "ga4Sec": ga4Sec,
+            "ga4Debug": ga4Debug
           })
         }
       }));
