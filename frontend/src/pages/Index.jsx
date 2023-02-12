@@ -83,6 +83,14 @@ function Index() {
                             name: 'Web Pixel',
                             location: 'Web Pixel sameple for GA4 integration',
                         },
+                        {
+                            id: 8,
+                            onClick: (id) => {
+                                redirect.dispatch(Redirect.Action.APP, '/postpurchase');
+                            },
+                            name: 'Post-purchase',
+                            location: 'Post-purchase sample for upselling',
+                        }
                     ]}
                     renderItem={(item) => {
                         const { id, onClick, name, location } = item;

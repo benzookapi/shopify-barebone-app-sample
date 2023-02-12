@@ -781,6 +781,20 @@ router.get('/webpixel', async (ctx, next) => {
 
 });
 
+/* --- Post-purchase Extension sample endpoint --- */
+// See https://shopify.dev/docs/apps/checkout/post-purchase
+router.get('/postpurchase', async (ctx, next) => {
+  console.log("+++++++++++++++ /postpurchase +++++++++++++++");
+  if (!checkSignature(ctx.request.query)) {
+    ctx.status = 400;
+    return;
+  }
+  const shop = ctx.request.query.shop;
+  setContentSecurityPolicy(ctx, shop);
+  await ctx.render('index', {});
+
+});
+
 /* --- App proxies sample endpoint --- */
 // See https://shopify.dev/apps/online-store/app-proxies
 // Note that ngrok blocks the proxy by default, you have to use other platforms like Render, Fly.io, etc.

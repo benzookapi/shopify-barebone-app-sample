@@ -76,7 +76,7 @@ function App() {
             destination: '/webpixel',
           },
           {
-            label: 'Post Purchase',
+            label: 'Post-purchase',
             destination: '/postpurchase',
           },
           {

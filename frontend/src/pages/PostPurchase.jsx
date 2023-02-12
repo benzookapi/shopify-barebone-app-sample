@@ -5,7 +5,7 @@ import { Page, Card, Layout, Link, List, Badge, Checkbox, TextField, Button, Spi
 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
-// Post Purchase sample
+// Post-purchase sample
 // See https://shopify.dev/api/pixels
 // See https://shopify.dev/apps/marketing/pixels/getting-started
 function PostPurchase() {
@@ -14,11 +14,11 @@ function PostPurchase() {
   const shop = _getShopFromQuery(window);
 
   return (
-    <Page title="Post Purchase">
+    <Page title="Post-purchase">
       <Card title="Step 1: " sectioned={true}>
         <Layout>
           <Layout.Section>
-            <Link url="https://shopify.dev/apps/checkout/post-purchase/getting-started-post-purchase-extension" external={true}>Dev. doc</Link>
+            <Link url="https://shopify.dev/docs/apps/checkout/post-purchase" external={true}>Dev. doc</Link>
           </Layout.Section>
           <Layout.Section>
             <List type="number">
