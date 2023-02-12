@@ -161,8 +161,8 @@ All sample videos are available at [Wiki](https://github.com/benzookapi/shopify-
   - Shipping rate filtering by Shopify Functions with input zip codes
 - _Function Payment_: ['/functionpayment'](https://user-images.githubusercontent.com/899580/216765424-238f91c8-ad63-43b6-959f-94632cdf1ac4.mp4) 
   - Payment method filtering by Shopify Functions with selected shipping rates
-- _Web Pixel_: '/webpixel' 
-  - Checking customer events in console to send checkout events to GA4 Data Streams
+- _Web Pixel_: ['/webpixel'](https://user-images.githubusercontent.com/899580/218306143-dca20706-b564-4573-a336-11016e479ed1.mp4) 
+  - Checking customer events in a browser console to send them to GA4 Data Streams
 - _Post Purchase_: '/postpurchase' 
   - Basic usage (TBD)
 - _Checkout Extension_: '/checkoutextension' 
