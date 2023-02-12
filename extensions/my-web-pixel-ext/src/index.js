@@ -38,19 +38,21 @@ register(({ analytics, browser, settings, init }) => {
       }]
     };
 
+    // THE FOLLOWING EVENTS CANNOT BE PASSED BY GA TAG IN THEME APP EXTENSION, ONLY BY WEB OR CUSTOM PIXELS DURING CHECKOUT PROCESS.
     // See https://shopify.dev/api/pixels/customer-events#checkout_started
-    // THIS EVENT CANNOT BE PASSED BY GA TAG IN THEME APP EXTENSION, ONLY BY WEB PIXEL DURING CHECKOUT PROCESS.
+    // See https://shopify.dev/docs/api/pixels/customer-events#payment_info_submitted
+    // See https://shopify.dev/docs/api/pixels/customer-events#checkout_completed
 
-    // Send event data to GA4 (begin_checkout)
-    // See https://developers.google.com/tag-manager/ecommerce-ga4
+    // Send event data to GA4
+    // See https://developers.google.com/analytics/devguides/collection/ga4/ecommerce?client_type=gtag
     // See https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?hl=ja&client_type=gtag
 
-    let name = null;
-    let items = null;
     switch (event.name) {
       case 'product_added_to_cart':
-        name = 'add_to_cart';
-        items = [{
+        body.events[0].name = 'add_to_cart';
+        body.events[0].params.currency = event.data.cartLine.cost.totalAmount.currencyCode;
+        body.events[0].params.value = event.data.cartLine.cost.totalAmount.amount;
+        body.events[0].params.items = [{
           "item_name": `${event.data.cartLine.merchandise.product.title}`,
           "item_id": `${event.data.cartLine.merchandise.product.id}`,
           "price": event.data.cartLine.merchandise.price.amount,
@@ -67,8 +69,31 @@ register(({ analytics, browser, settings, init }) => {
         }];
         break;
       case 'checkout_started':
-        name = 'begin_checkout';
-        items = event.data.checkout.lineItems.map((item, i) => {
+        body.events[0].name = 'begin_checkout';
+        body.events[0].params.currency = event.data.checkout.totalPrice.currencyCode;
+        body.events[0].params.value = event.data.checkout.totalPrice.amount;
+        //body.events[0].params.coupon = 'Discount name?';
+        body.events[0].params.items = event.data.checkout.lineItems.map((item, i) => {
+          return {
+            "item_name": `${item.title}`,
+            "item_id": `${item.id}`,
+            "price": item.variant.price.amount,
+            "item_brand": `${item.variant.product.vendor}`,
+            "item_variant": `${item.variant.product.title}`,
+            "item_list_name": `${event.context.document.location.href}`,
+            "item_list_id": `${event.context.document.location.pathname}`,
+            "index": i,
+            "quantity": item.quantity
+          }
+        });
+        break;
+      case 'payment_info_submitted':
+        body.events[0].name = 'add_payment_info';
+        body.events[0].params.currency = event.data.checkout.totalPrice.currencyCode;
+        body.events[0].params.value = event.data.checkout.totalPrice.amount;
+        //body.events[0].params.coupon = 'Discount name?';
+        //body.events[0].params.payment_type = 'Not available?';
+        body.events[0].params.items = event.data.checkout.lineItems.map((item, i) => {
           return {
             "item_name": `${item.title}`,
             "item_id": `${item.id}`,
@@ -83,8 +108,14 @@ register(({ analytics, browser, settings, init }) => {
         });
         break;
       case 'checkout_completed':
-        name = 'purchase';
-        items = event.data.checkout.lineItems.map((item, i) => {
+        body.events[0].name = 'purchase';
+        body.events[0].params.transaction_id = event.data.checkout.token;
+        body.events[0].params.value = event.data.checkout.totalPrice.amount;
+        body.events[0].params.tax = event.data.checkout.totalTax.amount;
+        body.events[0].params.shipping = event.data.checkout.shippingLine.price.amount;
+        body.events[0].params.currency = event.data.checkout.totalPrice.currencyCode;
+        //body.events[0].params.coupon = 'Discount name?';     
+        body.events[0].params.items = event.data.checkout.lineItems.map((item, i) => {
           return {
             "item_name": `${item.title}`,
             "item_id": `${item.id}`,
@@ -103,22 +134,9 @@ register(({ analytics, browser, settings, init }) => {
         break;
     }
 
-    if (name == null) return;
+    if (body.events[0].name == '') return;
 
-    body.events[0].name = name;
-    body.events[0].params.items = items;
-
-    if (name == 'purchase') {
-      body.events[0].params.transaction_id = event.data.checkout.token;
-      //body.events[0].params.affiliation = '';
-      body.events[0].params.value = event.data.checkout.totalPrice.amount;
-      body.events[0].params.tax = event.data.checkout.totalTax.amount;
-      body.events[0].params.shipping = event.data.checkout.shippingLine.price.amount;
-      body.events[0].params.currency = event.data.checkout.currencyCode;
-      //body.events[0].params.coupon = '';
-    }
-
-    console.log(`Web Pixel sending '${name}' of GA4... ${JSON.stringify(body, null, 4)} to ${ga4Url}`);
+    console.log(`Web Pixel sending '${body.events[0].name}' of GA4... ${JSON.stringify(body, null, 4)} to ${ga4Url}`);
     fetch(ga4Url, {
       method: "POST",
       body: JSON.stringify(body)
