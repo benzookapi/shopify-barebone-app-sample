@@ -121,11 +121,6 @@ register(({ analytics, browser, settings, init }) => {
     console.log(`Web Pixel sending '${name}' of GA4... ${JSON.stringify(body, null, 4)} to ${ga4Url}`);
     fetch(ga4Url, {
       method: "POST",
-      headers: {
-        //'Content-Type': 'application/json', // This produce CORS error!
-        //'Content-Type': 'text/plain', GA4 endpoint handle this as 'text/plain'
-        //'Accept': 'application/json' The live response has no body data with 200 or 204 status only always (If you want to check the result, you need the debug mode on as above).
-      },
       body: JSON.stringify(body)
     }).then(res => {
       console.log(`GA4 response: ${JSON.stringify(res, null, 4)}`);
