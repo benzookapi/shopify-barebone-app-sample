@@ -18,21 +18,22 @@ register(({ analytics, browser, settings, init }) => {
     // WITH ALL EXTERNAL ACCESS TAKEN FOR CROSS-ORIGIN.
     // See https://developer.mozilla.org/en-US/docs/Glossary/CORS
     // See https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API  
-    
+
     // Note that GA4 endpoint doesn't respond errors even though you've given the wrong request. 
     // If you want to check your request, you need to access the debug URL adding 'debug' as '.com/debug/mp/collect?'.
     // See https://developers.google.com/analytics/devguides/collection/protocol/ga4/validating-events?client_type=gtag
 
-    const ga4Url = `https://www.google-analytics.com/mp/collect?measurement_id=${settings.ga4Id}&api_secret=${settings.ga4Sec}`;
+    let debug = '';
+    if (settings.ga4Debug == 'true') debug = 'debug/';
+
+    const ga4Url = `https://www.google-analytics.com/${debug}mp/collect?measurement_id=${settings.ga4Id}&api_secret=${settings.ga4Sec}`;
 
     const body = {
       client_id: `${event.clientId}`,
       events: [{
         name: '',
         params: {
-          ecommerce: {
-            items: []
-          }
+          items: []
         },
       }]
     };
@@ -105,16 +106,16 @@ register(({ analytics, browser, settings, init }) => {
     if (name == null) return;
 
     body.events[0].name = name;
-    body.events[0].params.ecommerce.items = items;
+    body.events[0].params.items = items;
 
     if (name == 'purchase') {
-      body.events[0].params.ecommerce.transaction_id = event.data.checkout.token;
-      //body.events[0].params.ecommerce.affiliation = '';
-      body.events[0].params.ecommerce.value = event.data.checkout.totalPrice.amount;
-      body.events[0].params.ecommerce.tax = event.data.checkout.totalTax.amount;
-      body.events[0].params.ecommerce.shipping = event.data.checkout.shippingLine.price.amount;
-      body.events[0].params.ecommerce.currency = event.data.checkout.currencyCode;
-      //body.events[0].params.ecommerce.coupon = '';
+      body.events[0].params.transaction_id = event.data.checkout.token;
+      //body.events[0].params.affiliation = '';
+      body.events[0].params.value = event.data.checkout.totalPrice.amount;
+      body.events[0].params.tax = event.data.checkout.totalTax.amount;
+      body.events[0].params.shipping = event.data.checkout.shippingLine.price.amount;
+      body.events[0].params.currency = event.data.checkout.currencyCode;
+      //body.events[0].params.coupon = '';
     }
 
     console.log(`Web Pixel sending '${name}' of GA4... ${JSON.stringify(body, null, 4)} to ${ga4Url}`);
@@ -123,7 +124,7 @@ register(({ analytics, browser, settings, init }) => {
       headers: {
         //'Content-Type': 'application/json', // This produce CORS error!
         //'Content-Type': 'text/plain', GA4 endpoint handle this as 'text/plain'
-        //'Accept': 'application/json' The live response has no body data with 204 status only always (If you want to check the result, you need the debug mode on as above).
+        //'Accept': 'application/json' The live response has no body data with 200 or 204 status only always (If you want to check the result, you need the debug mode on as above).
       },
       body: JSON.stringify(body)
     }).then(res => {
