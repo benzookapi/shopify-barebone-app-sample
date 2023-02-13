@@ -1,6 +1,7 @@
 'use strict';
 
 const Koa = require('koa');
+const cors = require('@koa/cors');
 const Router = require('koa-router');
 const bodyParser = require('koa-bodyparser');
 const koaRequest = require('koa-http-request');
@@ -17,6 +18,8 @@ const jwt_decode = require('jwt-decode');
 
 const router = new Router();
 const app = module.exports = new Koa();
+
+app.use(cors()); // For Web Worker sandox access
 
 app.use(bodyParser());
 
@@ -783,6 +786,7 @@ router.get('/webpixel', async (ctx, next) => {
 
 /* --- Post-purchase Extension sample endpoint --- */
 // See https://shopify.dev/docs/apps/checkout/post-purchase
+// See https://shopify.dev/docs/api/checkout-extensions/extension-points
 router.get('/postpurchase', async (ctx, next) => {
   console.log("+++++++++++++++ /postpurchase +++++++++++++++");
   if (!checkSignature(ctx.request.query)) {
@@ -879,6 +883,32 @@ router.get('/mocklogin', async (ctx, next) => {
       ${details}
     `;
 
+});
+
+/* --- CORS access test endpoint --- */
+// Sandbox Web Workers used by Web Pixels, Checkout Extensions require CORS access.
+/*
+//Test it with the followiing code in your theme <script> tags or web worker JS.
+fetch('https://YOUR_APP_URL/corstest?your_key=your_value', {
+    method: "POST"
+  }).then(res => {
+    res.json().then(json => {
+      console.log(`${JSON.stringify(json)}`);
+    }).catch(e => {
+      console.log(`${e}`);
+    });
+  }).catch(e => {
+    console.log(`error: ${e}`);
+  });
+*/
+router.post('/corstest', async (ctx, next) => {
+  console.log("------------ corstest ------------");
+  console.log(`request ${JSON.stringify(ctx.request, null, 4)}`);
+  console.log(`query ${JSON.stringify(ctx.request.query, null, 4)}`);
+  console.log(`body ${JSON.stringify(ctx.request.body, null, 4)}`);
+  ctx.set('Content-Type', 'application/json');
+  ctx.body = { "my_key": "my_value" };
+  ctx.status = 200;
 });
 
 /* 
