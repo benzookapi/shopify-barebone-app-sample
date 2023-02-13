@@ -27,11 +27,11 @@ function PostPurchase() {
             <List type="number">
               <List.Item>
                 Add <Link url={`https://${_getAdminFromShop(shop)}/settings/custom_data`} external={true}>Metafields</Link> for <Badge status='info'>Products</Badge>
-                in type of <Badge>Single line text</Badge> with namespace and key: <Badge>barebone_app_upsell.product_id</Badge>.
+                in type of <Badge>Single line text</Badge> with namespace and key: <Badge>barebone_app_upsell.product_id</Badge> (<b>Note that the metafield needs 'storefronts' checked = visibleToStorefrontApi: true</b>).
               </List.Item>
               <List.Item>
                 Set each <Badge>product id (the last number of its detail page URL)</Badge> to each metafield above of <Link url={`https://${_getAdminFromShop(shop)}/products`} external={true}>Products</Link> for
-                those you want to upsell (e.g. <b>Purchasing Product A with Product B's ID offers the B in post-purchase</b>).
+                those you want to upsell (e.g. "Purchasing Product A with Product B's ID offers the B in post-purchase").
               </List.Item>
               <List.Item>
                 Add another metafield (<Badge>'barebone_app.url'</Badge>) to <Badge status='info'>Shop</Badge> to set this app raw URL (<Badge>https://{window.location.hostname}</Badge>) in it <b>to be accessed from Post-purchase Web Workers </b>
