@@ -826,27 +826,46 @@ router.get('/postpurchase', async (ctx, next) => {
     // Add the metafield to the shop for app URL specification.
     let api_res = null;
     try {
-      api_res = await (callGraphql(ctx, shop, `mutation {
-        metafieldStorefrontVisibilityCreate(
-          input: {
-            namespace: "barebone_app"
-            key: "url"
-            ownerType: SHOP
-          }
-        ) {
-          metafieldStorefrontVisibility {
+      api_res = await (callGraphql(ctx, shop, `mutation metafieldDefinitionCreate($definition: MetafieldDefinitionInput!) {
+        metafieldDefinitionCreate(definition: $definition) {
+          createdDefinition {
             id
+            name
+            namespace
+            key
+            ownerType
+            visibleToStorefrontApi
           }
           userErrors {
             field
             message
           }
         }
-      }`, null, GRAPHQL_PATH_ADMIN, null));
+      }
+      `, null, GRAPHQL_PATH_ADMIN, {
+        "definition": {
+          "key": "url",
+          "name": "Barebone app url",
+          "namespace": "barebone_app",
+          "ownerType": "SHOP",
+          "type": "single_line_text_field",
+          "visibleToStorefrontApi": true
+        }
+      }));
     } catch (e) {
       console.log(`${JSON.stringify(e)}`);
     }
-    const id = api_res.data.metafieldStorefrontVisibilityCreate.metafieldStorefrontVisibility.id;
+    api_res = null;
+    try {
+      api_res = await (callGraphql(ctx, shop, `{
+      shop {
+        id
+      }
+    }`, null, GRAPHQL_PATH_ADMIN, null));
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+    }
+    const id = api_res.data.shop.id;
     api_res = null;
     try {
       api_res = await (callGraphql(ctx, shop, `mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {

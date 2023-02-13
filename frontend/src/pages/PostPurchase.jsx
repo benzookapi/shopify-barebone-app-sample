@@ -35,7 +35,7 @@ function PostPurchase() {
               </List.Item>
               <List.Item>
                 Add another metafield (<Badge>'barebone_app.url'</Badge>) to <Badge status='info'>Shop</Badge> to set this app raw URL (<Badge>https://{window.location.hostname}</Badge>) in it <b>to be accessed from Post-purchase Web Workers </b>
-                using <Link url={`https://shopify.dev/docs/api/admin-graphql/2023-04/mutations/metafieldStorefrontVisibilityCreate`} external={true}>metafieldStorefrontVisibilityCreate </Link>
+                using <Link url={`https://shopify.dev/docs/api/admin-graphql/2023-04/mutations/metafieldDefinitionCreate`} external={true}>metafieldDefinitionCreate (visibleToStorefrontApi: true) </Link>
                 and <Link url={`https://shopify.dev/docs/api/admin-graphql/2023-04/mutations/metafieldsSet`} external={true}>metafieldsSet</Link>.
                 <Stack spacing="loose">
                   <Button primary onClick={() => {
@@ -44,7 +44,7 @@ function PostPurchase() {
                       response.json().then((json) => {
                         console.log(JSON.stringify(json, null, 4));
                         setAccessing(false);
-                        if (json.result.response.data.metafields.userErrors.length == 0) {
+                        if (json.result.response.data.metafieldsSet.userErrors.length == 0) {
                           setResult('Success!');
                         } else {
                           setResult('Error!');
