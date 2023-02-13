@@ -20,7 +20,7 @@ extend('Checkout::PostPurchase::ShouldRender', async ({ inputData, storage }) =>
 
   // If the upsell products found, get GraphQL Admin responses of those data from the app server and 
   // store them to the browser storage.
-  if (upsell_product_ids.length > 0 && typeof upsell_product_ids[0] != null) {
+  if (upsell_product_ids.length > 0 && upsell_product_ids[0] != null) {
     // This metafield is filtered by 'shopify.ui.extension.toml' with namespace = "barebone_app" and key = "url".
     const app_url = `${inputData.shop.metafields[0].value}/postpurchase?upsell_product_ids=${JSON.stringify(upsell_product_ids)}&token=${inputData.token}`;
 
