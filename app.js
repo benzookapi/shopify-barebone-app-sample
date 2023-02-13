@@ -932,9 +932,9 @@ router.post('/postpurchase', async (ctx, next) => {
   console.log(`body ${JSON.stringify(ctx.request.body, null, 4)}`);
 
   // if a wrong token is passed with a ummatched signature, decodeJWT fails with an exeption = works as verification as well.
-  const inputData = decodeJWT(ctx.request.query.token).inputData;
+  const input_data = decodeJWT(ctx.request.query.token).input_data;
 
-  const shop = inputData.shop.domain;
+  const shop = input_data.shop.domain;
   const upsell_product_ids = JSON.parse(ctx.request.query.upsell_product_ids);
   console.log(`shop ${shop} upsell_product_ids ${JSON.stringify(upsell_product_ids)}`);
 
@@ -976,9 +976,11 @@ router.post('/postpurchase', async (ctx, next) => {
   } catch (e) {
     console.log(`${JSON.stringify(e)}`);
   }
+
   ctx.set('Content-Type', 'application/json');
   ctx.body = api_res;
   ctx.status = 200;
+  
 });
 
 /* --- App proxies sample endpoint --- */
@@ -1197,7 +1199,7 @@ const setContentSecurityPolicy = function (ctx, shop) {
 
 /* --- Create JWT to pass data encoded through URL access (Checkout Extension Web Worker) --- */
 const createJWT = function (json) {
-  return jwt.sign(json, API_SECRET, { expiresIn: '1h' });
+  return jwt.sign(json, API_SECRET, { algorithm: 'HS256', expiresIn: '60s' });
 };
 
 /* --- Decode JWT passed through URL access (Checkout Extension Web Worker) --- */

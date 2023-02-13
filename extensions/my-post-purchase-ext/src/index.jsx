@@ -18,29 +18,32 @@ extend('Checkout::PostPurchase::ShouldRender', async ({ inputData, storage }) =>
   });
   console.log(`upsell_product_ids: ${JSON.stringify(upsell_product_ids, null, 4)}`);
 
-  // If the upsell products found, store those data in the browser storage to set render = true.
+  // If the upsell products found, get GraphQL Admin responses of those data from the app server and 
+  // store them to the browser storage.
   if (upsell_product_ids.length > 0 && typeof upsell_product_ids[0] != null) {
     // This metafield is filtered by 'shopify.ui.extension.toml' with namespace = "barebone_app" and key = "url".
     const app_url = `${inputData.shop.metafields[0].value}/postpurchase?upsell_product_ids=${JSON.stringify(upsell_product_ids)}&token=${inputData.token}`;
+
     console.log(`Getting upsell product data from... ${app_url}`);
-    fetch(`${app_url}/`, {
+
+    const json = await (await fetch(app_url, {
       method: "POST"
-    }).then(res => {
-      res.json().then(json => {
-        console.log(`${JSON.stringify(json)}`);
-      }).catch(e => {
-        console.log(`${e}`);
-      });
-    }).catch(e => {
-      console.log(`error: ${e}`);
-    });
+    })).json();
+
+    console.log(`${JSON.stringify(json, null, 4)}`);
+
+    // Store the upsell product details from API to the local storage.
     await storage.update({
-      "upsell_product_ids": upsell_product_ids
+      "upsell_products": json
     });
+
+    // Notify that the post-purchase shows up.
     return { render: true };
 
   }
+  // Notify that the post-purchase doesn't show up because no upsell products found.
   return { render: false };
+
 });
 
 render('Checkout::PostPurchase::Render', () => <App />);
