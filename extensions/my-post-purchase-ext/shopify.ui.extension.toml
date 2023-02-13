@@ -4,3 +4,7 @@ name = "my-post-purchase-ext"
 [[metafields]]
 namespace = "barebone_app_upsell"
 key = "product_id"
+
+[[metafields]]
+namespace = "barebone_app"
+key = "url"

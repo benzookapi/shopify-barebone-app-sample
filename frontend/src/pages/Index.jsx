@@ -89,7 +89,7 @@ function Index() {
                                 redirect.dispatch(Redirect.Action.APP, '/postpurchase');
                             },
                             name: 'Post-purchase',
-                            location: 'Post-purchase sample for upselling',
+                            location: 'Post-purchase sample for upselling products based on metafields',
                         }
                     ]}
                     renderItem={(item) => {

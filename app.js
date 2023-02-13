@@ -789,6 +789,97 @@ router.get('/webpixel', async (ctx, next) => {
 // See https://shopify.dev/docs/api/checkout-extensions/extension-points
 router.get('/postpurchase', async (ctx, next) => {
   console.log("+++++++++++++++ /postpurchase +++++++++++++++");
+
+  // Access by AppBride::authenticatedFetch
+  if (typeof ctx.request.header.authorization !== UNDEFINED) {
+    console.log('Authenticated fetch');
+    const token = getTokenFromAuthHeader(ctx);
+    if (!checkAuthFetchToken(token)[0]) {
+      ctx.body.result.message = "Signature unmatched. Incorrect authentication bearer sent";
+      ctx.status = 400;
+      return;
+    }
+
+    ctx.set('Content-Type', 'application/json');
+    ctx.body = {
+      "result": {
+        "message": "",
+        "response": {}
+      }
+    };
+
+    const shop = getShopFromAuthToken(token);
+    let shop_data = null;
+    try {
+      shop_data = await (getDB(shop));
+      if (shop_data == null) {
+        ctx.body.result.message = "Authorization failed. No shop data";
+        ctx.status = 400;
+        return;
+      }
+    } catch (e) {
+      ctx.body.result.message = "Internal error in retrieving shop data";
+      ctx.status = 500;
+      return;
+    }
+
+    // Add the metafield to the shop for app URL specification.
+    let api_res = null;
+    try {
+      api_res = await (callGraphql(ctx, shop, `mutation {
+        metafieldStorefrontVisibilityCreate(
+          input: {
+            namespace: "barebone_app"
+            key: "url"
+            ownerType: SHOP
+          }
+        ) {
+          metafieldStorefrontVisibility {
+            id
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }`, null, GRAPHQL_PATH_ADMIN, null));
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+    }
+    const id = api_res.data.metafieldStorefrontVisibilityCreate.metafieldStorefrontVisibility.id;
+    api_res = null;
+    try {
+      api_res = await (callGraphql(ctx, shop, `mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
+        metafieldsSet(metafields: $metafields) {
+          metafields {
+            id
+            value
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+      `, null, GRAPHQL_PATH_ADMIN, {
+        "metafields": [
+          {
+            "key": "url",
+            "namespace": "barebone_app",
+            "ownerId": id,
+            "value": `https://${ctx.request.host}`
+          }
+        ]
+      }
+      ));
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+    }
+    ctx.body.result.response = api_res;
+    ctx.status = 200;
+    return;
+  }
+
   if (!checkSignature(ctx.request.query)) {
     ctx.status = 400;
     return;

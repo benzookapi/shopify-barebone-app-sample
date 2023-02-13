@@ -50,8 +50,8 @@ function ThemeAppExtension() {
                                 </Button>
 
                             </List.Item>
-                            <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/metafields`} external={true}>Metafields</Link> for products as
-                                in type of <Badge>Product</Badge> and <Badge>Text</Badge> and go to the app block section in the theme editor ('Home page' and 'Default product') to set the metafields above with
+                            <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/settings/custom_data`} external={true}>Metafields</Link> for <Badge status='info'>Products</Badge> 
+                                in type of <Badge>Product</Badge> and <Badge>Single line text</Badge> and go to the app block section in the theme editor ('Home page' and 'Default product') to set the metafields above with
                                 <Link url={`https://help.shopify.com/en/manual/online-store/themes/theme-structure/sections-and-blocks`} external={true}>Dynamic sources</Link>
                                 (don't forget to set Metafields to <Link url={`https://${_getAdminFromShop(shop)}/products`} external={true}>Products</Link>)
                             </List.Item>
