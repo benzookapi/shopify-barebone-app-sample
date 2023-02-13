@@ -134,17 +134,6 @@ Or
 
 `you can install to your development stores from the app settings in partner dashboard.`
 
-# Map your webhook paths with GDPR webhooks
-https://shopify.dev/apps/webhooks/configuration/mandatory-webhooks
-
-```
-customers/data_request:  /webhookgdprcustomerreq
-
-customers/redact:  /webhookgdprcustomerdel
-
-shop/redact:  /webhookgdprshopdel
-```
-
 # Sample list
 
 All sample videos are available at [Wiki](https://github.com/benzookapi/shopify-barebone-app-sample/wiki).

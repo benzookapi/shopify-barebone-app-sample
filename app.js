@@ -913,66 +913,6 @@ router.post('/corstest', async (ctx, next) => {
 
 /* 
  * 
- * --- GDPR Webhook for customer data request ---
- * 
-*/
-router.post('/webhookgdprcustomerreq', async (ctx, next) => {
-  console.log("*************** webhookgdprcustomerreq ***************");
-  console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
-
-  /* Check the signature */
-  const valid = await (checkWebhookSignature(ctx, API_SECRET));
-  if (!valid) {
-    console.log('Not a valid signature');
-    ctx.status = 401;
-    return;
-  }
-
-  ctx.status = 200;
-});
-
-/* 
- * 
- * --- GDPR Webhook for customer data deletion ---
- * 
-*/
-router.post('/webhookgdprcustomerdel', async (ctx, next) => {
-  console.log("*************** webhookgdprcustomerdel ***************");
-  console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
-
-  /* Check the signature */
-  const valid = await (checkWebhookSignature(ctx, API_SECRET));
-  if (!valid) {
-    console.log('Not a valid signature');
-    ctx.status = 401;
-    return;
-  }
-
-  ctx.status = 200;
-});
-
-/* 
- * 
- * --- GDPR Webhook for shop data deletion ---
- * 
-*/
-router.post('/webhookgdprshopdel', async (ctx, next) => {
-  console.log("*************** webhookgdprshopdel ***************");
-  console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
-
-  /* Check the signature */
-  const valid = await (checkWebhookSignature(ctx, API_SECRET));
-  if (!valid) {
-    console.log('Not a valid signature');
-    ctx.status = 401;
-    return;
-  }
-
-  ctx.status = 200;
-});
-
-/* 
- * 
  * --- Webhook endpoint for common usage ---
  * 
 */

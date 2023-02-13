@@ -41,7 +41,7 @@ function FunctionPayment() {
                   value={method}
                   onChange={methodChange}
                   autoComplete="off"
-                  placeholder="Example: MyTestAppBuyer"
+                  placeholder="Example: Cash on Delivery (COD)"
                 />
               </List.Item>
               <List.Item>Input a <Badge>shipping rate name</Badge> which buyers select when the payment method shows up above, from <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} external={true}>shipping settings</Link> or <Link url={`https://${_getAdminFromShop(shop)}/orders`} external={true}>past orders</Link>
