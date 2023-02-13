@@ -932,7 +932,19 @@ router.post('/postpurchase', async (ctx, next) => {
   console.log(`body ${JSON.stringify(ctx.request.body, null, 4)}`);
 
   // if a wrong token is passed with a ummatched signature, decodeJWT fails with an exeption = works as verification as well.
-  const input_data = decodeJWT(ctx.request.query.token).input_data;
+  let decoded_token = null;
+  try {
+    decoded_token = decodeJWT(ctx.request.query.token);
+  } catch (e) {
+    console.log(`${e}`);
+  }
+  if (decoded_token == null) {
+    ctx.body = { "Error": "Wrong token passed." };
+    ctx.status = 400;
+    return;
+  }
+
+  const input_data = decoded_token.input_data;
 
   const shop = input_data.shop.domain;
   const upsell_product_ids = JSON.parse(ctx.request.query.upsell_product_ids);
@@ -978,9 +990,9 @@ router.post('/postpurchase', async (ctx, next) => {
   }
 
   ctx.set('Content-Type', 'application/json');
-  ctx.body = api_res;
+  ctx.body = api_res.data;
   ctx.status = 200;
-  
+
 });
 
 /* --- App proxies sample endpoint --- */
