@@ -14,7 +14,8 @@ const mongo = require('mongodb');
 const { Client } = require('pg');
 const mysql = require('mysql');
 
-const jwt_decode = require('jwt-decode');
+const jwt_decode = require('jwt-decode'); // For client side JWT with no signature validation
+const jwt = require('jsonwebtoken'); // For server side JWT with app secret signature validation
 
 const router = new Router();
 const app = module.exports = new Koa();
@@ -909,6 +910,77 @@ router.get('/postpurchase', async (ctx, next) => {
 
 });
 
+/* --- Post-purchase CORS endpoint --- */
+// Sandbox Web Workers used by Web Pixels, Checkout Extensions require CORS access.
+/* Accessed like this from Web Workers.
+fetch(`https://fb34-2400-2410-2fc0-fb00-d4e2-f57f-90a6-bdd6.jp.ngrok.io/postpurchase?your_key=your_value`, {
+      method: "POST"
+    }).then(res => {
+      res.json().then(json => {
+        console.log(`${JSON.stringify(json)}`);
+      }).catch(e => {
+        console.log(`${e}`);
+      });
+    }).catch(e => {
+      console.log(`error: ${e}`);
+    });
+*/
+router.post('/postpurchase', async (ctx, next) => {
+  console.log("------------ postpurchase ------------");
+  console.log(`request ${JSON.stringify(ctx.request, null, 4)}`);
+  console.log(`query ${JSON.stringify(ctx.request.query, null, 4)}`);
+  console.log(`body ${JSON.stringify(ctx.request.body, null, 4)}`);
+
+  // if a wrong token is passed with a ummatched signature, decodeJWT fails with an exeption = works as verification as well.
+  const inputData = decodeJWT(ctx.request.query.token).inputData;
+
+  const shop = inputData.shop.domain;
+  const upsell_product_ids = JSON.parse(ctx.request.query.upsell_product_ids);
+  console.log(`shop ${shop} upsell_product_ids ${JSON.stringify(upsell_product_ids)}`);
+
+  const query = upsell_product_ids.map((id) => {
+    return `id:${id}`;
+  }).reduce((prev, next) => {
+    return `${prev} OR ${next}`;
+  });
+  console.log(`query: ${query}`);
+
+  let api_res = null;
+  try {
+    api_res = await (callGraphql(ctx, shop, `{
+        products(first: 10, query: "${query}") {
+          edges {
+            node {
+              id
+              title
+              featuredImage {
+                url
+              }
+              priceRangeV2 {
+                maxVariantPrice {
+                  amount
+                  currencyCode
+                }
+              }
+              variants(first: 1) {
+                edges {
+                  node {
+                    price
+                  }
+                }
+              }
+            }
+          }
+        }
+      }`, null, GRAPHQL_PATH_ADMIN, null));
+  } catch (e) {
+    console.log(`${JSON.stringify(e)}`);
+  }
+  ctx.set('Content-Type', 'application/json');
+  ctx.body = api_res;
+  ctx.status = 200;
+});
+
 /* --- App proxies sample endpoint --- */
 // See https://shopify.dev/apps/online-store/app-proxies
 // Note that ngrok blocks the proxy by default, you have to use other platforms like Render, Fly.io, etc.
@@ -993,32 +1065,6 @@ router.get('/mocklogin', async (ctx, next) => {
       ${details}
     `;
 
-});
-
-/* --- CORS access test endpoint --- */
-// Sandbox Web Workers used by Web Pixels, Checkout Extensions require CORS access.
-/*
-//Test it with the followiing code in your theme <script> tags or web worker JS.
-fetch('https://YOUR_APP_URL/corstest?your_key=your_value', {
-    method: "POST"
-  }).then(res => {
-    res.json().then(json => {
-      console.log(`${JSON.stringify(json)}`);
-    }).catch(e => {
-      console.log(`${e}`);
-    });
-  }).catch(e => {
-    console.log(`error: ${e}`);
-  });
-*/
-router.post('/corstest', async (ctx, next) => {
-  console.log("------------ corstest ------------");
-  console.log(`request ${JSON.stringify(ctx.request, null, 4)}`);
-  console.log(`query ${JSON.stringify(ctx.request.query, null, 4)}`);
-  console.log(`body ${JSON.stringify(ctx.request.body, null, 4)}`);
-  ctx.set('Content-Type', 'application/json');
-  ctx.body = { "my_key": "my_value" };
-  ctx.status = 200;
 });
 
 /* 
@@ -1147,6 +1193,17 @@ const setContentSecurityPolicy = function (ctx, shop) {
   } else {
     ctx.response.set('Content-Security-Policy', `frame-ancestors 'none';`);
   }
+};
+
+/* --- Create JWT to pass data encoded through URL access (Checkout Extension Web Worker) --- */
+const createJWT = function (json) {
+  return jwt.sign(json, API_SECRET, { expiresIn: '1h' });
+};
+
+/* --- Decode JWT passed through URL access (Checkout Extension Web Worker) --- */
+// If the given signature in token unmatched, the function produces an expection.
+const decodeJWT = function (token) {
+  return jwt.verify(token, API_SECRET);
 };
 
 /* --- Call Shopify GraphQL --- */

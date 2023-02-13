@@ -9,6 +9,7 @@
     "@shopify/cli": "^3.38.0",
     "@shopify/post-purchase-ui-extensions-react": "^0.13.4",
     "@shopify/web-pixels-extension": "^0.1.6",
+    "jsonwebtoken": "^9.0.0",
     "jwt-decode": "^3.1.2",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
