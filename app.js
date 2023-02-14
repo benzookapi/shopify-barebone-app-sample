@@ -17,6 +17,8 @@ const mysql = require('mysql');
 const jwt_decode = require('jwt-decode'); // For client side JWT with no signature validation
 const jwt = require('jsonwebtoken'); // For server side JWT with app secret signature validation
 
+const { v4: uuidv4 } = require('uuid'); // For JWT sign
+
 const router = new Router();
 const app = module.exports = new Koa();
 
@@ -945,52 +947,102 @@ router.post('/postpurchase', async (ctx, next) => {
   }
 
   const input_data = decoded_token.input_data;
+  console.log(`input_data ${JSON.stringify(input_data, null, 4)}`);
 
   const shop = input_data.shop.domain;
-  const upsell_product_ids = JSON.parse(ctx.request.query.upsell_product_ids);
-  console.log(`shop ${shop} upsell_product_ids ${JSON.stringify(upsell_product_ids)}`);
 
-  const query = upsell_product_ids.map((id) => {
-    return `id:${id}`;
-  }).reduce((prev, next) => {
-    return `${prev} OR ${next}`;
-  });
-  console.log(`query: ${query}`);
+  let response_data = {};
 
-  let api_res = null;
-  try {
-    api_res = await (callGraphql(ctx, shop, `{
-        products(first: 10, query: "${query}") {
-          edges {
-            node {
-              id
-              title
-              featuredImage {
-                url
-              }
-              priceRangeV2 {
-                maxVariantPrice {
-                  amount
-                  currencyCode
+  const upsell_product_ids = ctx.request.query.upsell_product_ids;
+  // ShouldRender access for retrieving variant ids for offered products.
+  if (typeof upsell_product_ids !== UNDEFINED) {
+    const query = JSON.parse(upsell_product_ids).map((id) => {
+      return `id:${id}`;
+    }).reduce((prev, next) => {
+      return `${prev} OR ${next}`;
+    });
+    console.log(`query: ${query}`);
+    try {
+      const api_res = await (callGraphql(ctx, shop, `{
+          products(first: 10, query: "${query}") {
+            edges {
+              node {
+                id
+                title
+                featuredImage {
+                  url
                 }
-              }
-              variants(first: 1) {
-                edges {
-                  node {
-                    price
+                priceRangeV2 {
+                  maxVariantPrice {
+                    amount
+                    currencyCode
+                  }
+                }
+                variants(first: 1) {
+                  edges {
+                    node {
+                      id
+                      price
+                    }
                   }
                 }
               }
             }
           }
-        }
-      }`, null, GRAPHQL_PATH_ADMIN, null));
-  } catch (e) {
-    console.log(`${JSON.stringify(e)}`);
+        }`, null, GRAPHQL_PATH_ADMIN, null));
+      response_data = api_res.data;
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+    }
   }
 
+  const changes = ctx.request.query.changes;
+  // Render access to sign the JWT for AppBridge Checkout applyChange.
+  if (typeof changes !== UNDEFINED) {
+    const payload = {
+      iss: API_KEY,
+      jti: uuidv4(),
+      iat: Date.now(),
+      sub: input_data.initialPurchase.referenceId,
+      changes: JSON.parse(changes)
+    };
+    console.log(`payload ${JSON.stringify(payload, null, 4)}`);
+    response_data = { "token": createJWT(payload) };
+  }
+
+  const customerId = ctx.request.query.customerId;
+  // Render access to set the customer's review score to their metafields.
+  if (typeof customerId !== UNDEFINED) {
+    try {
+      const api_res = await (callGraphql(ctx, shop, `mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
+        metafieldsSet(metafields: $metafields) {
+          metafields {
+            id
+            value
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+      `, null, GRAPHQL_PATH_ADMIN, {
+        "metafields": [
+          {
+            "key": "score",
+            "namespace": "barebone_app_review",
+            "ownerId": `gid://shopify/Customer/${customerId}`,
+            "value": `${ctx.request.query.score}`
+          }
+        ]
+      }));
+      response_data = api_res.data;
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+    }
+  }
   ctx.set('Content-Type', 'application/json');
-  ctx.body = api_res.data;
+  ctx.body = response_data;
   ctx.status = 200;
 
 });
