@@ -2,7 +2,7 @@
 // See https://shopify.dev/docs/api/checkout-extensions/extension-points
 // See https://shopify.dev/docs/apps/checkout/post-purchase/getting-started-post-purchase-extension
 
-import { extend, render, useExtensionInput, BlockStack, Button, Heading, Image } from '@shopify/post-purchase-ui-extensions-react';
+import { extend, render, useExtensionInput, BlockStack, Button, TextContainer, Text, Layout, CalloutBanner, Banner, Heading, Image, View } from '@shopify/post-purchase-ui-extensions-react';
 
 extend('Checkout::PostPurchase::ShouldRender', async ({ inputData, storage }) => {
   console.log(`Post-purchase inputData: ${JSON.stringify(inputData, null, 4)}`);
@@ -49,11 +49,48 @@ extend('Checkout::PostPurchase::ShouldRender', async ({ inputData, storage }) =>
 render('Checkout::PostPurchase::Render', () => <App />);
 
 export function App() {
-  const { done } = useExtensionInput();
+  const { storage, inputData, calculateChangeset, applyChangeset, done } = useExtensionInput();
+
+  console.log(`storage ${JSON.stringify(storage, null, 4)}`);
+
+  const upsell_products = storage.initialData.upsell_products.products.edges;
+  //console.log(`Render: upsell_products ${JSON.stringify(upsell_products)}`);
+
+  // See https://shopify.dev/docs/api/checkout-extensions/components
   return (
     <BlockStack spacing="loose" alignment="center">
-      <Heading>My first post-purchase extension</Heading>
-      <Button submit onPress={done}>Click me</Button>
+      <CalloutBanner>
+        <Text size="large" emphasized>
+          Barebone App Post-purchase Demo
+        </Text>
+      </CalloutBanner>
+      <Banner status="info" title="We are offering this product based on your purchased one's metafield." />
+      {
+        upsell_products.map((product) => {
+          const product_id = product.node.id;
+          return (
+            <Layout>
+              <BlockStack spacing="tight" alignment="center">
+                <Layout media={[
+                  { viewportSize: 'small', sizes: [1, 0, 1], maxInlineSize: 0.9 },
+                  { viewportSize: 'medium', sizes: [532, 0, 1], maxInlineSize: 420 },
+                  { viewportSize: 'large', sizes: [560, 38, 340] },
+                ]}>
+                  <Image description="product photo" source={product.node.featuredImage.url} />
+                </Layout>
+                <Heading>{product.node.title}</Heading>
+                <TextContainer>
+                  <Text size="medium">
+                    {product.node.variants.edges[0].node.price} {product.node.priceRangeV2.maxVariantPrice.currencyCode}
+                  </Text>
+                </TextContainer>
+              </BlockStack>
+            </Layout>
+          )
+        })
+      }
+      <Button submit onPress={done}>Love it! I buy now &#127881;</Button>
+      <Button plain onPress={done}>No Thanks &#9995;</Button>
     </BlockStack>
   )
 }
