@@ -146,11 +146,11 @@ All sample videos are available at [Wiki](https://github.com/benzookapi/shopify-
   - Basis usage in combination with App Proxies and Theme Editor
 - _Function Discount_: ['/functiondiscount'](https://user-images.githubusercontent.com/899580/216708433-be7bbfbd-30aa-480e-a165-e528f33f5901.mp4) 
   - Discount implementation by Shopify Functions in combination with customer metafields
-- _Function Shipping_: ['/functionshipping'](https://user-images.githubusercontent.com/899580/216774947-bfe6ccf2-aed8-413c-9931-6dc5d3d240a1.mp4) 
+- _Function Shipping_: ['/functionshipping'](https://user-images.githubusercontent.com/899580/218436786-3fcd2802-6acc-4c32-b0ca-030184cbcee5.mp4) 
   - Shipping rate filtering by Shopify Functions with input zip codes
-- _Function Payment_: ['/functionpayment'](https://user-images.githubusercontent.com/899580/216765424-238f91c8-ad63-43b6-959f-94632cdf1ac4.mp4) 
+- _Function Payment_: ['/functionpayment'](https://user-images.githubusercontent.com/899580/218440555-dd03d864-71e4-4f26-9414-f0701598c98e.mp4) 
   - Payment method filtering by Shopify Functions with selected shipping rates
-- _Web Pixel_: ['/webpixel'](https://user-images.githubusercontent.com/899580/218306143-dca20706-b564-4573-a336-11016e479ed1.mp4) 
+- _Web Pixel_: ['/webpixel'](https://user-images.githubusercontent.com/899580/218447647-030d9bca-13e3-40d0-8530-a64e402c359f.mp4) 
   - Checking customer events in a browser console to send them to GA4 Data Streams
 - _Post Purchase_: '/postpurchase' 
   - Switching upsell products based on product metafields
