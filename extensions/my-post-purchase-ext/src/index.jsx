@@ -73,7 +73,7 @@ export function App() {
     const changes = upsell_products.map((product) => {
       // See https://shopify.dev/docs/api/checkout-extensions/extension-points/api#changeset
       // See https://shopify.dev/docs/api/checkout-extensions/extension-points/api#addvariantchange
-      return { type: 'add_variant', variantId: product.node.variants.edges[0].node.id, quantity: 1 };
+      return { type: 'add_variant', variantId: product.node.variants.edges[0].node.id.replace('gid://shopify/ProductVariant/', ''), quantity: 1 };
     });
     const app_url = `${inputData.shop.metafields[0].value}/postpurchase?changes=${JSON.stringify(changes)}&token=${inputData.token}`;
     console.log(`Signing the token by... ${app_url}`);
@@ -138,22 +138,22 @@ export function App() {
         })
       }
       <TextContainer>
-        <TextBlock emphasized appearance="success">If you have time, could you rate my store experience?</TextBlock>
+        <TextBlock emphasized appearance="success">If you have time, could you give me a score for this checkout experience?</TextBlock>
       </TextContainer>
       <Radio name="review" value={3} checked={score == 3} onChange={(b) => {
         if (b) setScore(3);
       }}>
-        Excellent
+        3 - Excellent
       </Radio>
       <Radio name="review" value={2} checked={score == 2} onChange={(b) => {
         if (b) setScore(2);
       }}>
-        Average
+        2 - Average
       </Radio>
       <Radio name="review" value={1} checked={score == 1} onChange={(b) => {
         if (b) setScore(1);
       }}>
-        Poor
+        1 - Poor
       </Radio>
       <Button submit onPress={() => {
         complete(true);
