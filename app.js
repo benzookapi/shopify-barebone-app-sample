@@ -876,6 +876,7 @@ router.get('/postpurchase', async (ctx, next) => {
           }
         }
       }`, null, GRAPHQL_PATH_ADMIN, null));
+      const id = api_res.data.shop.id;
       if (api_res.data.shop.metafields.edges.length > 0) {
         await (callGraphql(ctx, shop, `mutation metafieldDelete($input: MetafieldDeleteInput!) {
           metafieldDelete(input: $input) {
@@ -914,27 +915,14 @@ router.get('/postpurchase', async (ctx, next) => {
           "namespace": "barebone_app",
           "ownerType": "SHOP",
           "type": "single_line_text_field",
-          "visibleToStorefrontApi": true,
-          "pin": true
+          "visibleToStorefrontApi": true
         }
       }));
       if (api_res.data.metafieldDefinitionCreate.userErrors.length > 0) {
         api_errors.errors = api_errors.errors + 1;
         api_errors.apis.push(`shop ${JSON.stringify(api_res.data.metafieldDefinitionCreate.userErrors[0])}`);
       }
-    } catch (e) {
-      console.log(`${JSON.stringify(e)}`);
-      api_errors.errors = api_errors.errors + 1;
-      api_errors.apis.push(`shop ${e}`);
-    }
-    // 1-4. Add a metafield for the app URL to the metafield definition.
-    try {
-      let api_res = await (callGraphql(ctx, shop, `{
-        shop {
-          id
-        }
-      }`, null, GRAPHQL_PATH_ADMIN, null));
-      const id = api_res.data.shop.id;
+      // 1-4. Add a metafield for the app URL to the metafield definition.
       api_res = await (callGraphql(ctx, shop, `mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
         metafieldsSet(metafields: $metafields) {
           metafields {
@@ -960,12 +948,12 @@ router.get('/postpurchase', async (ctx, next) => {
       ));
       if (api_res.data.metafieldsSet.userErrors.length > 0) {
         api_errors.errors = api_errors.errors + 1;
-        api_errors.apis.push(`shop_set ${JSON.stringify(api_res.data.metafieldsSet.userErrors[0])}`);
+        api_errors.apis.push(`shop ${JSON.stringify(api_res.data.metafieldsSet.userErrors[0])}`);
       }
     } catch (e) {
       console.log(`${JSON.stringify(e)}`);
       api_errors.errors = api_errors.errors + 1;
-      api_errors.apis.push(`shop_set ${e}`);
+      api_errors.apis.push(`shop ${e}`);
     }
 
     // 2-1. Check if the product id metafield definition exists.
