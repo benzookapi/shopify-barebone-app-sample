@@ -81,6 +81,12 @@ export function App() {
       method: "POST"
     })).json();
     console.log(`${JSON.stringify(json, null, 4)}`);
+
+    // Apply change to the current post-purchase page (the next thank you page is not updated).
+    // This demo doesn't use this.
+    //await calculateChangeset({ changes });
+
+    // Apply change to the transactions.
     await applyChangeset(json.token);
   };
 
