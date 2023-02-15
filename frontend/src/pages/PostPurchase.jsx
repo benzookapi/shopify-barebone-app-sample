@@ -19,8 +19,8 @@ function PostPurchase() {
   const [accessing, setAccessing] = useState(false);
 
   return (
-    <Page title="Post-purchase sample for switching products to upsell based on their metafields">
-      <Card title="Step 1: Register used metafields by API and enable this post-purchase" sectioned={true}>
+    <Page title="Post-purchase sample for switching products to upsell and getting shop review scores with metafields">
+      <Card title="Step 1: Add used metafields by API and enable this post-purchase" sectioned={true}>
         <Layout>
           <Layout.Section>
             <Link url="https://shopify.dev/docs/api/checkout-extensions/extension-points" external={true}>Dev. doc</Link>
@@ -58,10 +58,10 @@ function PostPurchase() {
                       response.json().then((json) => {
                         console.log(JSON.stringify(json, null, 4));
                         setAccessing(false);
-                        if (json.result.response.data.metafieldsSet.userErrors.length == 0) {
+                        if (json.result.response.errors == 0) {
                           setResult('Success!');
                         } else {
-                          setResult('Error!');
+                          setResult(`Error! ${JSON.stringify(json.result.response)}`);
                         }
                       }).catch((e) => {
                         console.log(`${e}`);
@@ -106,7 +106,10 @@ function PostPurchase() {
               </List.Item>
               <List.Item>
                 <p>
-                  You can check the review score of each buyer in <Badge>barebone_app_review.score</Badge> of <Link url={`https://${_getAdminFromShop(shop)}/customers`} external={true}>customers</Link>.
+                  You can check the post purchases in <Link url={`https://${_getAdminFromShop(shop)}/orders`} external={true}>orders </Link> with each detail page (you'll see appended items and transactions there).
+                </p>
+                <p>
+                  Also, you can check the review score of each buyer in <Badge>barebone_app_review.score</Badge> of <Link url={`https://${_getAdminFromShop(shop)}/customers`} external={true}>customers</Link>.
                 </p>
               </List.Item>
             </List>

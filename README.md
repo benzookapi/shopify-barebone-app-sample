@@ -153,7 +153,7 @@ All sample videos are available at [Wiki](https://github.com/benzookapi/shopify-
 - _Web Pixel_: ['/webpixel'](https://user-images.githubusercontent.com/899580/218447647-030d9bca-13e3-40d0-8530-a64e402c359f.mp4) 
   - Checking customer events in a browser console to send them to GA4 Data Streams
 - _Post Purchase_: '/postpurchase' 
-  - Switching upsell products based on product metafields
+  - Switching upsell products and getting shop review scores with product and customer metafields
 - _Checkout Extension_: '/checkoutextension' 
   - Basic usage (TBD, Plus only for live)
 - _Fulfillment_: '/fulfillment' 

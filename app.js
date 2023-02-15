@@ -826,9 +826,71 @@ router.get('/postpurchase', async (ctx, next) => {
       return;
     }
 
-    // Add the metafield to the shop for app URL specification.
-    let api_res = null;
+    // 1-1. Check if the app URL metafield definition exists.
+    const api_errors = {
+      "errors": 0,
+      "apis": []
+    };
     try {
+      const api_res = await (callGraphql(ctx, shop, `{
+        metafieldDefinitions(first:1, ownerType: SHOP, namespace:"barebone_app", key: "url") {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      } `, null, GRAPHQL_PATH_ADMIN, null));
+      if (api_res.data.metafieldDefinitions.edges.length > 0) {
+        // 1-2. Delete the existing app URL metafield definition.       
+        await (callGraphql(ctx, shop, `mutation metafieldDefinitionDelete($id: ID!) {
+          metafieldDefinitionDelete(id: $id) {
+            deletedDefinitionId
+            userErrors {
+              field
+              message
+            }
+          }
+        }`, null, GRAPHQL_PATH_ADMIN, {
+          "deleteAllAssociatedMetafields": true,
+          "id": api_res.data.metafieldDefinitions.edges[0].node.id
+        }));
+      }
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+    }
+    // 1-3. Create an app URL metafield definition.
+    try {
+      let api_res = await (callGraphql(ctx, shop, `{
+        shop {
+          id
+          metafields(first:1, namespace: "barebone_app") {
+            edges {
+              node {
+                id
+                namespace
+                key
+                value
+              }
+            }
+          }
+        }
+      }`, null, GRAPHQL_PATH_ADMIN, null));
+      if (api_res.data.shop.metafields.edges.length > 0) {
+        await (callGraphql(ctx, shop, `mutation metafieldDelete($input: MetafieldDeleteInput!) {
+          metafieldDelete(input: $input) {
+            deletedId
+            userErrors {
+              field
+              message
+            }
+          }
+        }`, null, GRAPHQL_PATH_ADMIN, {
+          "input": {
+            "id": api_res.data.shop.metafields.edges[0].node.id
+          }
+        }));
+      }
       api_res = await (callGraphql(ctx, shop, `mutation metafieldDefinitionCreate($definition: MetafieldDefinitionInput!) {
         metafieldDefinitionCreate(definition: $definition) {
           createdDefinition {
@@ -852,25 +914,27 @@ router.get('/postpurchase', async (ctx, next) => {
           "namespace": "barebone_app",
           "ownerType": "SHOP",
           "type": "single_line_text_field",
-          "visibleToStorefrontApi": true
+          "visibleToStorefrontApi": true,
+          "pin": true
         }
       }));
-    } catch (e) {
-      console.log(`${JSON.stringify(e)}`);
-    }
-    api_res = null;
-    try {
-      api_res = await (callGraphql(ctx, shop, `{
-      shop {
-        id
+      if (api_res.data.metafieldDefinitionCreate.userErrors.length > 0) {
+        api_errors.errors = api_errors.errors + 1;
+        api_errors.apis.push(`shop ${JSON.stringify(api_res.data.metafieldDefinitionCreate.userErrors[0])}`);
       }
-    }`, null, GRAPHQL_PATH_ADMIN, null));
     } catch (e) {
       console.log(`${JSON.stringify(e)}`);
+      api_errors.errors = api_errors.errors + 1;
+      api_errors.apis.push(`shop ${e}`);
     }
-    const id = api_res.data.shop.id;
-    api_res = null;
+    // 1-4. Add a metafield for the app URL to the metafield definition.
     try {
+      let api_res = await (callGraphql(ctx, shop, `{
+        shop {
+          id
+        }
+      }`, null, GRAPHQL_PATH_ADMIN, null));
+      const id = api_res.data.shop.id;
       api_res = await (callGraphql(ctx, shop, `mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
         metafieldsSet(metafields: $metafields) {
           metafields {
@@ -894,10 +958,154 @@ router.get('/postpurchase', async (ctx, next) => {
         ]
       }
       ));
+      if (api_res.data.metafieldsSet.userErrors.length > 0) {
+        api_errors.errors = api_errors.errors + 1;
+        api_errors.apis.push(`shop_set ${JSON.stringify(api_res.data.metafieldsSet.userErrors[0])}`);
+      }
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+      api_errors.errors = api_errors.errors + 1;
+      api_errors.apis.push(`shop_set ${e}`);
+    }
+
+    // 2-1. Check if the product id metafield definition exists.
+    try {
+      const api_res = await (callGraphql(ctx, shop, `{
+        metafieldDefinitions(first:1, ownerType: PRODUCT, namespace:"barebone_app_upsell", key: "product_id") {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      } `, null, GRAPHQL_PATH_ADMIN, null));
+      if (api_res.data.metafieldDefinitions.edges.length > 0) {
+        // 2-2. Delete thethe product id definition metafield.
+        await (callGraphql(ctx, shop, `mutation metafieldDefinitionDelete($id: ID!) {
+          metafieldDefinitionDelete(id: $id) {
+            deletedDefinitionId
+            userErrors {
+              field
+              message
+            }
+          }
+        }`, null, GRAPHQL_PATH_ADMIN, {
+          "deleteAllAssociatedMetafields": true,
+          "id": api_res.data.metafieldDefinitions.edges[0].node.id
+        }));
+      }
     } catch (e) {
       console.log(`${JSON.stringify(e)}`);
     }
-    ctx.body.result.response = api_res;
+    // 2-3. Create an product id metafield definition.
+    try {
+      const api_res = await (callGraphql(ctx, shop, `mutation metafieldDefinitionCreate($definition: MetafieldDefinitionInput!) {
+        metafieldDefinitionCreate(definition: $definition) {
+          createdDefinition {
+            id
+            name
+            namespace
+            key
+            ownerType
+            visibleToStorefrontApi
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+      `, null, GRAPHQL_PATH_ADMIN, {
+        "definition": {
+          "key": "product_id",
+          "name": "Barebone app upsell product id",
+          "namespace": "barebone_app_upsell",
+          "ownerType": "PRODUCT",
+          "type": "single_line_text_field",
+          "visibleToStorefrontApi": true,
+          "pin": true
+        }
+      }));
+      if (api_res.data.metafieldDefinitionCreate.userErrors.length > 0) {
+        api_errors.errors = api_errors.errors + 1;
+        api_errors.apis.push(`product ${JSON.stringify(api_res.data.metafieldDefinitionCreate.userErrors[0])}`);
+      }
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+      api_errors.errors = api_errors.errors + 1;
+      api_errors.apis.push(`product ${e}`);
+    }
+
+    // 3-1. Check if the review score metafield definition exists.
+    try {
+      const api_res = await (callGraphql(ctx, shop, `{
+        metafieldDefinitions(first:1, ownerType: CUSTOMER, namespace:"barebone_app_review", key: "score") {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      } `, null, GRAPHQL_PATH_ADMIN, null));
+      if (api_res.data.metafieldDefinitions.edges.length > 0) {
+        // 3-2. Delete the review score definition metafield.
+        await (callGraphql(ctx, shop, `mutation metafieldDefinitionDelete($id: ID!) {
+          metafieldDefinitionDelete(id: $id) {
+            deletedDefinitionId
+            userErrors {
+              field
+              message
+            }
+          }
+        }`, null, GRAPHQL_PATH_ADMIN, {
+          "deleteAllAssociatedMetafields": true,
+          "id": api_res.data.metafieldDefinitions.edges[0].node.id
+        }));
+      }
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+    }
+    // 3-3. Create an review score metafield definition.
+    try {
+      const api_res = await (callGraphql(ctx, shop, `mutation metafieldDefinitionCreate($definition: MetafieldDefinitionInput!) {
+        metafieldDefinitionCreate(definition: $definition) {
+          createdDefinition {
+            id
+            name
+            namespace
+            key
+            ownerType
+            visibleToStorefrontApi
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+      `, null, GRAPHQL_PATH_ADMIN, {
+        "definition": {
+          "key": "score",
+          "name": "Barebone app review score",
+          "namespace": "barebone_app_review",
+          "ownerType": "CUSTOMER",
+          "type": "number_integer",
+          "visibleToStorefrontApi": false,
+          "pin": true
+        }
+      }));
+      if (api_res.data.metafieldDefinitionCreate.userErrors.length > 0) {
+        api_errors.errors = api_errors.errors + 1;
+        api_errors.apis.push(`customer ${api_res.data.metafieldDefinitionCreate.userErrors[0]}`);
+      }
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+      api_errors.errors = api_errors.errors + 1;
+      api_errors.apis.push(`customer ${e}`);
+    }
+
+    // Send the error count.
+    ctx.body.result.response = api_errors;
     ctx.status = 200;
     return;
   }
