@@ -152,7 +152,7 @@ All sample videos are available at [Wiki](https://github.com/benzookapi/shopify-
   - Payment method filtering by Shopify Functions with selected shipping rates
 - _Web Pixel_: ['/webpixel'](https://user-images.githubusercontent.com/899580/218447647-030d9bca-13e3-40d0-8530-a64e402c359f.mp4) 
   - Checking customer events in a browser console to send them to GA4 Data Streams
-- _Post Purchase_: '/postpurchase' 
+- _Post Purchase_: ['/postpurchase'](https://user-images.githubusercontent.com/899580/219054274-a04af128-c1d8-43f6-9a9c-583bff239fcd.mp4)  
   - Switching upsell products and getting shop review scores with product and customer metafields
 - _Checkout Extension_: '/checkoutextension' 
   - Basic usage (TBD, Plus only for live)
