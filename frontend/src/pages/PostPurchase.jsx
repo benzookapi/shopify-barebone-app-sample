@@ -20,7 +20,7 @@ function PostPurchase() {
 
   return (
     <Page title="Post-purchase sample for switching products to upsell based on their metafields">
-      <Card title="Step 1: Add used metafields and enable this post-purchase" sectioned={true}>
+      <Card title="Step 1: Register used metafields by API and enable this post-purchase" sectioned={true}>
         <Layout>
           <Layout.Section>
             <Link url="https://shopify.dev/docs/api/checkout-extensions/extension-points" external={true}>Dev. doc</Link>
@@ -29,22 +29,28 @@ function PostPurchase() {
             <List type="number">
               <List.Item>
                 <p>
-                  Add <Link url={`https://${_getAdminFromShop(shop)}/settings/custom_data`} external={true}>Metafields</Link> for <Badge status='info'>Products</Badge>
-                  in type of <Badge>Single line text</Badge> with namespace and key: <Badge>barebone_app_upsell.product_id</Badge> (<b>Note that the metafield needs 'storefronts' checked = visibleToStorefrontApi: true</b>).
-                </p>
-              </List.Item>
-              <List.Item>
-                <p>
-                  Set each <Badge>product id (the last number of its detail page URL)</Badge> to each metafield above of <Link url={`https://${_getAdminFromShop(shop)}/products`} external={true}>Products</Link> for
-                  those you want to upsell (e.g. "Purchasing Product A with Product B's ID offers the B in post-purchase").
-                </p>
-              </List.Item>
-              <List.Item>
-                <p>
-                  Add another metafield (<Badge>'barebone_app.url'</Badge>) to <Badge status='info'>Shop</Badge> to set this app raw URL (<Badge>https://{window.location.hostname}</Badge>) in it <b>to be accessed from Post-purchase Web Workers </b>
-                  using <Link url={`https://shopify.dev/docs/api/admin-graphql/2023-04/mutations/metafieldDefinitionCreate`} external={true}>metafieldDefinitionCreate (visibleToStorefrontApi: true) </Link>
+                  Add the following <Link url={`https://${_getAdminFromShop(shop)}/settings/custom_data`} external={true}>metafields</Link> used by this post-purchase by clicking the button
+                  with <Link url={`https://shopify.dev/docs/api/admin-graphql/2023-04/mutations/metafieldDefinitionCreate`} external={true}>metafieldDefinitionCreate </Link>
                   and <Link url={`https://shopify.dev/docs/api/admin-graphql/2023-04/mutations/metafieldsSet`} external={true}>metafieldsSet</Link>.
                 </p>
+                <List type="bullet">
+                  <List.Item>
+                    <p>
+                      Namespace and key: <Badge>'barebone_app.url'</Badge> for <Badge status='info'>Shop</Badge> in type of <Badge>Single line text</Badge>  (This needs <b>'storefronts'</b> checked = visibleToStorefrontApi: true)
+                      which has this app raw URL (<Badge>https://{window.location.hostname}</Badge>) <b>to be accessed from Post-purchase Web Workers </b>
+                    </p>
+                  </List.Item>
+                  <List.Item>
+                    <p>Namespace and key: <Badge>barebone_app_upsell.product_id</Badge> for <Badge status='info'>Products</Badge> in type of <Badge>Single line text</Badge>
+                      (This needs <b>'storefronts'</b> checked = visibleToStorefrontApi: true) which has <b>product ids to upsell passed to the post-purchase flow</b>.
+                    </p>
+                  </List.Item>
+                  <List.Item>
+                    <p>Namespace and key: <Badge>barebone_app_review.score</Badge> for <Badge status='info'>Customers</Badge> in type of <Badge>Integer</Badge>
+                      which has <b>reviw scores given by customers in the post-purchase flow</b>.
+                    </p>
+                  </List.Item>
+                </List>
                 <Stack spacing="loose">
                   <Button primary onClick={() => {
                     setAccessing(true);
@@ -64,14 +70,20 @@ function PostPurchase() {
                       });
                     });
                   }}>
-                    Set this app raw URL to Shop metafield
+                    Add metafields above
                   </Button>
                   <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
                 </Stack>
               </List.Item>
               <List.Item>
                 <p>
-                  Select this app as <Badge status='info'>Post-purchase page</Badge> at <Link url={`https://${_getAdminFromShop(shop)}/settings/checkout`} external={true}>Checkout Settings</Link> to enable this Post-purchase.
+                  Set each <Badge>product id (the last number of its detail page URL)</Badge> to each <Badge>barebone_app_upsell.product_id</Badge> of <Link url={`https://${_getAdminFromShop(shop)}/products`} external={true}>products</Link> for
+                  those you want to upsell (e.g. Purchasing a Product A with a Product B's ID offers a Product B in post-purchases).
+                </p>
+              </List.Item>
+              <List.Item>
+                <p>
+                  Select this app in <Badge status='info'>Post-purchase page</Badge> of <Link url={`https://${_getAdminFromShop(shop)}/settings/checkout`} external={true}>checkout settings</Link> to enable this Post-purchase.
                 </p>
               </List.Item>
             </List>
@@ -88,12 +100,14 @@ function PostPurchase() {
               <List.Item>
                 <p>
                   Visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to check how your upsells work at your post-purchase.
-                  <b>Note that Post-purchase extensions only show up when you use a credit card payment method</b> (i.e. Shopify Payment or Bogus Gateway in general). Any other methods like wallet and
-                  3rd party payment app usage don't show that flow.  See <Link url={`https://shopify.dev/docs/apps/checkout/post-purchase#limitations-and-considerations`} external={true}>this limitations</Link>.
+                  <b>Note that Post-purchase extensions only show up when you use a credit card payment method</b> (i.e. Shopify Payment or Bogus Gateway in general). Any other methods like wallets and
+                  3rd party payment apps don't show that flow.  See <Link url={`https://shopify.dev/docs/apps/checkout/post-purchase#limitations-and-considerations`} external={true}>this limitations</Link>.
                 </p>
               </List.Item>
               <List.Item>
-
+                <p>
+                  You can check the review score of each buyer in <Badge>barebone_app_review.score</Badge> of <Link url={`https://${_getAdminFromShop(shop)}/customers`} external={true}>customers</Link>.
+                </p>
               </List.Item>
             </List>
           </Layout.Section>
