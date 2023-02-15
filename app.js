@@ -1329,23 +1329,17 @@ router.get('/mocklogin', async (ctx, next) => {
 
 });
 
-/* 
- * 
- * --- Webhook endpoint for common usage ---
- * 
-*/
+/*  --- Webhook endpoint for common usage --- */
 router.post('/webhookcommon', async (ctx, next) => {
   console.log("*************** webhookcommon ***************");
   console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
-
-  /* Check the signature */
+  // Check the signature
   const valid = await (checkWebhookSignature(ctx, API_SECRET));
   if (!valid) {
     console.log('Not a valid signature');
     ctx.status = 401;
     return;
   }
-
   ctx.status = 200;
 });
 
