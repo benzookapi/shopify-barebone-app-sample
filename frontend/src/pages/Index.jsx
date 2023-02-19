@@ -90,6 +90,14 @@ function Index() {
                             },
                             name: 'Post-purchase',
                             location: 'Post-purchase sample for upselling products and getting shop review scores with metafields',
+                        },
+                        {
+                            id: 9,
+                            onClick: (id) => {
+                                redirect.dispatch(Redirect.Action.APP, '/checkoutui');
+                            },
+                            name: 'Checkout UI',
+                            location: 'Checkout UI sample for shipping address validation based on locales',
                         }
                     ]}
                     renderItem={(item) => {

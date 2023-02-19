@@ -17,6 +17,8 @@ import FunctionShipping from './pages/FunctionShipping';
 import FunctionPayment from './pages/FunctionPayment';
 import WebPixel from './pages/WebPixel';
 import PostPurchase from './pages/PostPurchase';
+import CheckoutUi from './pages/CheckoutUi';
+
 
 import { _getAdminFromShop, _getShopFromQuery } from "./utils/my_util";
 
@@ -80,8 +82,8 @@ function App() {
             destination: '/postpurchase',
           },
           {
-            label: 'Checkout Extension',
-            destination: '/checkoutextension',
+            label: 'Checkout UI',
+            destination: '/checkoutui',
           },
           {
             label: 'Fulfillment',
@@ -149,6 +151,7 @@ function App() {
             <Route path="/functionpayment" element={<FunctionPayment />} />
             <Route path="/webpixel" element={<WebPixel />} />
             <Route path="/postpurchase" element={<PostPurchase />} />
+            <Route path="/checkoutui" element={<CheckoutUi />} />
           </Routes>
         </BrowserRouter>
         {/* Each page content comes here */}

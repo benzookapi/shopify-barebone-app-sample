@@ -6,6 +6,7 @@
   "dependencies": {
     "@koa/cors": "^4.0.0",
     "@shopify/app": "^3.38.0",
+    "@shopify/checkout-ui-extensions-react": "^0.23.0",
     "@shopify/cli": "^3.38.0",
     "@shopify/post-purchase-ui-extensions-react": "^0.13.4",
     "@shopify/web-pixels-extension": "^0.1.6",

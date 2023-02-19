@@ -1243,6 +1243,21 @@ router.post('/postpurchase', async (ctx, next) => {
 
 });
 
+/* --- Checkout UI sample endpoint --- */
+// See https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-api
+// See https://shopify.dev/docs/apps/checkout/product-offers/add-product-offer
+router.get('/checkoutui', async (ctx, next) => {
+  console.log("+++++++++++++++ /checkoutui +++++++++++++++");
+  if (!checkSignature(ctx.request.query)) {
+    ctx.status = 400;
+    return;
+  }
+  const shop = ctx.request.query.shop;
+  setContentSecurityPolicy(ctx, shop);
+  await ctx.render('index', {});
+
+});
+
 /* --- App proxies sample endpoint --- */
 // See https://shopify.dev/apps/online-store/app-proxies
 // Note that ngrok blocks the proxy by default, you have to use other platforms like Render, Fly.io, etc.
