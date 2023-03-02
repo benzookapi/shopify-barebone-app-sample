@@ -16,7 +16,7 @@ import {
   useCurrency,
   useCustomer, // Protected customer data
   useEmail, // Protected customer data
-  useExtensionApi,
+  useExtensionApi, // All properties and methods are accessible from this 'StandardApi'
   useExtensionData, // Metadata about the extension.
   useExtensionLanguage, // Buyer's language, as supported by the extension
   useCartLines,
@@ -31,12 +31,15 @@ import {
   useDiscountCodes,
   useSessionToken,
   // UI components
+  BlockStack,
   Banner
 } from '@shopify/checkout-ui-extensions-react';
 
-render('Checkout::Dynamic::Render', () => <App />);
+render('Checkout::Dynamic::Render', () => <Upsell />);
+render('Checkout::DeliveryAddress::RenderBefore', () => <Validation />);
+render('Checkout::Actions::RenderBefore', () => <Review />);
 
-function App() {
+function Upsell() {
   // See https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-api#react-hooks
   const appMetafields = useAppMetafields();
   const attributes = useAttributes();
@@ -84,8 +87,41 @@ function App() {
 
 
   return (
-    <Banner title="my-checkout-ui-ext">
+
+    <Banner title="Upsell" status='info'>
 
     </Banner>
+
   );
 }
+
+function Validation() {
+  const extensionApi = useExtensionApi();
+  console.log(`my-checkout-ui-ext: extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
+
+
+
+  return (
+
+    <Banner title="Validation" status='critical'>
+
+    </Banner>
+
+  );
+
+}
+
+function Review() {
+  const extensionApi = useExtensionApi();
+  console.log(`my-checkout-ui-ext: extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
+
+  return (
+
+    <Banner title="Review" status='success'>
+
+    </Banner>
+
+  );
+
+}
+

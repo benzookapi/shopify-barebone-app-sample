@@ -1,22 +1,38 @@
+# Read more on extension settings at https://shopify.dev/api/checkout-extensions/checkout/configuration 
+# https://shopify.dev/docs/apps/checkout/custom/banners/getting-started
+
 type = "checkout_ui_extension"
-name = "my-checkout-ui-ext"
+name = "Barebone App UI extension"
 
 extension_points = [
-  'Checkout::Dynamic::Render'
+  'Checkout::Dynamic::Render',
+  'Checkout::DeliveryAddress::RenderBefore',
+  'Checkout::Actions::RenderBefore'
 ]
 
-# [[metafields]]
-# namespace = "my-namespace"
-# key = "my-key"
+[[metafields]]
+namespace = "barebone_app_upsell"
+key = "product_id"
 
-# [[metafields]]
-# namespace = "my-namespace"
-# key = "my-key-2"
+[[metafields]]
+namespace = "barebone_app"
+key = "url"
 
-# Read more on extension settings at https://shopify.dev/api/checkout-extensions/checkout/configuration
-# [settings]
-#   [[settings.fields]]
-#   key = "banner_title"
-#   type = "single_line_text_field"
-#   name = "Banner title"
-#   description = "Enter a title for the banner"
+[capabilities]
+network_access = true
+block_progress = true
+api_access = true
+
+[settings]
+  [[settings.fields]]
+  key = "upsell_banner_title"
+  type = "single_line_text_field"
+  name = "Upsell Banner title"
+  description = "This is a special offer for you!"
+
+  [[settings.fields]]
+    key = "validation_message"
+  type = "single_line_text_field"
+  name = "Shiiping address validation message"
+  description = "You are using wrong characters for the target country address."
+

@@ -92,6 +92,9 @@ SHOPIFY_MYSQL_USER:           YOUR_USER
 SHOPIFY_MYSQL_PASSWORD:       YOUR_PASSWORD
 SHOPIFY_MYSQL_DATABASE:       YOUR_DB_NAME
 
+// The followings are required if you use `webhookcommon` endpoint as a manually created webhook target.
+SHOPIFY_WEBHOOK_SECRET:       YOUR_TEST_STORE_WEBHOOK_SIGNATURE given by the webhook creation settings
+
 ```
 
 2. Build and run the app server locally or in cloud platforms. All settings are described in `package.json` (note that the built React code contains `SHOPIFY_API_KEY` value from its envrionment variable, so if you run it with your own app, you have to run the build command below at least one time).

@@ -54,6 +54,9 @@ const UNDEFINED = 'undefined';
 // Admin path signature secret
 const HMAC_SECRET = API_SECRET;
 
+// Webhook signature secret
+const WEBHOOK_SECRET = `${process.env.SHOPIFY_WEBHOOK_SECRET}`;
+
 // DB type for data store
 const DB_TYPE = `${process.env.SHOPIFY_DB_TYPE}`;
 
@@ -1349,12 +1352,15 @@ router.post('/webhookcommon', async (ctx, next) => {
   console.log("*************** webhookcommon ***************");
   console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
   // Check the signature
-  const valid = await (checkWebhookSignature(ctx, API_SECRET));
+  const valid = await (checkWebhookSignature(ctx, WEBHOOK_SECRET));
   if (!valid) {
     console.log('Not a valid signature');
     ctx.status = 401;
     return;
   }
+
+  console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
+
   ctx.status = 200;
 });
 
