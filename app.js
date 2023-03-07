@@ -1764,6 +1764,7 @@ const insertDBMySQL = function (key, data) {
       connection.query(
         sql,
         (e, res) => {
+          connection.end();
           if (e) {
             console.log(`insertDBMySQL Error ${e}`);
             return reject(e);
@@ -1796,6 +1797,7 @@ const getDBMySQL = function (key) {
       connection.query(
         sql,
         (e, res) => {
+          connection.end();
           if (e) {
             console.log(`getDBMySQL Error ${e}`);
             return reject(e);
@@ -1829,6 +1831,7 @@ const setDBMySQL = function (key, data) {
       connection.query(
         sql,
         (e, res) => {
+          connection.end();
           if (e) {
             console.log(`setDBMySQL Error ${e}`);
             return reject(e);
