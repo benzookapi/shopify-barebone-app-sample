@@ -1669,7 +1669,7 @@ const insertDBPostgreSQL = function (key, data) {
     });
     client.connect().then(function () {
       //console.log(`insertDBPostgreSQL Connected: ${POSTGRESQL_URL}`);
-      const sql = `INSERT INTO ${POSTGRESQL_TABLE} ( _id, data, created_at, updated_at ) VALUES ('${key}', '${JSON.stringify(data)}', '${new Date().toISOString()}',  '${new Date().toISOString()}')`;
+      const sql = `INSERT INTO ${POSTGRESQL_TABLE} ( _id, data, created_at, updated_at ) VALUES ('${key}', '${JSON.stringify(data).replace(/\\"/g, '\\\\"').replace(/'/g, "\\'")}', '${new Date().toISOString()}',  '${new Date().toISOString()}')`;
       console.log(`insertDBPostgreSQL:  ${sql}`);
       client.query(sql).then(function (res) {
         client.end();
@@ -1727,7 +1727,7 @@ const setDBPostgreSQL = function (key, data) {
     });
     client.connect().then(function () {
       //console.log(`setDBPostgreSQL Connected: ${POSTGRESQL_URL}`);
-      const sql = `UPDATE ${POSTGRESQL_TABLE} SET data = '${JSON.stringify(data)}', updated_at = '${new Date().toISOString()}' WHERE _id = '${key}'`;
+      const sql = `UPDATE ${POSTGRESQL_TABLE} SET data = '${JSON.stringify(data).replace(/\\"/g, '\\\\"').replace(/'/g, "\\'")}', updated_at = '${new Date().toISOString()}' WHERE _id = '${key}'`;
       console.log(`setDBPostgreSQL:  ${sql}`);
       client.query(sql).then(function (res) {
         client.end();
@@ -1759,7 +1759,7 @@ const insertDBMySQL = function (key, data) {
         return reject(e);
       }
       //console.log(`insertDBMySQL Connected: ${MYSQL_HOST}`);
-      const sql = `INSERT INTO ${MYSQL_TABLE} ( _id, data, created_at, updated_at ) VALUES ('${key}', '${JSON.stringify(data)}', '${new Date().toISOString().replace('T', ' ').replace('Z', '')}',  '${new Date().toISOString().replace('T', ' ').replace('Z', '')}')`;
+      const sql = `INSERT INTO ${MYSQL_TABLE} ( _id, data, created_at, updated_at ) VALUES ('${key}', '${JSON.stringify(data).replace(/\\"/g, '\\\\"').replace(/'/g, "\\'")}', '${new Date().toISOString().replace('T', ' ').replace('Z', '')}',  '${new Date().toISOString().replace('T', ' ').replace('Z', '')}')`;
       console.log(`insertDBMySQL:  ${sql}`);
       connection.query(
         sql,
@@ -1822,7 +1822,7 @@ const setDBMySQL = function (key, data) {
     });
     connection.connect((e) => {
       //console.log(`setDBMySQL Connected: ${MYSQL_HOST}`);
-      const sql = `UPDATE ${MYSQL_TABLE} SET data = '${JSON.stringify(data)}', updated_at = '${new Date().toISOString().replace('T', ' ').replace('Z', '')}' WHERE _id = '${key}'`;
+      const sql = `UPDATE ${MYSQL_TABLE} SET data = '${JSON.stringify(data).replace(/\\"/g, '\\\\"').replace(/'/g, "\\'")}', updated_at = '${new Date().toISOString().replace('T', ' ').replace('Z', '')}' WHERE _id = '${key}'`;
       console.log(`setDBMySQL:  ${sql}`);
       if (e) {
         console.log(`setDBMySQL Error ${e}`);
