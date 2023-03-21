@@ -184,6 +184,11 @@ All sample videos are available at [Wiki](https://github.com/benzookapi/shopify-
   - Do not use redirection to the old admin URL of "https://XXX.myshopify.com/admin". Use the new one of "https://admin.shopify.com/store/XXX", instead. Refer to the [migration document](https://shopify.dev/apps/tools/app-bridge/updating-overview#ensure-compatibility-with-the-new-shopify-admin-domain).
   - Your server needs to render the top page at acceptable speed in the right way. Too slow access, error HTTP codes, or server shutdown causes the error above in live stores (not in development ones). Some cloud plarform like Render, Heroku, etc do the very slow response for the first time in a while with free plans, so you need to swtich to ngrok hosting or pay those services for higher performence. 
 
+# TIPS
+
+- You can use the endpoint of `webhookgdpr` for [GDPR Webhooks](https://shopify.dev/docs/apps/store/security/gdpr-webhooks).
+- If you fail to get [protected customer data](https://shopify.dev/docs/apps/store/data-protection/protected-customer-data) in Checkout UI Extension or API Webhook creation even in dev. stores, submit your app first which enable you get them. 
+
 # Disclaimer
 
 - This code is fully _unofficial_ and NOT guaranteed to pass [the public app review](https://shopify.dev/apps/store/review) for Shopify app store. The official requirements are described [here](https://shopify.dev/apps/store/requirements). 

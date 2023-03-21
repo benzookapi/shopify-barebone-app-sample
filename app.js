@@ -1364,6 +1364,22 @@ router.post('/webhookcommon', async (ctx, next) => {
   ctx.status = 200;
 });
 
+/* --- Webhook endpoint for  GDPR --- */
+router.post('/webhookgdpr', async (ctx, next) => {
+  console.log("*************** webhookgdpr ***************");
+  console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
+
+  /* Check the signature */
+  const valid = await (checkWebhookSignature(ctx, API_SECRET));
+  if (!valid) {
+    console.log('Not a valid signature');
+    ctx.status = 401;
+    return;
+  }
+
+  ctx.status = 200;
+});
+
 /* --- Check if the given signature is correct or not --- */
 // See https://shopify.dev/apps/auth/oauth/getting-started#step-2-verify-the-installation-request
 const checkSignature = function (json) {

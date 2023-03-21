@@ -31,7 +31,7 @@ api_access = true
   description = "This is a special offer for you!"
 
   [[settings.fields]]
-    key = "validation_message"
+  key = "validation_message"
   type = "single_line_text_field"
   name = "Shiiping address validation message"
   description = "You are using wrong characters for the target country address."
