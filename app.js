@@ -1212,6 +1212,23 @@ router.post('/postpurchase', async (ctx, next) => {
   const customerId = ctx.request.query.customerId;
   // Render access to set the customer's review score to their metafields.
   if (typeof customerId !== UNDEFINED) {
+    let ownerId = `gid://shopify/Customer/${customerId}`;
+    if (customerId.indexOf('@') != -1) {
+      try {
+        const api_res = await (callGraphql(ctx, shop, `{
+          customers(query: "email:${customerId}", first: 1) {
+            edges {
+              node {
+                id
+              }
+            }
+          }
+        }`, null, GRAPHQL_PATH_ADMIN, null));
+        ownerId = api_res.data.customers.edges[0].node.id;
+      } catch (e) {
+        console.log(`${JSON.stringify(e)}`);
+      }
+    }
     try {
       const api_res = await (callGraphql(ctx, shop, `mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
         metafieldsSet(metafields: $metafields) {
@@ -1230,7 +1247,7 @@ router.post('/postpurchase', async (ctx, next) => {
           {
             "key": "score",
             "namespace": "barebone_app_review",
-            "ownerId": `gid://shopify/Customer/${customerId}`,
+            "ownerId": ownerId,
             "value": `${ctx.request.query.score}`
           }
         ]
