@@ -10,6 +10,7 @@ extension_points = [
   'Checkout::Actions::RenderBefore'
 ]
 
+# https://shopify.dev/docs/api/checkout-ui-extensions/apis/standardapi#properties-propertydetail-appmetafields
 [[metafields]]
 namespace = "barebone_app_upsell"
 key = "product_id"

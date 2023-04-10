@@ -846,8 +846,8 @@ router.get('/postpurchase', async (ctx, next) => {
       } `, null, GRAPHQL_PATH_ADMIN, null));
       if (api_res.data.metafieldDefinitions.edges.length > 0) {
         // 1-2. Delete the existing app URL metafield definition.       
-        await (callGraphql(ctx, shop, `mutation metafieldDefinitionDelete($id: ID!) {
-          metafieldDefinitionDelete(id: $id) {
+        await (callGraphql(ctx, shop, `mutation metafieldDefinitionDelete($id: ID!, $deleteAllAssociatedMetafields: Boolean!) {
+          metafieldDefinitionDelete(id: $id, deleteAllAssociatedMetafields: $deleteAllAssociatedMetafields) {
             deletedDefinitionId
             userErrors {
               field
@@ -956,7 +956,7 @@ router.get('/postpurchase', async (ctx, next) => {
     } catch (e) {
       console.log(`${JSON.stringify(e)}`);
       api_errors.errors = api_errors.errors + 1;
-      api_errors.apis.push(`shop ${e}`);
+      api_errors.apis.push(`shop ${JSON.stringify(e)}`);
     }
 
     // 2-1. Check if the product id metafield definition exists.
@@ -972,8 +972,8 @@ router.get('/postpurchase', async (ctx, next) => {
       } `, null, GRAPHQL_PATH_ADMIN, null));
       if (api_res.data.metafieldDefinitions.edges.length > 0) {
         // 2-2. Delete thethe product id definition metafield.
-        await (callGraphql(ctx, shop, `mutation metafieldDefinitionDelete($id: ID!) {
-          metafieldDefinitionDelete(id: $id) {
+        await (callGraphql(ctx, shop, `mutation metafieldDefinitionDelete($id: ID!, $deleteAllAssociatedMetafields: Boolean!) {
+          metafieldDefinitionDelete(id: $id, deleteAllAssociatedMetafields: $deleteAllAssociatedMetafields) {
             deletedDefinitionId
             userErrors {
               field
@@ -1024,7 +1024,7 @@ router.get('/postpurchase', async (ctx, next) => {
     } catch (e) {
       console.log(`${JSON.stringify(e)}`);
       api_errors.errors = api_errors.errors + 1;
-      api_errors.apis.push(`product ${e}`);
+      api_errors.apis.push(`product ${JSON.stringify(e)}`);
     }
 
     // 3-1. Check if the review score metafield definition exists.
@@ -1040,8 +1040,8 @@ router.get('/postpurchase', async (ctx, next) => {
       } `, null, GRAPHQL_PATH_ADMIN, null));
       if (api_res.data.metafieldDefinitions.edges.length > 0) {
         // 3-2. Delete the review score definition metafield.
-        await (callGraphql(ctx, shop, `mutation metafieldDefinitionDelete($id: ID!) {
-          metafieldDefinitionDelete(id: $id) {
+        await (callGraphql(ctx, shop, `mutation metafieldDefinitionDelete($id: ID!, $deleteAllAssociatedMetafields: Boolean!) {
+          metafieldDefinitionDelete(id: $id, deleteAllAssociatedMetafields: $deleteAllAssociatedMetafields) {
             deletedDefinitionId
             userErrors {
               field
@@ -1087,12 +1087,12 @@ router.get('/postpurchase', async (ctx, next) => {
       }));
       if (api_res.data.metafieldDefinitionCreate.userErrors.length > 0) {
         api_errors.errors = api_errors.errors + 1;
-        api_errors.apis.push(`customer ${api_res.data.metafieldDefinitionCreate.userErrors[0]}`);
+        api_errors.apis.push(`customer ${JSON.stringify(api_res.data.metafieldDefinitionCreate.userErrors[0])}`);
       }
     } catch (e) {
       console.log(`${JSON.stringify(e)}`);
       api_errors.errors = api_errors.errors + 1;
-      api_errors.apis.push(`customer ${e}`);
+      api_errors.apis.push(`customer ${JSON.stringify(e)}`);
     }
 
     // Send the error count.
@@ -1144,11 +1144,11 @@ router.post('/postpurchase', async (ctx, next) => {
     ctx.status = 400;
     return;
   }
+  console.log(`decoded_token ${JSON.stringify(decoded_token, null, 4)}`);
 
-  const input_data = decoded_token.input_data;
-  console.log(`input_data ${JSON.stringify(input_data, null, 4)}`);
+  const input_data = typeof decoded_token.input_data !== UNDEFINED ? decoded_token.input_data : null;
 
-  const shop = input_data.shop.domain;
+  const shop = input_data != null ? input_data.shop.domain : decoded_token.dest;
 
   let response_data = {};
 
@@ -1202,7 +1202,7 @@ router.post('/postpurchase', async (ctx, next) => {
       iss: API_KEY,
       jti: uuidv4(),
       iat: Date.now(),
-      sub: input_data.initialPurchase.referenceId,
+      sub: input_data != null ? input_data.initialPurchase.referenceId : "",
       changes: JSON.parse(changes)
     };
     console.log(`payload ${JSON.stringify(payload, null, 4)}`);
