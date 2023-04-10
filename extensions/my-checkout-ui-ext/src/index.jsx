@@ -183,7 +183,6 @@ function Upsell() {
             query.variables = variables;
             console.log(`Storefront API query: ${JSON.stringify(query, null, 4)}`);
             console.log(`Accessing ${apiUrl}...`);
-            // Storefront API query
             fetch(apiUrl, {
               method: "POST",
               headers: {
@@ -324,9 +323,7 @@ function Upsell() {
           .when({ viewportInlineSize: { min: 'medium' } }, 0)
           .when({ viewportInlineSize: { min: 'large' } }, 0)}
       >
-        <Heading>
-          Your current cart: <Text emphasis="bold">{extensionApi.cost.totalAmount.current.amount} {extensionApi.cost.totalAmount.current.currencyCode}</Text>
-        </Heading>
+        <Text emphasis="bold" appearance="success" size="large">Your current cart: {extensionApi.cost.totalAmount.current.amount} {extensionApi.cost.totalAmount.current.currencyCode}</Text>
         <List>
           {
             extensionApi.lines.current.map((l) => {
@@ -367,11 +364,48 @@ function Validation() {
   const extensionApi = useExtensionApi();
   //console.log(`my-checkout-ui-ext: extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
 
+  const [ip, setIp] = useState('');
+  const [blocked, setBlocked] = useState(false);
 
+  // Get the IP address to block from the extension settings.
+  const block_ip = extensionApi.settings.current.validation_ip;
+  // Check if the current global JP is the specified one or not.
+  fetch('https://api.ipify.org?format=json', {
+    method: "GET"
+  }).then((res) => {
+    res.json().then((json) => {
+      setIp(json.ip);
+      if (json.ip == block_ip) {
+        // Block the checkout progress.
+        extensionApi.buyerJourney.intercept({
+          canBlockProgress: false
+        }).then((r) => {
+          console.log(`intercept: ${r}`);
+        });
+        setBlocked(true);
+      }
+    });
+  });
+
+  // Swtich the message on the check result.
+  const BlockInfo = function (props) {
+    if (props.blocked) {
+      return (
+        <Text appearance="critical" size="medium">
+          Your IP address: {ip} is blocked by the extension! You cannot proceed the checkout. &#128561;
+        </Text>
+      );
+    }
+    return (
+      <Text appearance="success" size="medium">
+        Your IP address: {ip} is not blocked. &#128077;
+      </Text>
+    );
+  };
 
   return (
     <Banner title={`${extensionApi.extensionPoint} <Validation />`} status='critical'>
-
+      <BlockInfo blocked={blocked} />
     </Banner>
   );
 

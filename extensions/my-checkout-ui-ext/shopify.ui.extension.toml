@@ -26,14 +26,8 @@ api_access = true
 
 [settings]
   [[settings.fields]]
-  key = "upsell_banner_title"
+  key = "validation_ip"
   type = "single_line_text_field"
-  name = "Upsell Banner title"
-  description = "This is a special offer for you!"
-
-  [[settings.fields]]
-  key = "validation_message"
-  type = "single_line_text_field"
-  name = "Shiiping address validation message"
-  description = "You are using wrong characters for the target country address."
+  name = "IP address to block"
+  description = "Specify an IP address to block during the checkout validation"
 
