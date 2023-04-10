@@ -97,7 +97,7 @@ function Index() {
                                 redirect.dispatch(Redirect.Action.APP, '/checkoutui');
                             },
                             name: 'Checkout UI',
-                            location: 'Checkout UI sample for shipping address validation based on locales',
+                            location: 'Checkout UI sample with upsell and shop reviews shared with post-purchase server side, IP address block, and checkout branding',
                         }
                     ]}
                     renderItem={(item) => {
