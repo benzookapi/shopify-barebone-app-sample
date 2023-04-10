@@ -311,13 +311,15 @@ function Upsell() {
         // Add nothers
         if (i + 1 < props.upsell_products.length) return addProducts(i + 1);
 
+        if (r.type !== 'success') return;
+
         setUpsellAdded(true);
 
         // Setting the attributes.
         extensionApi.applyAttributeChange({
           type: 'updateAttribute',
-          key: 'barebone_app_upsell',
-          value: `${new Date().toISOString()}`
+          key: 'barebone_app_upsell_last_added',
+          value: `${product.node.title}`
         }).then((r) => {
           console.log(`applyAttributeChange result: ${JSON.stringify(r)}`);
         }).catch((e) => {
@@ -327,7 +329,7 @@ function Upsell() {
         // Setting the note.
         extensionApi.applyNoteChange({
           type: 'updateNote',
-          note: `barebone_app_upsell - ${new Date().toISOString()}`
+          note: `The last added item for your offer:  ${product.node.title}`
         }).then((r) => {
           console.log(`applyNoteChange result: ${JSON.stringify(r)}`);
         }).catch((e) => {
@@ -351,7 +353,7 @@ function Upsell() {
         // Already products added
         return (
           <Text appearance="success" size="medium">
-            Thank you for accepting our offer! &#10084;
+            Thank you for your accepting our offer! &#10084;
           </Text>
         );
       } else {
@@ -378,14 +380,14 @@ function Upsell() {
           .when({ viewportInlineSize: { min: 'large' } }, 0)}
       >
         <Heading>
-          Your current cart
+          Your current cart: <Text emphasis="bold">{extensionApi.cost.totalAmount.current.amount} {extensionApi.cost.totalAmount.current.currencyCode}</Text>
         </Heading>
         <List>
           {
             extensionApi.lines.current.map((l) => {
               return (
                 <ListItem>
-                  <Text emphasis="italic">{l.merchandise.title} x {l.quantity}</Text> <Text emphasis="bold">{l.cost.totalAmount.amount} {l.cost.totalAmount.currencyCode}</Text>
+                  <Text emphasis="italic">{l.merchandise.title} x {l.quantity}</Text> --- <Text emphasis="bold">{l.cost.totalAmount.amount} {l.cost.totalAmount.currencyCode}</Text>
                 </ListItem>
               );
             })
