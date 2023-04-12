@@ -1268,6 +1268,7 @@ router.post('/postpurchase', async (ctx, next) => {
 // See https://shopify.dev/docs/apps/checkout/product-offers/add-product-offer
 router.get('/checkoutui', async (ctx, next) => {
   console.log("+++++++++++++++ /checkoutui +++++++++++++++");
+
   if (!checkSignature(ctx.request.query)) {
     ctx.status = 400;
     return;

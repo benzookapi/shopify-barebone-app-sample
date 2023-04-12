@@ -75,7 +75,7 @@ In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/co
 SHOPIFY_API_KEY:              YOUR_API_KEY (Copy and paste from your app settings in partner dashboard)
 SHOPIFY_API_SECRET:           YOUR_API_SECRET (Copy and paste from your app settings in partner dashboard)
 SHOPIFY_API_VERSION:          unstable
-SHOPIFY_API_SCOPES:           write_products,write_discounts,read_orders,write_payment_customizations,write_delivery_customizations,write_pixels,read_customer_events,write_customers
+SHOPIFY_API_SCOPES:           write_products,write_discounts,read_orders,write_payment_customizations,write_delivery_customizations,write_pixels,read_customer_events,write_customers,write_metaobject_definitions,write_metaobjects
 
 SHOPIFY_DB_TYPE:              MONGODB (Default) / POSTGRESQL / MYSQL
 
@@ -158,7 +158,7 @@ All sample videos are available at [Wiki](https://github.com/benzookapi/shopify-
 - _Post Purchase_: ['/postpurchase'](https://user-images.githubusercontent.com/899580/219054274-a04af128-c1d8-43f6-9a9c-583bff239fcd.mp4)  
   - Switching upsell products and getting shop review scores with product and customer metafields
 - _Checkout Extension_: ['/checkoutextension']()  
-  - Switching upsell products and getting shop review scores with product and customer metafields, IP address blocking, and checkout branding
+  - Switching upsell products and getting shop review scores with product and customer metafields, IP address blocking
 - _Fulfillment_: '/fulfillment' 
   - How to create and control fulfillments (shipping) via API for a specific order (TBD)
 - _Transaction_: '/transaction' 
