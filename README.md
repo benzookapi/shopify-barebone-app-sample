@@ -157,8 +157,8 @@ All sample videos are available at [Wiki](https://github.com/benzookapi/shopify-
   - Checking customer events in a browser console to send them to GA4 Data Streams
 - _Post Purchase_: ['/postpurchase'](https://user-images.githubusercontent.com/899580/219054274-a04af128-c1d8-43f6-9a9c-583bff239fcd.mp4)  
   - Switching upsell products and getting shop review scores with product and customer metafields
-- _Checkout Extension_: ['/checkoutextension']()  
-  - Switching upsell products and getting shop review scores with product and customer metafields, IP address blocking
+- _Checkout Extension_: ['/checkoutextension'](https://user-images.githubusercontent.com/899580/231545192-cd65d59f-78d5-48c6-987b-d2529b6a9e71.mp4)  
+  - Reproducing upsell and reviews of post-purchase during checkout with IP address blocking
 - _Fulfillment_: '/fulfillment' 
   - How to create and control fulfillments (shipping) via API for a specific order (TBD)
 - _Transaction_: '/transaction' 
