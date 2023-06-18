@@ -1518,7 +1518,7 @@ const decodeJWT = function (token) {
 };
 
 /* --- Call Shopify GraphQL --- */
-const callGraphql = function (ctx, shop, ql, token = null, path = GRAPHQL_PATH_PAYMENT, vars = null) {
+const callGraphql = function (ctx, shop, ql, token = null, path = GRAPHQL_PATH_ADMIN, vars = null) {
   return new Promise(function (resolve, reject) {
     let api_req = {};
     // Set Gqphql string into query field of the JSON  as string
