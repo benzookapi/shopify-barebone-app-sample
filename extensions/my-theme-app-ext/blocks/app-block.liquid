@@ -74,6 +74,11 @@ https://github.com/Shopify/theme-extension-getting-started
       </li>
     </ul>
 
+    <p><a href="https://shopify.dev/docs/api/consent-tracking" target="_blank">window.Shopify</a> dump</p>
+    <pre id="my_window_shopify_dump">
+
+    </pre>
+
   </div>
 </span>
 
@@ -101,6 +106,8 @@ In this sample, "type": "product" and "type": "text" are supposed to be metafiel
   // For exmple, this <script> is possible to be inserted multiply if the merchant add multiple sections in the theme editor.
 
   console.log("blocks/app-block.liquid"); 
+
+  document.getElementById('my_window_shopify_dump').innerText = JSON.stringify(window.Shopify, null, 4);
 
 </script>
 {% schema %}
