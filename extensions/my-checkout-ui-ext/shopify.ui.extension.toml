@@ -6,7 +6,7 @@ name = "Barebone App UI extension"
 
 extension_points = [
   'Checkout::Dynamic::Render',
-  'Checkout::DeliveryAddress::RenderBefore',
+  'Checkout::Contact::RenderAfter',
   'Checkout::Actions::RenderBefore'
 ]
 
@@ -28,6 +28,16 @@ api_access = true
   [[settings.fields]]
   key = "validation_ip"
   type = "single_line_text_field"
-  name = "IP address to block"
-  description = "Specify an IP address to block during the checkout validation"
+  name = "IP address to block chgeckouts"
+  description = "Specify an IP address to block checkouts (for black lists, etc.)" 
+  [[settings.fields]]
+  key = "validation_text"
+  type = "single_line_text_field"
+  name = "Text to block checkouts"
+  description = "Specify an text to block checkouts (for comming soon mode, etc.)"
+  [[settings.fields]]
+  key = "validation_quantity"
+  type = "number_integer"
+  name = "Quantity to clear carts"
+  description = "Specify a quantity to clear carts zero (for fraud protection, etc.)"
 

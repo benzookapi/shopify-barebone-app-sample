@@ -17,6 +17,7 @@ import {
   //useExtensionData, // Metadata about the extension.
   //useExtensionLanguage, // Buyer's language, as supported by the extension
   //useShippingAddress, // Protected customer data
+  useSubscription, // https://shopify.dev/docs/api/checkout-ui-extensions/unstable/react-hooks/utilities/usesubscription
 
   // UI components
   View,
@@ -43,7 +44,7 @@ import {
 } from '@shopify/checkout-ui-extensions-react';
 
 render('Checkout::Dynamic::Render', () => <Upsell />);
-render('Checkout::DeliveryAddress::RenderBefore', () => <Validation />);
+render('Checkout::Contact::RenderAfter', () => <Validation />);
 render('Checkout::Actions::RenderBefore', () => <Review />);
 
 /* 
@@ -365,47 +366,150 @@ function Validation() {
   //console.log(`my-checkout-ui-ext: extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
 
   const [ip, setIp] = useState('');
-  const [blocked, setBlocked] = useState(false);
+  const [ipBlocked, setIpBlocked] = useState(false);
+
+  const [text, setText] = useState('');
+  const [textBlocked, setTextBlocked] = useState(false);
+
+  const [quantity, setQuantity] = useState('');
+  const [quantityReset, setQuantityReset] = useState(false);
 
   // Get the IP address to block from the extension settings.
   const block_ip = extensionApi.settings.current.validation_ip;
-  // Check if the current global JP is the specified one or not.
-  fetch('https://api.ipify.org?format=json', {
-    method: "GET"
-  }).then((res) => {
-    res.json().then((json) => {
-      setIp(json.ip);
-      if (json.ip == block_ip) {
-        // Block the checkout progress.
-        extensionApi.buyerJourney.intercept({
-          canBlockProgress: false
-        }).then((r) => {
-          console.log(`intercept: ${r}`);
-        });
-        setBlocked(true);
-      }
+  console.log(`block_ip: ${block_ip}`);
+  useEffect(() => {
+    console.log(`Checking IP blocking...`);
+    // Check if the current global JP is the specified one or not.
+    fetch('https://api.ipify.org?format=json', {
+      method: "GET"
+    }).then((res) => {
+      res.json().then((json) => {
+        setIp(json.ip);
+        if (json.ip === block_ip) {
+          // Block the checkout progress.
+          extensionApi.buyerJourney.intercept({
+            canBlockProgress: false
+          }).then((r) => {
+            console.log(`intercept (block_ip): ${r}`);
+            setIpBlocked(true);
+          });
+        }
+      });
     });
-  });
+  }, ['']);
 
-  // Swtich the message on the check result.
-  const BlockInfo = function (props) {
+
+  // Get the text to block from the extension settings.
+  const block_text = extensionApi.settings.current.validation_text;
+  console.log(`block_text: ${block_text}`);
+  useEffect(() => {
+    console.log(`Checking text blocking...`);
+    if (block_text != null) {
+      setText(block_text);
+      extensionApi.buyerJourney.intercept({
+        canBlockProgress: false
+      }).then((r) => {
+        console.log(`intercept (block_text): ${r}`);
+        setTextBlocked(true);
+      });
+    }
+  }, ['']);
+
+  // Get the quantity to reset the cart from the extension settings.
+  const reset_quantity = extensionApi.settings.current.validation_quantity;
+  console.log(`reset_quantity: ${reset_quantity}`);
+  useEffect(() => {
+    console.log(`Checking quantity reset...`);
+    if (reset_quantity != null) {
+      setQuantity(reset_quantity);
+      const size = extensionApi.lines.current.reduce((total, l) => {
+        return total + l.quantity;
+      }, 0);
+      if (size > parseInt(reset_quantity)) {
+        extensionApi.lines.current.map((l) => {
+          extensionApi.applyCartLinesChange({
+            type: "removeCartLine",
+            id: l.id,
+            quantity: l.quantity
+          }).then((r) => {
+            console.log(`removeCartLine: ${JSON.stringify(r)}`);
+          }).catch((e) => {
+            console.log(`removeCartLine error: ${e}`);
+          });
+        });
+        setQuantityReset(true);
+      }
+    }
+  }, ['']);
+
+  // Swtich the message on the check result with the IP address
+  const IpBlockInfo = function (props) {
     if (props.blocked) {
       return (
         <Text appearance="critical" size="medium">
-          Your IP address: {ip} is blocked by the extension! You cannot proceed the checkout. &#128561;
+          Your IP address: <Text emphasis="italic">{ip}</Text> was blocked and you cannot proceed the checkout. &#128561;
         </Text>
       );
     }
     return (
       <Text appearance="success" size="medium">
-        Your IP address: {ip} is not blocked. &#128077;
+        Your IP address: <Text emphasis="italic">{ip}</Text> was not blocked. &#128077;
+      </Text>
+    );
+  };
+
+  // Swtich the message on the check result with the text
+  const TextBlockInfo = function (props) {
+    if (props.blocked) {
+      return (
+        <Text appearance="critical" size="medium">
+          You cannot proceed the checkout with the given message: <Text emphasis="italic">{text}</Text> &#9940;
+        </Text>
+      );
+    }
+    return (
+      <Text appearance="success" size="medium">
+        You are not blocked without any message. &#128077;
+      </Text>
+    );
+  };
+
+  // Swtich the message on the check result with the quantity
+  const QuantityResetInfo = function (props) {
+    if (props.reset) {
+      return (
+        <Text appearance="critical" size="medium">
+          Your cart was reset with a larger quantity than: <Text emphasis="italic">{quantity}</Text> &#10060;
+        </Text>
+      );
+    }
+    if (quantity == '') {
+      return (
+        <Text appearance="success" size="medium">
+          Your cart was not reset without any quantity limit. &#128077;
+        </Text>
+      );
+    }
+    return (
+      <Text appearance="success" size="medium">
+        Your cart was not reset with a quantity equal to or under: <Text emphasis="italic">{quantity}</Text> &#128077;
       </Text>
     );
   };
 
   return (
     <Banner title={`${extensionApi.extensionPoint} <Validation />`} status='critical'>
-      <BlockInfo blocked={blocked} />
+      <List>
+        <ListItem>
+          <IpBlockInfo blocked={ipBlocked} />
+        </ListItem>
+        <ListItem>
+          <TextBlockInfo blocked={textBlocked} />
+        </ListItem>
+        <ListItem>
+          <QuantityResetInfo reset={quantityReset} />
+        </ListItem>
+      </List>
     </Banner>
   );
 

@@ -33,7 +33,7 @@ function CheckoutUi() {
               </List.Item>
               <List.Item>
                 <p>
-                  Add <b>three instances of this app</b> in the locations of <Badge status='info'>'<b>Checkout::Dynamic::Render</b>' = Dynamic / '<b>Checkout::DeliveryAddress::RenderBefore</b>' = Static /
+                  Add <b>three instances of this app</b> in the locations of <Badge status='info'>'<b>Checkout::Dynamic::Render</b>' = Dynamic / '<b>Checkout::Contact::RenderAfter</b>' = Static /
                     '<b>Checkout::Actions::RenderBefore</b>' = Static</Badge> seeing <Link url="https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-overview" external={true}>this dev. page</Link> and set the IP address to <Link url="https://shopify.dev/docs/api/checkout-ui-extensions/configuration#block-progress" external={true}>block</Link> in their settings in <Link url={`https://${_getAdminFromShop(shop)}/settings/checkout/editor`} external={true}>checkout editor</Link>. You can check your IP address in external sites
                   like <Link url="https://whatismyipaddress.com/" external={true}>this</Link>.
                 </p>
