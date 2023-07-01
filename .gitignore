@@ -2,5 +2,5 @@ node_modules
 package-lock.json
 /.env
 .DS_Store
-/public
-/views
+/public/assets
+/views/index.html
