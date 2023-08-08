@@ -9,6 +9,8 @@
     "@shopify/checkout-ui-extensions-react": "^0.27.1",
     "@shopify/cli": "^3.48.1",
     "@shopify/post-purchase-ui-extensions-react": "^0.13.4",
+    "@shopify/ui-extensions": "2023.7.0",
+    "@shopify/ui-extensions-react": "2023.7.0",
     "@shopify/web-pixels-extension": "^0.4.15",
     "jsonwebtoken": "^9.0.0",
     "jwt-decode": "^3.1.2",
