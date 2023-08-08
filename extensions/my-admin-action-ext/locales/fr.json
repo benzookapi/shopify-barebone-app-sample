@@ -1,0 +1,4 @@
+{
+  "name": "my-admin-action-ext",
+  "welcome": "Bienvenue dans l'extension {{target}}!"
+}
