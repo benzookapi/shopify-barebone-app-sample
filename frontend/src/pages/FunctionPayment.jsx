@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, Stack } from '@shopify/polaris';
+import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, VerticalStack } from '@shopify/polaris';
 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
@@ -28,54 +28,54 @@ function FunctionPayment() {
 
   return (
     <Page title="Create your original payment method filtering with Shopify Functions">
-      <Card title="Step 1: Specify which payment method shows up only with which shipping rate used" sectioned={true}>
-        <Layout>
-          <Layout.Section>
-            <Link url="https://shopify.dev/api/functions/reference/payment-customization" external={true}>Dev. doc</Link>
-          </Layout.Section>
-          <Layout.Section>
-            <List type="number">
-              <List.Item>Input a <Badge>payment method name</Badge> which you want to show only, from <Link url={`https://${shop}`} external={true}>your checkout page</Link> (note that the method name needs to be <b>the buyer facing one</b>, not admin).
-                <TextField
-                  label=""
-                  value={method}
-                  onChange={methodChange}
-                  autoComplete="off"
-                  placeholder="Example: Cash on Delivery (COD)"
-                />
-              </List.Item>
-              <List.Item>Input a <Badge>shipping rate name</Badge> which buyers select when the payment method shows up above, from <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} external={true}>shipping settings</Link> or <Link url={`https://${_getAdminFromShop(shop)}/orders`} external={true}>past orders</Link>
-                <TextField
-                  label=""
-                  value={rate}
-                  onChange={rateChange}
-                  autoComplete="off"
-                  placeholder="Example: Standard"
-                />
-              </List.Item>
-            </List>
-          </Layout.Section>
-        </Layout>
-      </Card>
-      <Card title="Step 2: Create your payment customization and active it" sectioned={true}>
-        <Layout>
-          <Layout.Section>
-            <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/paymentCustomizationCreate" external={true}>Dev. doc</Link>
-          </Layout.Section>
-          <Layout.Section>
-            <List type="number">
-              <List.Item>
-                Input your <Badge>Shopify Functions ID</Badge> available in your app extension overview in <Link url="https://shopify.dev/api/functions/errors#debugging" external={true}>partner dashboard</Link> given by <Badge>`npm run deploy`</Badge>
-                <TextField
-                  label=""
-                  value={id}
-                  onChange={idChange}
-                  autoComplete="off"
-                  placeholder="Example: 01GQZ4VR42WB6BHKZQ9XME2SN4"
-                />
-              </List.Item>
-              <List.Item>
-                <Stack spacing="loose">
+      <VerticalStack gap="5">
+        <Card title="Step 1: Specify which payment method shows up only with which shipping rate used" sectioned={true}>
+          <Layout>
+            <Layout.Section>
+              <Link url="https://shopify.dev/api/functions/reference/payment-customization" external={true}>Dev. doc</Link>
+            </Layout.Section>
+            <Layout.Section>
+              <List type="number">
+                <List.Item>Input a <Badge>payment method name</Badge> which you want to show only, from <Link url={`https://${shop}`} external={true}>your checkout page</Link> (note that the method name needs to be <b>the buyer facing one</b>, not admin).
+                  <TextField
+                    label=""
+                    value={method}
+                    onChange={methodChange}
+                    autoComplete="off"
+                    placeholder="Example: Cash on Delivery (COD)"
+                  />
+                </List.Item>
+                <List.Item>Input a <Badge>shipping rate name</Badge> which buyers select when the payment method shows up above, from <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} external={true}>shipping settings</Link> or <Link url={`https://${_getAdminFromShop(shop)}/orders`} external={true}>past orders</Link>
+                  <TextField
+                    label=""
+                    value={rate}
+                    onChange={rateChange}
+                    autoComplete="off"
+                    placeholder="Example: Standard"
+                  />
+                </List.Item>
+              </List>
+            </Layout.Section>
+          </Layout>
+        </Card>
+        <Card title="Step 2: Create your payment customization and active it" sectioned={true}>
+          <Layout>
+            <Layout.Section>
+              <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/paymentCustomizationCreate" external={true}>Dev. doc</Link>
+            </Layout.Section>
+            <Layout.Section>
+              <List type="number">
+                <List.Item>
+                  Input your <Badge>Shopify Functions ID</Badge> available in your app extension overview in <Link url="https://shopify.dev/api/functions/errors#debugging" external={true}>partner dashboard</Link> given by <Badge>`npm run deploy`</Badge>
+                  <TextField
+                    label=""
+                    value={id}
+                    onChange={idChange}
+                    autoComplete="off"
+                    placeholder="Example: 01GQZ4VR42WB6BHKZQ9XME2SN4"
+                  />
+                </List.Item>
+                <List.Item>
                   <Button primary onClick={() => {
                     setAccessing(true);
                     // See https://shopify.dev/api/admin-graphql/2023-04/mutations/paymentCustomizationCreate"
@@ -96,17 +96,17 @@ function FunctionPayment() {
                     });
                   }}>
                     Create your payment customization
-                  </Button>
+                  </Button>&nbsp;
                   <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
-                </Stack>
-              </List.Item>
-              <List.Item>
-                Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/payments`} external={true}>payment settings</Link> to check if the customization is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your customization works with your selected shipping rate.
-              </List.Item>
-            </List>
-          </Layout.Section>
-        </Layout>
-      </Card>
+                </List.Item>
+                <List.Item>
+                  Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/payments`} external={true}>payment settings</Link> to check if the customization is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your customization works with your selected shipping rate.
+                </List.Item>
+              </List>
+            </Layout.Section>
+          </Layout>
+        </Card>
+      </VerticalStack>
     </Page>
   );
 }

@@ -47,7 +47,7 @@ shopify.app.toml ... required file by CLI commands.
 
 
 For creating React frontend, the following contents might help you.
-- [App Bridge Actions by React](https://shopify.dev/apps/tools/app-bridge/actions)
+- [App Bridge Actions](https://shopify.dev/apps/tools/app-bridge/actions)
 - [Polaris Compoments by React](https://polaris.shopify.com/components)
 
 For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and Checkout Extensions, refer to the [app extensions](https://shopify.dev/apps/app-extensions) page.

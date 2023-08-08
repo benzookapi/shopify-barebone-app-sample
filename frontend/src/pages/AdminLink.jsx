@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Stack, Link, Badge, Text, Spinner, List } from '@shopify/polaris';
+import { Page, Card, Layout, Link, Badge, Text, Spinner, List } from '@shopify/polaris';
 
 import { _decodeSessionToken, _getAdminFromShop, _getShopFromQuery } from "../utils/my_util";
 
@@ -38,13 +38,12 @@ function AdminLink() {
             <Page title="You seem to have come through Admin Link!">
                 <Layout>
                     <Layout.Section>
-                        <Stack spacing="loose">
-                            <Text as='h2'>Your selected data id:</Text>
-                            <Badge status='info'>{id}</Badge>
+                        <Text as='h2'>Your selected data id: <Badge status='info'>{id}</Badge></Text>
+                        <Text>
                             <Link onClick={() => { redirect.dispatch(Redirect.Action.APP, '/adminlink'); }}>
                                 Go back
                             </Link>
-                        </Stack>
+                        </Text>
                     </Layout.Section>
                     <Layout.Section>
                         <Badge status="attention">If you come from a <b>product detail page</b>, you must see the following GraphQL response for the given id</Badge>

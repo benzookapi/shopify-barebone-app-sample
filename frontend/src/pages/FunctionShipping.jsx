@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, Stack } from '@shopify/polaris';
+import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, VerticalStack } from '@shopify/polaris';
 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
@@ -28,54 +28,54 @@ function FunctionShipping() {
 
   return (
     <Page title="Create your original shipping rate filtering with Shopify Functions">
-      <Card title="Step 1: Specify which shipping rate shows up only with which zip code input" sectioned={true}>
-        <Layout>
-          <Layout.Section>
-            <Link url="https://shopify.dev/api/functions/reference/delivery-customization" external={true}>Dev. doc</Link>
-          </Layout.Section>
-          <Layout.Section>
-            <List type="number">
-              <List.Item>Input a <Badge>shipping rate name</Badge> which you want to show only, from <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} external={true}>shipping settings</Link>.
-                <TextField
-                  label=""
-                  value={rate}
-                  onChange={rateChange}
-                  autoComplete="off"
-                  placeholder="Example: Standard"
-                />
-              </List.Item>
-              <List.Item>Input a <Badge>zip code</Badge> which buyers input in their shipping address when the shipping rate shows up above.
-                <TextField
-                  label=""
-                  value={zip}
-                  onChange={zipChange}
-                  autoComplete="off"
-                  placeholder="Example: 107-6245"
-                />
-              </List.Item>
-            </List>
-          </Layout.Section>
-        </Layout>
-      </Card>
-      <Card title="Step 2: Create your delivery customization and active it" sectioned={true}>
-        <Layout>
-          <Layout.Section>
-            <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/deliveryCustomizationCreate" external={true}>Dev. doc</Link>
-          </Layout.Section>
-          <Layout.Section>
-            <List type="number">
-              <List.Item>
-                Input your <Badge>Shopify Functions ID</Badge> available in your app extension overview in <Link url="https://shopify.dev/api/functions/errors#debugging" external={true}>partner dashboard</Link> given by <Badge>`npm run deploy`</Badge>
-                <TextField
-                  label=""
-                  value={id}
-                  onChange={idChange}
-                  autoComplete="off"
-                  placeholder="Example: 01GRE5XPEP3WDTNA1H8EV8ZMV9"
-                />
-              </List.Item>
-              <List.Item>
-                <Stack spacing="loose">
+      <VerticalStack gap="5">
+        <Card title="Step 1: Specify which shipping rate shows up only with which zip code input" sectioned={true}>
+          <Layout>
+            <Layout.Section>
+              <Link url="https://shopify.dev/api/functions/reference/delivery-customization" external={true}>Dev. doc</Link>
+            </Layout.Section>
+            <Layout.Section>
+              <List type="number">
+                <List.Item>Input a <Badge>shipping rate name</Badge> which you want to show only, from <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} external={true}>shipping settings</Link>.
+                  <TextField
+                    label=""
+                    value={rate}
+                    onChange={rateChange}
+                    autoComplete="off"
+                    placeholder="Example: Standard"
+                  />
+                </List.Item>
+                <List.Item>Input a <Badge>zip code</Badge> which buyers input in their shipping address when the shipping rate shows up above.
+                  <TextField
+                    label=""
+                    value={zip}
+                    onChange={zipChange}
+                    autoComplete="off"
+                    placeholder="Example: 107-6245"
+                  />
+                </List.Item>
+              </List>
+            </Layout.Section>
+          </Layout>
+        </Card>
+        <Card title="Step 2: Create your delivery customization and active it" sectioned={true}>
+          <Layout>
+            <Layout.Section>
+              <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/deliveryCustomizationCreate" external={true}>Dev. doc</Link>
+            </Layout.Section>
+            <Layout.Section>
+              <List type="number">
+                <List.Item>
+                  Input your <Badge>Shopify Functions ID</Badge> available in your app extension overview in <Link url="https://shopify.dev/api/functions/errors#debugging" external={true}>partner dashboard</Link> given by <Badge>`npm run deploy`</Badge>
+                  <TextField
+                    label=""
+                    value={id}
+                    onChange={idChange}
+                    autoComplete="off"
+                    placeholder="Example: 01GRE5XPEP3WDTNA1H8EV8ZMV9"
+                  />
+                </List.Item>
+                <List.Item>
                   <Button primary onClick={() => {
                     setAccessing(true);
                     // See https://shopify.dev/api/admin-graphql/2023-04/mutations/deliveryCustomizationCreate"
@@ -96,17 +96,17 @@ function FunctionShipping() {
                     });
                   }}>
                     Create your delivery customization
-                  </Button>
+                  </Button>&nbsp;
                   <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
-                </Stack>
-              </List.Item>
-              <List.Item>
-                Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} external={true}>shipping settings</Link> to check if the customization is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your customization works with your input zip code.
-              </List.Item>
-            </List>
-          </Layout.Section>
-        </Layout>
-      </Card>
+                </List.Item>
+                <List.Item>
+                  Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} external={true}>shipping settings</Link> to check if the customization is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your customization works with your input zip code.
+                </List.Item>
+              </List>
+            </Layout.Section>
+          </Layout>
+        </Card>
+      </VerticalStack>
     </Page>
   );
 }
