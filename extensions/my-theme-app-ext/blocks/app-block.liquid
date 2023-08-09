@@ -1,21 +1,27 @@
 <!-- barebone app: app-block.liquid -->
 
 <!--
-See the useful documents.
+  See the useful documents.
 
-https://shopify.dev/themes/architecture/sections/app-blocks
+  https://shopify.dev/themes/architecture/sections/app-blocks
 
-https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework
+  https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework
 
-https://shopify.dev/themes/architecture/settings/input-settings
+  https://shopify.dev/themes/architecture/settings/input-settings
 
-https://github.com/Shopify/theme-extension-getting-started
-
---><!-- NOTE THAT you cannot write liquid variables in 'assets/***.css' like "span { color: {{ block.settings.color }}; } -->
-  <span style="color: {{ block.settings.color }}"> <div class="_my_app_block">
+  https://github.com/Shopify/theme-extension-getting-started
+-->
+<!--
+  NOTE THAT you cannot write liquid variables in 'assets/***.css' like "span { color: {{ block.settings.color }}; }
+-->
+<span style="color: {{ block.settings.color }}">
+  <div class="_my_app_block">
     <p>
       Theme App Extension
-      <a href="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#app-blocks" target="_blank">
+      <a
+        href="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#app-blocks"
+        target="_blank"
+      >
         App Block
       </a>
       with
@@ -44,11 +50,9 @@ https://github.com/Shopify/theme-extension-getting-started
         <b>'block.settings.product'</b>
         in "Product":
         <b>{{ block.settings.product.id }}</b>
-        (id) 
-        /
+        (id) /
         <b>{{ block.settings.product.title }}</b>
-        (title) 
-        /
+        (title) /
         <b>{{ block.settings.product.price }}</b>
         (price)
       </li>
@@ -64,73 +68,150 @@ https://github.com/Shopify/theme-extension-getting-started
 
     <ul>
       <li>
-        <b><a href="" target="_blank" class="barebone_app_proxy_json">Ajax response of the app proxy</a></b> 
+        <b>
+          <a
+            href=""
+            target="_blank"
+            class="barebone_app_proxy_json"
+            >Ajax response of the app proxy</a
+          >
+        </b>
         (You can check the difference of response data by login / logout)
-        <!-- Note that app embed is a section which can be some in the whole theme storefornt HTML in browsers, so you canot use 'id'. -->
+        <!--
+          Note that app embed is a section which can be some in the whole theme storefornt HTML in browsers, so you canot use 'id'.
+        -->
         <pre class="barebone_app_proxy_response"></pre>
       </li>
       <li>
-        <b><a href="" class="barebone_app_proxy_liquid">Page trasition of the app proxy as a Liquid file</a></b>
+        <b>
+          <a href="" class="barebone_app_proxy_liquid">Page trasition of the app proxy as a Liquid file</a>
+        </b>
       </li>
     </ul>
 
-    <p><a href="https://shopify.dev/docs/api/consent-tracking" target="_blank">window.Shopify</a> dump</p>
+    <p>
+      <a href="https://shopify.dev/docs/api/consent-tracking" target="_blank">window.Shopify</a>
+      dump
+    </p>
     <pre id="my_window_shopify_dump">
 
     </pre>
 
+    {%- if template.name == 'product' -%}
+      <fieldset>
+        <legend>Choose your cart attribute value</legend>
+        <div>
+          <input
+            id="my_cart_attribute_1"
+            name="my_cart_attributes"
+            value="Value-1"
+            onClick="radio_click(this);"
+          >
+          <label for="my_cart_attribute_1"> Value 1 </label>
+        </div>
+        <div>
+          <input
+            id="my_cart_attribute_2"
+            name="my_cart_attributes"
+            value="Value-2"
+            onClick="radio_click(this);"
+          >
+          <label for="my_cart_attribute_3"> Value 2 </label>
+        </div>
+        <div>
+          <input
+            id="my_cart_attribute_3"
+            name="my_cart_attributes"
+            value="Value-3"
+            onClick="radio_click(this);"
+          >
+          <label for="my_cart_attribute_3"> Value 3 </label>
+        </div>
+        <strong
+          >See
+          <a href="https://shopify.dev/docs/themes/architecture/templates/cart#cart-attributes" target="_blank">
+            dev. site</a
+          >
+          for cart attributes.</strong
+        >
+      </fieldset>
+    {%- endif -%}
   </div>
 </span>
 
 <!--
-See the useful documents.
+  See the useful documents.
 
-https://shopify.dev/themes/architecture/sections/app-blocks
+  https://shopify.dev/themes/architecture/sections/app-blocks
 
-https://shopify.dev/themes/architecture/settings#dynamic-sources
+  https://shopify.dev/themes/architecture/settings#dynamic-sources
 
-https://help.shopify.com/en/manual/data-extensions/metafields/displaying-metafields-on-your-online-store
+  https://help.shopify.com/en/manual/data-extensions/metafields/displaying-metafields-on-your-online-store
 
-NOTE THAT if you add this app block to the home page, the product picker shows a simpple product selector only 
-without a metafield dynamic source, but if in the product page, the picker shows simple selector and metafield ones both.
-See the condtion in the document above.
+  NOTE THAT if you add this app block to the home page, the product picker shows a simpple product selector only
+  without a metafield dynamic source, but if in the product page, the picker shows simple selector and metafield ones both.
+  See the condtion in the document above.
 
-"target": "section" in schema means this is an "App Block" as portable session anywhere in theme pages.
+  "target": "section" in schema means this is an "App Block" as portable session anywhere in theme pages.
 
-In this sample, "type": "product" and "type": "text" are supposed to be metafields in product data.
-
---><script type="text/javascript">
-  // Note that you cannot call external functions defined in 'assets/***.js' in <script> of blocks.  
-  // Also,imported script files by each block are global in theme storefront in browsers, which means 
-  // any object are global scopes that cannot conflicts with others.
-  // For exmple, this <script> is possible to be inserted multiply if the merchant add multiple sections in the theme editor.
-
-  console.log("blocks/app-block.liquid"); 
-
+  In this sample, "type": "product" and "type": "text" are supposed to be metafields in product data.
+-->
+<script type="text/javascript">
+  // Note that you cannot call external functions defined in 'assets/***.js'. Also,imported script files by each block are global in theme storefront in browsers, which means any object are global scopes that cannot conflicts with others. For exmple, this script is possible to be inserted multiply if the merchant add multiple sections in the theme editor.console.log("blocks/app-block.liquid");
   document.getElementById('my_window_shopify_dump').innerText = JSON.stringify(window.Shopify, null, 4);
 
+  console.log('template: {{ template.name }}');
 </script>
+
+{%- if template.name == 'product' -%}
+  <script type="text/javascript">
+    // Inspired by another subscrition code https://github.com/benzookapi/shopify-subscription-sample-app/blob/main/extensions/my-theme-contract-ext/assets/my-theme-contact.js
+    // Test the multiple cart attributes for the single variant on how it shows up in order details.
+    const cart_add_forms = document.querySelectorAll('form[action="/cart/add"]');
+    cart_add_forms.forEach((form) => {
+      console.log(`cart_add_forms: ${form.innerHTML}`);
+      // Adding an cart attribute to the existing form.
+      // See https://shopify.dev/docs/themes/architecture/templates/cart#cart-attributes
+      const my_cart_attribute_input = document.createElement('input');
+      my_cart_attribute_input.type = 'hidden';
+      my_cart_attribute_input.name = 'attributes[my_cart_attribute]';
+      my_cart_attribute_input.value = '';
+      form.appendChild(my_cart_attribute_input);
+    });
+
+    // Each plan click set its value to all cart attribute inputs.
+    const radio_click = (obj) => {
+      const my_cart_attribute_inputs = document.querySelectorAll('input[name="attributes[my_cart_attribute]"]');
+      my_cart_attribute_inputs.forEach((input) => {
+        input.value = obj.value;
+      });
+    };
+  </script>
+{%- endif -%}
+
 {% schema %}
-  {
-    "name": "Barebone App Block",
-    "target": "section",
-    "stylesheet": "barebone.css",
-    "javascript": "barebone.js",
-    "settings": [
-      {
-        "label": "Color",
-        "id": "color",
-        "type": "color",
-        "default": "#000000"
-      }, {
-        "type": "product",
-        "id": "product",
-        "label": "Product"
-      }, {
-        "type": "text",
-        "id": "text",
-        "label": "Text"
-      }
-    ]
-  }
+{
+  "name": "Barebone App Block",
+  "target": "section",
+  "stylesheet": "barebone.css",
+  "javascript": "barebone.js",
+  "settings": [
+    {
+      "label": "Color",
+      "id": "color",
+      "type": "color",
+      "default": "#000000"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Text"
+    }
+  ]
+}
 {% endschema %}
