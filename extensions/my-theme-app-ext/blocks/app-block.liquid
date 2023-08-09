@@ -97,42 +97,48 @@
 
     </pre>
 
+    {% comment %}
+      The following code is for product pages only to check how line item properties work for line splitting for the same product.
+    {% endcomment %}
     {%- if template.name == 'product' -%}
       <fieldset>
-        <legend>Choose your cart attribute value</legend>
+        <legend>Choose your line item property value</legend>
         <div>
           <input
-            id="my_cart_attribute_1"
-            name="my_cart_attributes"
+            type="radio"
+            id="barebone_line_item_property_1"
+            name="barebone_line_item_property"
             value="Value-1"
             onClick="radio_click(this);"
           >
-          <label for="my_cart_attribute_1"> Value 1 </label>
+          <label for="barebone_line_item_property_1"> Value 1 </label>
         </div>
         <div>
           <input
-            id="my_cart_attribute_2"
-            name="my_cart_attributes"
+            type="radio"
+            id="barebone_line_item_property_2"
+            name="barebone_line_item_property"
             value="Value-2"
             onClick="radio_click(this);"
           >
-          <label for="my_cart_attribute_3"> Value 2 </label>
+          <label for="barebone_line_item_property_2"> Value 2 </label>
         </div>
         <div>
           <input
-            id="my_cart_attribute_3"
-            name="my_cart_attributes"
+            type="radio"
+            id="barebone_line_item_property_3"
+            name="barebone_line_item_property"
             value="Value-3"
             onClick="radio_click(this);"
           >
-          <label for="my_cart_attribute_3"> Value 3 </label>
+          <label for="barebone_line_item_property_3"> Value 3 </label>
         </div>
         <strong
           >See
-          <a href="https://shopify.dev/docs/themes/architecture/templates/cart#cart-attributes" target="_blank">
-            dev. site</a
+          <a href="https://shopify.dev/docs/themes/architecture/templates/product#line-item-properties" target="_blank">
+            Dev. Site</a
           >
-          for cart attributes.</strong
+          for Line Item Properties.</strong
         >
       </fieldset>
     {%- endif -%}
@@ -160,29 +166,32 @@
   // Note that you cannot call external functions defined in 'assets/***.js'. Also,imported script files by each block are global in theme storefront in browsers, which means any object are global scopes that cannot conflicts with others. For exmple, this script is possible to be inserted multiply if the merchant add multiple sections in the theme editor.console.log("blocks/app-block.liquid");
   document.getElementById('my_window_shopify_dump').innerText = JSON.stringify(window.Shopify, null, 4);
 
-  console.log('template: {{ template.name }}');
+  console.log('template.name: {{ template.name }} product.id: {{ product.id }} variant.id: {{ variant.id }}');
 </script>
 
+{% comment %}
+  The following code is for product pages only to check how line item properties work for line splitting for the same product.
+{% endcomment %}
 {%- if template.name == 'product' -%}
   <script type="text/javascript">
-    // Inspired by another subscrition code https://github.com/benzookapi/shopify-subscription-sample-app/blob/main/extensions/my-theme-contract-ext/assets/my-theme-contact.js
-    // Test the multiple cart attributes for the single variant on how it shows up in order details.
-    const cart_add_forms = document.querySelectorAll('form[action="/cart/add"]');
-    cart_add_forms.forEach((form) => {
-      console.log(`cart_add_forms: ${form.innerHTML}`);
-      // Adding an cart attribute to the existing form.
-      // See https://shopify.dev/docs/themes/architecture/templates/cart#cart-attributes
-      const my_cart_attribute_input = document.createElement('input');
-      my_cart_attribute_input.type = 'hidden';
-      my_cart_attribute_input.name = 'attributes[my_cart_attribute]';
-      my_cart_attribute_input.value = '';
-      form.appendChild(my_cart_attribute_input);
-    });
-
-    // Each plan click set its value to all cart attribute inputs.
+    // Test the multiple line item properties for the single product to split line items.
+    // Each plan click set its value to all line item property inputs.
     const radio_click = (obj) => {
-      const my_cart_attribute_inputs = document.querySelectorAll('input[name="attributes[my_cart_attribute]"]');
-      my_cart_attribute_inputs.forEach((input) => {
+      const cart_add_forms = document.querySelectorAll('form[action="/cart/add"]');
+      cart_add_forms.forEach((form) => {
+        console.log(`cart_add_forms: ${form.innerHTML}`);
+        // Adding an line item property to the existing form.
+        // See https://shopify.dev/docs/themes/architecture/templates/product#line-item-properties
+        const line_item_property_input = document.createElement('input');
+        line_item_property_input.type = 'hidden';
+        line_item_property_input.name = 'properties[barebone_line_item_property]';
+        line_item_property_input.value = '';
+        form.appendChild(line_item_property_input);
+      });
+      const line_item_property_inputs = document.querySelectorAll(
+        'input[name="properties[barebone_line_item_property]"]'
+      );
+      line_item_property_inputs.forEach((input) => {
         input.value = obj.value;
       });
     };

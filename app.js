@@ -1114,7 +1114,7 @@ router.get('/postpurchase', async (ctx, next) => {
 /* --- Post-purchase CORS endpoint --- */
 // Sandbox Web Workers used by Web Pixels, Checkout Extensions require CORS access.
 /* Accessed like this from Web Workers.
-fetch(`https://fb34-2400-2410-2fc0-fb00-d4e2-f57f-90a6-bdd6.jp.ngrok.io/postpurchase?your_key=your_value`, {
+fetch(`https://customise-manuals-zero-approximate.trycloudflare.com/postpurchase?your_key=your_value`, {
       method: "POST"
     }).then(res => {
       res.json().then(json => {
@@ -1281,7 +1281,7 @@ router.get('/checkoutui', async (ctx, next) => {
 
 /* --- App proxies sample endpoint --- */
 // See https://shopify.dev/apps/online-store/app-proxies
-// Note that ngrok blocks the proxy by default, you have to use other platforms like Render, Fly.io, etc.
+// Note that ngrok blocks the proxy, so you should use cloudflare tunnel, instead.
 router.get('/appproxy', async (ctx, next) => {
   console.log("+++++++++++++++ /appproxy +++++++++++++++");
   console.log(`request ${JSON.stringify(ctx.request, null, 4)}`);
