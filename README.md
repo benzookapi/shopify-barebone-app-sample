@@ -148,7 +148,7 @@ All sample videos are available at [Wiki](https://github.com/benzookapi/shopify-
   - How to manage and protect admin links regardless of embedded or unembedded.
 - _Theme App Extension_: ['/themeappextension'](https://user-images.githubusercontent.com/899580/216705808-70d3b6ad-f7b7-4091-95ec-c45cc9a79502.mp4) 
   - Basis usage in combination with App Proxies and Theme Editor
-  - For [Line Item Properties]() usage, see [this demo]()
+  - For [Line item properties, and Cart notes and attributes]() insertion, see [this no Liquid touched demo](https://github-production-user-asset-6210df.s3.amazonaws.com/899580/259701182-f1fb93b5-34da-4440-b10a-fe8ad28d6c68.mp4)
 - _Function Discount_: ['/functiondiscount'](https://user-images.githubusercontent.com/899580/216708433-be7bbfbd-30aa-480e-a165-e528f33f5901.mp4) 
   - Discount implementation by Shopify Functions in combination with customer metafields
 - _Function Shipping_: ['/functionshipping'](https://user-images.githubusercontent.com/899580/218436786-3fcd2802-6acc-4c32-b0ca-030184cbcee5.mp4) 
