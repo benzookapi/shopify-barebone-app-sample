@@ -143,10 +143,12 @@ All sample videos are available at [Wiki](https://github.com/benzookapi/shopify-
 
 - _Session Token_: ['/sessiontoken'](https://user-images.githubusercontent.com/899580/216690835-a8615fb0-0a91-4357-9548-e551a46093f7.mp4) 
   - What's App Bridge session token about and how the authenticated request works.
+  - If you are a server provider like OMS / WMS / MA / CRM connecting Shopify, let's check [this external service connection demo](https://user-images.githubusercontent.com/899580/215689359-724b5000-cf86-4b6c-92bf-71b724632059.mp4)
 - _Admin Link_: ['/adminlink'](https://user-images.githubusercontent.com/899580/216701356-63f44dbe-8525-4d53-a721-6a729b0cd126.mp4) 
   - How to manage and protect admin links regardless of embedded or unembedded.
 - _Theme App Extension_: ['/themeappextension'](https://user-images.githubusercontent.com/899580/216705808-70d3b6ad-f7b7-4091-95ec-c45cc9a79502.mp4) 
   - Basis usage in combination with App Proxies and Theme Editor
+  - For [Line Item Properties]() usage, see [this demo]()
 - _Function Discount_: ['/functiondiscount'](https://user-images.githubusercontent.com/899580/216708433-be7bbfbd-30aa-480e-a165-e528f33f5901.mp4) 
   - Discount implementation by Shopify Functions in combination with customer metafields
 - _Function Shipping_: ['/functionshipping'](https://user-images.githubusercontent.com/899580/218436786-3fcd2802-6acc-4c32-b0ca-030184cbcee5.mp4) 
@@ -157,18 +159,19 @@ All sample videos are available at [Wiki](https://github.com/benzookapi/shopify-
   - Checking customer events in a browser console to send them to GA4 Data Streams
 - _Post Purchase_: ['/postpurchase'](https://user-images.githubusercontent.com/899580/219054274-a04af128-c1d8-43f6-9a9c-583bff239fcd.mp4)  
   - Switching upsell products and getting shop review scores with product and customer metafields
-- _Checkout Extension_: ['/checkoutextension'](https://user-images.githubusercontent.com/899580/231545192-cd65d59f-78d5-48c6-987b-d2529b6a9e71.mp4)  
+- _Checkout Extension (Plus only for live stores)_: ['/checkoutextension'](https://user-images.githubusercontent.com/899580/231545192-cd65d59f-78d5-48c6-987b-d2529b6a9e71.mp4)  
   - Reproducing upsell and reviews of post-purchase during checkout with IP address blocking
+  - Other use cases are listed in [the section](https://github.com/benzookapi/shopify-barebone-app-sample/wiki#checkout-ui-extensions)
 - _Fulfillment_: '/fulfillment' 
   - How to create and control fulfillments (shipping) via API for a specific order (TBD)
 - _Transaction_: '/transaction' 
   - How to create and control transactions (payments) via API for a specific order (TBD)
 - Metaobject: '/metaobject' 
   - Basic usage (TBD)
-- _Multipass_: '/multipass' 
-  - Simple SSO login implementation (TBD, Plus only for live)
-- _B2B_: '/b2b' 
-  - Sample for creating a company and its onwed customers for B2B checkout (TBD, Plus only for live)
+- _Multipass (Plus only for live stores)_: '/multipass' 
+  - Simple SSO login implementation (TBD)
+- _B2B (Plus only for live stores)_: '/b2b' 
+  - Sample for creating a company and its onwed customers for B2B checkout (TBD)
 - _Bulk Operation_: '/bulkoperation' 
   - Creating large size of data for testing and learing how to manage bulk operation. (TBD)
 - _ShopifyQL_: '/shopifyql' 

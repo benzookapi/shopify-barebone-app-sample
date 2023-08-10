@@ -142,6 +142,63 @@
         >
       </fieldset>
     {%- endif -%}
+
+    {% comment %}
+      The following code is for cart pages only to check how cart notes and attributes and note work.
+    {% endcomment %}
+    {%- if template.name == 'cart' -%}
+      <fieldset>
+        <legend>Set your cart note and attribute value</legend>
+        <div>
+          <textarea
+            id="barebone_cart_note"
+            name="barebone_cart_note"
+            value=""
+            onChange="text_change(this);"
+          ></textarea>
+        </div>
+        <div>
+          <input
+            type="radio"
+            id="barebone_cart_attribute_1"
+            name="barebone_cart_attribute"
+            value="Value-1"
+            onClick="radio_click(this);"
+          >
+          <label for="barebone_cart_attribute_1"> Value 1 </label>
+        </div>
+        <div>
+          <input
+            type="radio"
+            id="barebone_cart_attributey_2"
+            name="barebone_cart_attribute"
+            value="Value-2"
+            onClick="radio_click(this);"
+          >
+          <label for="barebone_cart_attribute_2"> Value 2 </label>
+        </div>
+        <div>
+          <input
+            type="radio"
+            id="barebone_cart_attribute_3"
+            name="barebone_cart_attribute"
+            value="Value-3"
+            onClick="radio_click(this);"
+          >
+          <label for="barebone_cart_attribute_3"> Value 3 </label>
+        </div>
+        <strong
+          >See
+          <a
+            href="https://shopify.dev/docs/themes/architecture/templates/cart#support-cart-notes-and-attributes"
+            target="_blank"
+          >
+            Dev. Site</a
+          >
+          for Cart Notes and Attributes.</strong
+        >
+      </fieldset>
+    {%- endif -%}
   </div>
 </span>
 
@@ -175,7 +232,7 @@
 {%- if template.name == 'product' -%}
   <script type="text/javascript">
     // Test the multiple line item properties for the single product to split line items.
-    // Each plan click set its value to all line item property inputs.
+    // "radio_click" is called in "onClick" of each radio box defined above.
     const radio_click = (obj) => {
       const cart_add_forms = document.querySelectorAll('form[action="/cart/add"]');
       cart_add_forms.forEach((form) => {
@@ -192,6 +249,51 @@
         'input[name="properties[barebone_line_item_property]"]'
       );
       line_item_property_inputs.forEach((input) => {
+        input.value = obj.value;
+      });
+    };
+  </script>
+{%- endif -%}
+
+{% comment %}
+  The following code is for product pages only to check how cart notes and attributes work.
+{% endcomment %}
+{%- if template.name == 'cart' -%}
+  <script type="text/javascript">
+    // "text_change" is called in "onChange" of textarea defined above.
+    const text_change = (obj) => {
+      const cart_forms = document.querySelectorAll('form[action="/cart"]');
+      cart_forms.forEach((form) => {
+        console.log(`cart_forms: ${form.innerHTML}`);
+        // Adding a cart note to the existing form.
+        // See https://shopify.dev/docs/themes/architecture/templates/cart#cart-notes
+        const cart_note_input = document.createElement('input');
+        cart_note_input.type = 'hidden';
+        cart_note_input.name = 'note';
+        cart_note_input.setAttribute('form', 'cart');
+        cart_note_input.value = '';
+        form.appendChild(cart_note_input);
+      });
+      const cart_note_inputs = document.querySelectorAll('input[name="note"][form="cart"]');
+      cart_note_inputs.forEach((input) => {
+        input.value = obj.value;
+      });
+    };
+    // "radio_click" is called in "onClick" of each radio box defined above.
+    const radio_click = (obj) => {
+      const cart_forms = document.querySelectorAll('form[action="/cart"]');
+      cart_forms.forEach((form) => {
+        console.log(`cart_forms: ${form.innerHTML}`);
+        // Adding a cart attribute to the existing form.
+        // See https://shopify.dev/docs/themes/architecture/templates/cart#cart-attributes
+        const cart_attribute_input = document.createElement('input');
+        cart_attribute_input.type = 'hidden';
+        cart_attribute_input.name = 'attributes[barebone_cart_attribute]';
+        cart_attribute_input.value = '';
+        form.appendChild(cart_attribute_input);
+      });
+      const cart_attribute_inputs = document.querySelectorAll('input[name="attributes[barebone_cart_attribute]"]');
+      cart_attribute_inputs.forEach((input) => {
         input.value = obj.value;
       });
     };
