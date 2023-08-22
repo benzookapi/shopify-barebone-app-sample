@@ -4,3 +4,4 @@ package-lock.json
 .DS_Store
 /public/assets
 /views/index.html
+/.my_env.sh
