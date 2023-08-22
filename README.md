@@ -108,7 +108,7 @@ Build command = npm install && npm run build (= cd frontend && npm install && np
 
 Start command = npm run start (= node app.js)
 
-NOTE THAT this sameple doesn't support `npm run dev` in Shopify CLI
+*NOTE THAT this sameple doesn't support `npm run dev` in Shopify CLI
 ```
 
 3. If you run locally, you need to tunnel localhost for public URL as follows (otherwise, the command lines above are usable in Render or other cloud platform deploy scripts).
