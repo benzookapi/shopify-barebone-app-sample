@@ -52,6 +52,8 @@ For creating React frontend, the following contents might help you.
 
 For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and Checkout Extensions, refer to the [app extensions](https://shopify.dev/apps/app-extensions) page.
 
+(Skip this section as FYI.
+
 In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/commands#generate-extension) are given the following patch to fit to the existing non-CLI-generated codes.
 ```
 1. Execute `npm install --save @shopify/app @shopify/cli` instead of `npm init @shopify/app@latest`, to add those library to 'package.json' dependencies only, to avoid overwriting the exising code.
@@ -67,6 +69,8 @@ In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/co
 4. To register extensions to new apps from exsiting codes in '/extensions/', execute `npm run deploy -- --reset` to make a draft extension, and enable "Development Store Preview" in the created extension in your partner dashboard 
 (NOTE THAT `npm generate extension` is for the initial code generation only, not required for the extension registration or push).
 ```
+
+)
 
 # How to run
 1. Add the following environmental variables locally or in cloud platforms like Render / Heroku / Fly, etc.
