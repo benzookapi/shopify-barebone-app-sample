@@ -32,7 +32,6 @@
     "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "shopify": "shopify",
-    "dev": "shopify app dev",
     "info": "shopify app info",
     "generate": "shopify app generate",
     "deploy": "shopify app deploy"

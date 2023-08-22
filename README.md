@@ -56,9 +56,8 @@ In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/co
 ```
 1. Execute `npm install --save @shopify/app @shopify/cli` instead of `npm init @shopify/app@latest`, to add those library to 'package.json' dependencies only, to avoid overwriting the exising code.
 
-2. Copy the following script to "scripts" in 'package.json' to execute extension commands from the result of `npm init @shopify/app@latest` in another directory.
+2. Copy the following script to "scripts" in 'package.json' to execute extension commands from the result of `npm init @shopify/app@latest` in another directory (excluding `"dev": "shopify app dev",`).
    "shopify": "shopify",
-   "dev": "shopify app dev",
    "info": "shopify app info",
    "generate": "shopify app generate",
    "deploy": "shopify app deploy"
@@ -102,6 +101,8 @@ SHOPIFY_WEBHOOK_SECRET:       YOUR_TEST_STORE_WEBHOOK_SIGNATURE given by the web
 Build command = npm install && npm run build (= cd frontend && npm install && npm run build && rm -rf ../public/assets && mv dist/assets ../public/assets && mv dist/index.html ../views/index.html  *Replacing Koa intex file with Vite buit code)
 
 Start command = npm run start (= node app.js)
+
+NOTE THAT this sameple doesn't support `npm run dev` in Shopify CLI
 ```
 
 3. If you run locally, you need to tunnel localhost for public URL as follows (otherwise, the command lines above are usable in Render or other cloud platform deploy scripts).
