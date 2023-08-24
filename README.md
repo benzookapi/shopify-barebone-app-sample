@@ -143,61 +143,17 @@ Or
 `you can install to your development stores from the app settings in partner dashboard.`
 
 # Sample list
-
-All sample videos are available at [Wiki](https://github.com/benzookapi/shopify-barebone-app-sample/wiki).
-
-- _Session Token_: ['/sessiontoken'](https://user-images.githubusercontent.com/899580/216690835-a8615fb0-0a91-4357-9548-e551a46093f7.mp4) 
-  - What's App Bridge session token about and how the authenticated request works.
-  - If you are a server provider like OMS / WMS / MA / CRM connecting Shopify, let's check [this external service connection demo](https://user-images.githubusercontent.com/899580/215689359-724b5000-cf86-4b6c-92bf-71b724632059.mp4)
-- _Admin Link_: ['/adminlink'](https://user-images.githubusercontent.com/899580/216701356-63f44dbe-8525-4d53-a721-6a729b0cd126.mp4) 
-  - How to manage and protect admin links regardless of embedded or unembedded.
-- _Theme App Extension_: ['/themeappextension'](https://user-images.githubusercontent.com/899580/216705808-70d3b6ad-f7b7-4091-95ec-c45cc9a79502.mp4) 
-  - Basis usage in combination with App Proxies and Theme Editor
-  - For [Line item properties](https://shopify.dev/docs/themes/architecture/templates/product#line-item-properties), and [Cart notes and attributes](https://shopify.dev/docs/themes/architecture/templates/cart#support-cart-notes-and-attributes) insertion, see [this no Liquid touched demo](https://github-production-user-asset-6210df.s3.amazonaws.com/899580/259701182-f1fb93b5-34da-4440-b10a-fe8ad28d6c68.mp4)
-- _Function Discount_: ['/functiondiscount'](https://user-images.githubusercontent.com/899580/216708433-be7bbfbd-30aa-480e-a165-e528f33f5901.mp4) 
-  - Discount implementation by Shopify Functions in combination with customer metafields
-- _Function Shipping_: ['/functionshipping'](https://user-images.githubusercontent.com/899580/218436786-3fcd2802-6acc-4c32-b0ca-030184cbcee5.mp4) 
-  - Shipping rate filtering by Shopify Functions with input zip codes
-- _Function Payment_: ['/functionpayment'](https://user-images.githubusercontent.com/899580/218440555-dd03d864-71e4-4f26-9414-f0701598c98e.mp4) 
-  - Payment method filtering by Shopify Functions with selected shipping rates
-- _Web Pixel_: ['/webpixel'](https://user-images.githubusercontent.com/899580/218447647-030d9bca-13e3-40d0-8530-a64e402c359f.mp4) 
-  - Checking customer events in a browser console to send them to GA4 Data Streams
-- _Post Purchase_: ['/postpurchase'](https://user-images.githubusercontent.com/899580/219054274-a04af128-c1d8-43f6-9a9c-583bff239fcd.mp4)  
-  - Switching upsell products and getting shop review scores with product and customer metafields
-- _Checkout Extension (Plus only for live stores)_: ['/checkoutextension'](https://user-images.githubusercontent.com/899580/231545192-cd65d59f-78d5-48c6-987b-d2529b6a9e71.mp4)  
-  - Reproducing upsell and reviews of post-purchase during checkout with IP address blocking
-  - Other use cases are listed in [the section](https://github.com/benzookapi/shopify-barebone-app-sample/wiki#checkout-ui-extensions)
-- _Fulfillment_: '/fulfillment' 
-  - How to create and control fulfillments (shipping) via API for a specific order (TBD)
-- _Transaction_: '/transaction' 
-  - How to create and control transactions (payments) via API for a specific order (TBD)
-- Metaobject: '/metaobject' 
-  - Basic usage (TBD)
-- _Multipass (Plus only for live stores)_: '/multipass' 
-  - Simple SSO login implementation (TBD)
-- _B2B (Plus only for live stores)_: '/b2b' 
-  - Sample for creating a company and its onwed customers for B2B checkout (TBD)
-- _Bulk Operation_: '/bulkoperation' 
-  - Creating large size of data for testing and learing how to manage bulk operation. (TBD)
-- _ShopifyQL_: '/shopifyql' 
-  - Your own ShopifyQL notebook with API. (TBD)
-- _Marketing Activity_: '/marketingactivity' 
-  - Basic usage. (TBD)
-- _Tokengating_: '/tokengating' 
-  - Basic usage. (TBD)
+All sample are available at [Wiki](https://github.com/benzookapi/shopify-barebone-app-sample/wiki).
 
 # Trouble shooting
-
 - If you see the error page with the message like `"YOUR_APP_NAME is expired, this is an old app which no logner works after..."` during top page rendering in Shopify admin, check and fix the following major issues.
   - Do not use redirection to the old admin URL of "https://XXX.myshopify.com/admin". Use the new one of "https://admin.shopify.com/store/XXX", instead. Refer to the [migration document](https://shopify.dev/apps/tools/app-bridge/updating-overview#ensure-compatibility-with-the-new-shopify-admin-domain).
   - Your server needs to render the top page at acceptable speed in the right way. Too slow access, error HTTP codes, or server shutdown causes the error above in live stores (not in development ones). Some cloud plarform like Render, Heroku, etc do the very slow response for the first time in a while with free plans, so you need to swtich to [Cloudflare tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) hosting or pay those services for higher performence. 
 
 # TIPS
-
 - You can use the endpoint of `webhookgdpr` for [GDPR Webhooks](https://shopify.dev/docs/apps/store/security/gdpr-webhooks).
 - If you fail to get [protected customer data](https://shopify.dev/docs/apps/store/data-protection/protected-customer-data) in Checkout UI Extension or API Webhook creation even in dev. stores, submit your app first which enable you get them. 
 
 # Disclaimer
-
 - This code is fully _unofficial_ and NOT guaranteed to pass [the public app review](https://shopify.dev/apps/store/review) for Shopify app store. The official requirements are described [here](https://shopify.dev/apps/store/requirements). 
 - You need to follow [Shopi API Licene and Terms of Use](https://www.shopify.com/legal/api-terms) even for custom app usage.
