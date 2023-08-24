@@ -28,7 +28,7 @@
     "uuid": "^9.0.0"
   },
   "scripts": {
-    "build": "cd frontend && npm install && npm run build && rm -rf ../public/assets && mv dist/assets ../public/assets && mv dist/index.html ../views/index.html",
+    "build": "cd frontend && npm install && npm run build && rm -rf ../public/assets && mkdir -p ../public && mv dist/assets ../public/assets && mkdir -p ../views && mv dist/index.html ../views/index.html",
     "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "shopify": "shopify",
