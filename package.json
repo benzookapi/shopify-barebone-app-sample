@@ -12,7 +12,7 @@
     "@shopify/ui-extensions": "2023.7.0",
     "@shopify/ui-extensions-react": "2023.7.0",
     "@shopify/web-pixels-extension": "^0.4.17",
-    "jsonwebtoken": "^9.0.1",
+    "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^3.1.2",
     "koa": "^2.14.2",
     "koa-bodyparser": "^4.4.1",
