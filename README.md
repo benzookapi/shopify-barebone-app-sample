@@ -114,7 +114,7 @@ Start command = npm run start (= node app.js)
 cloudflared tunnel --url localhost:3000 
 ```
 
-4. Set `YOUR_APP_URL` (your cloudflared or other platform `root` URL) and `YOUR_APP_URL/callback` to your app settings in [partner dashboard](https://partners.shopify.com/). If you add `?external=true` parameter to `YOUR_APP_URL`, the app UX turns into a [service connector](https://user-images.githubusercontent.com/899580/215689359-724b5000-cf86-4b6c-92bf-71b724632059.mp4) which tries to connect Shopify stores with their users. 
+4. Set `YOUR_APP_URL` (your cloudflared or other platform `root` URL) and `YOUR_APP_URL/callback` to your app settings in [partner dashboard](https://partners.shopify.com/). If you add `?external=true` parameter to `YOUR_APP_URL`, the app UX turns into a [service connector](https://github.com/benzookapi/shopify-barebone-app-sample/wiki#for-external-service-connection) which tries to connect Shopify stores with their users. **Note that if you disable the app embedded (non embedeed app), App Bridge and its Session Token cannot be used so this app shows the same external page using its own JWT which contains "shop", instead of Session Token.**
 
 5. (For PostgreSQL or MySQL users only,) create the following table in your database (in `psql` or `mysql` command or other tools).
 ```

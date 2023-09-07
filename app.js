@@ -120,8 +120,16 @@ router.get('/', async (ctx, next) => {
       console.log(`Redirecting to ${redirectUrl} for OAuth flow...`);
       ctx.redirect(redirectUrl);
       return;
+    } else if (!isEmbedded(ctx)) {
+      // If the app is not embedded, App Bridge and its Session Token cannot be used, so the page should be redirect to the 
+      // external one using its own JWT token, instead of Session Token.
+      const redirectUrl = `/mocklogin?my_token=${createJWT({ "shop": shop })}`;
+      console.log(`Redirecting to ${redirectUrl} for the non embedded app to show the mock login as an external service...`);
+      ctx.redirect(redirectUrl);
+      return;
     }
   } catch (e) {
+    console.log(`${e}`);
     ctx.status = 500;
     return;
   }
@@ -1349,8 +1357,39 @@ router.get('/mocklogin', async (ctx, next) => {
     (try it in <a href="https://jwt.io" target="_blank">jwt.io</a> by copying the text below and change the shop to paste to '?sessiontoken=' above).</p>
     <pre>${token}</pre>
     <ul>
-    <li>For the validation details, see <a href="https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-3-decode-session-tokens-for-incoming-requests" target="_blank">this document</a></li>
-    <li>If you don't want to reveal the token in the query, you can use body POST approach with a hidden tag, too</li>
+    <li>For the validation details, see <a href="https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-3-decode-session-tokens-for-incoming-requests" target="_blank">this document</a>.</li>
+    <li>If you don't want to reveal the token in the query, you can use body POST approach with a hidden tag, too.</li>
+    </ul>
+    <p><a href="https://${getAdminFromShop(shop)}">Go back to Shopify admin</a></p>`;
+  }
+
+  // If the app is not embedded, the app top URL passes the shop in its own JWT with this paramater. 
+  if (typeof ctx.request.query.my_token !== UNDEFINED) {
+    console.log('My Token given');
+    const token = ctx.request.query.my_token;
+    let decoded_token = null;
+    try {
+      decoded_token = decodeJWT(token);
+    } catch (e) {
+      console.log(`${e}`);
+    }
+    if (decoded_token == null) {
+      ctx.body = { "Error": "Wrong token passed." };
+      ctx.status = 400;
+      return;
+    }
+    console.log(`decoded_token ${JSON.stringify(decoded_token, null, 4)}`);
+
+    const shop = decoded_token.shop;
+
+    target = `<p>You are connecting to: <h3>${shop}</h3></p>`;
+
+    details = `<p><b>The following is the received your own JWT token with the shop which you can never falsify</b> 
+    (try it in <a href="https://jwt.io" target="_blank">jwt.io</a> by copying the text below and change the shop to paste to '?my_token=' above).</p>
+    <pre>${token}</pre>
+    <ul>
+    <li>This is supposed to be used for <b>Non embedded apps</b> which cannot use AppBridge or its Session Token.</li>
+    <li>If you don't want to reveal the token in the query, you can use body POST approach with a hidden tag, too.</li>
     </ul>
     <p><a href="https://${getAdminFromShop(shop)}">Go back to Shopify admin</a></p>`;
   }
