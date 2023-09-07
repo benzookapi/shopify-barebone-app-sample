@@ -26,7 +26,7 @@ import { _getAdminFromShop, _getShopFromQuery } from "./utils/my_util";
 const config = {
   apiKey: API_KEY, // See ../vite.config.js
   host: new URLSearchParams(window.location.search).get("host"),
-  forceRedirect: false
+  forceRedirect: true
   // If false, the page accessed outside admin keeps the location where App Bridge doesn't work.
   // See https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup#initialize-shopify-app-bridge-in-your-app
 };
