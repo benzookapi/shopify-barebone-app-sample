@@ -131,7 +131,7 @@ All sample are available at [Wiki](https://github.com/benzookapi/shopify-barebon
   - Your server needs to render the top page at acceptable speed in the right way. Too slow access, error HTTP codes, or server shutdown causes the error above in live stores (not in development ones). Some cloud plarform like Render, Heroku, etc do the very slow response for the first time in a while with free plans, so you need to swtich to [Cloudflare tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) hosting or pay those services for higher performence. 
 
 # TIPS
-- If you want to create other language versions of this app like PHP, Java, Ruby, Python, etc., the best way is [creating a extension-only app](https://shopify.dev/docs/apps/app-extensions/extension-only-apps) by `not choosing a Remix template in CLI steps` to add your server side code mannually. 
+- If you want to create other language versions of this app like PHP, Java, Ruby, Python, etc., the best way is [creating an extension-only app](https://shopify.dev/docs/apps/app-extensions/extension-only-apps) by **not choosing a Remix template in CLI steps** to add your server side code manually. 
 - You can use the endpoint of `webhookgdpr` for [GDPR Webhooks](https://shopify.dev/docs/apps/store/security/gdpr-webhooks).
 - If you fail to get [protected customer data](https://shopify.dev/docs/apps/store/data-protection/protected-customer-data) in Checkout UI Extension or API Webhook creation even in dev. stores, submit your app first which enable you get them. 
 
