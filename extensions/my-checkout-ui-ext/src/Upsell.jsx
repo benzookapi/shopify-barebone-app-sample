@@ -89,12 +89,16 @@ function Upsell() {
       if (upsell_product_ids.length == 0) upsell_product_ids.push('0');
 
       // Getting the upsell product info in a secure way of passing shop data with SessionToken.
+      // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/standardapi#session-token-session-token-claims
       extensionApi.sessionToken.get().then((token) => {
         // Retriveing upsell product data to render in the components below from the server side Admin API call.
-        const url = `${app_url}/postpurchase?upsell_product_ids=${JSON.stringify(upsell_product_ids)}&token=${token}`;
+        const url = `${app_url}/postpurchase?upsell_product_ids=${JSON.stringify(upsell_product_ids)}`;
         console.log(`Getting upsell product data from... ${url}`);
         fetch(url, {
-          method: "POST"
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }).then((res) => {
           res.json().then((data, errors) => {
             console.log(`upsell product data: ${JSON.stringify(data, null, 4)}`);

@@ -1143,7 +1143,7 @@ router.post('/postpurchase', async (ctx, next) => {
   // if a wrong token is passed with a ummatched signature, decodeJWT fails with an exeption = works as verification as well.
   let decoded_token = null;
   try {
-    decoded_token = decodeJWT(ctx.request.query.token);
+    decoded_token = decodeJWT(getTokenFromAuthHeader(ctx));
   } catch (e) {
     console.log(`${e}`);
   }

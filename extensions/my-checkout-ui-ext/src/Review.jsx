@@ -103,16 +103,20 @@ function Review() {
       return (
         <Button kind="secondary" onPress={() => {
           // Setting the given score to the customer metafield in a secure way of passing shop data with SessionToken.
+          // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/standardapi#session-token-session-token-claims
           extensionApi.sessionToken.get().then((token) => {
             // Updating the customer metafield with the server side Admin API call.            
             const customerId = extensionApi.buyerIdentity.email.current;
             console.log(`customerId ${customerId}`);
             // Get the stored app url from the browser storage.
             extensionApi.storage.read('barebone_app_url').then((app_url) => {
-              const url = `${app_url}/postpurchase?customerId=${customerId}&score=${score}&token=${token}`;
+              const url = `${app_url}/postpurchase?customerId=${customerId}&score=${score}`;
               console.log(`Updaing the customer metafield with the given score in... ${url}`);
               fetch(url, {
-                method: "POST"
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
               }).then((res) => {
                 res.json().then((data, errors) => {
                   console.log(`review data: ${JSON.stringify(data, null, 4)}`);

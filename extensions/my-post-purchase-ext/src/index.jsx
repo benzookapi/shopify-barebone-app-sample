@@ -24,13 +24,16 @@ extend('Checkout::PostPurchase::ShouldRender', async ({ inputData, storage }) =>
   // If the upsell products found, get GraphQL Admin responses of those data from the app server and 
   // store them to the browser storage.
   if (upsell_product_ids.length > 0 && upsell_product_ids[0] != null) {
-    // This metafield is filtered by 'shopify.ui.extension.toml' with namespace = "barebone_app" and key = "url".
-    const app_url = `${inputData.shop.metafields[0].value}/postpurchase?upsell_product_ids=${JSON.stringify(upsell_product_ids)}&token=${inputData.token}`;
+    // This metafield is filtered by 'shopify.extension.toml' with namespace = "barebone_app" and key = "url".
+    const app_url = `${inputData.shop.metafields[0].value}/postpurchase?upsell_product_ids=${JSON.stringify(upsell_product_ids)}`;
 
     console.log(`Getting upsell product data from... ${app_url}`);
 
     const json = await (await fetch(app_url, {
-      method: "POST"
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${inputData.token}`,
+      },
     })).json();
 
     console.log(`${JSON.stringify(json, null, 4)}`);
@@ -75,10 +78,13 @@ export function App() {
       // See https://shopify.dev/docs/api/checkout-extensions/extension-points/api#addvariantchange
       return { type: 'add_variant', variantId: product.node.variants.edges[0].node.id.replace('gid://shopify/ProductVariant/', ''), quantity: 1 };
     });
-    const app_url = `${inputData.shop.metafields[0].value}/postpurchase?changes=${JSON.stringify(changes)}&token=${inputData.token}`;
+    const app_url = `${inputData.shop.metafields[0].value}/postpurchase?changes=${JSON.stringify(changes)}`;
     console.log(`Signing the token by... ${app_url}`);
     const json = await (await fetch(app_url, {
-      method: "POST"
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${inputData.token}`,
+      },
     })).json();
     console.log(`${JSON.stringify(json, null, 4)}`);
 
@@ -100,10 +106,13 @@ export function App() {
     }
 
     // Giving the score of the last review.
-    const app_url = `${inputData.shop.metafields[0].value}/postpurchase?customerId=${inputData.initialPurchase.customerId}&score=${score}&token=${inputData.token}`;
+    const app_url = `${inputData.shop.metafields[0].value}/postpurchase?customerId=${inputData.initialPurchase.customerId}&score=${score}`;
     console.log(`Updaing the customer metafield with the given score in... ${app_url}`);
     const json = await (await fetch(app_url, {
-      method: "POST"
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${inputData.token}`,
+      },
     })).json();
     console.log(`${JSON.stringify(json, null, 4)}`);
 
