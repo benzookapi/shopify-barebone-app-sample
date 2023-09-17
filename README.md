@@ -52,26 +52,6 @@ For creating React frontend, the following contents might help you.
 
 For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and Checkout Extensions, refer to the [app extensions](https://shopify.dev/apps/app-extensions) page.
 
-(
-  
-*Skip this section as FYI.
-
-In this sample, [CLI generated extensions](https://shopify.dev/apps/tools/cli/commands#generate-extension) are given the following patch to fit to the existing non-CLI-generated codes.
-```
-1. Execute `npm install --save @shopify/app @shopify/cli` instead of `npm init @shopify/app@latest`, to add those library to 'package.json' dependencies only, to avoid overwriting the exising code.
-
-2. Copy the following script to "scripts" in 'package.json' to execute extension commands from the result of `npm init @shopify/app@latest` in another directory (excluding `"dev": "shopify app dev",`).
-   "shopify": "shopify",
-   "info": "shopify app info",
-   "generate": "shopify app generate",
-   "deploy": "shopify app deploy"
-
-3. Copy 'shopify.app.toml' to the root path from the result directory above too.
-
-```
-
-)
-
 # How to run
 1. Add the following environmental variables locally or in cloud platforms like Render / Heroku / Fly, etc.
 ```
@@ -151,6 +131,7 @@ All sample are available at [Wiki](https://github.com/benzookapi/shopify-barebon
   - Your server needs to render the top page at acceptable speed in the right way. Too slow access, error HTTP codes, or server shutdown causes the error above in live stores (not in development ones). Some cloud plarform like Render, Heroku, etc do the very slow response for the first time in a while with free plans, so you need to swtich to [Cloudflare tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) hosting or pay those services for higher performence. 
 
 # TIPS
+- If you want to create other language versions of this app like PHP, Java, Ruby, Python, etc., the best way is [creating a extension-only app](https://shopify.dev/docs/apps/app-extensions/extension-only-apps) by `not choosing a Remix template in CLI steps` to add your server side code mannually. 
 - You can use the endpoint of `webhookgdpr` for [GDPR Webhooks](https://shopify.dev/docs/apps/store/security/gdpr-webhooks).
 - If you fail to get [protected customer data](https://shopify.dev/docs/apps/store/data-protection/protected-customer-data) in Checkout UI Extension or API Webhook creation even in dev. stores, submit your app first which enable you get them. 
 
