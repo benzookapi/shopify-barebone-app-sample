@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "dependencies": {
     "@koa/cors": "^4.0.0",
     "@shopify/app": "^3.49.3",
