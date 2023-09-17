@@ -35,5 +35,8 @@
   },
   "keywords": [],
   "author": "",
-  "license": ""
+  "license": "",
+  "workspaces": [
+    "extensions/*"
+  ]
 }

@@ -7,10 +7,10 @@
 import React, { useState, useEffect } from 'react';
 import {
   // Extension API
-  render,
+  reactExtension,
 
   // React hooks
-  useExtensionApi, // All properties and methods are accessible from this 'StandardApi'
+  useApi, // All properties and methods are accessible from this 'StandardApi'
   //useAppMetafields,  // Protected customer data, filtered by shopify.ui.extension.toml
   //useCustomer, // Protected customer data
   //useEmail, // Protected customer data  
@@ -41,11 +41,11 @@ import {
   //CalloutBanner, available only for post-purchase extensions.
   //Layout, available only for post-purchase extensions.
   //TextContainer, available only for post-purchase extensions.
-} from '@shopify/checkout-ui-extensions-react';
+} from '@shopify/ui-extensions-react/checkout';
 
-render('Checkout::Dynamic::Render', () => <Upsell />);
-render('Checkout::Contact::RenderAfter', () => <Validation />);
-render('Checkout::Actions::RenderBefore', () => <Review />);
+reactExtension('purchase.checkout.block.render', () => <Upsell />);
+reactExtension('purchase.checkout.contact.render-after', () => <Validation />);
+reactExtension('purchase.checkout.actions.render-before', () => <Review />);
 
 /* 
 * --------- Upsell component for dynamic render --------- 
@@ -53,7 +53,7 @@ render('Checkout::Actions::RenderBefore', () => <Review />);
 * See https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-overview#dynamic-extension-points
 */
 function Upsell() {
-  const extensionApi = useExtensionApi();
+  const extensionApi = useApi();
   console.log(`my-checkout-ui-ext: extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
 
   const [upsellProducts, setUpsellProducts] = useState([]);

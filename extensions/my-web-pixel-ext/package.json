@@ -1,0 +1,7 @@
+{
+    "name": "my-web-pixel-ext",
+    "dependencies": {
+      "@shopify/web-pixels-extension": "^0.4.14"
+    }
+  }
+  
