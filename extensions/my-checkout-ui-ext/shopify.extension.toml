@@ -1,0 +1,71 @@
+# Learn more about configuring your checkout UI extension:
+# https://shopify.dev/api/checkout-extensions/checkout/configuration
+
+# The version of APIs your extension will receive. Learn more:
+# https://shopify.dev/docs/api/usage/versioning
+api_version = "2023-07"
+
+[[extensions]]
+type = "ui_extension"
+name = "Barebone App UI extension"
+handle = "my-checkout-ui-ext"
+
+# Controls where in Shopify your extension will be injected,
+# and the file that contains your extension’s source code. Learn more:
+# https://shopify.dev/docs/api/checkout-ui-extensions/unstable/extension-targets-overview
+
+[[extensions.targeting]]
+module = "./src/Upsell.jsx"
+target = "purchase.checkout.block.render"
+[[extensions.targeting]]
+module = "./src/Validation.jsx"
+target = "purchase.checkout.contact.render-after"
+[[extensions.targeting]]
+module = "./src/Review.jsx"
+target = "purchase.checkout.actions.render-before"
+
+[extensions.capabilities]
+# Gives your extension access to directly query Shopify’s storefront API.
+# https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#api-access
+api_access = true
+
+# Gives your extension access to make external network calls, using the
+# JavaScript `fetch()` API. Learn more:
+# https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
+network_access = true
+
+# Gives your extension access to block checkout.
+# https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#block-progress
+block_progress = true
+
+# Loads metafields on checkout resources, including the cart,
+# products, customers, and more. Learn more:
+# https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#metafields
+
+[[extensions.metafields]]
+namespace = "barebone_app_upsell"
+key = "product_id"
+[[extensions.metafields]]
+namespace = "barebone_app"
+key = "url"
+
+# Defines settings that will be collected from merchants installing
+# your extension. Learn more:
+# https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#settings-definition
+
+[extensions.settings]
+[[extensions.settings.fields]]
+key = "validation_ip"
+type = "single_line_text_field"
+name = "IP address to block chgeckouts"
+description = "Specify an IP address to block checkouts (for black lists, etc.)" 
+[[extensions.settings.fields]]
+key = "validation_text"
+type = "single_line_text_field"
+name = "Text to block checkouts"
+description = "Specify an text to block checkouts (for comming soon mode, etc.)"
+[[extensions.settings.fields]]
+key = "validation_quantity"
+type = "number_integer"
+name = "Quantity to clear carts"
+description = "Specify a quantity to clear carts zero (for fraud protection, etc.)"

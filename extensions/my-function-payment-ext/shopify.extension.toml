@@ -1,10 +1,11 @@
 name = "my-function-payment-ext"
 type = "payment_customization"
-api_version = "2023-04"
+api_version = "2023-07"
 
 [build]
 command = "cargo wasi build --release"
 path = "target/wasm32-wasi/release/my-function-payment-ext.wasm"
+watch = [ "src/**/*.rs" ]
 
 [ui.paths]
 create = "/functionpayment"
