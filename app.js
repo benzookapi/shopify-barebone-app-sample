@@ -1145,7 +1145,7 @@ router.post('/postpurchase', async (ctx, next) => {
 
   const token = getTokenFromAuthHeader(ctx);
   if (!checkAuthFetchToken(token)[0]) {
-    ctx.body.result.message = { "Error": "Signature unmatched. Incorrect authentication bearer sent" };
+    ctx.body = { "Error": "Signature unmatched. Incorrect authentication bearer sent" };
     ctx.status = 400;
     return;
   }
