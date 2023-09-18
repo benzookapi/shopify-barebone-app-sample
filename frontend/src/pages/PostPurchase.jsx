@@ -115,10 +115,9 @@ function PostPurchase() {
             </Layout.Section>
             <Layout.Section>
               <p>
-                <b>TIPS: </b>This post-purchase communicates with the app raw endpoint over <Link url={`https://shopify.dev/docs/api/checkout-extensions/extension-points#web-platform-globals`} external={true}>CORS</Link> passing shop data with <Link url={`https://shopify.dev/docs/api/checkout-extensions/jwt-specification`} external={true}>JWT validated protection</Link> like this: <Badge>https://{window.location.hostname}/postpurchase?token=eyJhbGciOiJIUzI....</Badge>
-                You can check how the JWT validation protects the raw endpoint copyging the token in the acccessed URL from your browser console to <Link url={`https://jwt.io/`} external={true}>jwt.io</Link> as <Link onClick={() => { redirect.dispatch(Redirect.Action.APP, '/sessiontoken'); }}>
+                <b>TIPS: </b>This post-purchase communicates with the app raw endpoint over <Link url={`https://shopify.dev/docs/api/checkout-extensions/extension-points#web-platform-globals`} external={true}>CORS</Link> with a <Link url={`https://shopify.dev/docs/api/checkout-extensions/post-purchase/jwt-specification`} target='_blank'>token</Link> for sensitive data like shop and customer ids as <Link onClick={() => { redirect.dispatch(Redirect.Action.APP, '/sessiontoken'); }}>
                   Session Token sample
-                </Link> does.
+                </Link> does. For security considerations, check <Link url={`https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access`} target='_blank'>this page</Link>, too.
               </p>
             </Layout.Section>
           </Layout>
