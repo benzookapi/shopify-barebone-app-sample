@@ -1123,7 +1123,10 @@ router.get('/postpurchase', async (ctx, next) => {
 // Sandbox Web Workers used by Web Pixels, Checkout Extensions require CORS access.
 /* Accessed like this from Web Workers.
 fetch(`https://customise-manuals-zero-approximate.trycloudflare.com/postpurchase?your_key=your_value`, {
-      method: "POST"
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${YOUR_SESSION_TOKEN}`,
+      },
     }).then(res => {
       res.json().then(json => {
         console.log(`${JSON.stringify(json)}`);
@@ -1140,19 +1143,14 @@ router.post('/postpurchase', async (ctx, next) => {
   console.log(`query ${JSON.stringify(ctx.request.query, null, 4)}`);
   console.log(`body ${JSON.stringify(ctx.request.body, null, 4)}`);
 
-  // if a wrong token is passed with a ummatched signature, decodeJWT fails with an exeption = works as verification as well.
-  let decoded_token = null;
-  try {
-    decoded_token = decodeJWT(getTokenFromAuthHeader(ctx));
-  } catch (e) {
-    console.log(`${e}`);
-  }
-  if (decoded_token == null) {
-    ctx.body = { "Error": "Wrong token passed." };
+  const token = getTokenFromAuthHeader(ctx);
+  if (!checkAuthFetchToken(token)[0]) {
+    ctx.body.result.message = { "Error": "Signature unmatched. Incorrect authentication bearer sent" };
     ctx.status = 400;
     return;
   }
-  console.log(`decoded_token ${JSON.stringify(decoded_token, null, 4)}`);
+
+  const decoded_token = jwt_decode(token);
 
   const input_data = typeof decoded_token.input_data !== UNDEFINED ? decoded_token.input_data : null;
 
@@ -1161,7 +1159,7 @@ router.post('/postpurchase', async (ctx, next) => {
   let response_data = {};
 
   const upsell_product_ids = ctx.request.query.upsell_product_ids;
-  // ShouldRender access for retrieving variant ids for offered products.
+  // Retrieving variant ids for offered products.
   if (typeof upsell_product_ids !== UNDEFINED) {
     const query = JSON.parse(upsell_product_ids).map((id) => {
       return `id:${id}`;
@@ -1204,7 +1202,7 @@ router.post('/postpurchase', async (ctx, next) => {
   }
 
   const changes = ctx.request.query.changes;
-  // Render access to sign the JWT for AppBridge Checkout applyChange.
+  // Sign the JWT for AppBridge Checkout applyChange.
   if (typeof changes !== UNDEFINED) {
     const payload = {
       iss: API_KEY,
@@ -1218,7 +1216,7 @@ router.post('/postpurchase', async (ctx, next) => {
   }
 
   const customerId = ctx.request.query.customerId;
-  // Render access to set the customer's review score to their metafields.
+  // Set the customer's review score to their metafields.
   if (typeof customerId !== UNDEFINED) {
     let ownerId = `gid://shopify/Customer/${customerId}`;
     if (customerId.indexOf('@') != -1) {
