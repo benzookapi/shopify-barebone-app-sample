@@ -1,6 +1,6 @@
 name = "my-function-discount-ext"
 type = "order_discounts"
-api_version = "2023-07"
+api_version = "unstable"
 
 [build]
 command = "cargo wasi build --release"
