@@ -1285,6 +1285,29 @@ router.get('/checkoutui', async (ctx, next) => {
 
 });
 
+/* --- Multipass sample endpoint --- */
+// See https://shopify.dev/docs/api/multipass
+router.get('/multipass', async (ctx, next) => {
+  console.log("+++++++++++++++ /multipass +++++++++++++++");
+
+  const shop_login = ctx.request.query.shop_login;
+
+  if (typeof shop_login !== UNDEFINED ) {
+    return await ctx.render('sso', {
+      shop_login: shop_login
+    });
+  }
+
+  if (!checkSignature(ctx.request.query)) {
+    ctx.status = 400;
+    return;
+  }
+  const shop = ctx.request.query.shop;
+  setContentSecurityPolicy(ctx, shop);
+  await ctx.render('index', {});
+
+});
+
 /* --- App proxies sample endpoint --- */
 // See https://shopify.dev/apps/online-store/app-proxies
 // Note that ngrok blocks the proxy, so you should use cloudflare tunnel, instead.

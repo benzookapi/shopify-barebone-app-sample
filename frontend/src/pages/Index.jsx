@@ -98,6 +98,14 @@ function Index() {
                             },
                             name: 'Checkout UI',
                             location: 'Checkout UI sample with upsell and shop reviews shared with post-purchase server side, and IP address blocking',
+                        },
+                        {
+                            id: 10,
+                            onClick: (id) => {
+                                redirect.dispatch(Redirect.Action.APP, '/multipass');
+                            },
+                            name: 'Multipass',
+                            location: 'Multipass sample with dummy SSO',
                         }
                     ]}
                     renderItem={(item) => {
