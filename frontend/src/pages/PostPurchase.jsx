@@ -21,7 +21,7 @@ function PostPurchase() {
   return (
     <Page title="Post-purchase sample for switching products to upsell and getting shop review scores with metafields">
       <VerticalStack gap="5">
-        <Card title="Step 1: Add used metafields by API and enable this post-purchase" sectioned={true}>
+        <Card sectioned={true}>
           <Layout>
             <Layout.Section>
               <Link url="https://shopify.dev/docs/api/checkout-extensions/extension-points" external={true}>Dev. doc</Link>
@@ -89,7 +89,7 @@ function PostPurchase() {
             </Layout.Section>
           </Layout>
         </Card>
-        <Card title="Step 2: Try your post-purchase out" sectioned={true}>
+        <Card sectioned={true}>
           <Layout>
             <Layout.Section>
               <Link url="https://shopify.dev/docs/apps/checkout/post-purchase/getting-started-post-purchase-extension" external={true}>Dev. doc</Link>

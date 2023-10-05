@@ -14,11 +14,6 @@
             font-size: large;
         }
 
-        .mandatory {
-            color: red;
-            font-weight: bold;
-        }
-
         div {
             margin-left: 20%;
             margin-right: 20%;
@@ -39,23 +34,22 @@
         <h2><a href="https://shopify.dev/docs/api/multipass" target="_blank">Dev. doc</a></h2>
         <form method="POST" action="multipass">
             <fieldset>
-                <legend>Input your login data to convert to a Shopify customer (<span class="mandatory">*</span> is
-                    mandatory)</legend>
+                <legend>Input your login data to convert to a Shopify customer ( "Email" is mandatory)
+                </legend>
                 <div class="input">
-                    <label for="email">Email<span class="mandatory">*</span>:</label><br />
+                    <label for="email"><b>Email:</b></label><br />
                     <input type="text" name="email" id="email" placeholder="test@example.com" />
+                </div>
+                <div class="input">
+                    <label for="identifier">Identifier:</label> (for the existing customer given by <a
+                        href="https://shopify.dev/docs/api/admin-graphql/2023-10/objects/Customer#field-customer-multipassidentifier"
+                        target="_blank">Admin API</a>)<br />
+                    <input type="text" name="identifier" id="identifier" placeholder="nic123" />
                 </div>
                 <div class="input">
                     <label for="password">Password:</label><br />
                     <input type="text" name="password" id="password" disabled="true"
                         value="Note that you don't have to give your password to Multipass SSO!" />
-                </div>
-                <div class="input">
-                    <label for="identifier">Shopify customer identifier:
-                        (get via <a
-                            href="https://shopify.dev/docs/api/admin-graphql/2023-10/objects/Customer#field-customer-multipassidentifier"
-                            target="_blank">Admin API</a>)</label><br />
-                    <input type="text" name="identifier" id="identifier" placeholder="nic123" />
                 </div>
                 <div class="input">
                     <label for="first_name">First name:</label><br />
@@ -70,19 +64,21 @@
                     <input type="text" name="tag_string" id="tag_string" placeholder="canadian, premium" />
                 </div>
                 <div class="input">
-                    <label for="remote_ip">Remote IP: (get via <a href="https://whatismyipaddress.com/" target="_blank">this site</a>)</label><br />
+                    <label for="remote_ip">Remote IP: (get via <a href="https://whatismyipaddress.com/"
+                            target="_blank">this site</a>)</label><br />
                     <input type="text" name="remote_ip" id="remote_ip" placeholder="107.20.160.121" />
                 </div>
                 <div class="input">
                     <label for="return_to">URL to return:</label><br />
-                    <input type="text" name="return_to" id="return_to" placeholder="http://yourstore.com/some_specific_site" />
+                    <input type="text" name="return_to" id="return_to"
+                        placeholder="http://your_store_or_some_specific_site" />
                 </div>
             </fieldset>
             <p>
-                <input type="submit" value="Login to <%= shop_login %>" />
+                <input type="submit" value="Login to your store" />
             </p>
 
-            <input type="hidden" name="shop_login" value="<%= shop_login %>">
+            <input type="hidden" name="token" value="<%= token %>">
         </form>
     </div>
 </body>

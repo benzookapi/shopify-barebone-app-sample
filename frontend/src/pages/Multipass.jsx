@@ -25,7 +25,7 @@ function Multipass() {
   return (
     <Page title="Multipass SSO sample">
       <VerticalStack gap="5">
-        <Card title="Step 1: Create your Web Pixel with GA4 data" sectioned={true}>
+        <Card sectioned={true}>
           <Layout>
             <Layout.Section>
               <Link url="https://shopify.dev/docs/api/multipass" external={true}>Dev. doc</Link>

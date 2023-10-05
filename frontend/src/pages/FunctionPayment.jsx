@@ -29,7 +29,7 @@ function FunctionPayment() {
   return (
     <Page title="Create your original payment method filtering with Shopify Functions">
       <VerticalStack gap="5">
-        <Card title="Step 1: Specify which payment method shows up only with which shipping rate used" sectioned={true}>
+        <Card sectioned={true}>
           <Layout>
             <Layout.Section>
               <Link url="https://shopify.dev/api/functions/reference/payment-customization" external={true}>Dev. doc</Link>
@@ -58,7 +58,7 @@ function FunctionPayment() {
             </Layout.Section>
           </Layout>
         </Card>
-        <Card title="Step 2: Create your payment customization and active it" sectioned={true}>
+        <Card sectioned={true}>
           <Layout>
             <Layout.Section>
               <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/paymentCustomizationCreate" external={true}>Dev. doc</Link>

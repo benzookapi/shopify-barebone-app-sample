@@ -29,7 +29,7 @@ function FunctionShipping() {
   return (
     <Page title="Create your original shipping rate filtering with Shopify Functions">
       <VerticalStack gap="5">
-        <Card title="Step 1: Specify which shipping rate shows up only with which zip code input" sectioned={true}>
+        <Card sectioned={true}>
           <Layout>
             <Layout.Section>
               <Link url="https://shopify.dev/api/functions/reference/delivery-customization" external={true}>Dev. doc</Link>
@@ -58,7 +58,7 @@ function FunctionShipping() {
             </Layout.Section>
           </Layout>
         </Card>
-        <Card title="Step 2: Create your delivery customization and active it" sectioned={true}>
+        <Card sectioned={true}>
           <Layout>
             <Layout.Section>
               <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/deliveryCustomizationCreate" external={true}>Dev. doc</Link>

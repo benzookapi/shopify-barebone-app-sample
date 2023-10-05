@@ -26,7 +26,7 @@ function FunctionDiscount() {
   return (
     <Page title="Create your original order discount with Shopify Functions">
       <VerticalStack gap="5">
-        <Card title="Step 1: Specify who can get discounts by Metafields on Customers" sectioned={true} >
+        <Card sectioned={true} >
           <Layout>
             <Layout.Section>
               <Link url="https://shopify.dev/api/functions/reference/order-discounts/" external={true}>Dev. doc</Link>
@@ -51,7 +51,7 @@ function FunctionDiscount() {
             </Layout.Section>
           </Layout>
         </Card>
-        <Card title="Step 2: Register your discount and active it" sectioned={true}>
+        <Card sectioned={true}>
           <Layout>
             <Layout.Section>
               <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/discountAutomaticAppCreate" external={true}>Dev. doc</Link>

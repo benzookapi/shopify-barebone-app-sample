@@ -1290,11 +1290,16 @@ router.get('/checkoutui', async (ctx, next) => {
 router.get('/multipass', async (ctx, next) => {
   console.log("+++++++++++++++ /multipass +++++++++++++++");
 
-  const shop_login = ctx.request.query.shop_login;
-
-  if (typeof shop_login !== UNDEFINED) {
+  if (typeof ctx.request.query.sessiontoken !== UNDEFINED) {
+    console.log('Session Token given');
+    const token = ctx.request.query.sessiontoken;
+    if (!checkAuthFetchToken(token)[0]) {
+      ctx.body = "Signature unmatched. Incorrect session token sent";
+      ctx.status = 400;
+      return;
+    }
     return await ctx.render('sso', {
-      shop_login: shop_login
+      token: token
     });
   }
 
@@ -1312,10 +1317,18 @@ router.get('/multipass', async (ctx, next) => {
 // See https://shopify.dev/docs/api/multipass
 router.post('/multipass', async (ctx, next) => {
   console.log("+++++++++++++++ /multipass +++++++++++++++");
+  console.log(`body: ${JSON.stringify(ctx.request.body, null, 4)}`);
 
-  const shop_login = ctx.request.body.shop_login;
+  const sessiontoken = ctx.request.body.token;
+  if (!checkAuthFetchToken(sessiontoken)[0]) {
+    ctx.body = "Signature unmatched. Incorrect session token sent";
+    ctx.status = 400;
+    return;
+  }
 
-  console.log(`shop_login ${shop_login}`);
+  const shop = getShopFromAuthToken(sessiontoken);
+
+  console.log(`shop ${shop}`);
 
   const email = ctx.request.body.email;
   const identifier = ctx.request.body.identifier;
@@ -1324,12 +1337,6 @@ router.post('/multipass', async (ctx, next) => {
   const tag_string = ctx.request.body.tag_string;
   const remote_ip = ctx.request.body.remote_ip;
   const return_to = ctx.request.body.return_to;
-
-  if (email === '' && identifier === '') {
-    ctx.status = 400;
-    ctx.body = { "Error": "Email or identifier are required." };
-    return;
-  }
 
   const json = {};
   if (email !== '') json.email = email;
@@ -1343,7 +1350,7 @@ router.post('/multipass', async (ctx, next) => {
 
   const token = generateMultipassToken(json, "c8b6cb2cfe85dff3e285a90b4c5a15e9");
 
-  ctx.redirect(`https://${shop_login}/account/login/multipass/${token}`);
+  ctx.redirect(`https://${shop}/account/login/multipass/${token}`);
 });
 
 /* --- App proxies sample endpoint --- */

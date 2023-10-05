@@ -26,7 +26,7 @@ function WebPixel() {
   return (
     <Page title="Web Pixel basic usage for GA4 event passing">
       <VerticalStack gap="5">
-        <Card title="Step 1: Create your Web Pixel with GA4 data" sectioned={true}>
+        <Card sectioned={true}>
           <Layout>
             <Layout.Section>
               <Link url="https://shopify.dev/apps/marketing/pixels/getting-started" external={true}>Dev. doc</Link>
@@ -99,7 +99,7 @@ function WebPixel() {
             </Layout.Section>
           </Layout>
         </Card>
-        <Card title="Step 2: Check your Google Data Streams" sectioned={true}>
+        <Card sectioned={true}>
           <Layout>
             <Layout.Section>
               <p>You can check which events were sent in <Link url="https://analytics.google.com" external={true}>Google Analytics</Link> dashboard.</p>

@@ -18,7 +18,7 @@ function CheckoutUi() {
   return (
     <Page title="Checkout UI sample for upselling / store review / IP address blocking">
       <VerticalStack gap="5">
-        <Card title="Step 1: Add used metafields shared with the post-purchase configration and set an IP address to block" sectioned={true}>
+        <Card sectioned={true}>
           <Layout>
             <Layout.Section>
               <Link url="https://shopify.dev/docs/api/checkout-ui-extensions" external={true}>Dev. doc</Link>
@@ -43,7 +43,7 @@ function CheckoutUi() {
             </Layout.Section>
           </Layout>
         </Card>
-        <Card title="Step 2: Try your checkout UI extensions" sectioned={true}>
+        <Card sectioned={true}>
           <Layout>
             <Layout.Section>
               <Link url="https://shopify.dev/docs/apps/checkout/build-options" external={true}>Dev. doc</Link>
