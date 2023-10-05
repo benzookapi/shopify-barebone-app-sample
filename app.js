@@ -1285,14 +1285,14 @@ router.get('/checkoutui', async (ctx, next) => {
 
 });
 
-/* --- Multipass sample endpoint --- */
+/* --- Multipass sample endpoint for admin --- */
 // See https://shopify.dev/docs/api/multipass
 router.get('/multipass', async (ctx, next) => {
   console.log("+++++++++++++++ /multipass +++++++++++++++");
 
   const shop_login = ctx.request.query.shop_login;
 
-  if (typeof shop_login !== UNDEFINED ) {
+  if (typeof shop_login !== UNDEFINED) {
     return await ctx.render('sso', {
       shop_login: shop_login
     });
@@ -1306,6 +1306,44 @@ router.get('/multipass', async (ctx, next) => {
   setContentSecurityPolicy(ctx, shop);
   await ctx.render('index', {});
 
+});
+
+/* --- Multipass sample endpoint for login --- */
+// See https://shopify.dev/docs/api/multipass
+router.post('/multipass', async (ctx, next) => {
+  console.log("+++++++++++++++ /multipass +++++++++++++++");
+
+  const shop_login = ctx.request.body.shop_login;
+
+  console.log(`shop_login ${shop_login}`);
+
+  const email = ctx.request.body.email;
+  const identifier = ctx.request.body.identifier;
+  const first_name = ctx.request.body.first_name;
+  const last_name = ctx.request.body.last_name;
+  const tag_string = ctx.request.body.tag_string;
+  const remote_ip = ctx.request.body.remote_ip;
+  const return_to = ctx.request.body.return_to;
+
+  if (email === '' && identifier === '') {
+    ctx.status = 400;
+    ctx.body = { "Error": "Email or identifier are required." };
+    return;
+  }
+
+  const json = {};
+  if (email !== '') json.email = email;
+  if (identifier !== '') json.identifier = identifier;
+  if (first_name !== '') json.first_name = first_name;
+  if (last_name !== '') json.last_name = last_name;
+  if (tag_string !== '') json.tag_string = tag_string;
+  if (remote_ip !== '') json.remote_ip = remote_ip;
+  if (return_to !== '') json.return_to = return_to;
+  json.created_at = new Date().toISOString();
+
+  const token = generateMultipassToken(json, "c8b6cb2cfe85dff3e285a90b4c5a15e9");
+
+  ctx.redirect(`https://${shop_login}/account/login/multipass/${token}`);
 });
 
 /* --- App proxies sample endpoint --- */
@@ -1507,6 +1545,23 @@ const checkWebhookSignature = function (ctx, secret) {
     return resolve(receivedSig === signature ? true : false);
   });
 };
+
+/* --- Generate a token for Multipass with a given customer data and secret --- */
+// See https://shopify.dev/docs/api/multipass
+const generateMultipassToken = function (json, secret) {
+  const json_str = JSON.stringify(json);
+  console.log(`generateMultipassToken json ${json_str} secret ${secret}`);
+  const keyMaterial = crypto.createHash('sha256').update(secret).digest();
+  const encryptionKey = keyMaterial.slice(0, 16);
+  const signatureKey = keyMaterial.slice(16, 32);
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv('aes-128-cbc', encryptionKey, iv);
+  const cipherText = Buffer.concat([iv, cipher.update(json_str, 'utf8'), cipher.final()]);
+  const signed = crypto.createHmac("SHA256", signatureKey).update(cipherText).digest();
+  const token = Buffer.concat([cipherText, signed]).toString('base64').replace(/\+/g, '-').replace(/\//g, '_');
+  console.log(`generateMultipassToken token ${token}`);
+  return token;
+}
 
 /* --- Get a token string from a given authorization header --- */
 // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
