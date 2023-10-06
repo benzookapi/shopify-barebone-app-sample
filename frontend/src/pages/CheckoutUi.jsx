@@ -35,7 +35,7 @@ function CheckoutUi() {
                 <List.Item>
                   <p>
                     Add <b>three instances of this app</b> in the locations of <Badge status='info'>'<b>purchase.checkout.block.render</b>' = Dynamic / '<b>purchase.checkout.contact.render-after</b>' = Static /
-                      '<b>purchase.checkout.actions.render-before</b>' = Static</Badge> seeing <Link url="https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-overview" target="_blank">this dev. page</Link> and set the IP address to <Link url="https://shopify.dev/docs/api/checkout-ui-extensions/configuration#block-progress" target="_blank">block</Link> in their settings in <Link url={`https://${_getAdminFromShop(shop)}/settings/checkout/editor`} target="_blank">checkout editor</Link>. You can check your IP address in external sites
+                      '<b>purchase.checkout.actions.render-before</b>' = Static</Badge> in <Link url={`https://${_getAdminFromShop(shop)}/settings/checkout/editor`} target="_blank">checkout editor</Link>, seeing <Link url="https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-overview" target="_blank">this dev. page</Link> and set the IP address to <Link url="https://shopify.dev/docs/api/checkout-ui-extensions/configuration#block-progress" target="_blank">block</Link> in their settings. You can check your IP address in external sites
                     like <Link url="https://whatismyipaddress.com/" target="_blank">this</Link>.
                   </p>
                 </List.Item>
@@ -69,7 +69,7 @@ function CheckoutUi() {
               <p>
                 <b>TIPS: </b>This extension uses its own provided <Link url="https://shopify.dev/docs/api/checkout-ui-extensions/configuration#api-access" target="_blank">Storefront API calls</Link> and app <Link url="https://shopify.dev/docs/api/checkout-ui-extensions/configuration#network-access" target="_blank">server side access</Link> shared with <Link onClick={() => {
                   redirect.dispatch(Redirect.Action.APP, '/postpurchase');
-                }}>Post-purchase sample</Link> wtih <Link url="https://shopify.dev/docs/api/checkout-ui-extensions/apis/standardapi#properties-propertydetail-sessiontoken" target="_blank">session tokens</Link>.
+                }}>Post-purchase sample</Link> wtih <Link url="https://shopify.dev/docs/api/checkout-ui-extensions/unstable/targets/block/purchase-thank-you-block-render#standardapi-propertydetail-sessiontoken" target="_blank">session tokens</Link>.
               </p>
             </Layout.Section>
           </Layout>
