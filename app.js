@@ -1109,26 +1109,6 @@ router.get('/ordermanage', async (ctx, next) => {
   if (typeof id !== UNDEFINED && id !== '') {
     let error = '';
     let api_res = null;
-    try {
-      api_res = await (callGraphql(ctx, shop, `{
-          order (id: "gid://shopify/Order/${id}") {
-            id
-            fulfillmentOrders(first: 10, reverse: true, query: "status:OPEN") {
-              edges {
-                node {
-                  id
-                  createdAt
-                  status
-                  requestStatus
-                }
-              }
-            }
-          }
-        }`, null, GRAPHQL_PATH_ADMIN, null));
-    } catch (e) {
-      console.log(`${JSON.stringify(e)}`);
-      error += e;
-    }
 
     const foids = ctx.request.query.foids;
     if (typeof foids !== UNDEFINED && foids !== '') {
@@ -1179,6 +1159,28 @@ router.get('/ordermanage', async (ctx, next) => {
         }
       }
     }
+
+    try {
+      api_res = await (callGraphql(ctx, shop, `{
+          order (id: "gid://shopify/Order/${id}") {
+            id
+            fulfillmentOrders(first: 10, reverse: true, query: "status:OPEN") {
+              edges {
+                node {
+                  id
+                  createdAt
+                  status
+                  requestStatus
+                }
+              }
+            }
+          }
+        }`, null, GRAPHQL_PATH_ADMIN, null));
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+      error += e;
+    }
+
     ctx.set('Content-Type', 'application/json');
     ctx.body = {
       "response": api_res.data,

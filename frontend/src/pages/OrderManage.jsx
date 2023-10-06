@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, Badge, Text, Spinner, List, VerticalStack, Button, FooterHelp } from '@shopify/polaris';
+import { Page, Card, Layout, Link, Badge, Text, Spinner, List, VerticalStack, Button, ButtonGroup, FooterHelp } from '@shopify/polaris';
 
 import { _decodeSessionToken, _getAdminFromShop, _getShopFromQuery } from "../utils/my_util";
 
@@ -11,7 +11,6 @@ import { _decodeSessionToken, _getAdminFromShop, _getShopFromQuery } from "../ut
 function OrderManage() {
     const app = useAppBridge();
     const redirect = Redirect.create(app);
-
 
     const rawUrl = `${window.location.href.split('?')[0]}`;
 
@@ -33,7 +32,7 @@ function OrderManage() {
                     setRes(``);
                 });
             });
-        }, ['']);
+        }, [res]);
 
         return (
             <Page title="Your oder details">
@@ -55,18 +54,34 @@ function OrderManage() {
                         </Card>
                     </Layout.Section>
                     <Layout.Section>
-                        <Button primary onClick={() => {
-                            authenticatedFetch(app)(`/ordermanage?id=${id}&foids=${foIds}`).then((response) => {
-                                response.json().then((json) => {
-                                    console.log(JSON.stringify(json, null, 4));
-                                    setRes(JSON.stringify(json, null, 4));
-                                    setFoIds(json.response.order.fulfillmentOrders.edges.map((e) => e.node.id));
-                                }).catch((e) => {
-                                    console.log(`${e}`);
-                                    setRes(``);
+                        <ButtonGroup>
+                            <Button primary onClick={() => {
+                                setRes(``);
+                                authenticatedFetch(app)(`/ordermanage?id=${id}&foids=${foIds}`).then((response) => {
+                                    response.json().then((json) => {
+                                        console.log(JSON.stringify(json, null, 4));
+                                        setRes(JSON.stringify(json, null, 4));
+                                        setFoIds(json.response.order.fulfillmentOrders.edges.map((e) => e.node.id));
+                                    }).catch((e) => {
+                                        console.log(`${e}`);
+                                        setRes(``);
+                                    });
                                 });
-                            });
-                        }}>Fulfillment this order</Button>
+                            }}>Fulfillment this order</Button>
+                            <Button primary onClick={() => {
+                                setRes(``);
+                                authenticatedFetch(app)(`/ordermanage?id=${id}&foids=${foIds}`).then((response) => {
+                                    response.json().then((json) => {
+                                        console.log(JSON.stringify(json, null, 4));
+                                        setRes(JSON.stringify(json, null, 4));
+                                        setFoIds(json.response.order.fulfillmentOrders.edges.map((e) => e.node.id));
+                                    }).catch((e) => {
+                                        console.log(`${e}`);
+                                        setRes(``);
+                                    });
+                                });
+                            }}>Fulfillment this order</Button>
+                        </ButtonGroup>
                     </Layout.Section>
                 </Layout>
                 <FooterHelp>
