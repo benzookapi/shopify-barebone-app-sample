@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
-import { authenticatedFetch } from "@shopify/app-bridge-utils";
+import { Redirect } from '@shopify/app-bridge/actions';
+import { getSessionToken, authenticatedFetch } from "@shopify/app-bridge-utils";
 import { Page, Card, Layout, Link, List, Badge, Checkbox, TextField, Button, Spinner, VerticalStack } from '@shopify/polaris';
 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
@@ -9,15 +10,12 @@ import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 // See https://shopify.dev/docs/api/multipass
 function Multipass() {
   const app = useAppBridge();
+  const redirect = Redirect.create(app);
 
   const shop = _getShopFromQuery(window);
 
   const [secret, setSecret] = useState('');
   const secretChange = useCallback((newSecret) => setSecret(newSecret), []);
-  const [ga4Sec, setGA4Sec] = useState('');
-  const ga4SecChange = useCallback((newGA4Sec) => setGA4Sec(newGA4Sec), []);
-  const [ga4Debug, setGA4Debug] = useState(false);
-  const ga4DebugChange = useCallback((newGA4Debug) => setGA4Debug(newGA4Debug), []);
 
   const [result, setResult] = useState('');
   const [accessing, setAccessing] = useState(false);
@@ -65,14 +63,17 @@ function Multipass() {
                       });
                     });
                   }}>
-                    Add your secret to the shop metafield
+                    Add your secret to shop metafields
                   </Button>&nbsp;
                   <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
                 </List.Item>
                 <List.Item>
-                  Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/customer_events`} target="_blank">customer events</Link> to check if the app pixel is created and visit <Link url={`https://${shop}`} target="_blank">your theme storefront</Link> with
-                  <Badge>Developer Console</Badge> on to see which event triggered by Web Pixel. If you add <Link url={`https://${_getAdminFromShop(shop)}/themes/current/editor`} target="_blank">the app block named 'Barebone App Block TP' of this app</Link> to your theme app sections,
-                  you can see <Badge>your own custom event</Badge> triggered in the pages you add the section, too.
+                  Open the <Link onClick={() => {
+                    getSessionToken(app).then((sessionToken) => {
+                      redirect.dispatch(Redirect.Action.REMOTE, { url: `https://${window.location.hostname}/multipass?sessiontoken=${sessionToken}`, newContext: true });
+                    });
+                  }}>mock login page with the session token
+                  </Link> to test how Multipass SSO works.
                 </List.Item>
               </List>
             </Layout.Section>
