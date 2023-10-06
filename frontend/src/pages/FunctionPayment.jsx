@@ -32,11 +32,11 @@ function FunctionPayment() {
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
-              <Link url="https://shopify.dev/api/functions/reference/payment-customization" external={true}>Dev. doc</Link>
+              <Link url="https://shopify.dev/api/functions/reference/payment-customization" target="_blank">Dev. doc</Link>
             </Layout.Section>
             <Layout.Section>
               <List type="number">
-                <List.Item>Input a <Badge>payment method name</Badge> which you want to show only, from <Link url={`https://${shop}`} external={true}>your checkout page</Link> (note that the method name needs to be <b>the buyer facing one</b>, not admin).
+                <List.Item>Input a <Badge>payment method name</Badge> which you want to show only, from <Link url={`https://${shop}`} target="_blank">your checkout page</Link> (note that the method name needs to be <b>the buyer facing one</b>, not admin).
                   <TextField
                     label=""
                     value={method}
@@ -45,7 +45,7 @@ function FunctionPayment() {
                     placeholder="Example: Cash on Delivery (COD)"
                   />
                 </List.Item>
-                <List.Item>Input a <Badge>shipping rate name</Badge> which buyers select when the payment method shows up above, from <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} external={true}>shipping settings</Link> or <Link url={`https://${_getAdminFromShop(shop)}/orders`} external={true}>past orders</Link>
+                <List.Item>Input a <Badge>shipping rate name</Badge> which buyers select when the payment method shows up above, from <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} target="_blank">shipping settings</Link> or <Link url={`https://${_getAdminFromShop(shop)}/orders`} target="_blank">past orders</Link>
                   <TextField
                     label=""
                     value={rate}
@@ -61,12 +61,12 @@ function FunctionPayment() {
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
-              <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/paymentCustomizationCreate" external={true}>Dev. doc</Link>
+              <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/paymentCustomizationCreate" target="_blank">Dev. doc</Link>
             </Layout.Section>
             <Layout.Section>
               <List type="number">
                 <List.Item>
-                  Input your <Badge>Shopify Functions ID</Badge> available in your app extension overview in <Link url="https://shopify.dev/api/functions/errors#debugging" external={true}>partner dashboard</Link> given by <Badge>`npm run deploy`</Badge>
+                  Input your <Badge>Shopify Functions ID</Badge> available in your app extension overview in <Link url="https://shopify.dev/api/functions/errors#debugging" target="_blank">partner dashboard</Link> given by <Badge>`npm run deploy`</Badge>
                   <TextField
                     label=""
                     value={id}
@@ -100,7 +100,7 @@ function FunctionPayment() {
                   <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
                 </List.Item>
                 <List.Item>
-                  Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/payments`} external={true}>payment settings</Link> to check if the customization is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your customization works with your selected shipping rate.
+                  Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/payments`} target="_blank">payment settings</Link> to check if the customization is created and visit <Link url={`https://${shop}`} target="_blank">your theme storefront</Link> to see how your customization works with your selected shipping rate.
                 </List.Item>
               </List>
             </Layout.Section>

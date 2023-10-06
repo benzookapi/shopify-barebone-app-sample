@@ -11,14 +11,9 @@ import {
 
   // React hooks
   useApi, // All properties and methods are accessible from this 'StandardApi'
-  //useAppMetafields,  // Protected customer data, filtered by shopify.ui.extension.toml
-  //useCustomer, // Protected customer data
-  //useEmail, // Protected customer data  
-  //useExtensionData, // Metadata about the extension.
-  //useExtensionLanguage, // Buyer's language, as supported by the extension
-  //useShippingAddress, // Protected customer data
-  useSubscription, // https://shopify.dev/docs/api/checkout-ui-extensions/unstable/react-hooks/utilities/usesubscription
-
+  useAppMetafields,  // Protected customer data, filtered by shopify.ui.extension.toml
+  useMetafields,
+  
   // UI components
   View,
   BlockStack,
@@ -60,7 +55,21 @@ function Upsell() {
   const apiVersion = extensionApi.extension.apiVersion;
   const apiUrl = `${extensionApi.shop.storefrontUrl}api/${apiVersion}/graphql.json`;
 
+
+  const ms = useAppMetafields({"namespace": "barebone_app", "key": "url"});
+
+  console.log(`MSMSMSMSMSMSMSMSMSMSMS:  ${JSON.stringify(ms)}`);
+
+  const ms2 = useAppMetafields({"namespace": "barebone_app_upsell", "key": "product_id"});
+
+  console.log(`MSMSMSMSMSMSMSMSMSMSMS222222:  ${JSON.stringify(ms2)}`);
+
+
+
   useEffect(() => {
+
+
+
     let appMetas = null;
     let count = 0;
     // appMetafields.current is blank in the first loading, with data in the second, so you need to sbscrube it.
@@ -349,7 +358,7 @@ function Upsell() {
       <UpsellActions upsell_products={upsellProducts} upsell_added={upsellAdded} />
       {/* Upsell cloning using Storefront API mutation */}
       <BlockSpacer />
-      <Link to={upsellUrl} external={true}>
+      <Link to={upsellUrl} target="_blank">
         <Text>Create a new checkout <Icon source="cart" /></Text>
       </Link>
     </Banner>

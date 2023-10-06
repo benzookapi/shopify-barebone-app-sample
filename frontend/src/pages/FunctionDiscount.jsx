@@ -29,11 +29,11 @@ function FunctionDiscount() {
         <Card sectioned={true} >
           <Layout>
             <Layout.Section>
-              <Link url="https://shopify.dev/api/functions/reference/order-discounts/" external={true}>Dev. doc</Link>
+              <Link url="https://shopify.dev/api/functions/reference/order-discounts/" target="_blank">Dev. doc</Link>
             </Layout.Section>
             <Layout.Section>
               <List type="number">
-                <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/settings/custom_data`} external={true}>Metafields</Link> for <Badge status='info'>Customers</Badge>
+                <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/settings/custom_data`} target="_blank">Metafields</Link> for <Badge status='info'>Customers</Badge>
                   in type of <Badge>Integer</Badge> and input your Metafield <Badge>Namespace and key</Badge>
                   <TextField
                     label=""
@@ -44,7 +44,7 @@ function FunctionDiscount() {
                   />
                 </List.Item>
                 <List.Item>
-                  Set the Metafields to <Link url={`https://${_getAdminFromShop(shop)}/customers`} external={true}>Customers</Link> to specify how much discounted they get as a number
+                  Set the Metafields to <Link url={`https://${_getAdminFromShop(shop)}/customers`} target="_blank">Customers</Link> to specify how much discounted they get as a number
                   (e.g. 30 = 30% discounted)
                 </List.Item>
               </List>
@@ -54,12 +54,12 @@ function FunctionDiscount() {
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
-              <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/discountAutomaticAppCreate" external={true}>Dev. doc</Link>
+              <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/discountAutomaticAppCreate" target="_blank">Dev. doc</Link>
             </Layout.Section>
             <Layout.Section>
               <List type="number">
                 <List.Item>
-                  Input your <Badge>Shopify Functions ID</Badge> available in your app extension overview in <Link url="https://shopify.dev/api/functions/errors#debugging" external={true}>partner dashboard</Link> given by <Badge>`npm run deploy`</Badge>
+                  Input your <Badge>Shopify Functions ID</Badge> available in your app extension overview in <Link url="https://shopify.dev/api/functions/errors#debugging" target="_blank">partner dashboard</Link> given by <Badge>`npm run deploy`</Badge>
                   <TextField
                     label=""
                     value={id}
@@ -93,7 +93,7 @@ function FunctionDiscount() {
                   <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
                 </List.Item>
                 <List.Item>
-                  Go to <Link url={`https://${_getAdminFromShop(shop)}/discounts`} external={true}>Discounts</Link> to check if the discount is activated and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your discount works with your specified customers
+                  Go to <Link url={`https://${_getAdminFromShop(shop)}/discounts`} target="_blank">Discounts</Link> to check if the discount is activated and visit <Link url={`https://${shop}`} target="_blank">your theme storefront</Link> to see how your discount works with your specified customers
                 </List.Item>
               </List>
             </Layout.Section>

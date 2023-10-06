@@ -12,8 +12,8 @@ function Multipass() {
 
   const shop = _getShopFromQuery(window);
 
-  const [ga4Id, setGA4Id] = useState('');
-  const ga4IdChange = useCallback((newGA4Id) => setGA4Id(newGA4Id), []);
+  const [secret, setSecret] = useState('');
+  const secretChange = useCallback((newSecret) => setSecret(newSecret), []);
   const [ga4Sec, setGA4Sec] = useState('');
   const ga4SecChange = useCallback((newGA4Sec) => setGA4Sec(newGA4Sec), []);
   const [ga4Debug, setGA4Debug] = useState(false);
@@ -28,55 +28,35 @@ function Multipass() {
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
-              <Link url="https://shopify.dev/docs/api/multipass" external={true}>Dev. doc</Link>
+              <Link url="https://shopify.dev/docs/api/multipass" target="_blank">Dev. doc</Link>
             </Layout.Section>
             <Layout.Section>
               <List type="number">
                 <List.Item>
                   <p>
-                    Set up your <Link url="https://support.google.com/analytics/answer/9303323" external={true}>Data Streams</Link> in <Link url="https://analytics.google.com" external={true}>Google Analytics</Link>
-                    to send checkout events like <Badge status="info">checkout_started</Badge> within Web Pixel <Link url="https://www.w3schools.com/html/html5_webworkers.asp" external={true}>Web Workers</Link> which cannot be done by
-                    Theme App Extention or manual insertion of <Badge>header GA Tag</Badge>.
-                    Other events outside checkouts like page views, adding to carts can be sent by the GA tag insertion automatically which can be tested by
-                    <Link url={`https://${_getAdminFromShop(shop)}/themes/current/editor?context=apps`} external={true}>the app embed block named 'Barebone App Embed TP' of this app</Link>.
+                    Make sure your Multipass turned on in <Link url={`https://${_getAdminFromShop(shop)}/settings/customer_accounts`} target="_blank">Customer account settings</Link>. Copy your <Badge status='info'>Multipass secret</Badge> from there to paste to the following input.
                   </p>
                   <VerticalStack gap="5">
                     <TextField
-                      label="Input your GA4 Measurement ID"
-                      value={ga4Id}
-                      onChange={ga4IdChange}
+                      label="Multipass secret"
+                      value={secret}
+                      onChange={secretChange}
                       autoComplete="off"
-                      placeholder="G-XXXXXXXXXX"
-                    />
-                    <TextField
-                      label="Input your GA4 API Secret"
-                      value={ga4Sec}
-                      onChange={ga4SecChange}
-                      autoComplete="off"
-                      placeholder="sXXXXXXXX-rX_XXXXXXX"
+                      placeholder="c8b****************5e9"
                     />
                   </VerticalStack>
-                  <p>The values above come from <Link url="https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?hl=ja&client_type=gtag" external={true}>
-                    Google Analytics Data Stream settings</Link>.
-                  </p>
-                  <Checkbox
-                    label="Use debug (If you want to check the result of event sending in the browser console, check this on)"
-                    checked={ga4Debug}
-                    onChange={ga4DebugChange}
-                  />
                 </List.Item>
                 <List.Item>
                   <Button primary onClick={() => {
                     setAccessing(true);
-                    // See https://shopify.dev/api/admin-graphql/2023-04/mutations/webPixelCreate"
-                    authenticatedFetch(app)(`/webpixel?ga4Id=${ga4Id}&ga4Sec=${ga4Sec}&ga4Debug=${ga4Debug}`).then((response) => {
+                    authenticatedFetch(app)(`/multipass?secret=${secret}`).then((response) => {
                       response.json().then((json) => {
                         console.log(JSON.stringify(json, null, 4));
                         setAccessing(false);
-                        if (json.result.response.data.webPixelCreate.userErrors.length == 0) {
+                        if (json.result.response.errors == 0) {
                           setResult('Success!');
                         } else {
-                          setResult('Error!');
+                          setResult(`Error! ${JSON.stringify(json.result.response)}`);
                         }
                       }).catch((e) => {
                         console.log(`${e}`);
@@ -85,13 +65,13 @@ function Multipass() {
                       });
                     });
                   }}>
-                    Create your Web Pixel
+                    Add your secret to the shop metafield
                   </Button>&nbsp;
                   <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
                 </List.Item>
                 <List.Item>
-                  Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/customer_events`} external={true}>customer events</Link> to check if the app pixel is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> with
-                  <Badge>Developer Console</Badge> on to see which event triggered by Web Pixel. If you add <Link url={`https://${_getAdminFromShop(shop)}/themes/current/editor`} external={true}>the app block named 'Barebone App Block TP' of this app</Link> to your theme app sections,
+                  Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/customer_events`} target="_blank">customer events</Link> to check if the app pixel is created and visit <Link url={`https://${shop}`} target="_blank">your theme storefront</Link> with
+                  <Badge>Developer Console</Badge> on to see which event triggered by Web Pixel. If you add <Link url={`https://${_getAdminFromShop(shop)}/themes/current/editor`} target="_blank">the app block named 'Barebone App Block TP' of this app</Link> to your theme app sections,
                   you can see <Badge>your own custom event</Badge> triggered in the pages you add the section, too.
                 </List.Item>
               </List>

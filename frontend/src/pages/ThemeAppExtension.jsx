@@ -23,7 +23,7 @@ function ThemeAppExtension() {
                 <Card sectioned={true}>
                     <Layout>
                         <Layout.Section>
-                            <Link url="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework" external={true}>Dev. doc</Link>
+                            <Link url="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework" target="_blank">Dev. doc</Link>
                         </Layout.Section>
                         <Layout.Section>
                             <List type="number">
@@ -51,10 +51,10 @@ function ThemeAppExtension() {
                                     </Button>
 
                                 </List.Item>
-                                <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/settings/custom_data`} external={true}>Metafields</Link> for <Badge status='info'>Products</Badge>
+                                <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/settings/custom_data`} target="_blank">Metafields</Link> for <Badge status='info'>Products</Badge>
                                     in type of <Badge>Product</Badge> and <Badge>Single line text</Badge> and go to the app block section in the theme editor ('Home page' and 'Default product') to set the metafields above with
-                                    <Link url={`https://help.shopify.com/en/manual/online-store/themes/theme-structure/sections-and-blocks`} external={true}>Dynamic sources</Link>
-                                    (don't forget to set Metafields to <Link url={`https://${_getAdminFromShop(shop)}/products`} external={true}>Products</Link>)
+                                    <Link url={`https://help.shopify.com/en/manual/online-store/themes/theme-structure/sections-and-blocks`} target="_blank">Dynamic sources</Link>
+                                    (don't forget to set Metafields to <Link url={`https://${_getAdminFromShop(shop)}/products`} target="_blank">Products</Link>)
                                 </List.Item>
                             </List>
                         </Layout.Section>
@@ -63,7 +63,7 @@ function ThemeAppExtension() {
                 <Card sectioned={true}>
                     <Layout>
                         <Layout.Section>
-                            <Link url="https://shopify.dev/apps/online-store/app-proxies" external={true}>Dev. doc</Link>
+                            <Link url="https://shopify.dev/apps/online-store/app-proxies" target="_blank">Dev. doc</Link>
                         </Layout.Section>
                         <Layout.Section>
                             <List type="number">
@@ -71,10 +71,10 @@ function ThemeAppExtension() {
                                     Subpath prefix: <Badge>apps</Badge> Subpath: <Badge>bareboneproxy</Badge> Proxy URL: <Badge>https://{window.location.hostname}/appproxy</Badge>
                                 </List.Item>
                                 <List.Item>
-                                    <Link url={`https://${shop}/apps/bareboneproxy?your_param=your_value`} external={true}>Test your proxy</Link>
+                                    <Link url={`https://${shop}/apps/bareboneproxy?your_param=your_value`} target="_blank">Test your proxy</Link>
                                 </List.Item>
                                 <List.Item>
-                                    Check <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your set extensions show up switching the pages of home and products.
+                                    Check <Link url={`https://${shop}`} target="_blank">your theme storefront</Link> to see how your set extensions show up switching the pages of home and products.
                                 </List.Item>
                             </List>
                         </Layout.Section>

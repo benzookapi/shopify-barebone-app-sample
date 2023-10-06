@@ -29,17 +29,17 @@ function WebPixel() {
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
-              <Link url="https://shopify.dev/apps/marketing/pixels/getting-started" external={true}>Dev. doc</Link>
+              <Link url="https://shopify.dev/apps/marketing/pixels/getting-started" target="_blank">Dev. doc</Link>
             </Layout.Section>
             <Layout.Section>
               <List type="number">
                 <List.Item>
                   <p>
-                    Set up your <Link url="https://support.google.com/analytics/answer/9303323" external={true}>Data Streams</Link> in <Link url="https://analytics.google.com" external={true}>Google Analytics</Link>
-                    to send checkout events like <Badge status="info">checkout_started</Badge> within Web Pixel <Link url="https://www.w3schools.com/html/html5_webworkers.asp" external={true}>Web Workers</Link> which cannot be done by
+                    Set up your <Link url="https://support.google.com/analytics/answer/9303323" target="_blank">Data Streams</Link> in <Link url="https://analytics.google.com" target="_blank">Google Analytics</Link>
+                    to send checkout events like <Badge status="info">checkout_started</Badge> within Web Pixel <Link url="https://www.w3schools.com/html/html5_webworkers.asp" target="_blank">Web Workers</Link> which cannot be done by
                     Theme App Extention or manual insertion of <Badge>header GA Tag</Badge>.
                     Other events outside checkouts like page views, adding to carts can be sent by the GA tag insertion automatically which can be tested by
-                    <Link url={`https://${_getAdminFromShop(shop)}/themes/current/editor?context=apps`} external={true}>the app embed block named 'Barebone App Embed TP' of this app</Link>.
+                    <Link url={`https://${_getAdminFromShop(shop)}/themes/current/editor?context=apps`} target="_blank">the app embed block named 'Barebone App Embed TP' of this app</Link>.
                   </p>
                   <VerticalStack gap="5">
                     <TextField
@@ -57,7 +57,7 @@ function WebPixel() {
                       placeholder="sXXXXXXXX-rX_XXXXXXX"
                     />
                   </VerticalStack>
-                  <p>The values above come from <Link url="https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?hl=ja&client_type=gtag" external={true}>
+                  <p>The values above come from <Link url="https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?hl=ja&client_type=gtag" target="_blank">
                     Google Analytics Data Stream settings</Link>.
                   </p>
                   <Checkbox
@@ -91,8 +91,8 @@ function WebPixel() {
                   <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
                 </List.Item>
                 <List.Item>
-                  Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/customer_events`} external={true}>customer events</Link> to check if the app pixel is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> with
-                  <Badge>Developer Console</Badge> on to see which event triggered by Web Pixel. If you add <Link url={`https://${_getAdminFromShop(shop)}/themes/current/editor`} external={true}>the app block named 'Barebone App Block TP' of this app</Link> to your theme app sections,
+                  Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/customer_events`} target="_blank">customer events</Link> to check if the app pixel is created and visit <Link url={`https://${shop}`} target="_blank">your theme storefront</Link> with
+                  <Badge>Developer Console</Badge> on to see which event triggered by Web Pixel. If you add <Link url={`https://${_getAdminFromShop(shop)}/themes/current/editor`} target="_blank">the app block named 'Barebone App Block TP' of this app</Link> to your theme app sections,
                   you can see <Badge>your own custom event</Badge> triggered in the pages you add the section, too.
                 </List.Item>
               </List>
@@ -102,7 +102,7 @@ function WebPixel() {
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
-              <p>You can check which events were sent in <Link url="https://analytics.google.com" external={true}>Google Analytics</Link> dashboard.</p>
+              <p>You can check which events were sent in <Link url="https://analytics.google.com" target="_blank">Google Analytics</Link> dashboard.</p>
             </Layout.Section>
           </Layout>
         </Card>

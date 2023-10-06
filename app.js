@@ -837,103 +837,18 @@ router.get('/postpurchase', async (ctx, next) => {
       return;
     }
 
-    // 1-1. Check if the app URL metafield definition exists.
     const api_errors = {
       "errors": 0,
       "apis": []
     };
-    try {
-      const api_res = await (callGraphql(ctx, shop, `{
-        metafieldDefinitions(first:1, ownerType: SHOP, namespace:"barebone_app", key: "url") {
-          edges {
-            node {
-              id
-            }
-          }
-        }
-      } `, null, GRAPHQL_PATH_ADMIN, null));
-      if (api_res.data.metafieldDefinitions.edges.length > 0) {
-        // 1-2. Delete the existing app URL metafield definition.       
-        await (callGraphql(ctx, shop, `mutation metafieldDefinitionDelete($id: ID!, $deleteAllAssociatedMetafields: Boolean!) {
-          metafieldDefinitionDelete(id: $id, deleteAllAssociatedMetafields: $deleteAllAssociatedMetafields) {
-            deletedDefinitionId
-            userErrors {
-              field
-              message
-            }
-          }
-        }`, null, GRAPHQL_PATH_ADMIN, {
-          "deleteAllAssociatedMetafields": true,
-          "id": api_res.data.metafieldDefinitions.edges[0].node.id
-        }));
-      }
-    } catch (e) {
-      console.log(`${JSON.stringify(e)}`);
-    }
-    // 1-3. Create an app URL metafield definition.
+
     try {
       let api_res = await (callGraphql(ctx, shop, `{
         shop {
           id
-          metafields(first:1, namespace: "barebone_app") {
-            edges {
-              node {
-                id
-                namespace
-                key
-                value
-              }
-            }
-          }
         }
       }`, null, GRAPHQL_PATH_ADMIN, null));
       const id = api_res.data.shop.id;
-      if (api_res.data.shop.metafields.edges.length > 0) {
-        await (callGraphql(ctx, shop, `mutation metafieldDelete($input: MetafieldDeleteInput!) {
-          metafieldDelete(input: $input) {
-            deletedId
-            userErrors {
-              field
-              message
-            }
-          }
-        }`, null, GRAPHQL_PATH_ADMIN, {
-          "input": {
-            "id": api_res.data.shop.metafields.edges[0].node.id
-          }
-        }));
-      }
-      api_res = await (callGraphql(ctx, shop, `mutation metafieldDefinitionCreate($definition: MetafieldDefinitionInput!) {
-        metafieldDefinitionCreate(definition: $definition) {
-          createdDefinition {
-            id
-            name
-            namespace
-            key
-            ownerType
-            visibleToStorefrontApi
-          }
-          userErrors {
-            field
-            message
-          }
-        }
-      }
-      `, null, GRAPHQL_PATH_ADMIN, {
-        "definition": {
-          "key": "url",
-          "name": "Barebone app url",
-          "namespace": "barebone_app",
-          "ownerType": "SHOP",
-          "type": "single_line_text_field",
-          "visibleToStorefrontApi": true
-        }
-      }));
-      if (api_res.data.metafieldDefinitionCreate.userErrors.length > 0) {
-        api_errors.errors = api_errors.errors + 1;
-        api_errors.apis.push(`shop ${JSON.stringify(api_res.data.metafieldDefinitionCreate.userErrors[0])}`);
-      }
-      // 1-4. Add a metafield for the app URL to the metafield definition.
       api_res = await (callGraphql(ctx, shop, `mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
         metafieldsSet(metafields: $metafields) {
           metafields {
@@ -952,6 +867,7 @@ router.get('/postpurchase', async (ctx, next) => {
             "key": "url",
             "namespace": "barebone_app",
             "ownerId": id,
+            "type": "single_line_text_field",
             "value": `https://${ctx.request.host}`
           }
         ]
@@ -965,142 +881,6 @@ router.get('/postpurchase', async (ctx, next) => {
       console.log(`${JSON.stringify(e)}`);
       api_errors.errors = api_errors.errors + 1;
       api_errors.apis.push(`shop ${JSON.stringify(e)}`);
-    }
-
-    // 2-1. Check if the product id metafield definition exists.
-    try {
-      const api_res = await (callGraphql(ctx, shop, `{
-        metafieldDefinitions(first:1, ownerType: PRODUCT, namespace:"barebone_app_upsell", key: "product_id") {
-          edges {
-            node {
-              id
-            }
-          }
-        }
-      } `, null, GRAPHQL_PATH_ADMIN, null));
-      if (api_res.data.metafieldDefinitions.edges.length > 0) {
-        // 2-2. Delete thethe product id definition metafield.
-        await (callGraphql(ctx, shop, `mutation metafieldDefinitionDelete($id: ID!, $deleteAllAssociatedMetafields: Boolean!) {
-          metafieldDefinitionDelete(id: $id, deleteAllAssociatedMetafields: $deleteAllAssociatedMetafields) {
-            deletedDefinitionId
-            userErrors {
-              field
-              message
-            }
-          }
-        }`, null, GRAPHQL_PATH_ADMIN, {
-          "deleteAllAssociatedMetafields": true,
-          "id": api_res.data.metafieldDefinitions.edges[0].node.id
-        }));
-      }
-    } catch (e) {
-      console.log(`${JSON.stringify(e)}`);
-    }
-    // 2-3. Create an product id metafield definition.
-    try {
-      const api_res = await (callGraphql(ctx, shop, `mutation metafieldDefinitionCreate($definition: MetafieldDefinitionInput!) {
-        metafieldDefinitionCreate(definition: $definition) {
-          createdDefinition {
-            id
-            name
-            namespace
-            key
-            ownerType
-            visibleToStorefrontApi
-          }
-          userErrors {
-            field
-            message
-          }
-        }
-      }
-      `, null, GRAPHQL_PATH_ADMIN, {
-        "definition": {
-          "key": "product_id",
-          "name": "Barebone app upsell product id",
-          "namespace": "barebone_app_upsell",
-          "ownerType": "PRODUCT",
-          "type": "single_line_text_field",
-          "visibleToStorefrontApi": true,
-          "pin": true
-        }
-      }));
-      if (api_res.data.metafieldDefinitionCreate.userErrors.length > 0) {
-        api_errors.errors = api_errors.errors + 1;
-        api_errors.apis.push(`product ${JSON.stringify(api_res.data.metafieldDefinitionCreate.userErrors[0])}`);
-      }
-    } catch (e) {
-      console.log(`${JSON.stringify(e)}`);
-      api_errors.errors = api_errors.errors + 1;
-      api_errors.apis.push(`product ${JSON.stringify(e)}`);
-    }
-
-    // 3-1. Check if the review score metafield definition exists.
-    try {
-      const api_res = await (callGraphql(ctx, shop, `{
-        metafieldDefinitions(first:1, ownerType: CUSTOMER, namespace:"barebone_app_review", key: "score") {
-          edges {
-            node {
-              id
-            }
-          }
-        }
-      } `, null, GRAPHQL_PATH_ADMIN, null));
-      if (api_res.data.metafieldDefinitions.edges.length > 0) {
-        // 3-2. Delete the review score definition metafield.
-        await (callGraphql(ctx, shop, `mutation metafieldDefinitionDelete($id: ID!, $deleteAllAssociatedMetafields: Boolean!) {
-          metafieldDefinitionDelete(id: $id, deleteAllAssociatedMetafields: $deleteAllAssociatedMetafields) {
-            deletedDefinitionId
-            userErrors {
-              field
-              message
-            }
-          }
-        }`, null, GRAPHQL_PATH_ADMIN, {
-          "deleteAllAssociatedMetafields": true,
-          "id": api_res.data.metafieldDefinitions.edges[0].node.id
-        }));
-      }
-    } catch (e) {
-      console.log(`${JSON.stringify(e)}`);
-    }
-    // 3-3. Create an review score metafield definition.
-    try {
-      const api_res = await (callGraphql(ctx, shop, `mutation metafieldDefinitionCreate($definition: MetafieldDefinitionInput!) {
-        metafieldDefinitionCreate(definition: $definition) {
-          createdDefinition {
-            id
-            name
-            namespace
-            key
-            ownerType
-            visibleToStorefrontApi
-          }
-          userErrors {
-            field
-            message
-          }
-        }
-      }
-      `, null, GRAPHQL_PATH_ADMIN, {
-        "definition": {
-          "key": "score",
-          "name": "Barebone app review score",
-          "namespace": "barebone_app_review",
-          "ownerType": "CUSTOMER",
-          "type": "number_integer",
-          "visibleToStorefrontApi": false,
-          "pin": true
-        }
-      }));
-      if (api_res.data.metafieldDefinitionCreate.userErrors.length > 0) {
-        api_errors.errors = api_errors.errors + 1;
-        api_errors.apis.push(`customer ${JSON.stringify(api_res.data.metafieldDefinitionCreate.userErrors[0])}`);
-      }
-    } catch (e) {
-      console.log(`${JSON.stringify(e)}`);
-      api_errors.errors = api_errors.errors + 1;
-      api_errors.apis.push(`customer ${JSON.stringify(e)}`);
     }
 
     // Send the error count.
@@ -1289,6 +1069,92 @@ router.get('/checkoutui', async (ctx, next) => {
 // See https://shopify.dev/docs/api/multipass
 router.get('/multipass', async (ctx, next) => {
   console.log("+++++++++++++++ /multipass +++++++++++++++");
+
+  // Access by AppBride::authenticatedFetch
+  if (typeof ctx.request.header.authorization !== UNDEFINED) {
+    console.log('Authenticated fetch');
+    const token = getTokenFromAuthHeader(ctx);
+    if (!checkAuthFetchToken(token)[0]) {
+      ctx.body.result.message = "Signature unmatched. Incorrect authentication bearer sent";
+      ctx.status = 400;
+      return;
+    }
+
+    ctx.set('Content-Type', 'application/json');
+    ctx.body = {
+      "result": {
+        "message": "",
+        "response": {}
+      }
+    };
+
+    const shop = getShopFromAuthToken(token);
+    let shop_data = null;
+    try {
+      shop_data = await (getDB(shop));
+      if (shop_data == null) {
+        ctx.body.result.message = "Authorization failed. No shop data";
+        ctx.status = 400;
+        return;
+      }
+    } catch (e) {
+      ctx.body.result.message = "Internal error in retrieving shop data";
+      ctx.status = 500;
+      return;
+    }
+
+    const api_errors = {
+      "errors": 0,
+      "apis": []
+    };
+
+    try {
+      let api_res = await (callGraphql(ctx, shop, `{
+        shop {
+          id
+        }
+      }`, null, GRAPHQL_PATH_ADMIN, null));
+      const id = api_res.data.shop.id;
+      const secret = ctx.request.query.secret;
+      api_res = await (callGraphql(ctx, shop, `mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
+        metafieldsSet(metafields: $metafields) {
+          metafields {
+            id
+            value
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+      `, null, GRAPHQL_PATH_ADMIN, {
+        "metafields": [
+          {
+            "key": "multipass_secret",
+            "namespace": "barebone_app",
+            "ownerId": id,
+            "type": "single_line_text_field",
+            "value": secret
+          }
+        ]
+      }
+      ));
+      if (api_res.data.metafieldsSet.userErrors.length > 0) {
+        api_errors.errors = api_errors.errors + 1;
+        api_errors.apis.push(`shop ${JSON.stringify(api_res.data.metafieldsSet.userErrors[0])}`);
+      }
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+      api_errors.errors = api_errors.errors + 1;
+      api_errors.apis.push(`shop ${JSON.stringify(e)}`);
+    }
+
+    // Send the error count.
+    ctx.body.result.response = api_errors;
+    ctx.status = 200;
+    return;
+  }
 
   if (typeof ctx.request.query.sessiontoken !== UNDEFINED) {
     console.log('Session Token given');

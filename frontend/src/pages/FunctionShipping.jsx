@@ -32,11 +32,11 @@ function FunctionShipping() {
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
-              <Link url="https://shopify.dev/api/functions/reference/delivery-customization" external={true}>Dev. doc</Link>
+              <Link url="https://shopify.dev/api/functions/reference/delivery-customization" target="_blank">Dev. doc</Link>
             </Layout.Section>
             <Layout.Section>
               <List type="number">
-                <List.Item>Input a <Badge>shipping rate name</Badge> which you want to show only, from <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} external={true}>shipping settings</Link>.
+                <List.Item>Input a <Badge>shipping rate name</Badge> which you want to show only, from <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} target="_blank">shipping settings</Link>.
                   <TextField
                     label=""
                     value={rate}
@@ -61,12 +61,12 @@ function FunctionShipping() {
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
-              <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/deliveryCustomizationCreate" external={true}>Dev. doc</Link>
+              <Link url="https://shopify.dev/api/admin-graphql/2023-04/mutations/deliveryCustomizationCreate" target="_blank">Dev. doc</Link>
             </Layout.Section>
             <Layout.Section>
               <List type="number">
                 <List.Item>
-                  Input your <Badge>Shopify Functions ID</Badge> available in your app extension overview in <Link url="https://shopify.dev/api/functions/errors#debugging" external={true}>partner dashboard</Link> given by <Badge>`npm run deploy`</Badge>
+                  Input your <Badge>Shopify Functions ID</Badge> available in your app extension overview in <Link url="https://shopify.dev/api/functions/errors#debugging" target="_blank">partner dashboard</Link> given by <Badge>`npm run deploy`</Badge>
                   <TextField
                     label=""
                     value={id}
@@ -100,7 +100,7 @@ function FunctionShipping() {
                   <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
                 </List.Item>
                 <List.Item>
-                  Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} external={true}>shipping settings</Link> to check if the customization is created and visit <Link url={`https://${shop}`} external={true}>your theme storefront</Link> to see how your customization works with your input zip code.
+                  Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/shipping`} target="_blank">shipping settings</Link> to check if the customization is created and visit <Link url={`https://${shop}`} target="_blank">your theme storefront</Link> to see how your customization works with your input zip code.
                 </List.Item>
               </List>
             </Layout.Section>

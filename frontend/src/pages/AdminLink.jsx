@@ -64,8 +64,8 @@ function AdminLink() {
                 <Card sectioned={true}>
                     <List type="bullet">
                         <List.Item>
-                            This app endpoints (menus) accept embedded requests only with the parameter <Badge status="info">embedded</Badge> = 1 to be protected by <Link url="https://shopify.dev/apps/auth/oauth/getting-started#step-2-verify-the-installation-request" external={true}>hmac signature verification</Link>,
-                            but this page accepts unembedded ones supposed to be <b>accessed outside Shopify to be protected by Shopify login</b> of <Link url="https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup#initialize-shopify-app-bridge-in-your-app" external={true}>App Bridge force redirection</Link> (<Badge status="info">forceRedirect: true</Badge>).
+                            This app endpoints (menus) accept embedded requests only with the parameter <Badge status="info">embedded</Badge> = 1 to be protected by <Link url="https://shopify.dev/apps/auth/oauth/getting-started#step-2-verify-the-installation-request" target="_blank">hmac signature verification</Link>,
+                            but this page accepts unembedded ones supposed to be <b>accessed outside Shopify to be protected by Shopify login</b> of <Link url="https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup#initialize-shopify-app-bridge-in-your-app" target="_blank">App Bridge force redirection</Link> (<Badge status="info">forceRedirect: true</Badge>).
                         </List.Item>
                         <List.Item>
                             Copy <Badge>{`${rawUrl}?shop=${shop}`}</Badge> to another browser in which you are not logged in to check if the page gets redirected to Shopify login (Disclaimer: the initial page should be blank for production).
@@ -75,8 +75,8 @@ function AdminLink() {
                 <Card sectioned={true}>
                     <List type="bullet">
                         <List.Item>
-                            Add <Badge>{`${rawUrl}`}</Badge> to <Link url="https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link" external={true}>Admin Link extension</Link> on the app extension settings and
-                            go to your linked pages like <Link url={`https://${_getAdminFromShop(shop)}/products`} external={true}>Products</Link>.
+                            Add <Badge>{`${rawUrl}`}</Badge> to <Link url="https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link" target="_blank">Admin Link extension</Link> on the app extension settings and
+                            go to your linked pages like <Link url={`https://${_getAdminFromShop(shop)}/products`} target="_blank">Products</Link>.
                         </List.Item>
                         <List.Item>
                             Once you click your extension label in <Badge status="info">More actions</Badge>, this page shows up again in a diffrent UI checking if the <Badge status="info">id</Badge> parameter (<b>note that "id" is given by detail page links only</b>) is given from there.
