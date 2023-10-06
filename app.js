@@ -1214,7 +1214,17 @@ router.post('/multipass', async (ctx, next) => {
   if (return_to !== '') json.return_to = return_to;
   json.created_at = new Date().toISOString();
 
-  const token = generateMultipassToken(json, "c8b6cb2cfe85dff3e285a90b4c5a15e9");
+  const api_res = await (callGraphql(ctx, shop, `{
+    shop {
+      id
+      metafield(namespace: "barebone_app", key: "multipass_secret") {
+        id
+        value
+      }
+    }
+  }`, null, GRAPHQL_PATH_ADMIN, null));
+
+  const token = generateMultipassToken(json, api_res.data.shop.metafield.value);
 
   ctx.redirect(`https://${shop}/account/login/multipass/${token}`);
 });
