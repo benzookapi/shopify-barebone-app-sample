@@ -18,6 +18,7 @@ import FunctionPayment from './pages/FunctionPayment';
 import WebPixel from './pages/WebPixel';
 import PostPurchase from './pages/PostPurchase';
 import CheckoutUi from './pages/CheckoutUi';
+import OrderManage from './pages/OrderManage';
 import Multipass from './pages/Multipass';
 
 import { _getAdminFromShop, _getShopFromQuery } from "./utils/my_util";
@@ -87,7 +88,7 @@ function App() {
           },
           {
             label: 'Order management',
-            destination: '/ordermanagement',
+            destination: '/ordermanage',
           },
           {
             label: 'Multipass',
@@ -136,6 +137,7 @@ function App() {
             <Route path="/webpixel" element={<WebPixel />} />
             <Route path="/postpurchase" element={<PostPurchase />} />
             <Route path="/checkoutui" element={<CheckoutUi />} />
+            <Route path="/ordermanage" element={<OrderManage />} />
             <Route path="/multipass" element={<Multipass />} />
           </Routes>
         </BrowserRouter>

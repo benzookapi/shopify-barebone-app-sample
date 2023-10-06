@@ -102,6 +102,14 @@ function Index() {
                         {
                             id: 10,
                             onClick: (id) => {
+                                redirect.dispatch(Redirect.Action.APP, '/ordermanage');
+                            },
+                            name: 'Order Management',
+                            location: 'Order management sameple for fulfillment, inventory, and fulfillment service',
+                        },
+                        {
+                            id: 11,
+                            onClick: (id) => {
                                 redirect.dispatch(Redirect.Action.APP, '/multipass');
                             },
                             name: 'Multipass',

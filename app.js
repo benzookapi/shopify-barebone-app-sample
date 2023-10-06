@@ -1065,6 +1065,131 @@ router.get('/checkoutui', async (ctx, next) => {
 
 });
 
+/* --- Order management sample endpoint --- */
+// See https://shopify.dev/docs/apps/fulfillment
+router.get('/ordermanage', async (ctx, next) => {
+  console.log("+++++++++++++++ /ordermanage +++++++++++++++");
+  console.log(`query ${JSON.stringify(ctx.request.query)}`);
+
+  if (isEmbedded(ctx)) {
+    console.log('Embedded access');
+    if (!checkSignature(ctx.request.query)) {
+      ctx.status = 400;
+      return;
+    }
+    const shop = ctx.request.query.shop;
+    setContentSecurityPolicy(ctx, shop);
+    return await ctx.render('index', {});
+  }
+
+  const token = getTokenFromAuthHeader(ctx);
+  if (!checkAuthFetchToken(token)[0]) {
+    ctx.body.result.message = "Signature unmatched. Incorrect authentication bearer sent";
+    ctx.status = 400;
+    return;
+  }
+
+  const shop = getShopFromAuthToken(token);
+
+  let shop_data = null;
+  try {
+    shop_data = await (getDB(shop));
+    if (shop_data == null) {
+      ctx.body = `{ "Error": "Authorization failed. No shop data"}`;
+      ctx.status = 400;
+      return;
+    }
+  } catch (e) {
+    ctx.body = `{ "Error": "Internal error in retrieving shop data"}`;
+    ctx.status = 500;
+    return;
+  }
+
+  const id = ctx.request.query.id;
+  if (typeof id !== UNDEFINED && id !== '') {
+    let error = '';
+    let api_res = null;
+    try {
+      api_res = await (callGraphql(ctx, shop, `{
+          order (id: "gid://shopify/Order/${id}") {
+            id
+            fulfillmentOrders(first: 10, reverse: true, query: "status:OPEN") {
+              edges {
+                node {
+                  id
+                  createdAt
+                  status
+                  requestStatus
+                }
+              }
+            }
+          }
+        }`, null, GRAPHQL_PATH_ADMIN, null));
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+      error += e;
+    }
+
+    const foids = ctx.request.query.foids;
+    if (typeof foids !== UNDEFINED && foids !== '') {
+      const ids = foids.split(',');
+      for await (const id of ids) {
+        try {
+          const res = await (callGraphql(ctx, shop, `mutation fulfillmentCreateV2($fulfillment: FulfillmentV2Input!) {
+                fulfillmentCreateV2(fulfillment: $fulfillment) {
+                  fulfillment {
+                    id
+                    name
+                    fulfillmentOrders(first: 3, reverse: true) {
+                      edges {
+                        node {
+                          id
+                          createdAt
+                          status
+                          requestStatus
+                        }
+                      }
+                    }
+                  }
+                  userErrors {
+                    field
+                    message
+                  }
+                }
+              }`, null, GRAPHQL_PATH_ADMIN, {
+            "fulfillment": {
+              "lineItemsByFulfillmentOrder": [
+                {
+                  "fulfillmentOrderId": id
+                }
+              ],
+              "trackingInfo": {
+                "company": "Dummy shipping carrier",
+                "number": `${new Date().getTime()}`,
+                "url": "https://example.com"
+              }
+            }
+          }));
+          if (res.data.fulfillmentCreateV2.userErrors.length > 0) {
+            error += res.data.fulfillmentCreateV2.userErrors.map((e) => { e.message }).toString();
+          }
+        } catch (e) {
+          console.log(`${JSON.stringify(e)}`);
+          error += e;
+        }
+      }
+    }
+    ctx.set('Content-Type', 'application/json');
+    ctx.body = {
+      "response": api_res.data,
+      "error": error
+    };
+    ctx.status = 200;
+    return;
+  }
+
+});
+
 /* --- Multipass sample endpoint for admin --- */
 // See https://shopify.dev/docs/api/multipass
 router.get('/multipass', async (ctx, next) => {
