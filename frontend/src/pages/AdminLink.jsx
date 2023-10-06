@@ -75,11 +75,11 @@ function AdminLink() {
                 <Card sectioned={true}>
                     <List type="bullet">
                         <List.Item>
-                            Add <Badge>{`${rawUrl}`}</Badge> to <Link url="https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link" target="_blank">Admin Link extension</Link> on the app extension settings and
-                            go to your linked pages like <Link url={`https://${_getAdminFromShop(shop)}/products`} target="_blank">Products</Link>.
+                            Add <Badge>{`${rawUrl}`}</Badge> to <Link url="https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link" target="_blank">Admin Link extension</Link> on the app extension settings
+                            for <Link url={`https://${_getAdminFromShop(shop)}/products`} target="_blank">product details</Link>.
                         </List.Item>
                         <List.Item>
-                            Once you click your extension label in <Badge status="info">More actions</Badge>, this page shows up again in a diffrent UI checking if the <Badge status="info">id</Badge> parameter (<b>note that "id" is given by detail page links only</b>) is given from there.
+                            Once you click your extension label in <Badge status="info">More actions</Badge> in your selected product details, this page shows up again in a diffrent UI checking if the <Badge status="info">id</Badge> parameter is given or not.
                         </List.Item>
                     </List>
                 </Card>
