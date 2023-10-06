@@ -11,13 +11,6 @@ import {
 
   // React hooks
   useApi, // All properties and methods are accessible from this 'StandardApi'
-  //useAppMetafields,  // Protected customer data, filtered by shopify.ui.extension.toml
-  //useCustomer, // Protected customer data
-  //useEmail, // Protected customer data  
-  //useExtensionData, // Metadata about the extension.
-  //useExtensionLanguage, // Buyer's language, as supported by the extension
-  //useShippingAddress, // Protected customer data
-  useSubscription, // https://shopify.dev/docs/api/checkout-ui-extensions/unstable/react-hooks/utilities/usesubscription
 
   // UI components
   BlockStack,
@@ -65,6 +58,9 @@ function Review() {
     let appMetas = null;
     let count = 0;
     // appMetafields.current is blank in the first loading, with data in the second, so you need to sbscrube it.
+    // The following code doesn't work...
+    // const urlMeta = useAppMetafields({ "namespace": "barebone_app", "key": "url" });
+    // const app_url = urlMeta[0].metafield.value;
     extensionApi.appMetafields.subscribe((d) => {
       count = count + 1;
       console.log(`appMetafields.subscribed (Review) count: ${count}`);
