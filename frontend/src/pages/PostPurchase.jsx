@@ -47,7 +47,7 @@ function PostPurchase() {
                 </List.Item>
                 <List.Item>
                   <p>
-                    Add this app raw URL (<Badge>https://{window.location.hostname}</Badge>) to <Badge status='info'>Shop</Badge> metafields which is invisible in admin and accessible from this app only.
+                    Add this app raw URL (<Badge>https://{window.location.hostname}</Badge>) to <Badge status='info'>Shop</Badge> metafields which is invisible in admin and accessible through this app's API call only.
                   </p>
                   <Button primary onClick={() => {
                     setAccessing(true);
@@ -74,7 +74,7 @@ function PostPurchase() {
                 <List.Item>
                   <p>
                     Set each <Badge>product id (the last number of its detail page URL)</Badge> to each <Badge>barebone_app_upsell.product_id</Badge> of <Link url={`https://${_getAdminFromShop(shop)}/products`} target="_blank">products</Link> for
-                    those you want to upsell (e.g. Purchasing a Product A with a Product B's ID offers a Product B in post-purchases).
+                    those you want to upsell (e.g. purchasing a product A with a product B's id offers a B in the post-purchase).
                   </p>
                 </List.Item>
                 <List.Item>
@@ -105,7 +105,7 @@ function PostPurchase() {
                     You can check the post purchases in <Link url={`https://${_getAdminFromShop(shop)}/orders`} target="_blank">orders </Link> with each detail page (you'll see appended items and transactions there).
                   </p>
                   <p>
-                    Also, you can check the review score of each buyer in <Badge>barebone_app_review.score</Badge> of <Link url={`https://${_getAdminFromShop(shop)}/customers`} target="_blank">customers</Link>.
+                    Also, you can check the review score of each buyer in <Badge>barebone_app_review.score</Badge> metafield of <Link url={`https://${_getAdminFromShop(shop)}/customers`} target="_blank">customers</Link>.
                   </p>
                 </List.Item>
               </List>

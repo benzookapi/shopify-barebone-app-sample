@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Provider, NavigationMenu, TitleBar } from '@shopify/app-bridge-react';
-import { AppProvider } from '@shopify/polaris';
+import { AppProvider, FooterHelp } from '@shopify/polaris';
 
 // See https://www.npmjs.com/package/@shopify/polaris
 import '@shopify/polaris/build/esm/styles.css';
@@ -142,6 +142,7 @@ function App() {
           </Routes>
         </BrowserRouter>
         {/* Each page content comes here */}
+        <FooterHelp></FooterHelp>
       </AppProvider>
     </Provider>
   );

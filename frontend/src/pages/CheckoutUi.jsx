@@ -60,7 +60,7 @@ function CheckoutUi() {
                     You can check the upsell products in <Link url={`https://${_getAdminFromShop(shop)}/orders`} target="_blank">orders </Link> with detailed info.
                   </p>
                   <p>
-                    Also, you can check the review score of each buyer in <Badge>barebone_app_review.score</Badge> of <Link url={`https://${_getAdminFromShop(shop)}/customers`} target="_blank">customers</Link>.
+                    Also, you can check the review score of each buyer in <Badge>barebone_app_review.score</Badge> metafield of <Link url={`https://${_getAdminFromShop(shop)}/customers`} target="_blank">customers</Link>.
                   </p>
                 </List.Item>
               </List>

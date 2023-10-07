@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, Badge, Text, Spinner, List, VerticalStack, Button, ButtonGroup, FooterHelp } from '@shopify/polaris';
+import { Page, Card, Layout, Link, Badge, Text, Spinner, List, VerticalStack, Button, ButtonGroup } from '@shopify/polaris';
 
 import { _decodeSessionToken, _getAdminFromShop, _getShopFromQuery } from "../utils/my_util";
 
@@ -84,9 +84,6 @@ function OrderManage() {
                         </ButtonGroup>
                     </Layout.Section>
                 </Layout>
-                <FooterHelp>
-
-                </FooterHelp>
             </Page>
         );
     }
