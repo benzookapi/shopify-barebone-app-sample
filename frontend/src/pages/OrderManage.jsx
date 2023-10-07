@@ -104,7 +104,7 @@ function OrderManage() {
                             for <Link url={`https://${_getAdminFromShop(shop)}/orders`} target="_blank">order details</Link>.
                         </List.Item>
                         <List.Item>
-                            Once you click your extension label in <Badge status="info">More actions</Badge> in your selected order details, this page shows up again in a diffrent UI for fulfillment / capture / refund, checking if the <Badge status="info">id</Badge> parameter is given or not.
+                            Once you click your extension label in <Badge status="info">More actions</Badge> in your selected order details, this page shows up again in a diffrent UI for <Badge>fulfillment / capture / refund</Badge>, checking if the <Badge status="info">id</Badge> parameter is given or not.
                         </List.Item>
                         <List.Item>
                             Check the <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/objects/Order" target="_blank">admin order API specification</Link> to understand what data can be retrieved with it.
