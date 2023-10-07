@@ -114,7 +114,7 @@ function App() {
         breadcrumbs={[{ content: "Index", url: '/', target: "APP" }]}
         primaryAction={{ content: 'Code on GitHub', url: 'https://github.com/benzookapi/shopify-barebone-app-sample', target: "REMOTE", external: true }}
         secondaryActions={[{ content: 'Dev. site', url: 'https://shopify.dev/', target: "REMOTE", external: true }]}
-        actionGroups={[{ title: 'Shopify JP Blog', actions: [{ content: 'How to build apps / themes', url: 'https://www.shopify.com/jp/blog/partner-shopify-app-development', target: "REMOTE", external: true }] }]}
+        actionGroups={[{ title: 'Check', actions: [{ content: 'Shopify Community', url: 'https://community.shopify.com/c/shopify-community/ct-p/en', target: "REMOTE", external: true }] }]}
       />
       {/* Replacing <AppProvider i18n={translations}> for my own use case. */}
       <AppProvider i18n={{

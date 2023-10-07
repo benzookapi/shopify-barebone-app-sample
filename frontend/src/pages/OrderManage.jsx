@@ -43,7 +43,7 @@ function OrderManage() {
                     <Layout.Section>
                         <Text as='h2'>Your selected data id: <Badge status='info'><Link url={`https://${_getAdminFromShop(shop)}/orders/${id}`} target="_blank">{id}</Link></Badge></Text>
                         <Text>
-                            <Link onClick={() => { redirect.dispatch(Redirect.Action.APP, '/adminlink'); }}>
+                            <Link onClick={() => { redirect.dispatch(Redirect.Action.APP, '/ordermanage'); }}>
                                 Go back
                             </Link>
                         </Text>
@@ -89,13 +89,20 @@ function OrderManage() {
     }
 
     return (
-        <Page title="Switch the request hanlding for embedded or unembedded.">
+        <Page title="Order namagement sample with fulfillment, inventory, and filfillment service">
             <VerticalStack gap="5">
                 <Card sectioned={true}>
                     <Link url="https://shopify.dev/docs/apps/fulfillment" target="_blank">Dev. doc</Link>
                     <List type="bullet">
                         <List.Item>
-
+                            Add <Badge>{`${rawUrl}`}</Badge> to <Link url="https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link" target="_blank">Admin Link extension</Link> on the app extension settings
+                            for <Link url={`https://${_getAdminFromShop(shop)}/orders`} target="_blank">order details</Link>.
+                        </List.Item>
+                        <List.Item>
+                            Once you click your extension label in <Badge status="info">More actions</Badge> in your selected order details, this page shows up again in a diffrent UI checking if the <Badge status="info">id</Badge> parameter is given or not.
+                        </List.Item>
+                        <List.Item>
+                            Check the <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/objects/Order" target="_blank">admin order API specification</Link> to understand what data can be retrieved with it.
                         </List.Item>
                     </List>
                 </Card>

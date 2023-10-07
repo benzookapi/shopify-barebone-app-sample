@@ -1164,13 +1164,101 @@ router.get('/ordermanage', async (ctx, next) => {
       api_res = await (callGraphql(ctx, shop, `{
           order (id: "gid://shopify/Order/${id}") {
             id
-            fulfillmentOrders(first: 10, reverse: true, query: "status:OPEN") {
+            name
+            capturable
+            canMarkAsPaid
+            lineItems(first: 10) {
+              edges {
+                node {
+                  id
+                  title
+                  quantity
+                  taxLines {
+                    title
+                    priceSet {
+                      presentmentMoney {
+                        currencyCode
+                        amount
+                      }
+                    }
+                  }
+                  product {
+                    id
+                    title
+                    priceRangeV2 {
+                      minVariantPrice {
+                        amount
+                        currencyCode
+                      }
+                      maxVariantPrice {
+                        amount
+                        currencyCode
+                      }
+                    }
+                  }
+                  variant {
+                    id
+                    title
+                    price
+                  }
+                }
+              }
+            }
+            fulfillments(first: 10) {
+              id
+              createdAt
+              deliveredAt
+              displayStatus
+              status
+              service {
+                id
+                handle
+                serviceName
+                type
+              }         
+            }            
+            transactions(first: 10) {
+              id
+              status
+              gateway
+              formattedGateway
+              kind
+              manuallyCapturable
+              amountSet {
+                presentmentMoney {
+                  amount
+                  currencyCode
+                }
+              }
+              parentTransaction {
+                id
+              }
+              paymentDetails {
+                ... on CardPaymentDetails {
+                  avsResultCode
+                  bin
+                  company
+                  cvvResultCode
+                  expirationMonth
+                  expirationYear
+                  name
+                  number
+                  paymentMethodName
+                  wallet
+                }
+              }              
+            }
+            fulfillmentOrders(first: 10) {
               edges {
                 node {
                   id
                   createdAt
                   status
                   requestStatus
+                  supportedActions {
+                    action
+                    externalUrl
+                  }
                 }
               }
             }
