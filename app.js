@@ -1159,6 +1159,40 @@ router.get('/ordermanage', async (ctx, next) => {
         }
       }
     }
+    const trans = ctx.request.query.trans;
+    if (typeof trans !== UNDEFINED && trans !== '') {
+      const trs = trans.split(',');
+      for await (const tr of trs) {
+        try {
+          const res = await (callGraphql(ctx, shop, `mutation orderCapture($input: OrderCaptureInput!) {
+            orderCapture(input: $input) {
+              transaction {
+                id
+                status
+                gateway
+                kind
+              }
+              userErrors {
+                field
+                message
+              }
+            }
+          }`, null, GRAPHQL_PATH_ADMIN, {
+            "input": {
+              "amount": tr.split('-')[1],
+              "id": `gid://shopify/Order/${id}`,
+              "parentTransactionId": tr.split('-')[0]
+            }
+          }));
+          if (res.data.orderCapture.userErrors.length > 0) {
+            error += res.data.orderCapture.userErrors.map((e) => { e.message }).toString();
+          }
+        } catch (e) {
+          console.log(`${JSON.stringify(e)}`);
+          error += e;
+        }
+      }
+    }
 
     try {
       api_res = await (callGraphql(ctx, shop, `{

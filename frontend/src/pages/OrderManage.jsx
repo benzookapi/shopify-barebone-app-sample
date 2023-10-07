@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, Badge, Text, Spinner, List, VerticalStack, Button, ButtonGroup } from '@shopify/polaris';
+import { Page, Card, Layout, Link, Badge, Text, Spinner, List, VerticalStack, Button } from '@shopify/polaris';
 
 import { _decodeSessionToken, _getAdminFromShop, _getShopFromQuery } from "../utils/my_util";
 
@@ -17,6 +17,7 @@ function OrderManage() {
     const shop = _getShopFromQuery(window);
 
     const [foIds, setFoIds] = useState([]);
+    const [trans, setTrans] = useState([]);
 
     const id = new URLSearchParams(window.location.search).get("id");
     if (id != null) {
@@ -27,6 +28,7 @@ function OrderManage() {
                     console.log(JSON.stringify(json, null, 4));
                     setRes(JSON.stringify(json, null, 4));
                     setFoIds(json.response.order.fulfillmentOrders.edges.map((e) => e.node.id));
+                    setTrans(json.response.order.transactions.map((t) => `${t.id}-${t.amountSet.presentmentMoney.amount}`));
                 }).catch((e) => {
                     console.log(`${e}`);
                     setRes(``);
@@ -38,7 +40,9 @@ function OrderManage() {
             <Page title="Your oder details">
                 <Layout>
                     <Layout.Section>
-                        <Link url="https://shopify.dev/docs/apps/fulfillment" target="_blank">Dev. doc</Link>
+                        <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/fulfillmentCreateV2" target="_blank">Dev. doc (1)</Link>&nbsp;&nbsp;
+                        <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/orderCapture" target="_blank">Dev. doc (2)</Link>&nbsp;&nbsp;
+                        <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/objects/OrderTransaction" target="_blank">Dev. doc (3)</Link>
                     </Layout.Section>
                     <Layout.Section>
                         <Text as='h2'>Your selected data id: <Badge status='info'><Link url={`https://${_getAdminFromShop(shop)}/orders/${id}`} target="_blank">{id}</Link></Badge></Text>
@@ -54,34 +58,34 @@ function OrderManage() {
                         </Card>
                     </Layout.Section>
                     <Layout.Section>
-                        <ButtonGroup>
-                            <Button primary onClick={() => {
-                                setRes(``);
-                                authenticatedFetch(app)(`/ordermanage?id=${id}&foids=${foIds}`).then((response) => {
-                                    response.json().then((json) => {
-                                        console.log(JSON.stringify(json, null, 4));
-                                        setRes(JSON.stringify(json, null, 4));
-                                        setFoIds(json.response.order.fulfillmentOrders.edges.map((e) => e.node.id));
-                                    }).catch((e) => {
-                                        console.log(`${e}`);
-                                        setRes(``);
-                                    });
+                        <Button primary onClick={() => {
+                            setRes(``);
+                            authenticatedFetch(app)(`/ordermanage?id=${id}&foids=${foIds}`).then((response) => {
+                                response.json().then((json) => {
+                                    console.log(JSON.stringify(json, null, 4));
+                                    setRes(JSON.stringify(json, null, 4));
+                                    setFoIds(json.response.order.fulfillmentOrders.edges.map((e) => e.node.id));
+                                }).catch((e) => {
+                                    console.log(`${e}`);
+                                    setRes(``);
                                 });
-                            }}>Fulfillment this order</Button>
-                            <Button primary onClick={() => {
-                                setRes(``);
-                                authenticatedFetch(app)(`/ordermanage?id=${id}&foids=${foIds}`).then((response) => {
-                                    response.json().then((json) => {
-                                        console.log(JSON.stringify(json, null, 4));
-                                        setRes(JSON.stringify(json, null, 4));
-                                        setFoIds(json.response.order.fulfillmentOrders.edges.map((e) => e.node.id));
-                                    }).catch((e) => {
-                                        console.log(`${e}`);
-                                        setRes(``);
-                                    });
+                            });
+                        }}>Fulfillment this order</Button> with <Badge status='info'>fulfillment order ids</Badge> and <Badge status='info'>fulfillmentOrder.status = "OPEN"</Badge>
+                    </Layout.Section>
+                    <Layout.Section>
+                        <Button primary onClick={() => {
+                            setRes(``);
+                            authenticatedFetch(app)(`/ordermanage?id=${id}&trans=${trans}`).then((response) => {
+                                response.json().then((json) => {
+                                    console.log(JSON.stringify(json, null, 4));
+                                    setRes(JSON.stringify(json, null, 4));
+                                    setTrans(json.response.order.transactions.map((t) => `${t.id}-${t.amountSet.presentmentMoney.amount}`));
+                                }).catch((e) => {
+                                    console.log(`${e}`);
+                                    setRes(``);
                                 });
-                            }}>Fulfillment this order</Button>
-                        </ButtonGroup>
+                            });
+                        }}>Capture this order</Button> with <Badge status='info'>transaction ids</Badge> and <Badge status='info'>order.capturable = true</Badge>
                     </Layout.Section>
                 </Layout>
             </Page>
@@ -89,10 +93,11 @@ function OrderManage() {
     }
 
     return (
-        <Page title="Order namagement sample with fulfillment, inventory, and filfillment service">
+        <Page title="Order namagement sample for fulfillments, transactions, inventories, and filfillment services">
             <VerticalStack gap="5">
                 <Card sectioned={true}>
                     <Link url="https://shopify.dev/docs/apps/fulfillment" target="_blank">Dev. doc</Link>
+                    <br /><br />
                     <List type="bullet">
                         <List.Item>
                             Add <Badge>{`${rawUrl}`}</Badge> to <Link url="https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link" target="_blank">Admin Link extension</Link> on the app extension settings
@@ -107,6 +112,17 @@ function OrderManage() {
                     </List>
                 </Card>
                 <Card sectioned={true}>
+                    <Link url="https://shopify.dev/docs/apps/fulfillment/inventory-management-apps" target="_blank">Dev. doc</Link>
+                    <br /><br />
+                    <List type="bullet">
+                        <List.Item>
+
+                        </List.Item>
+                    </List>
+                </Card>
+                <Card sectioned={true}>
+                    <Link url="https://shopify.dev/docs/apps/fulfillment/inventory-management-apps" target="_blank">Dev. doc</Link>
+                    <br /><br />
                     <List type="bullet">
                         <List.Item>
 
