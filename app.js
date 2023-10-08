@@ -1107,6 +1107,8 @@ router.get('/ordermanage', async (ctx, next) => {
 
   const id = ctx.request.query.id;
   if (typeof id !== UNDEFINED && id !== '') {
+    const order_id = `gid://shopify/Order/${id}`;
+
     let error = '';
     let api_res = null;
 
@@ -1159,6 +1161,7 @@ router.get('/ordermanage', async (ctx, next) => {
         }
       }
     }
+
     const trans = ctx.request.query.trans;
     if (typeof trans !== UNDEFINED && trans !== '') {
       const trs = trans.split(',');
@@ -1180,7 +1183,7 @@ router.get('/ordermanage', async (ctx, next) => {
           }`, null, GRAPHQL_PATH_ADMIN, {
             "input": {
               "amount": tr.split('-')[1],
-              "id": `gid://shopify/Order/${id}`,
+              "id": order_id,
               "parentTransactionId": tr.split('-')[0]
             }
           }));
@@ -1196,54 +1199,23 @@ router.get('/ordermanage', async (ctx, next) => {
 
     try {
       api_res = await (callGraphql(ctx, shop, `{
-          order (id: "gid://shopify/Order/${id}") {
+          order (id: "${order_id}") {
             id
             name
-            capturable
-            canMarkAsPaid
-            lineItems(first: 10) {
-              edges {
-                node {
-                  id
-                  title
-                  quantity
-                  taxLines {
-                    title
-                    priceSet {
-                      presentmentMoney {
-                        currencyCode
-                        amount
-                      }
-                    }
-                  }
-                  product {
-                    id
-                    title
-                    priceRangeV2 {
-                      minVariantPrice {
-                        amount
-                        currencyCode
-                      }
-                      maxVariantPrice {
-                        amount
-                        currencyCode
-                      }
-                    }
-                  }
-                  variant {
-                    id
-                    title
-                    price
-                  }
-                }
-              }
-            }
+            displayFulfillmentStatus
+            fulfillable
+            displayFinancialStatus
+            capturable         
             fulfillments(first: 10) {
               id
               createdAt
               deliveredAt
               displayStatus
               status
+              trackingInfo {
+                number
+                company
+              }
               service {
                 id
                 handle

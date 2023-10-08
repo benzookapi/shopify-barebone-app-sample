@@ -34,15 +34,14 @@ function OrderManage() {
                     setRes(``);
                 });
             });
-        }, [res]);
+        }, ['']);
 
         return (
             <Page title="Your oder details">
                 <Layout>
                     <Layout.Section>
                         <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/fulfillmentCreateV2" target="_blank">Dev. doc (1)</Link>&nbsp;&nbsp;
-                        <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/orderCapture" target="_blank">Dev. doc (2)</Link>&nbsp;&nbsp;
-                        <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/objects/OrderTransaction" target="_blank">Dev. doc (3)</Link>
+                        <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/orderCapture" target="_blank">Dev. doc (2)</Link>
                     </Layout.Section>
                     <Layout.Section>
                         <Text as='h2'>Your selected data id: <Badge status='info'><Link url={`https://${_getAdminFromShop(shop)}/orders/${id}`} target="_blank">{id}</Link></Badge></Text>
@@ -70,7 +69,7 @@ function OrderManage() {
                                     setRes(``);
                                 });
                             });
-                        }}>Fulfillment this order</Button> with <Badge status='info'>fulfillment order ids</Badge> and <Badge status='info'>fulfillmentOrder.status = "OPEN"</Badge>
+                        }}>Fulfillment this order</Button> with <Badge status='info'>fulfillment order ids</Badge> and <Badge status='info'>order.fulfillable = true</Badge>
                     </Layout.Section>
                     <Layout.Section>
                         <Button primary onClick={() => {
