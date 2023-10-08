@@ -1381,6 +1381,7 @@ router.get('/ordermanage', async (ctx, next) => {
 router.post('/fulfillment_order_notification', async (ctx, next) => {
   console.log("*************** fulfillment_order_notification ***************");
   console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
+  console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
 
   /* Check the signature */
   const valid = await (checkWebhookSignature(ctx, API_SECRET));
@@ -1422,6 +1423,7 @@ router.post('/fulfillment_order_notification', async (ctx, next) => {
                 edges {
                   node {
                     message
+                    requestOptions
                   }
                 }
               }
@@ -1479,6 +1481,8 @@ router.post('/fulfillment_order_notification', async (ctx, next) => {
 router.post('/fetch_tracking_numbers', async (ctx, next) => {
   console.log("*************** fetch_tracking_numbers ***************");
   console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
+  console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
+
   /* Check the signature */
   const valid = await (checkWebhookSignature(ctx, API_SECRET));
   if (!valid) {
@@ -1495,6 +1499,8 @@ router.post('/fetch_tracking_numbers', async (ctx, next) => {
 router.post('/fetch_stock', async (ctx, next) => {
   console.log("*************** fetch_stock ***************");
   console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
+  console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
+
   /* Check the signature */
   const valid = await (checkWebhookSignature(ctx, API_SECRET));
   if (!valid) {
@@ -1790,6 +1796,8 @@ router.get('/mocklogin', async (ctx, next) => {
 router.post('/webhookcommon', async (ctx, next) => {
   console.log("*************** webhookcommon ***************");
   console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
+  console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
+
   // Check the signature
   const valid = await (checkWebhookSignature(ctx, WEBHOOK_SECRET));
   if (!valid) {
@@ -1807,6 +1815,7 @@ router.post('/webhookcommon', async (ctx, next) => {
 router.post('/webhookgdpr', async (ctx, next) => {
   console.log("*************** webhookgdpr ***************");
   console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
+  console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
 
   /* Check the signature */
   const valid = await (checkWebhookSignature(ctx, API_SECRET));
