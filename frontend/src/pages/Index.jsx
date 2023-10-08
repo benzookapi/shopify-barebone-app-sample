@@ -105,7 +105,7 @@ function Index() {
                                 redirect.dispatch(Redirect.Action.APP, '/ordermanage');
                             },
                             name: 'Order Management',
-                            location: 'Order management sameple for fulfillments, transactions, inventories and fulfillment services',
+                            location: 'Order management sameple for fulfillments, transactions and fulfillment services',
                         },
                         {
                             id: 11,

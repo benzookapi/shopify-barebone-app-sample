@@ -1105,12 +1105,12 @@ router.get('/ordermanage', async (ctx, next) => {
     return;
   }
 
+  let error = '';
+  let api_res = null;
+
   const id = ctx.request.query.id;
   if (typeof id !== UNDEFINED && id !== '') {
     const order_id = `gid://shopify/Order/${id}`;
-
-    let error = '';
-    let api_res = null;
 
     const foids = ctx.request.query.foids;
     if (typeof foids !== UNDEFINED && foids !== '') {
@@ -1147,7 +1147,7 @@ router.get('/ordermanage', async (ctx, next) => {
               ],
               "trackingInfo": {
                 "company": "Dummy shipping carrier",
-                "number": `${new Date().getTime()}`,
+                "number": `manual-${new Date().getTime()}`,
                 "url": "https://example.com"
               }
             }
@@ -1274,16 +1274,235 @@ router.get('/ordermanage', async (ctx, next) => {
       console.log(`${JSON.stringify(e)}`);
       error += e;
     }
+  }
 
-    ctx.set('Content-Type', 'application/json');
-    ctx.body = {
-      "response": api_res.data,
-      "error": error
-    };
-    ctx.status = 200;
+  const fs = ctx.request.query.fs;
+  if (typeof fs !== UNDEFINED && fs === 'true') {
+    try {
+      api_res = await (callGraphql(ctx, shop, `{
+        shop {
+          id
+          metafield(namespace: "barebone_app", key: "fullfillment_service") {
+            value
+          }
+        }
+      }`, null, GRAPHQL_PATH_ADMIN, null));
+      const shop_id = api_res.data.shop.id;
+      let fs_id = null;
+      if (api_res.data.shop.metafield != null) {
+        fs_id = api_res.data.shop.metafield.value;
+      }
+      if (fs_id != null) {
+        api_res = await (callGraphql(ctx, shop, `mutation fulfillmentServiceDelete($id: ID!) {
+          fulfillmentServiceDelete(id: $id) {
+            deletedId
+            userErrors {
+              field
+              message
+            }
+          }
+        }`, null, GRAPHQL_PATH_ADMIN, {
+          "id": fs_id
+        }));
+        if (api_res.data.fulfillmentServiceDelete.userErrors.length > 0) {
+          error += api_res.data.fulfillmentServiceDelete.userErrors.map((e) => { return e.message; }).toString();
+        }
+        fs_id = null;
+      }
+      api_res = await (callGraphql(ctx, shop, `mutation fulfillmentServiceCreate($callbackUrl: URL!, $fulfillmentOrdersOptIn: Boolean!, $name: String!) {
+        fulfillmentServiceCreate(callbackUrl: $callbackUrl, fulfillmentOrdersOptIn: $fulfillmentOrdersOptIn, name: $name) {
+          fulfillmentService {
+            id
+            callbackUrl
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }`, null, GRAPHQL_PATH_ADMIN, {
+        "callbackUrl": `https://${ctx.request.host}`,
+        "fulfillmentOrdersOptIn": true,
+        "inventoryManagement": true,
+        "name": "Barebone app fulfillment service",
+        "permitsSkuSharing": true,
+        "trackingSupport": true
+      }));
+      if (api_res.data.fulfillmentServiceCreate.userErrors.length > 0) {
+        error += api_res.data.fulfillmentServiceCreate.userErrors.map((e) => { return e.message; }).toString();
+      } else {
+        fs_id = api_res.data.fulfillmentServiceCreate.fulfillmentService.id;
+      }
+      if (fs_id != null) {
+        api_res = await (callGraphql(ctx, shop, `mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
+          metafieldsSet(metafields: $metafields) {
+            metafields {
+              id
+              namespace
+              key
+              value
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }`, null, GRAPHQL_PATH_ADMIN, {
+          "metafields": [
+            {
+              "key": "fullfillment_service",
+              "namespace": "barebone_app",
+              "ownerId": shop_id,
+              "value": `${fs_id}`,
+              "type": "single_line_text_field"
+            }
+          ]
+        }));
+      }
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+      error += e;
+    }
+  }
+
+  ctx.set('Content-Type', 'application/json');
+  ctx.body = {
+    "response": api_res.data,
+    "error": error
+  };
+  console.log(`body: ${JSON.stringify(ctx.body)}`);
+  ctx.status = 200;
+
+});
+
+/* --- Fulfillment service endpoint --- */
+// See https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps/manage-fulfillments
+// The validation and request data are the same as webhooks.
+router.post('/fulfillment_order_notification', async (ctx, next) => {
+  console.log("*************** fulfillment_order_notification ***************");
+  console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
+
+  /* Check the signature */
+  const valid = await (checkWebhookSignature(ctx, API_SECRET));
+  if (!valid) {
+    console.log('Not a valid signature');
+    ctx.status = 401;
     return;
   }
 
+  const shop = ctx.request.header["x-shopify-shop-domain"];
+
+  callGraphql(ctx, shop, `query {
+      shop {
+        assignedFulfillmentOrders(first: 10, assignmentStatus: FULFILLMENT_REQUESTED) {
+          edges {
+            node {
+              id
+              destination {
+                firstName
+                lastName
+                address1
+                city
+                province
+                zip
+                countryCode
+                phone
+              }
+              lineItems(first: 10) {
+                edges {
+                  node {
+                    id
+                    productTitle
+                    sku
+                    remainingQuantity
+                  }
+                }
+              }
+              merchantRequests(first: 10, kind: FULFILLMENT_REQUEST) {
+                edges {
+                  node {
+                    message
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }`, null, GRAPHQL_PATH_ADMIN, null).then((api_res) => {
+    api_res.data.shop.assignedFulfillmentOrders.edges.map((e) => {
+      callGraphql(ctx, shop, `mutation acceptFulfillmentRequest {
+            fulfillmentOrderAcceptFulfillmentRequest(
+              id: "${e.node.id}",
+              message: "Your request has been accepted!"){
+              fulfillmentOrder {
+                status
+                requestStatus
+              }
+            }
+          }`, null, GRAPHQL_PATH_ADMIN, null).then((res) => {
+        callGraphql(ctx, shop, `mutation fulfillmentCreateV2($fulfillment: FulfillmentV2Input!) {
+                fulfillmentCreateV2(fulfillment: $fulfillment) {
+                  fulfillment {
+                    id
+                    name
+                  }
+                  userErrors {
+                    field
+                    message
+                  }
+                }
+              }`, null, GRAPHQL_PATH_ADMIN, {
+          "fulfillment": {
+            "lineItemsByFulfillmentOrder": [
+              {
+                "fulfillmentOrderId": e.node.id
+              }
+            ],
+            "trackingInfo": {
+              "company": "Barebone app shipping carrier",
+              "number": `service-${new Date().getTime()}`,
+              "url": "https://example.com"
+            }
+          }
+        });
+      });
+    });
+  });
+
+  ctx.status = 200;
+});
+
+/* --- Fulfillment service tracking number endpoint --- */
+// See https://shopify.dev/docs/api/admin-graphql/2023-10/mutations/fulfillmentservicecreate#argument-callbackurl
+// The validation and request data are the same as webhooks.
+router.post('/fetch_tracking_numbers', async (ctx, next) => {
+  console.log("*************** fetch_tracking_numbers ***************");
+  console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
+  /* Check the signature */
+  const valid = await (checkWebhookSignature(ctx, API_SECRET));
+  if (!valid) {
+    console.log('Not a valid signature');
+    ctx.status = 401;
+    return;
+  }
+  ctx.status = 200;
+});
+
+/* --- Fulfillment service inventory endpoint --- */
+// See https://shopify.dev/docs/api/admin-graphql/2023-10/mutations/fulfillmentservicecreate#argument-callbackurl
+// The validation and request data are the same as webhooks.
+router.post('/fetch_stock', async (ctx, next) => {
+  console.log("*************** fetch_stock ***************");
+  console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
+  /* Check the signature */
+  const valid = await (checkWebhookSignature(ctx, API_SECRET));
+  if (!valid) {
+    console.log('Not a valid signature');
+    ctx.status = 401;
+    return;
+  }
+  ctx.status = 200;
 });
 
 /* --- Multipass sample endpoint for admin --- */
@@ -1587,7 +1806,7 @@ router.post('/webhookcommon', async (ctx, next) => {
 /* --- Webhook endpoint for  GDPR --- */
 router.post('/webhookgdpr', async (ctx, next) => {
   console.log("*************** webhookgdpr ***************");
-  console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
+  console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
 
   /* Check the signature */
   const valid = await (checkWebhookSignature(ctx, API_SECRET));
