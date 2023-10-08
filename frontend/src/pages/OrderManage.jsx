@@ -155,6 +155,9 @@ function OrderManage() {
                             If you want to make this app a <Badge>shipping rate provider</Badge>, you have to register <Link url="https://shopify.dev/docs/api/admin-rest/unstable/resources/carrierservice#post-carrier-services" target="_blank">CarrierService</Link> which is available in <Badge>REST API</Badge> only. Instead, you can add your app defined shipping rate natively 
                             with <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/deliveryProfileCreate" target="_blank">deliveryProfileCreate</Link> API.
                         </List.Item>
+                        <List.Item>
+                            If you want this app to <Badge>manage inventories</Badge>, refer to <Link url="https://shopify.dev/docs/apps/fulfillment/inventory-management-apps/quantities-states" target="_blank">inventory management API</Link> which is not implemented by this sample.
+                        </List.Item>
                     </List>
                 </Card>
             </VerticalStack>
