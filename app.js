@@ -1675,6 +1675,21 @@ router.post('/multipass', async (ctx, next) => {
   ctx.redirect(`https://${shop}/account/login/multipass/${token}`);
 });
 
+/* --- Bulk operation sample endpoint --- */
+// See https://shopify.dev/docs/api/usage/bulk-operations
+router.get('/bulkoperation', async (ctx, next) => {
+  console.log("+++++++++++++++ /bulkoperation +++++++++++++++");
+
+  if (!checkSignature(ctx.request.query)) {
+    ctx.status = 400;
+    return;
+  }
+  const shop = ctx.request.query.shop;
+  setContentSecurityPolicy(ctx, shop);
+  await ctx.render('index', {});
+
+});
+
 /* --- App proxies sample endpoint --- */
 // See https://shopify.dev/apps/online-store/app-proxies
 router.get('/appproxy', async (ctx, next) => {

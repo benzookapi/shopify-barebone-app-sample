@@ -20,6 +20,7 @@ import PostPurchase from './pages/PostPurchase';
 import CheckoutUi from './pages/CheckoutUi';
 import OrderManage from './pages/OrderManage';
 import Multipass from './pages/Multipass';
+import BulkOperation from './pages/BulkOperation';
 
 import { _getAdminFromShop, _getShopFromQuery } from "./utils/my_util";
 
@@ -139,6 +140,7 @@ function App() {
             <Route path="/checkoutui" element={<CheckoutUi />} />
             <Route path="/ordermanage" element={<OrderManage />} />
             <Route path="/multipass" element={<Multipass />} />
+            <Route path="/bulkoperation" element={<BulkOperation />} />
           </Routes>
         </BrowserRouter>
         {/* Each page content comes here */}

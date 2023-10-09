@@ -114,6 +114,14 @@ function Index() {
                             },
                             name: 'Multipass',
                             location: 'Multipass sample with dummy SSO',
+                        },
+                        {
+                            id: 12,
+                            onClick: (id) => {
+                                redirect.dispatch(Redirect.Action.APP, '/bulkoperation');
+                            },
+                            name: 'Bulk Operation',
+                            location: 'Bulk Operation sample for product importing with file uploading',
                         }
                     ]}
                     renderItem={(item) => {

@@ -31,16 +31,8 @@ frontend/ ... React code base to be built by Vite for app admin UI. All built co
 --------- Extensions with Shopify CLI generation and deployment (Liquid/JavaScript/Wasm, etc.) ---------
 extensions/ ... automatically generated directory and code by Shopify CLI `npm run generate extension`.
 
-  ./my-theme-app-ext ... Theme App Extensions sample following this turotial. https://shopify.dev/apps/online-store/theme-app-extensions/getting-started
-
-  ./my-function-discount-ext ... Shopify Functions for Dicounts Extensions sample using Cargo with Rust https://shopify.dev/apps/discounts/create#step-4-add-and-deploy-a-product-discount-extension
-
-  ./my-function-shipping-ext ... Shopify Functions for Delivery Extensions sample using Cargo with Rust https://shopify.dev/apps/checkout/delivery-customizations/getting-started
-
-  ./my-function-payment-ext ... Shopify Functions for Payment Extensions sample using Cargo with Rust https://shopify.dev/apps/checkout/payment-customizations/getting-started
-
-shopify.app.toml ... required file by CLI commands.
-
+  ./my-XXXXX-ext ... each extension (Theme App, Shopify Functions, Checkout UI Extension, Post-purchase, Web Pixels, etc.) sources.
+    ../shopify.app.toml ... each extension configuration required by CLI commands.
 ```
 
 [React](https://reactjs.org/) ([JSX](https://reactjs.org/docs/introducing-jsx.html), [Props](https://reactjs.org/docs/components-and-props.html), [State](https://reactjs.org/docs/state-and-lifecycle.html), [Hooks](https://reactjs.org/docs/hooks-intro.html), etc.) and [GraphQL](https://graphql.org/) ([Query](https://graphql.org/learn/queries/), [Edges](https://graphql.org/learn/pagination/#pagination-and-edges), [Union](https://graphql.org/learn/schema/#union-types), etc.) are mandatory technologies for manipulating this sample.
