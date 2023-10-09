@@ -28,7 +28,7 @@ frontend/ ... React code base to be built by Vite for app admin UI. All built co
   ./package.json ... React code used npm libraries and scripts for building React code with Vite.
   ./vite.config.js ... Vite congfig file for building React code into real runnable minized JS + CSS on browsers.
 
---------- Extensions with Shopify CLI generation and deployment (Liquid/JavaScript/Wasm, etc.) ---------
+--------- Extensions with Shopify CLI generation and deployment (Liquid/React/JavaScript/Wasm, etc.) ---------
 extensions/ ... automatically generated directory and code by Shopify CLI `npm run generate extension`.
 
   ./my-XXXXX-ext ... each extension (Theme App / Shopify Functions / Checkout UI / Post-purchase / Web Pixels /... etc.) source.
