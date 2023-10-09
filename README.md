@@ -31,7 +31,7 @@ frontend/ ... React code base to be built by Vite for app admin UI. All built co
 --------- Extensions with Shopify CLI generation and deployment (Liquid/JavaScript/Wasm, etc.) ---------
 extensions/ ... automatically generated directory and code by Shopify CLI `npm run generate extension`.
 
-  ./my-XXXXX-ext ... each extension (Theme App, Shopify Functions, Checkout UI Extension, Post-purchase, Web Pixels, etc.) sources.
+  ./my-XXXXX-ext ... each extension (Theme App / Shopify Functions / Checkout UI / Post-purchase / Web Pixels /... etc.) source.
     ../shopify.app.toml ... each extension configuration required by CLI commands.
 ```
 
