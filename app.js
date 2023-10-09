@@ -1679,6 +1679,135 @@ router.post('/multipass', async (ctx, next) => {
 // See https://shopify.dev/docs/api/usage/bulk-operations
 router.get('/bulkoperation', async (ctx, next) => {
   console.log("+++++++++++++++ /bulkoperation +++++++++++++++");
+  console.log(`query ${JSON.stringify(ctx.request.query)}`);
+
+  // Access by AppBride::authenticatedFetch
+  if (typeof ctx.request.header.authorization !== UNDEFINED) {
+    console.log('Authenticated fetch');
+    const token = getTokenFromAuthHeader(ctx);
+    if (!checkAuthFetchToken(token)[0]) {
+      ctx.body.result.message = "Signature unmatched. Incorrect authentication bearer sent";
+      ctx.status = 400;
+      return;
+    }
+    const shop = getShopFromAuthToken(token);
+    let shop_data = null;
+    try {
+      shop_data = await (getDB(shop));
+      if (shop_data == null) {
+        ctx.body.result.message = "Authorization failed. No shop data";
+        ctx.status = 400;
+        return;
+      }
+    } catch (e) {
+      ctx.body.result.message = "Internal error in retrieving shop data";
+      ctx.status = 500;
+      return;
+    }
+
+    ctx.set('Content-Type', 'application/json');
+
+    let api_res = {};
+
+    const key = ctx.request.query.key;
+    if (typeof key !== UNDEFINED && key !== '') {
+      try {
+        api_res = await (callGraphql(ctx, shop, `mutation {
+          bulkOperationRunMutation(
+            mutation: "mutation call($input: ProductInput!) { productCreate(input: $input) { product {id title variants(first: 10) {edges {node {id title inventoryQuantity }}}} userErrors { message field } } }",
+            stagedUploadPath: "${key}") {
+            bulkOperation {
+              id
+              url
+              status
+            }
+            userErrors {
+              message
+              field
+            }
+          }
+        }`, null, GRAPHQL_PATH_ADMIN, null));
+      } catch (e) {
+        console.log(`${JSON.stringify(e)}`);
+      }
+      ctx.body = api_res;
+      return;
+    }
+
+    const check = ctx.request.query.check;
+    if (typeof check !== UNDEFINED && check === 'true') {
+      try {
+        api_res = await (callGraphql(ctx, shop, `{
+          currentBulkOperation(type: MUTATION) {
+             id
+             status
+             errorCode
+             createdAt
+             completedAt
+             objectCount
+             fileSize
+             url
+             partialDataUrl
+          }
+         }`, null, GRAPHQL_PATH_ADMIN, null));
+      } catch (e) {
+        console.log(`${JSON.stringify(e)}`);
+      }
+      ctx.body = api_res;
+      return;
+    }
+
+    const id = ctx.request.query.id;
+    if (typeof id !== UNDEFINED && id !== '') {
+      try {
+        api_res = await (callGraphql(ctx, shop, `mutation {
+          bulkOperationCancel(id: "${id}") {
+            bulkOperation {
+              status
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        `, null, GRAPHQL_PATH_ADMIN, null));
+      } catch (e) {
+        console.log(`${JSON.stringify(e)}`);
+      }
+      ctx.body = api_res;
+      return;
+    }
+
+    try {
+      api_res = await (callGraphql(ctx, shop, `mutation {
+        stagedUploadsCreate(input:{
+          resource: BULK_MUTATION_VARIABLES,
+          filename: "bulk_op_vars",
+          mimeType: "text/jsonl",
+          httpMethod: POST
+        }){
+          userErrors{
+            field,
+            message
+          },
+          stagedTargets{
+            url,
+            resourceUrl,
+            parameters {
+              name,
+              value
+            }
+          }
+        }
+      }
+      `, null, GRAPHQL_PATH_ADMIN, null));
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+    }
+    ctx.body = api_res;
+    return;
+  }
 
   if (!checkSignature(ctx.request.query)) {
     ctx.status = 400;
