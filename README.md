@@ -91,10 +91,10 @@ Start command = npm run start (= node app.js)
 
 3. If you run locally, you need to tunnel localhost for public URL as follows (otherwise, the command lines above are usable in Render or other cloud platform deploy scripts).
 ```
-cloudflared tunnel --url localhost:3000 
+cloudflared tunnel --url localhost:3000 or ./ngrok http 3000
 ```
 
-4. Set `YOUR_APP_URL` (your cloudflared or other platform `root` URL) and `YOUR_APP_URL/callback` to your app settings in [partner dashboard](https://partners.shopify.com/). If you add `?external=true` parameter to `YOUR_APP_URL`, the app UX turns into a [service connector](https://github.com/benzookapi/shopify-barebone-app-sample/wiki#for-external-service-connection) which tries to connect Shopify stores with their users. **Note that if you disable the app embedded (non embedeed app), App Bridge and its Session Token cannot be used so this app shows the same external page using its own JWT which contains "shop", instead of Session Token.** (See [this demo](https://github.com/benzookapi/shopify-barebone-app-sample/wiki#non-embedded-apps-cannot-use-app-bridge-or-session-token-so-should-render-the-external-page-with-your-own-jwt))
+4. Set `YOUR_APP_URL` (your cloudflared or ngrok or other platform `root` URL) and `YOUR_APP_URL/callback` to your app settings in [partner dashboard](https://partners.shopify.com/). If you add `?external=true` parameter to `YOUR_APP_URL`, the app UX turns into a [service connector](https://github.com/benzookapi/shopify-barebone-app-sample/wiki#for-external-service-connection) which tries to connect Shopify stores with their users. **Note that if you disable the app embedded (non embedeed app), App Bridge and its Session Token cannot be used so this app shows the same external page using its own JWT which contains "shop", instead of Session Token.** (See [this demo](https://github.com/benzookapi/shopify-barebone-app-sample/wiki#non-embedded-apps-cannot-use-app-bridge-or-session-token-so-should-render-the-external-page-with-your-own-jwt))
 
 5. (For PostgreSQL or MySQL users only,) create the following table in your database (in `psql` or `mysql` command or other tools).
 ```
@@ -126,7 +126,7 @@ Or
 All sample are available at [Wiki](https://github.com/benzookapi/shopify-barebone-app-sample/wiki).
 
 # Trouble shooting
-- Your server needs to render the top page at acceptable speed in the right way. Too slow access, error HTTP codes, or server shutdown causes the error above in live stores (not in development ones). Some cloud plarform like Render, Heroku, etc do the very slow response for the first time in a while with free plans, so you need to swtich to [Cloudflare tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) hosting or pay those services for higher performence. 
+- Your server needs to render the top page at acceptable speed in the right way. Too slow access, error HTTP codes, or server shutdown causes the error above in live stores (not in development ones). Some cloud plarform like Render, Heroku, etc do the very slow response for the first time in a while with free plans, so you need to swtich to [Cloudflare tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) or [ngrok](https://ngrok.com/) hosting or pay those services for higher performence. 
 
 # TIPS
 - If you want to create other language versions of this app like PHP, Java, Ruby, Python, etc., the best way is [creating an extension-only app](https://shopify.dev/docs/apps/app-extensions/extension-only-apps) by **not choosing a Remix template in CLI steps** to add your server side code manually. 

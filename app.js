@@ -1677,7 +1677,6 @@ router.post('/multipass', async (ctx, next) => {
 
 /* --- App proxies sample endpoint --- */
 // See https://shopify.dev/apps/online-store/app-proxies
-// Note that ngrok blocks the proxy, so you should use cloudflare tunnel, instead.
 router.get('/appproxy', async (ctx, next) => {
   console.log("+++++++++++++++ /appproxy +++++++++++++++");
   console.log(`request ${JSON.stringify(ctx.request, null, 4)}`);
