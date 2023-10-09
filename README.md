@@ -89,7 +89,7 @@ Start command = npm run start (= node app.js)
 *NOTE THAT this sameple doesn't support `npm run dev` of Shopify CLI
 ```
 
-3. If you run locally, you need to tunnel localhost for public URL as follows (otherwise, the command lines above are usable in Render or other cloud platform deploy scripts).
+3. If you run locally, you need to tunnel localhost for public URL as follows (otherwise, you should use the command lines above for Render or other cloud platform deploy scripts).
 ```
 cloudflared tunnel --url localhost:3000 or ./ngrok http 3000
 ```
