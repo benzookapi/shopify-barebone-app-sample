@@ -4,7 +4,7 @@
 
 // See https://shopify.dev/api/pixels/customer-events#publishing-custom-events
 // THIS CUSTOM WEB PIXEL EVENT RUNNABLE IN APP-BLOCK ONLY, NOT IN APP-EMBED-BLOCK.
-  Shopify.analytics.publish("{{block.settings.barebone_app_event}}", {
+  Shopify.analytics.publish("{{ block.settings.barebone_app_event }}", {
     "template": "{{template}}",
     "timestamp": new Date().toISOString()
   });

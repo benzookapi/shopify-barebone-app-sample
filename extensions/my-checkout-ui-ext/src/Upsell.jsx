@@ -201,6 +201,23 @@ function Upsell() {
         });
       });
     });
+
+    // Testing the app proxy access as well.
+    // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
+    const appProxy = `${extensionApi.shop.storefrontUrl}/apps/bareboneproxy`;
+    console.log(`Accessing ${appProxy}...`);
+    fetch(appProxy, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ "Checkout UI Extension WebWorker": JSON.stringify(this) })
+    }).then((res) => {
+      res.json().then((data, errors) => {
+        console.log(`Response from the app proxy POST: ${JSON.stringify(data, null, 4)}`);
+      });
+    });
+
   }, [apiUrl]);
 
   // Render the component for upsell products

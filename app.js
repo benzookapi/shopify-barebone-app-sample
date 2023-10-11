@@ -1821,9 +1821,11 @@ router.get('/bulkoperation', async (ctx, next) => {
 
 /* --- App proxies sample endpoint --- */
 // See https://shopify.dev/apps/online-store/app-proxies
-router.get('/appproxy', async (ctx, next) => {
+router.all('/appproxy', async (ctx, next) => {
   console.log("+++++++++++++++ /appproxy +++++++++++++++");
   console.log(`request ${JSON.stringify(ctx.request, null, 4)}`);
+  console.log(`body ${JSON.stringify(ctx.request.body, null, 4)}`);
+
   if (!checkAppProxySignature(ctx.request.query)) {
     ctx.status = 400;
     return;
@@ -1837,7 +1839,8 @@ router.get('/appproxy', async (ctx, next) => {
   // `https://${shop}.myshopify.dom/apps/bareboneproxy` has no validation or authentication where you shouldn't return private data.
   const res = {
     "message": "CAUTION! DO NOT RETURN PRIVATE DATA OVER APP PROXY, THIS IS FULLY PUBLIC.",
-    "query": ctx.request.query
+    "query": ctx.request.query,
+    "body": ctx.request.body,
   }
 
   const format = ctx.request.query.format;

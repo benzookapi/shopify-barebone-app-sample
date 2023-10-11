@@ -66,36 +66,25 @@
     <!-- Including snippets -->
     {% render 'barebone_snippet' %}
 
+    <p><b>App proxy responses</b>: (You can check the difference of response data by login / logout)</p>
     <ul>
-      <li>
-        <b>
-          <a
-            href=""
-            target="_blank"
-            class="barebone_app_proxy_json"
-            >Ajax response of the app proxy</a
-          >
-        </b>
-        (You can check the difference of response data by login / logout)
-        <!--
+      <li>       
+        <p>POST response of the app proxy<p>
+         <!--
           Note that app embed is a section which can be some in the whole theme storefornt HTML in browsers, so you canot use 'id'.
         -->
         <pre class="barebone_app_proxy_response"></pre>
       </li>
       <li>
-        <b>
-          <a href="" class="barebone_app_proxy_liquid">Page trasition of the app proxy as a Liquid file</a>
-        </b>
+        <a href="" target="_blank" class="barebone_app_proxy_json">GET response of the app proxy</a>
+      </li>
+      <li>
+        <a href="" class="barebone_app_proxy_liquid">Liquid response of the app proxy</a>
       </li>
     </ul>
 
-    <p>
-      <a href="https://shopify.dev/docs/api/consent-tracking" target="_blank">window.Shopify</a>
-      dump
-    </p>
-    <pre id="my_window_shopify_dump">
-
-    </pre>
+    <p><a href="https://shopify.dev/docs/api/consent-tracking" target="_blank">window.Shopify</a> dump</p>
+    <pre id="my_window_shopify_dump"></pre>
 
     {% comment %}
       The following code is for product pages only to check how line item properties work for line splitting for the same product.
