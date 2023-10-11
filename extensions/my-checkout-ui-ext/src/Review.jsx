@@ -105,6 +105,10 @@ function Review() {
             const customerId = extensionApi.buyerIdentity.email.current;
             console.log(`customerId ${customerId}`);
             // Get the stored app url from the browser storage.
+            // Security consideration : https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
+            // NOTE THAT you shouldn't pass the customer id directly in parameters for your production, 
+            // use token -> decode in your server -> token.sub, instead (but this is valid for logged-in buyers only...)
+            // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/session-token
             extensionApi.storage.read('barebone_app_url').then((app_url) => {
               const url = `${app_url}/postpurchase?customerId=${customerId}&score=${score}`;
               console.log(`Updaing the customer metafield with the given score in... ${url}`);

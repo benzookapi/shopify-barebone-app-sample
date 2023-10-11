@@ -106,6 +106,10 @@ export function App() {
     }
 
     // Giving the score of the last review.
+    // Security consideration : https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
+    // NOTE THAT you shouldn't pass the customer id directly in parameters for your production, 
+    // use inputData.token -> decode in your server -> token.inputData.initialPurchase.cucustomerId, instead.
+    // See https://shopify.dev/docs/api/checkout-extensions/post-purchase/api#inputdata
     const app_url = `${inputData.shop.metafields[0].value}/postpurchase?customerId=${inputData.initialPurchase.customerId}&score=${score}`;
     console.log(`Updaing the customer metafield with the given score in... ${app_url}`);
     const json = await (await fetch(app_url, {
