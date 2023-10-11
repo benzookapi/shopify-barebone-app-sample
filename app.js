@@ -940,7 +940,7 @@ router.post('/postpurchase', async (ctx, next) => {
   // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
   const shop = input_data != null ? input_data.shop.domain : decoded_token.dest;
   console.log(`shop: ${shop}`);
-  const customer_id = input_data != null ? `${input_data.initialPurchase.customerId}` : `${decoded_token.sub}`;
+  const customer_id = input_data != null ? `${input_data.initialPurchase.customerId}` : typeof decoded_token.sub !== UNDEFINED ? `${decoded_token.sub}` : '';
   console.log(`customer_id: ${customer_id}`);
 
   let response_data = {};
@@ -1004,7 +1004,7 @@ router.post('/postpurchase', async (ctx, next) => {
 
   const score = ctx.request.query.score;
   // Set the customer's review score to their metafields.
-  if (typeof score !== UNDEFINED && typeof customer_id !== UNDEFINED) {
+  if (typeof score !== UNDEFINED && customer_id !== '') {
     const ownerId = customer_id.indexOf('gid') != -1 ? customer_id : `gid://shopify/Customer/${customer_id}`;
     try {
       const api_res = await (callGraphql(ctx, shop, `mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
