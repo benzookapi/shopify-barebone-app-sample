@@ -11,6 +11,7 @@ import {
 
   // React hooks
   useApi, // All properties and methods are accessible from this 'StandardApi'
+  useAppMetafields,
 
   // UI components
   View,
@@ -52,64 +53,52 @@ function Upsell() {
   const apiVersion = extensionApi.extension.apiVersion;
   const apiUrl = `${extensionApi.shop.storefrontUrl}api/${apiVersion}/graphql.json`;
 
+
+  // Get the filtered metafield values defined by the toml file.
+  // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#useAppMetafields
+  const urlMeta = useAppMetafields({ "namespace": "barebone_app", "key": "url" });
+  console.log(`urlMeta ${JSON.stringify(urlMeta)}`);
+  const upsellMeta = useAppMetafields({ "namespace": "barebone_app_upsell", "key": "product_id" });
+  console.log(`upsellMeta ${JSON.stringify(upsellMeta)}`);
+  // The app server URL
+  const app_url = urlMeta.map((m) => {
+    return m.metafield.value;
+  })[0];
+  console.log(`app_url ${app_url}`);
+  // The upsell product ids.
+  const upsell_product_ids = upsellMeta.map((m) => {
+    return m.metafield.value;
+  });
+  console.log(`upsell_product_ids ${upsell_product_ids}`);
+
   useEffect(() => {
-    let appMetas = null;
-    let count = 0;
-    // appMetafields.current is blank in the first loading, with data in the second, so you need to sbscrube it.
-    // The following code doesn't work...
-    // const urlMeta = useAppMetafields({ "namespace": "barebone_app", "key": "url" });
-    // const app_url = urlMeta[0].metafield.value;
-    extensionApi.appMetafields.subscribe((d) => {
-      count = count + 1;
-      console.log(`appMetafields.subscribed count: ${count}`);
-      // Proceed only when the data is given.
-      if (d.length == 0) return;
+    // Getting the upsell product info in a secure way of passing shop data with SessionToken.
+    // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/standardapi
+    extensionApi.sessionToken.get().then((token) => {
+      // Retriveing upsell product data to render in the components below from the server side Admin API call.
+      const url = `${app_url}/postpurchase?upsell_product_ids=${JSON.stringify(upsell_product_ids)}`;
+      console.log(`Getting upsell product data from... ${url}`);
+      fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }).then((res) => {
+        res.json().then((data, errors) => {
+          console.log(`upsell product data: ${JSON.stringify(data, null, 4)}`);
+          if (typeof errors !== 'undefined') {
+            console.log(`upsell product errors: ${JSON.stringify(errors, null, 4)}`);
+            return;
+          }
+          // Setting upsell products data to render.
+          setUpsellProducts(data.products.edges);
 
-      // Prevent duplicated calls.
-      if (appMetas != null) return;
-      appMetas = d;
-      console.log(`appMetas: ${JSON.stringify(appMetas, null, 4)}`);
-
-      // Get the filtered metafield values defined by the toml file.
-      // See https://shopify.dev/docs/api/checkout-ui-extensions/apis/standardapi#properties-propertydetail-appmetafields
-      // The app server URL
-      const app_url = appMetas.filter((m) => {
-        return (m.target.type === 'shop' && m.metafield.key === 'url');
-      }).map((m) => { return m.metafield.value })[0];
-
-      // The upsell product ids.
-      const upsell_product_ids = appMetas.filter((m) => {
-        return (m.target.type === 'product' && m.metafield.key === 'product_id');
-      }).map((m) => { return m.metafield.value });
-      if (upsell_product_ids.length == 0) upsell_product_ids.push('0');
-
-      // Getting the upsell product info in a secure way of passing shop data with SessionToken.
-      // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/standardapi#session-token-session-token-claims
-      extensionApi.sessionToken.get().then((token) => {
-        // Retriveing upsell product data to render in the components below from the server side Admin API call.
-        const url = `${app_url}/postpurchase?upsell_product_ids=${JSON.stringify(upsell_product_ids)}`;
-        console.log(`Getting upsell product data from... ${url}`);
-        fetch(url, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }).then((res) => {
-          res.json().then((data, errors) => {
-            console.log(`upsell product data: ${JSON.stringify(data, null, 4)}`);
-            if (typeof errors !== 'undefined') {
-              console.log(`upsell product errors: ${JSON.stringify(errors, null, 4)}`);
-              return;
-            }
-            // Setting upsell products data to render.
-            setUpsellProducts(data.products.edges);
-
-            // Calling Storefront API mutation for creating a new checkout to use in the link below.
-            // Note that all mutations are not supported and unsupported one like 'customerCreate' produces the error "Access denied for customerCreate field. Required access: `unauthenticated_write_customers` access scope."
-            // Adding `unauthenticated_write_customers` to the app OAuth itself doesn't work.
-            // See https://shopify.dev/docs/api/checkout-ui-extensions/configuration#api-access
-            const query = {
-              query: `mutation cartCreate($input: CartInput!) {
+          // Calling Storefront API mutation for creating a new checkout to use in the link below.
+          // Note that all mutations are not supported and unsupported one like 'customerCreate' produces the error "Access denied for customerCreate field. Required access: `unauthenticated_write_customers` access scope."
+          // Adding `unauthenticated_write_customers` to the app OAuth itself doesn't work.
+          // See https://shopify.dev/docs/api/checkout-ui-extensions/configuration#api-access
+          const query = {
+            query: `mutation cartCreate($input: CartInput!) {
                         cartCreate(input: $input) {
                          cart {
                            id
@@ -123,86 +112,85 @@ function Upsell() {
                         }
                      }
                }`,
-              variables: {}
-            };
-            const variables = {
-              "input": {
-                "attributes": [
-                  {
-                    "key": "barebone_app_checkout-ext_storefront_api_cart",
-                    "value": `${new Date().toISOString()}`
-                  }
-                ],
-                "buyerIdentity": {
-                  "countryCode": "JP",
-                  //"customerAccessToken": "",
-                  "deliveryAddressPreferences": [
-                    {
-                      "deliveryAddress": {
-                        "address1": "barebone app address 1 ",
-                        "address2": `address 2 ${new Date().toISOString()}`,
-                        "city": "Shibuya-ku",
-                        "company": "Shopify Japan K.K",
-                        "country": "JP",
-                        "firstName": "Barebone app first name",
-                        "lastName": "Barebone app last name",
-                        "phone": "0312345678",
-                        "province": "Tokyo",
-                        "zip": "1500001"
-                      }
-                    }
-                  ],
-                  "email": "barebone.app@example.com",
-                  "phone": "+819012345678"
-                },
-                /*"discountCodes": [
-                  ""
-                ],*/
-                "lines": [],
-                "note": `barebone_app_checkout-ext_storefront_api_note ${new Date().toISOString()}`
-              }
-            };
-            const lines = data.products.edges.map((product) => {
-              return {
-                "attributes": [
-                  {
-                    "key": "barebone_app_checkout-ext_storefront_api_lines",
-                    "value": `${new Date().toISOString()}`
-                  }
-                ],
-                "merchandiseId": product.node.variants.edges[0].node.id,
-                "quantity": 1
-                /*"sellingPlanId": ""*/
-              };
-            });
-            variables.input.lines = lines;
-            query.variables = variables;
-            console.log(`Storefront API query: ${JSON.stringify(query, null, 4)}`);
-            console.log(`Accessing ${apiUrl}...`);
-            fetch(apiUrl, {
-              method: "POST",
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(query)
-            }).then((res) => {
-              res.json().then((data, errors) => {
-                console.log(`Storefront API data: ${JSON.stringify(data, null, 4)}`);
-                if (typeof errors !== 'undefined') {
-                  console.log(`Storefront API errors: ${JSON.stringify(errors, null, 4)}`);
-                  return;
+            variables: {}
+          };
+          const variables = {
+            "input": {
+              "attributes": [
+                {
+                  "key": "barebone_app_checkout-ext_storefront_api_cart",
+                  "value": `${new Date().toISOString()}`
                 }
-                // Setting the new checkout URL to open in another window.
-                setUpsellUrl(data.data.cartCreate.cart.checkoutUrl);
-              });
-            });
-
+              ],
+              "buyerIdentity": {
+                "countryCode": "JP",
+                //"customerAccessToken": "",
+                "deliveryAddressPreferences": [
+                  {
+                    "deliveryAddress": {
+                      "address1": "barebone app address 1 ",
+                      "address2": `address 2 ${new Date().toISOString()}`,
+                      "city": "Shibuya-ku",
+                      "company": "Shopify Japan K.K",
+                      "country": "JP",
+                      "firstName": "Barebone app first name",
+                      "lastName": "Barebone app last name",
+                      "phone": "0312345678",
+                      "province": "Tokyo",
+                      "zip": "1500001"
+                    }
+                  }
+                ],
+                "email": "barebone.app@example.com",
+                "phone": "+819012345678"
+              },
+              /*"discountCodes": [
+                ""
+              ],*/
+              "lines": [],
+              "note": `barebone_app_checkout-ext_storefront_api_note ${new Date().toISOString()}`
+            }
+          };
+          const lines = data.products.edges.map((product) => {
+            return {
+              "attributes": [
+                {
+                  "key": "barebone_app_checkout-ext_storefront_api_lines",
+                  "value": `${new Date().toISOString()}`
+                }
+              ],
+              "merchandiseId": product.node.variants.edges[0].node.id,
+              "quantity": 1
+              /*"sellingPlanId": ""*/
+            };
           });
+          variables.input.lines = lines;
+          query.variables = variables;
+          console.log(`Storefront API query: ${JSON.stringify(query, null, 4)}`);
+          console.log(`Accessing ${apiUrl}...`);
+          fetch(apiUrl, {
+            method: "POST",
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(query)
+          }).then((res) => {
+            res.json().then((data, errors) => {
+              console.log(`Storefront API data: ${JSON.stringify(data, null, 4)}`);
+              if (typeof errors !== 'undefined') {
+                console.log(`Storefront API errors: ${JSON.stringify(errors, null, 4)}`);
+                return;
+              }
+              // Setting the new checkout URL to open in another window.
+              setUpsellUrl(data.data.cartCreate.cart.checkoutUrl);
+            });
+          });
+
         });
       });
     });
 
-    // Testing the app proxy access as well.
+    // Testing the app proxy access.
     // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
     const appProxy = `${extensionApi.shop.storefrontUrl}/apps/bareboneproxy`;
     console.log(`Accessing the app proxy ${appProxy}...`);
@@ -226,7 +214,7 @@ function Upsell() {
       console.log(`The app proxy fetch() failed with the error: ${e}`);
     });
 
-  }, [apiUrl]);
+  }, [app_url]);
 
   // Render the component for upsell products
   const UpsellProducts = function (props) {
