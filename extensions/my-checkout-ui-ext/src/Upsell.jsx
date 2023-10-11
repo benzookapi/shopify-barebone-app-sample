@@ -205,7 +205,7 @@ function Upsell() {
     // Testing the app proxy access as well.
     // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
     const appProxy = `${extensionApi.shop.storefrontUrl}/apps/bareboneproxy`;
-    console.log(`Accessing ${appProxy}...`);
+    console.log(`Accessing the app proxy ${appProxy}...`);
     fetch(appProxy, {
       method: "POST",
       headers: {
@@ -214,8 +214,16 @@ function Upsell() {
       body: JSON.stringify({ "Checkout UI Extension WebWorker": JSON.stringify(this) })
     }).then((res) => {
       res.json().then((data, errors) => {
-        console.log(`Response from the app proxy POST: ${JSON.stringify(data, null, 4)}`);
+        if (errors != null) {
+          console.log(`The app proxy fetch failed with the error: ${errors}`);
+        } else {
+          console.log(`Response from the app proxy POST: ${JSON.stringify(data, null, 4)}`);
+        }
+      }).catch((e) => {
+        console.log(`The app proxy fetch() -> json() failed with the error: ${e}`);
       });
+    }).catch((e) => {
+      console.log(`The app proxy fetch() failed with the error: ${e}`);
     });
 
   }, [apiUrl]);
