@@ -53,7 +53,6 @@ function Upsell() {
   const apiVersion = extensionApi.extension.apiVersion;
   const apiUrl = `${extensionApi.shop.storefrontUrl}api/${apiVersion}/graphql.json`;
 
-
   // Get the filtered metafield values defined by the toml file.
   // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#useAppMetafields
   const urlMeta = useAppMetafields({ "namespace": "barebone_app", "key": "url" });
@@ -202,8 +201,8 @@ function Upsell() {
       body: JSON.stringify({ "Checkout UI Extension WebWorker": JSON.stringify(this) })
     }).then((res) => {
       res.json().then((data, errors) => {
-        if (errors != null) {
-          console.log(`The app proxy fetch failed with the error: ${errors}`);
+        if (typeof errors !== 'undefined') {
+          console.log(`The app proxy POST failed with the error: ${errors}`);
         } else {
           console.log(`Response from the app proxy POST: ${JSON.stringify(data, null, 4)}`);
         }

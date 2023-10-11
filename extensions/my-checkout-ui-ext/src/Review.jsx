@@ -11,6 +11,7 @@ import {
 
   // React hooks
   useApi, // All properties and methods are accessible from this 'StandardApi'
+  useAppMetafields,
 
   // UI components
   BlockStack,
@@ -34,10 +35,11 @@ reactExtension('purchase.checkout.actions.render-before', () => <Review />);
 */
 function Review() {
   const extensionApi = useApi();
-  //console.log(`my-checkout-ui-ext: extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
+  console.log(`my-checkout-ui-ext (Review): extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
 
   const [score, setScore] = useState('2');
   const [reviewSent, setReviewSent] = useState(false);
+  const [res, setRes] = useState({});
 
   // Store the given score into the browser storage to keep across the pages.
   // See https://shopify.dev/docs/api/checkout-ui-extensions/apis/standardapi#properties-propertydetail-storage
@@ -53,47 +55,40 @@ function Review() {
 
   readScore();
 
-  // Getting the app url from the shop metafield.
+  // Get the filtered metafield values defined by the toml file.
+  // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#useAppMetafields
+  const urlMeta = useAppMetafields({ "namespace": "barebone_app", "key": "url" });
+  console.log(`urlMeta (Review) ${JSON.stringify(urlMeta)}`);
+  // The app server URL
+  const app_url = urlMeta.map((m) => {
+    return m.metafield.value;
+  })[0];
+  console.log(`app_url (Review) ${app_url}`);
+
   useEffect(() => {
-    let appMetas = null;
-    let count = 0;
-    // appMetafields.current is blank in the first loading, with data in the second, so you need to sbscrube it.
-    // The following code doesn't work...
-    // const urlMeta = useAppMetafields({ "namespace": "barebone_app", "key": "url" });
-    // const app_url = urlMeta[0].metafield.value;
-    extensionApi.appMetafields.subscribe((d) => {
-      count = count + 1;
-      console.log(`appMetafields.subscribed (Review) count: ${count}`);
-      // Proceed only when the data is given.
-      if (d.length == 0) return;
-
-      // Prevent duplicated calls.
-      if (appMetas != null) return;
-      appMetas = d;
-      console.log(`appMetas (Review): ${JSON.stringify(appMetas, null, 4)}`);
-
-      // Get the filtered metafield values defined by the toml file.
-      // See https://shopify.dev/docs/api/checkout-ui-extensions/apis/standardapi#properties-propertydetail-appmetafields
-      // The app server URL
-      const app_url = appMetas.filter((m) => {
-        return (m.target.type === 'shop' && m.metafield.key === 'url');
-      }).map((m) => { return m.metafield.value })[0];
-
-      // Write the app url to the browser storage to use later.
-      extensionApi.storage.write('barebone_app_url', app_url);
-
-    });
-  }, ['']);
+    // Write the app url to the browser storage to use later.
+    console.log(`Storing the app url (Review) to local storage with the key 'barebone_app_url'...`);
+    extensionApi.storage.write('barebone_app_url', app_url);
+  }, [app_url]);
 
   // Redner review sending button or thank you message afterwards.
   const ReviewActions = function (props) {
     if (reviewSent) {
       // Already review sent
-      return (
-        <Text appearance="success" size="medium">
-          Thank you for your review! &#128591;
-        </Text>
-      );
+      if (Object.keys(res).length == 0) {
+        return (
+          <Text appearance="critical" size="medium">
+            You need to login to send the review!
+          </Text>
+        );
+      } else {
+        return (
+          <Text appearance="success" size="medium">
+            Thank you for your review! &#128591;
+          </Text>
+        );
+      }
+
     } else {
       // Render the button to send review.
       return (
@@ -102,15 +97,13 @@ function Review() {
           // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/standardapi#session-token-session-token-claims
           extensionApi.sessionToken.get().then((token) => {
             // Updating the customer metafield with the server side Admin API call.            
-            const customerId = extensionApi.buyerIdentity.email.current;
-            console.log(`customerId ${customerId}`);
-            // Get the stored app url from the browser storage.
             // Security consideration : https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
             // NOTE THAT you shouldn't pass the customer id directly in parameters for your production, 
             // use token -> decode in your server -> token.sub, instead (but this is valid for logged-in buyers only...)
             // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/session-token
+            // Get the stored app url from the browser storage.
             extensionApi.storage.read('barebone_app_url').then((app_url) => {
-              const url = `${app_url}/postpurchase?customerId=${customerId}&score=${score}`;
+              const url = `${app_url}/postpurchase?score=${score}`;
               console.log(`Updaing the customer metafield with the given score in... ${url}`);
               fetch(url, {
                 method: "POST",
@@ -125,6 +118,7 @@ function Review() {
                     return;
                   }
                   setReviewSent(true);
+                  setRes(data);
                 });
               });
             });

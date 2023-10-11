@@ -11,13 +11,6 @@ import {
 
   // React hooks
   useApi, // All properties and methods are accessible from this 'StandardApi'
-  //useAppMetafields,  // Protected customer data, filtered by shopify.ui.extension.toml
-  //useCustomer, // Protected customer data
-  //useEmail, // Protected customer data  
-  //useExtensionData, // Metadata about the extension.
-  //useExtensionLanguage, // Buyer's language, as supported by the extension
-  //useShippingAddress, // Protected customer data
-  useSubscription, // https://shopify.dev/docs/api/checkout-ui-extensions/unstable/react-hooks/utilities/usesubscription
 
   // UI components
   Banner,
@@ -38,7 +31,7 @@ reactExtension('purchase.checkout.contact.render-after', () => <Validation />);
 */
 function Validation() {
   const extensionApi = useApi();
-  //console.log(`my-checkout-ui-ext: extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
+  console.log(`my-checkout-ui-ext (Validation): extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
 
   const [ip, setIp] = useState('');
   const [ipBlocked, setIpBlocked] = useState(false);

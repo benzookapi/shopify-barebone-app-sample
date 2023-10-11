@@ -931,10 +931,17 @@ router.post('/postpurchase', async (ctx, next) => {
   }
 
   const decoded_token = jwt_decode(token);
+  console.log(`decoded_token: ${JSON.stringify(decoded_token)}`);
 
   const input_data = typeof decoded_token.input_data !== UNDEFINED ? decoded_token.input_data : null;
+  console.log(`input_data: ${JSON.stringify(input_data)}`);
 
+  // See https://shopify.dev/docs/api/checkout-extensions/post-purchase/api#inputdata
+  // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
   const shop = input_data != null ? input_data.shop.domain : decoded_token.dest;
+  console.log(`shop: ${shop}`);
+  const customer_id = input_data != null ? `${input_data.initialPurchase.customerId}` : `${decoded_token.sub}`;
+  console.log(`customer_id: ${customer_id}`);
 
   let response_data = {};
 
@@ -995,26 +1002,10 @@ router.post('/postpurchase', async (ctx, next) => {
     response_data = { "token": createJWT(payload) };
   }
 
-  const customerId = ctx.request.query.customerId;
+  const score = ctx.request.query.score;
   // Set the customer's review score to their metafields.
-  if (typeof customerId !== UNDEFINED) {
-    let ownerId = `gid://shopify/Customer/${customerId}`;
-    if (customerId.indexOf('@') != -1) {
-      try {
-        const api_res = await (callGraphql(ctx, shop, `{
-          customers(query: "email:${customerId}", first: 1) {
-            edges {
-              node {
-                id
-              }
-            }
-          }
-        }`, null, GRAPHQL_PATH_ADMIN, null));
-        ownerId = api_res.data.customers.edges[0].node.id;
-      } catch (e) {
-        console.log(`${JSON.stringify(e)}`);
-      }
-    }
+  if (typeof score !== UNDEFINED && typeof customer_id !== UNDEFINED) {
+    const ownerId = customer_id.indexOf('gid') != -1 ? customer_id : `gid://shopify/Customer/${customer_id}`;
     try {
       const api_res = await (callGraphql(ctx, shop, `mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
         metafieldsSet(metafields: $metafields) {
@@ -1034,7 +1025,8 @@ router.post('/postpurchase', async (ctx, next) => {
             "key": "score",
             "namespace": "barebone_app_review",
             "ownerId": ownerId,
-            "value": `${ctx.request.query.score}`
+            "type": "number_integer",
+            "value": `${parseInt(score)}`
           }
         ]
       }));
