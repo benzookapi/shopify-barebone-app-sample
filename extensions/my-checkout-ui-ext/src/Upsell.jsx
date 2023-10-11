@@ -55,6 +55,13 @@ function Upsell() {
 
   // Get the filtered metafield values defined by the toml file.
   // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#useAppMetafields
+  /* ==========================================================================================================
+  *  NOTE THAT `useAppMetafields` (and other subscribed data) doesn't return the instances at the first rendering 
+  *  so this area's code outside useEffect() are called many times asynchronously until 
+  *  they get the data (check the browser console to track it).
+  *  You have to implement your code not depending on how many times they get called = be "idempotent".
+  * ===========================================================================================================
+  */
   const urlMeta = useAppMetafields({ "namespace": "barebone_app", "key": "url" });
   console.log(`urlMeta ${JSON.stringify(urlMeta)}`);
   const upsellMeta = useAppMetafields({ "namespace": "barebone_app_upsell", "key": "product_id" });
