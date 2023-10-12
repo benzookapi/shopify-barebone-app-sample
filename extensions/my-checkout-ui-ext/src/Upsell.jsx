@@ -67,9 +67,7 @@ function Upsell() {
   const upsellMeta = useAppMetafields({ "namespace": "barebone_app_upsell", "key": "product_id" });
   console.log(`upsellMeta ${JSON.stringify(upsellMeta)}`);
   // The app server URL
-  const app_url = urlMeta.map((m) => {
-    return m.metafield.value;
-  })[0];
+  const app_url = urlMeta.map((m) => { return m.metafield.value; }).join('');
   console.log(`app_url ${app_url}`);
   // The upsell product ids.
   const upsell_product_ids = upsellMeta.map((m) => {

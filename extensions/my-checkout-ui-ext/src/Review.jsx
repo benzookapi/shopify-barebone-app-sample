@@ -67,9 +67,7 @@ function Review() {
   const urlMeta = useAppMetafields({ "namespace": "barebone_app", "key": "url" });
   console.log(`urlMeta (Review) ${JSON.stringify(urlMeta)}`);
   // The app server URL
-  const app_url = urlMeta.map((m) => {
-    return m.metafield.value;
-  })[0];
+  const app_url = urlMeta.map((m) => { return m.metafield.value; }).join('');
   console.log(`app_url (Review) ${app_url}`);
 
   useEffect(() => {
