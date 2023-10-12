@@ -30,9 +30,7 @@ function OrderManage() {
     const reasonChange = useCallback((newReason) => setReason(newReason), []);
     const uriChange = useCallback((newUri) => setUri(newUri), []);
 
-
     const [link, setLink] = useState('');
-
 
     const id = new URLSearchParams(window.location.search).get("id");
     if (id != null) {
