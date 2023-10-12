@@ -1571,7 +1571,6 @@ router.post('/fulfillment_order_notification', async (ctx, next) => {
 /* --- Fulfillment service tracking number endpoint --- */
 // See https://shopify.dev/docs/api/admin-graphql/unstable/objects/FulfillmentService
 // See https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps/manage-fulfillments#step-8-optional-enable-tracking-support
-// The validation and request data are the same as webhooks.
 router.get('/fetch_tracking_numbers.json', async (ctx, next) => {
   console.log("*************** fetch_tracking_numbers.json ***************");
   console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
@@ -1603,7 +1602,6 @@ router.get('/fetch_tracking_numbers.json', async (ctx, next) => {
 /* --- Fulfillment service inventory endpoint --- */
 // See https://shopify.dev/docs/api/admin-graphql/unstable/objects/FulfillmentService
 // See https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps/manage-fulfillments#step-9-optional-share-inventory-levels-with-shopify
-// The validation and request data are the same as webhooks.
 router.get('/fetch_stock.json', async (ctx, next) => {
   console.log("*************** fetch_stock.json ***************");
   console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
