@@ -44,7 +44,7 @@ reactExtension('purchase.checkout.block.render', () => <Upsell />);
 */
 function Upsell() {
   const extensionApi = useApi();
-  console.log(`my-checkout-ui-ext: extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
+  //console.log(`my-checkout-ui-ext: extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
 
   const [upsellProducts, setUpsellProducts] = useState([]);
   const [upsellAdded, setUpsellAdded] = useState(false);
@@ -76,6 +76,10 @@ function Upsell() {
   console.log(`upsell_product_ids ${upsell_product_ids}`);
 
   useEffect(() => {
+    // useAppMetafields return empty at the first rendering or some later, and in those cases, 
+    // do nothing to avoid unexpected errors. 
+    if (app_url === '' || upsell_product_ids.length == 0) return;
+
     // Getting the upsell product info in a secure way of passing shop data with SessionToken.
     // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/standardapi
     extensionApi.sessionToken.get().then((token) => {

@@ -35,7 +35,7 @@ reactExtension('purchase.checkout.actions.render-before', () => <Review />);
 */
 function Review() {
   const extensionApi = useApi();
-  console.log(`my-checkout-ui-ext (Review): extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
+  //console.log(`my-checkout-ui-ext (Review): extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
 
   const [score, setScore] = useState('2');
   const [reviewSent, setReviewSent] = useState(false);
@@ -71,6 +71,10 @@ function Review() {
   console.log(`app_url (Review) ${app_url}`);
 
   useEffect(() => {
+    // useAppMetafields return empty at the first rendering or some later, and in those cases, 
+    // do nothing to avoid unexpected errors. 
+    if (app_url === '') return;
+
     // Write the app url to the browser storage to use later.
     console.log(`Storing the app url (Review) to local storage with the key 'barebone_app_url'...`);
     extensionApi.storage.write('barebone_app_url', app_url);

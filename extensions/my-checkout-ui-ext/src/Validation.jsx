@@ -31,7 +31,7 @@ reactExtension('purchase.checkout.contact.render-after', () => <Validation />);
 */
 function Validation() {
   const extensionApi = useApi();
-  console.log(`my-checkout-ui-ext (Validation): extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
+  //console.log(`my-checkout-ui-ext (Validation): extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
 
   const [ip, setIp] = useState('');
   const [ipBlocked, setIpBlocked] = useState(false);
