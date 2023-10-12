@@ -1100,6 +1100,7 @@ router.get('/ordermanage', async (ctx, next) => {
   let error = '';
   let api_res = null;
 
+  // 1. Show the details of selected order for its fulfillemnt and payment capture.
   const id = ctx.request.query.id;
   if (typeof id !== UNDEFINED && id !== '') {
     const order_id = `gid://shopify/Order/${id}`;
@@ -1268,6 +1269,7 @@ router.get('/ordermanage', async (ctx, next) => {
     }
   }
 
+  // 2. Register this app's fulfillment service as a location.
   const fs = ctx.request.query.fs;
   if (typeof fs !== UNDEFINED && fs === 'true') {
     try {
@@ -1301,11 +1303,21 @@ router.get('/ordermanage', async (ctx, next) => {
         }
         fs_id = null;
       }
-      api_res = await (callGraphql(ctx, shop, `mutation fulfillmentServiceCreate($callbackUrl: URL!, $fulfillmentOrdersOptIn: Boolean!, $name: String!) {
-        fulfillmentServiceCreate(callbackUrl: $callbackUrl, fulfillmentOrdersOptIn: $fulfillmentOrdersOptIn, name: $name) {
+      api_res = await (callGraphql(ctx, shop, `mutation fulfillmentServiceCreate($callbackUrl: URL!, $fulfillmentOrdersOptIn: Boolean!, 
+        $inventoryManagement: Boolean!, $permitsSkuSharing: Boolean!, $trackingSupport: Boolean!, $name: String!) {
+        fulfillmentServiceCreate(callbackUrl: $callbackUrl, fulfillmentOrdersOptIn: $fulfillmentOrdersOptIn, 
+          inventoryManagement: $inventoryManagement, permitsSkuSharing: $permitsSkuSharing, trackingSupport: $trackingSupport, name: $name) {
           fulfillmentService {
             id
+            serviceName
             callbackUrl
+            fulfillmentOrdersOptIn
+            inventoryManagement            
+            permitsSkuSharing
+            location {
+              id
+            }
+            type          
           }
           userErrors {
             field
@@ -1316,9 +1328,9 @@ router.get('/ordermanage', async (ctx, next) => {
         "callbackUrl": `https://${ctx.request.host}`,
         "fulfillmentOrdersOptIn": true,
         "inventoryManagement": true,
-        "name": "Barebone app fulfillment service",
         "permitsSkuSharing": true,
-        "trackingSupport": true
+        "trackingSupport": true,
+        "name": "Barebone app fulfillment service"
       }));
       if (api_res.data.fulfillmentServiceCreate.userErrors.length > 0) {
         error += api_res.data.fulfillmentServiceCreate.userErrors.map((e) => { return e.message; }).toString();
@@ -1357,6 +1369,95 @@ router.get('/ordermanage', async (ctx, next) => {
     }
   }
 
+  // 3. Send inventories to this app's fuilfillment service location.
+  const delta = ctx.request.query.delta;
+  const name = ctx.request.query.name;
+  const reason = ctx.request.query.reason;
+  const uri = ctx.request.query.uri;
+  if (typeof delta !== UNDEFINED && typeof name !== UNDEFINED && typeof reason !== UNDEFINED && typeof uri !== UNDEFINED) {
+    try {
+      api_res = await (callGraphql(ctx, shop, `{
+        shop {
+          id
+          metafield(namespace: "barebone_app", key: "fullfillment_service") {
+            value
+          }
+        }
+      }`, null, GRAPHQL_PATH_ADMIN, null));
+      let fs_id = null;
+      if (api_res.data.shop.metafield == null) {
+        error += "This app's fulfillment service is not found!";
+      } else {
+        fs_id = api_res.data.shop.metafield.value;
+      }
+      if (fs_id != null) {
+        api_res = await (callGraphql(ctx, shop, `{
+          fulfillmentService(id: "${fs_id}") {
+            id
+            serviceName
+            location {
+              id
+              inventoryLevels(first: 10) {
+                edges {
+                  node {
+                    id
+                    item {
+                      id
+                      variant {
+                        id
+                        title
+                        product {
+                          id
+                          title
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }`, null, GRAPHQL_PATH_ADMIN, null));
+        if (api_res.data.fulfillmentService.location.inventoryLevels.edges.length == 0) {
+          error += "This app's fulfillment service has no inventoryLevels! Check if it is used by at least one product as inventort location.";
+        } else {
+          for await (const edge of api_res.data.fulfillmentService.location.inventoryLevels.edges) {
+            const res = await (callGraphql(ctx, shop, `mutation inventoryAdjustQuantities($input: InventoryAdjustQuantitiesInput!) {
+                inventoryAdjustQuantities(input: $input) {
+                  inventoryAdjustmentGroup {
+                    id
+                  }
+                  userErrors {
+                    field
+                    message
+                  }
+                }
+              }`, null, GRAPHQL_PATH_ADMIN, {
+              "input": {
+                "changes": [
+                  {
+                    "delta": parseInt(delta),
+                    "inventoryItemId": edge.node.item.id,
+                    "locationId": api_res.data.fulfillmentService.location.id,
+                    "ledgerDocumentUri": uri
+                  }
+                ],
+                "name": name,
+                "reason": reason
+              }
+            }));
+            if (res.data.inventoryAdjustQuantities.userErrors.length > 0) {
+              error += res.data.inventoryAdjustQuantities.userErrors.map((e) => { return e.message; }).toString();
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+      error += e;
+    }
+  }
+
   ctx.set('Content-Type', 'application/json');
   ctx.body = {
     "response": api_res.data,
@@ -1368,7 +1469,7 @@ router.get('/ordermanage', async (ctx, next) => {
 });
 
 /* --- Fulfillment service endpoint --- */
-// See https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps/manage-fulfillments
+// See https://shopify.dev/docs/api/admin-graphql/unstable/objects/FulfillmentService
 // The validation and request data are the same as webhooks.
 router.post('/fulfillment_order_notification', async (ctx, next) => {
   console.log("*************** fulfillment_order_notification ***************");
@@ -1456,7 +1557,7 @@ router.post('/fulfillment_order_notification', async (ctx, next) => {
             "trackingInfo": {
               "company": "Barebone app shipping carrier",
               "number": `service-${new Date().getTime()}`,
-              "url": "https://example.com"
+              "url": "https://github.com/benzookapi"
             }
           }
         });
@@ -1468,38 +1569,66 @@ router.post('/fulfillment_order_notification', async (ctx, next) => {
 });
 
 /* --- Fulfillment service tracking number endpoint --- */
-// See https://shopify.dev/docs/api/admin-graphql/2023-10/mutations/fulfillmentservicecreate#argument-callbackurl
+// See https://shopify.dev/docs/api/admin-graphql/unstable/objects/FulfillmentService
+// See https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps/manage-fulfillments#step-8-optional-enable-tracking-support
 // The validation and request data are the same as webhooks.
-router.post('/fetch_tracking_numbers', async (ctx, next) => {
-  console.log("*************** fetch_tracking_numbers ***************");
+router.get('/fetch_tracking_numbers.json', async (ctx, next) => {
+  console.log("*************** fetch_tracking_numbers.json ***************");
   console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
-  console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
+  console.log(`*** query *** ${JSON.stringify(ctx.request.query)}`);
 
-  /* Check the signature */
-  const valid = await (checkWebhookSignature(ctx, API_SECRET));
-  if (!valid) {
-    console.log('Not a valid signature');
-    ctx.status = 401;
-    return;
-  }
+  const shop = ctx.request.query.shop;
+  console.log(`shop ${shop}`);
+
+  const order_names = ctx.request.query["order_names[]"];
+  console.log(`order_names ${JSON.stringify(order_names)}`);
+
+  const body = {
+    "tracking_numbers": {},
+    "message": "Successfully received the tracking numbers",
+    "success": true
+  };
+
+  order_names.map((n) => {
+    body.tracking_numbers[n] = `service-fetch-${new Date().getTime()}`;
+  });
+
+  console.log(`body ${JSON.stringify(body)}`);
+
+  ctx.set('Content-Type', 'application/json');
+  ctx.body = body;
   ctx.status = 200;
 });
 
 /* --- Fulfillment service inventory endpoint --- */
-// See https://shopify.dev/docs/api/admin-graphql/2023-10/mutations/fulfillmentservicecreate#argument-callbackurl
+// See https://shopify.dev/docs/api/admin-graphql/unstable/objects/FulfillmentService
+// See https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps/manage-fulfillments#step-9-optional-share-inventory-levels-with-shopify
 // The validation and request data are the same as webhooks.
-router.post('/fetch_stock', async (ctx, next) => {
-  console.log("*************** fetch_stock ***************");
+router.get('/fetch_stock.json', async (ctx, next) => {
+  console.log("*************** fetch_stock.json ***************");
   console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
-  console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
+  console.log(`*** query *** ${JSON.stringify(ctx.request.query)}`);
 
-  /* Check the signature */
-  const valid = await (checkWebhookSignature(ctx, API_SECRET));
-  if (!valid) {
-    console.log('Not a valid signature');
-    ctx.status = 401;
-    return;
+  const shop = ctx.request.query.shop;
+  console.log(`shop ${shop}`);
+  const location_id = ctx.request.query.location_id;
+  console.log(`location_id ${location_id}`);
+  const sku = ctx.request.query.sku;
+  console.log(`sku ${sku}`);
+
+  const body = {};
+  // THIS IS DUMMY CODE, you need to retrieve real SKU and iventory data somehow.
+  if (typeof sku !== UNDEFINED) {
+    body[sku] = Math.floor(Math.random() * 2000);
+  } else {
+    body.DUMMYSKU2000 = Math.floor(Math.random() * 3000);
+    body.DUMMYSKU3000 = Math.floor(Math.random() * 4000);
   }
+
+  console.log(`body ${JSON.stringify(body)}`);
+
+  ctx.set('Content-Type', 'application/json');
+  ctx.body = body;
   ctx.status = 200;
 });
 

@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, Badge, Text, Spinner, List, VerticalStack, Button } from '@shopify/polaris';
+import { Page, Card, Layout, Link, Badge, Text, Spinner, List, VerticalStack, Button, Select, TextField } from '@shopify/polaris';
 
 import { _decodeSessionToken, _getAdminFromShop, _getShopFromQuery } from "../utils/my_util";
 
-// Order management sample for fulfillment, inventory, and fulfillment services.
+// Order management sample for fulfillment, inventory, and fulfillment services with inventory management.
 // See https://shopify.dev/docs/apps/fulfillment
 function OrderManage() {
     const app = useAppBridge();
@@ -18,6 +18,21 @@ function OrderManage() {
 
     const [result, setResult] = useState('');
     const [accessing, setAccessing] = useState(false);
+    const [result2, setResult2] = useState('');
+    const [accessing2, setAccessing2] = useState(false);
+
+    const [delta, setDelta] = useState(1);
+    const [name, setName] = useState('available');
+    const [reason, setReason] = useState('received');
+    const [uri, setUri] = useState('');
+    const deltaChange = useCallback((newDelta) => setDelta(newDelta), []);
+    const nameChange = useCallback((newName) => setName(newName), []);
+    const reasonChange = useCallback((newReason) => setReason(newReason), []);
+    const uriChange = useCallback((newUri) => setUri(newUri), []);
+
+
+    const [link, setLink] = useState('');
+
 
     const id = new URLSearchParams(window.location.search).get("id");
     if (id != null) {
@@ -95,11 +110,11 @@ function OrderManage() {
     }
 
     return (
-        <Page title="Order namagement sample for fulfillments, transactions, and filfillment services">
+        <Page title="Order namagement sample for fulfillments, transactions, and filfillment services with inventory management">
             <VerticalStack gap="5">
                 <Card sectioned={true}>
                     <Link url="https://shopify.dev/docs/apps/fulfillment" target="_blank">Dev. doc</Link>
-                    <br />
+                    <br /><br />
                     <List type="number">
                         <List.Item>
                             Add <Badge>{`${rawUrl}`}</Badge> to <Link url="https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link" target="_blank">Admin Link extension</Link> on the app extension settings
@@ -115,6 +130,8 @@ function OrderManage() {
                 </Card>
                 <Card sectioned={true}>
                     <Link url="https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps" target="_blank">Dev. doc</Link>
+                    <br />
+                    <Link url="https://shopify.dev/docs/apps/fulfillment/inventory-management-apps" target="_blank">Dev. doc</Link>
                     <br /><br />
                     <List type="number">
                         <List.Item>
@@ -140,8 +157,89 @@ function OrderManage() {
                         </List.Item>
                         <List.Item>
                             Make sure <Badge>Barebone app fulfillment service</Badge> is registed to <Badge status='info'>App locations</Badge> in <Link url={`https://${_getAdminFromShop(shop)}/settings/locations`} target="_blank">location settings</Link>.
-                            Go to <Link url={`https://${_getAdminFromShop(shop)}/products`} target="_blank">product details</Link> to select <Badge>Barebone app fulfillment service</Badge> in <Badge status='info'>inventory's location</Badge> in your selected product page.
-                            After you make a order of the procuct and go to <Link url={`https://${_getAdminFromShop(shop)}/orders`} target="_blank">the order page</Link>, you see the new button labeled <Badge status='info'>Request fulfillments</Badge>. Once you clich the button, you see <Badge>{`{"kind":"FULFILLMENT_REQUEST"}`}</Badge>
+                            Go to <Link url={`https://${_getAdminFromShop(shop)}/products`} target="_blank">product details</Link> to check <Badge>Barebone app fulfillment service</Badge> in <Badge status='info'>[Inventory] &gt; [Edit locations]</Badge> in your selected product page
+                            (If you have inventories in <b>other locations</b> for the product, <b>set zero</b> to use this app location for online checkout).
+                        </List.Item>
+                        <List.Item>
+                            <p>Add inventories with the amount (+/-), state, and reason to this app's location.</p>
+                            <p style={{ width: "30%" }}>
+                                <TextField
+                                    label="Amount:"
+                                    type="number"
+                                    value={delta}
+                                    onChange={deltaChange}
+                                    autoComplete="off"
+                                />
+                                <Select
+                                    label="State:"
+                                    options={[
+                                        { label: 'Incoming', value: 'incoming' },
+                                        { label: 'Available', value: 'available' },
+                                        { label: 'Reserved', value: 'reserved' },
+                                        { label: 'Damaged', value: 'damaged' },
+                                        { label: 'Safety stock', value: 'safety_stock' },
+                                        { label: 'Quality control', value: 'quality_control' }
+                                    ]}
+                                    onChange={nameChange}
+                                    value={name}
+                                />
+                                <Select
+                                    label="Reason:"
+                                    options={[
+                                        { label: 'Correction', value: 'correction' },
+                                        { label: 'Cycle count available', value: 'cycle_count_available' },
+                                        { label: 'Damaged', value: 'damaged' },
+                                        { label: 'Other', value: 'other' },
+                                        { label: 'Promotion', value: 'promotion' },
+                                        { label: 'Quality control', value: 'quality_control' },
+                                        { label: 'Received', value: 'received' },
+                                        { label: 'Reservation created', value: 'reservation_created' },
+                                        { label: 'Reservation deleted', value: 'reservation_deleted' },
+                                        { label: 'Reservation updated', value: 'reservation_updated' },
+                                        { label: 'Restock', value: 'restock' },
+                                        { label: 'Safety stock', value: 'safety_stock' },
+                                        { label: 'Shrinkage', value: 'shrinkage' }
+                                    ]}
+                                    onChange={reasonChange}
+                                    value={reason}
+                                />
+                                <TextField
+                                    label="Ledger document URI:"
+                                    type="text"
+                                    value={uri}
+                                    onChange={uriChange}
+                                    placeholder='https://www.shopify.com/'
+                                    autoComplete="off"
+                                />
+                            </p>
+                            <br />
+                            <Button primary onClick={() => {
+                                setAccessing2(true);
+                                authenticatedFetch(app)(`/ordermanage?delta=${delta}&name=${name}&reason=${reason}&uri=${uri}`).then((response) => {
+                                    response.json().then((json) => {
+                                        console.log(JSON.stringify(json, null, 4));
+                                        setAccessing2(false);
+                                        if (json.error === '') {
+                                            setResult2('Success!');
+                                            setLink(`https://${_getAdminFromShop(shop)}/products/inventory?location_id=${json.response.fulfillmentService.location.id.replace('gid://shopify/Location/', '')}`);
+                                        } else {
+                                            setResult2(`Error! ${JSON.stringify(json.error)}`);
+                                            setLink('');
+                                        }
+                                    }).catch((e) => {
+                                        console.log(`${e}`);
+                                        setAccessing2(false);
+                                        setResult2('Error!');
+                                        setLink('');
+                                    });
+                                });
+                            }}>Add inventories to this fulfillment service location</Button>&nbsp;
+                            <Badge status='info'>Result: <APIResult2 res={result2} loading={accessing2} /></Badge>
+                            <br/><br/>
+                            <InventoryLink link={link}></InventoryLink>
+                        </List.Item>
+                        <List.Item>
+                            After you make a order of the procuct and go to <Link url={`https://${_getAdminFromShop(shop)}/orders`} target="_blank">the order page</Link>, you see the new button labeled <Badge status='info'>Request fulfillments</Badge>. Once you click the button, you see <Badge>{`{"kind":"FULFILLMENT_REQUEST"}`}</Badge>
                             in your server log as accessing <Badge>/fulfillment_order_notification</Badge>.
                         </List.Item>
                         <List.Item>
@@ -152,11 +250,8 @@ function OrderManage() {
                 <Card sectioned={true}>
                     <List type="bullet">
                         <List.Item>
-                            If you want to make this app a <Badge>shipping rate provider</Badge>, you have to register <Link url="https://shopify.dev/docs/api/admin-rest/unstable/resources/carrierservice#post-carrier-services" target="_blank">CarrierService</Link> which is available in <Badge>REST API</Badge> only. Instead, you can add your app defined shipping rate natively 
+                            If you want to make this app a <Badge>shipping rate provider</Badge>, you have to register <Link url="https://shopify.dev/docs/api/admin-rest/unstable/resources/carrierservice#post-carrier-services" target="_blank">CarrierService</Link> which is available in <Badge>REST API</Badge> only. Instead, you can add your app defined shipping rate natively
                             with <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/deliveryProfileCreate" target="_blank">deliveryProfileCreate</Link> API.
-                        </List.Item>
-                        <List.Item>
-                            If you want this app to <Badge>manage inventories</Badge>, refer to <Link url="https://shopify.dev/docs/apps/fulfillment/inventory-management-apps/quantities-states" target="_blank">inventory management API</Link> which is not implemented by this sample.
                         </List.Item>
                     </List>
                 </Card>
@@ -177,6 +272,13 @@ function APIResult2(props) {
         return <Spinner accessibilityLabel="Calling Order GraphQL" size="small" />;
     }
     return (<span>{props.res}</span>);
+}
+
+function InventoryLink(props) {
+    if (props.link === '') {
+        return (<></>);
+    }
+    return (<><p><b>Check the <Link url={props.link} target="_blank">inventory of this app location</Link>.</b></p></>);
 }
 
 export default OrderManage
