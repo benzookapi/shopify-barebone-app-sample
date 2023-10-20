@@ -10,7 +10,7 @@ import {
   reactExtension,
 
   // React hooks
-  useApi, // All properties and methods are accessible from this 'StandardApi'
+  useApi,
   useAppMetafields,
 
   // UI components
@@ -51,7 +51,7 @@ function Upsell() {
   const [upsellUrl, setUpsellUrl] = useState('');
 
   const apiVersion = extensionApi.extension.apiVersion;
-  const apiUrl = `${extensionApi.shop.storefrontUrl}api/${apiVersion}/graphql.json`;
+  const apiUrl = `https://${extensionApi.shop.myshopifyDomain}/api/${apiVersion}/graphql.json`;
 
   // Get the filtered metafield values defined by the toml file.
   // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#useAppMetafields
@@ -200,7 +200,8 @@ function Upsell() {
 
     // Testing the app proxy access.
     // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
-    const appProxy = `${extensionApi.shop.storefrontUrl}/apps/bareboneproxy`;
+    // Note that dev. store app proxies are protected with their passwords which means this fetch always fails.
+    const appProxy = `https://${extensionApi.shop.myshopifyDomain}/apps/bareboneproxy`;
     console.log(`Accessing the app proxy ${appProxy}...`);
     fetch(appProxy, {
       method: "POST",

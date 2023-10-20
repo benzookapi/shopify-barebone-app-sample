@@ -10,7 +10,7 @@ import {
   reactExtension,
 
   // React hooks
-  useApi, // All properties and methods are accessible from this 'StandardApi'
+  useApi, 
 
   // UI components
   Banner,
