@@ -130,6 +130,8 @@ function OrderManage() {
                     <Link url="https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps" target="_blank">Dev. doc</Link>
                     <br />
                     <Link url="https://shopify.dev/docs/apps/fulfillment/inventory-management-apps" target="_blank">Dev. doc</Link>
+                    <br />
+                    <Link url="https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps/manage-fulfillments" target="_blank">Dev. doc</Link>
                     <br /><br />
                     <List type="number">
                         <List.Item>
@@ -160,7 +162,7 @@ function OrderManage() {
                         </List.Item>
                         <List.Item>
                             <p>Add inventories with the amount (+/-), state, and reason to this app's location.</p>
-                            <p style={{ width: "30%" }}>
+                            <p style={{ width: "300px" }}>
                                 <TextField
                                     label="Amount:"
                                     type="number"
@@ -233,15 +235,17 @@ function OrderManage() {
                                 });
                             }}>Add inventories to this fulfillment service location</Button>&nbsp;
                             <Badge status='info'>Result: <APIResult2 res={result2} loading={accessing2} /></Badge>
-                            <br/><br/>
+                            <br /><br />
                             <InventoryLink link={link}></InventoryLink>
                         </List.Item>
                         <List.Item>
-                            After you make a order of the procuct and go to <Link url={`https://${_getAdminFromShop(shop)}/orders`} target="_blank">the order page</Link>, you see the new button labeled <Badge status='info'>Request fulfillments</Badge>. Once you click the button, you see <Badge>{`{"kind":"FULFILLMENT_REQUEST"}`}</Badge>
+                            After you make a order of the procuct above through <Link url={`https://${shop}`} target="_blank">the storefront</Link> and go to <Link url={`https://${_getAdminFromShop(shop)}/orders`} target="_blank">the order page</Link>, you see the new button labeled <Badge status='info'>Request fulfillments</Badge>. Once you click the button, you see <Badge>{`{"kind":"FULFILLMENT_REQUEST"}`}</Badge>
                             in your server log as accessing <Badge>/fulfillment_order_notification</Badge>.
                         </List.Item>
                         <List.Item>
                             The callback (<Badge>/fulfillment_order_notification</Badge>) makes fulfillments one by one and after a while, you can see the requested fulfillments get shipped automatically.
+                            The callback (<Badge>/fetch_stock.json</Badge>) returns the initial inventories per SKU when a product is set to use this app inventory management.
+                            The callback (<Badge>/fetch_tracking_numbers.json</Badge>) returns the tracking numbers dynamically (this demo has fixed values and is not in this case).
                         </List.Item>
                     </List>
                 </Card>
