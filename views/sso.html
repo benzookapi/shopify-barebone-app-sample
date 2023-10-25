@@ -75,10 +75,11 @@
                 </div>
             </fieldset>
             <p>
-                <input type="submit" value="Login to your store" />
+                <input type="submit" value="Login to the following store" />
             </p>
 
-            <input type="hidden" name="token" value="<%= token %>">
+            <label for="token">Store to login:</label><br />
+            <input type="text" name="shop" value="<%= shop %>" id="shop">
         </form>
     </div>
 </body>

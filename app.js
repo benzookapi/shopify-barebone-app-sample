@@ -1721,16 +1721,10 @@ router.get('/multipass', async (ctx, next) => {
     return;
   }
 
-  if (typeof ctx.request.query.sessiontoken !== UNDEFINED) {
-    console.log('Session Token given');
-    const token = ctx.request.query.sessiontoken;
-    if (!checkAuthFetchToken(token)[0]) {
-      ctx.body = "Signature unmatched. Incorrect session token sent";
-      ctx.status = 400;
-      return;
-    }
+  if (typeof ctx.request.query.login_shop !== UNDEFINED) {
+    const shop = ctx.request.query.login_shop;
     return await ctx.render('sso', {
-      token: token
+      shop: shop
     });
   }
 
@@ -1750,14 +1744,7 @@ router.post('/multipass', async (ctx, next) => {
   console.log("+++++++++++++++ /multipass +++++++++++++++");
   console.log(`body: ${JSON.stringify(ctx.request.body, null, 4)}`);
 
-  const sessiontoken = ctx.request.body.token;
-  if (!checkAuthFetchToken(sessiontoken)[0]) {
-    ctx.body = "Signature unmatched. Incorrect session token sent";
-    ctx.status = 400;
-    return;
-  }
-
-  const shop = getShopFromAuthToken(sessiontoken);
+  const shop = ctx.request.body.shop;
 
   console.log(`shop ${shop}`);
 
@@ -1779,19 +1766,28 @@ router.post('/multipass', async (ctx, next) => {
   if (return_to !== '') json.return_to = return_to;
   json.created_at = new Date().toISOString();
 
-  const api_res = await (callGraphql(ctx, shop, `{
-    shop {
-      id
-      metafield(namespace: "barebone_app", key: "multipass_secret") {
+  try {
+    const api_res = await (callGraphql(ctx, shop, `{
+      shop {
         id
-        value
+        metafield(namespace: "barebone_app", key: "multipass_secret") {
+          id
+          value
+        }
       }
-    }
-  }`, null, GRAPHQL_PATH_ADMIN, null));
+    }`, null, GRAPHQL_PATH_ADMIN, null));
 
-  const token = generateMultipassToken(json, api_res.data.shop.metafield.value);
+    const token = generateMultipassToken(json, api_res.data.shop.metafield.value);
 
-  ctx.redirect(`https://${shop}/account/login/multipass/${token}`);
+    ctx.redirect(`https://${shop}/account/login/multipass/${token}`);
+
+  } catch (e) {
+    console.log(`${e}`);
+    ctx.status = 500;
+    ctx.body = { "Error": "Wrong store domain or secret passed" };
+    return;
+  }
+
 });
 
 /* --- Bulk operation sample endpoint --- */
