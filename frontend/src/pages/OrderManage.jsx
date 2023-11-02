@@ -252,6 +252,13 @@ function OrderManage() {
                 <Card sectioned={true}>
                     <List type="bullet">
                         <List.Item>
+                            <p>The inventory status changes as follows.</p>
+                            <p><b>Before checkout:</b> <Badge>Available</Badge> -&gt; <b>After checkout:</b> <Badge>Committed</Badge> -&gt; <b>After fulfillment:</b> <Badge>No status = the quantity is decreased</Badge></p>
+                            You can catch the change in <Link url='https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#value-inventorylevelsupdate' target='_blank'>inventory_levels/update webhook</Link> to query <Link url='https://shopify.dev/docs/apps/fulfillment/inventory-management-apps/quantities-states' target='_blank'>Inventory Item & Inventory Level</Link> to send back the latest quantities and status to your external system.
+                        </List.Item>
+                    </List>
+                    <List type="bullet">
+                        <List.Item>
                             If you want to make this app a <Badge>shipping rate provider</Badge>, you have to register <Link url="https://shopify.dev/docs/api/admin-rest/unstable/resources/carrierservice#post-carrier-services" target="_blank">CarrierService</Link> which is available in <Badge>REST API</Badge> only. Instead, you can add your app defined shipping rate natively
                             with <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/deliveryProfileCreate" target="_blank">deliveryProfileCreate</Link> API.
                         </List.Item>
