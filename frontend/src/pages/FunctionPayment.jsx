@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, VerticalStack } from '@shopify/polaris';
+import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, BlockStack } from '@shopify/polaris';
 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
@@ -28,7 +28,7 @@ function FunctionPayment() {
 
   return (
     <Page title="Create your original payment method filtering with Shopify Functions">
-      <VerticalStack gap="5">
+      <BlockStack gap="500">
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
@@ -76,7 +76,7 @@ function FunctionPayment() {
                   />
                 </List.Item>
                 <List.Item>
-                  <Button primary onClick={() => {
+                  <Button variant="primary" onClick={() => {
                     setAccessing(true);
                     // See https://shopify.dev/api/admin-graphql/2023-04/mutations/paymentCustomizationCreate"
                     authenticatedFetch(app)(`/functionpayment?method=${method}&rate=${rate}&id=${id}`).then((response) => {
@@ -106,7 +106,7 @@ function FunctionPayment() {
             </Layout.Section>
           </Layout>
         </Card>
-      </VerticalStack>
+      </BlockStack>
     </Page>
   );
 }

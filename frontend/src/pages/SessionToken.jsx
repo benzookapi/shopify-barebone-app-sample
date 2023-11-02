@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { getSessionToken, authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, Button, Badge, VerticalStack, List } from '@shopify/polaris';
+import { Page, Card, Layout, Link, Button, Badge, BlockStack, List } from '@shopify/polaris';
 
 import { _decodeSessionToken } from "../utils/my_util";
 
@@ -31,14 +31,14 @@ function SessionToken() {
 
   return (
     <Page title="Getting started with session token authentication">
-      <VerticalStack gap="5">
+      <BlockStack gap="500">
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
               <Link url="https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-1-get-a-session-token" target="_blank">Dev. doc</Link>
             </Layout.Section>
             <Layout.Section>
-              <Button primary onClick={() => {
+              <Button variant="primary" onClick={() => {
                 getSessionToken(app).then((sessionToken) => {
                   setRaw(foldLongLine(`${sessionToken}`));
                   setDecoded(JSON.stringify(_decodeSessionToken(sessionToken), null, 4));
@@ -61,7 +61,7 @@ function SessionToken() {
               <Link url="https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests" target="_blank">Dev. doc</Link>
             </Layout.Section>
             <Layout.Section>
-              <Button primary onClick={() => {
+              <Button variant="primary" onClick={() => {
                 setUrl('');
                 setAuth('');
                 setRes('');
@@ -109,7 +109,7 @@ function SessionToken() {
               </List>
             </Layout.Section>
             <Layout.Section>
-              <Button primary onClick={() => {
+              <Button variant="primary" onClick={() => {
                 getSessionToken(app).then((sessionToken) => {
                   // Use the current session token for external site validation for connectihg shops.
                   // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
@@ -120,7 +120,7 @@ function SessionToken() {
             </Layout.Section>
           </Layout>
         </Card>
-      </VerticalStack>
+      </BlockStack>
     </Page>
   );
 }

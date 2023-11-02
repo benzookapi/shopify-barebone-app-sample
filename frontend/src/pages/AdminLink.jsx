@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, Badge, Text, Spinner, List, VerticalStack } from '@shopify/polaris';
+import { Page, Card, Layout, Link, Badge, Text, Spinner, List, BlockStack } from '@shopify/polaris';
 
 import { _decodeSessionToken, _getAdminFromShop, _getShopFromQuery } from "../utils/my_util";
 
@@ -60,7 +60,7 @@ function AdminLink() {
 
     return (
         <Page title="Switch the request hanlding for embedded or unembedded.">
-            <VerticalStack gap="5">
+            <BlockStack gap="500">
                 <Card sectioned={true}>
                     <List type="bullet">
                         <List.Item>
@@ -83,7 +83,7 @@ function AdminLink() {
                         </List.Item>
                     </List>
                 </Card>
-            </VerticalStack>
+            </BlockStack>
         </Page>
     );
 }

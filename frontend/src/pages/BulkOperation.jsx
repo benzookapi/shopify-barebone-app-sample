@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, Badge, Text, Spinner, List, VerticalStack, Button, Label, Form, ButtonGroup } from '@shopify/polaris';
+import { Page, Card, Layout, Link, Badge, Text, Spinner, List, BlockStack, Button, Label, Form, ButtonGroup } from '@shopify/polaris';
 
 import { _decodeSessionToken, _getAdminFromShop, _getShopFromQuery } from "../utils/my_util";
 
@@ -66,7 +66,7 @@ function BulkOperation() {
 
     return (
         <Page title="Bulk operation sample for product importing with a file uploader">
-            <VerticalStack gap="5">
+            <BlockStack gap="500">
                 <Card sectioned={true}>
                     <Link url="https://shopify.dev/docs/api/usage/bulk-operations/imports" target="_blank">Dev. doc</Link>
                     <br /><br />
@@ -80,7 +80,7 @@ function BulkOperation() {
                                 Run the bulk operation for product creations from the uploaded file above with the key: <Badge>{key}</Badge> which is generated initially while loading this page.
                             </p>
                             <p>&nbsp;</p>
-                            <Button primary onClick={() => {
+                            <Button variant="primary" onClick={() => {
                                 setAccessing(true);
                                 authenticatedFetch(app)(`/bulkoperation?key=${key}`).then((response) => {
                                     response.json().then((json) => {
@@ -109,7 +109,7 @@ function BulkOperation() {
                                     currentBulkOperation query</Link> and seeing <Link url={`https://${_getAdminFromShop(shop)}/products`} target="_blank">Products</Link>.
                             </p>
                             <p>&nbsp;</p>
-                            <Button primary onClick={() => {
+                            <Button variant="primary" onClick={() => {
                                 showStatus();
                             }}>
                                 Check the latest status
@@ -122,7 +122,7 @@ function BulkOperation() {
                             </p>
                             <APIResult res={res} />
                             <p>&nbsp;</p>
-                            <Button primary onClick={() => {
+                            <Button variant="primary" onClick={() => {
                                 setRes(``);
                                 authenticatedFetch(app)(`/bulkoperation?id=${id}`).then((response) => {
                                     response.json().then((json) => {
@@ -148,7 +148,7 @@ function BulkOperation() {
                         </List.Item>
                     </List>
                 </Card>
-            </VerticalStack>
+            </BlockStack>
         </Page>
     );
 }

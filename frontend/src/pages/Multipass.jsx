@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, List, Badge, Checkbox, TextField, Button, Spinner, VerticalStack } from '@shopify/polaris';
+import { Page, Card, Layout, Link, List, Badge, Checkbox, TextField, Button, Spinner, BlockStack } from '@shopify/polaris';
 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
@@ -22,7 +22,7 @@ function Multipass() {
 
   return (
     <Page title="Multipass SSO sample">
-      <VerticalStack gap="5">
+      <BlockStack gap="500">
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
@@ -34,7 +34,7 @@ function Multipass() {
                   <p>
                     Make sure your Multipass turned on in <Link url={`https://${_getAdminFromShop(shop)}/settings/customer_accounts`} target="_blank">Customer account settings</Link>. Copy your <Badge status='info'>Multipass secret</Badge> from there to paste to the following input.
                   </p>
-                  <VerticalStack gap="5">
+                  <BlockStack gap="500">
                     <TextField
                       label="Multipass secret"
                       value={secret}
@@ -42,10 +42,10 @@ function Multipass() {
                       autoComplete="off"
                       placeholder="c8b****************5e9"
                     />
-                  </VerticalStack>
+                  </BlockStack>
                 </List.Item>
                 <List.Item>
-                  <Button primary onClick={() => {
+                  <Button variant="primary" onClick={() => {
                     setAccessing(true);
                     authenticatedFetch(app)(`/multipass?secret=${secret}`).then((response) => {
                       response.json().then((json) => {
@@ -77,7 +77,7 @@ function Multipass() {
             </Layout.Section>
           </Layout>
         </Card>
-      </VerticalStack>
+      </BlockStack>
     </Page>
   );
 }

@@ -1,6 +1,6 @@
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
-import { Page, Card, Layout, Link, List, Badge, VerticalStack } from '@shopify/polaris';
+import { Page, Card, Layout, Link, List, Badge, BlockStack } from '@shopify/polaris';
 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
@@ -17,7 +17,7 @@ function CheckoutUi() {
 
   return (
     <Page title="Checkout UI sample for upselling / store review / IP address blocking">
-      <VerticalStack gap="5">
+      <BlockStack gap="500">
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
@@ -74,7 +74,7 @@ function CheckoutUi() {
             </Layout.Section>
           </Layout>
         </Card>
-      </VerticalStack>
+      </BlockStack>
     </Page>
   );
 }

@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
 import { Redirect } from '@shopify/app-bridge/actions';
-import { Page, Card, Layout, Link, List, Badge, Button, Spinner, VerticalStack } from '@shopify/polaris';
+import { Page, Card, Layout, Link, List, Badge, Button, Spinner, BlockStack } from '@shopify/polaris';
 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
@@ -20,7 +20,7 @@ function PostPurchase() {
 
   return (
     <Page title="Post-purchase sample for switching products to upsell and getting shop review scores with metafields">
-      <VerticalStack gap="5">
+      <BlockStack gap="500">
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
@@ -49,7 +49,7 @@ function PostPurchase() {
                   <p>
                     Add this app raw URL (<Badge>https://{window.location.hostname}</Badge>) to <Badge status='info'>Shop</Badge> metafields which is invisible in admin and accessible through this app's API call only.
                   </p>
-                  <Button primary onClick={() => {
+                  <Button variant="primary" onClick={() => {
                     setAccessing(true);
                     authenticatedFetch(app)(`/postpurchase`).then((response) => {
                       response.json().then((json) => {
@@ -119,7 +119,7 @@ function PostPurchase() {
             </Layout.Section>
           </Layout>
         </Card>
-      </VerticalStack>
+      </BlockStack>
     </Page>
   );
 }

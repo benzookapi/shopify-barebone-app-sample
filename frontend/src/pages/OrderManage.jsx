@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, Badge, Text, Spinner, List, VerticalStack, Button, Select, TextField } from '@shopify/polaris';
+import { Page, Card, Layout, Link, Badge, Text, Spinner, List, BlockStack, Button, Select, TextField } from '@shopify/polaris';
 
 import { _decodeSessionToken, _getAdminFromShop, _getShopFromQuery } from "../utils/my_util";
 
@@ -73,7 +73,7 @@ function OrderManage() {
                         </Card>
                     </Layout.Section>
                     <Layout.Section>
-                        <Button primary onClick={() => {
+                        <Button variant="primary" onClick={() => {
                             setRes(``);
                             authenticatedFetch(app)(`/ordermanage?id=${id}&foids=${foIds}`).then((response) => {
                                 response.json().then((json) => {
@@ -88,7 +88,7 @@ function OrderManage() {
                         }}>Fulfillment this order</Button> with <Badge status='info'>fulfillment order ids</Badge> and <Badge status='info'>order.fulfillable = true</Badge>
                     </Layout.Section>
                     <Layout.Section>
-                        <Button primary onClick={() => {
+                        <Button variant="primary" onClick={() => {
                             setRes(``);
                             authenticatedFetch(app)(`/ordermanage?id=${id}&trans=${trans}`).then((response) => {
                                 response.json().then((json) => {
@@ -109,7 +109,7 @@ function OrderManage() {
 
     return (
         <Page title="Order namagement sample for fulfillments, transactions, and filfillment services with inventory management">
-            <VerticalStack gap="5">
+            <BlockStack gap="500">
                 <Card sectioned={true}>
                     <Link url="https://shopify.dev/docs/apps/fulfillment" target="_blank">Dev. doc</Link>
                     <br /><br />
@@ -135,7 +135,7 @@ function OrderManage() {
                     <br /><br />
                     <List type="number">
                         <List.Item>
-                            <Button primary onClick={() => {
+                            <Button variant="primary" onClick={() => {
                                 setAccessing(true);
                                 authenticatedFetch(app)(`/ordermanage?fs=${true}`).then((response) => {
                                     response.json().then((json) => {
@@ -213,7 +213,7 @@ function OrderManage() {
                                 />
                             </p>
                             <br />
-                            <Button primary onClick={() => {
+                            <Button variant="primary" onClick={() => {
                                 setAccessing2(true);
                                 authenticatedFetch(app)(`/ordermanage?delta=${delta}&name=${name}&reason=${reason}&uri=${uri}`).then((response) => {
                                     response.json().then((json) => {
@@ -257,7 +257,7 @@ function OrderManage() {
                         </List.Item>
                     </List>
                 </Card>
-            </VerticalStack>
+            </BlockStack>
         </Page>
     );
 }

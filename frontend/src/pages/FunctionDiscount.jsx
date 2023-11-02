@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, VerticalStack } from '@shopify/polaris';
+import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, BlockStack } from '@shopify/polaris';
 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
@@ -25,7 +25,7 @@ function FunctionDiscount() {
 
   return (
     <Page title="Create your original order discount with Shopify Functions">
-      <VerticalStack gap="5">
+      <BlockStack gap="500">
         <Card sectioned={true} >
           <Layout>
             <Layout.Section>
@@ -69,7 +69,7 @@ function FunctionDiscount() {
                   />
                 </List.Item>
                 <List.Item>
-                  <Button primary onClick={() => {
+                  <Button variant="primary" onClick={() => {
                     setAccessing(true);
                     // See https://shopify.dev/api/admin-graphql/2023-01/mutations/discountAutomaticAppCreate"
                     authenticatedFetch(app)(`/functiondiscount?meta=${meta}&id=${id}`).then((response) => {
@@ -99,7 +99,7 @@ function FunctionDiscount() {
             </Layout.Section>
           </Layout>
         </Card>
-      </VerticalStack>
+      </BlockStack>
     </Page>
   );
 }

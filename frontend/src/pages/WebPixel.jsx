@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, List, Badge, Checkbox, TextField, Button, Spinner, VerticalStack } from '@shopify/polaris';
+import { Page, Card, Layout, Link, List, Badge, Checkbox, TextField, Button, Spinner, BlockStack } from '@shopify/polaris';
 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
@@ -25,7 +25,7 @@ function WebPixel() {
 
   return (
     <Page title="Web Pixel basic usage for GA4 event passing">
-      <VerticalStack gap="5">
+      <BlockStack gap="500">
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
@@ -41,7 +41,7 @@ function WebPixel() {
                     Other events outside checkouts like page views, adding to carts can be sent by the GA tag insertion automatically which can be tested by
                     <Link url={`https://${_getAdminFromShop(shop)}/themes/current/editor?context=apps`} target="_blank">the app embed block named 'Barebone App Embed TP' of this app</Link>.
                   </p>
-                  <VerticalStack gap="5">
+                  <BlockStack gap="500">
                     <TextField
                       label="Input your GA4 Measurement ID"
                       value={ga4Id}
@@ -56,7 +56,7 @@ function WebPixel() {
                       autoComplete="off"
                       placeholder="sXXXXXXXX-rX_XXXXXXX"
                     />
-                  </VerticalStack>
+                  </BlockStack>
                   <p>The values above come from <Link url="https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?hl=ja&client_type=gtag" target="_blank">
                     Google Analytics Data Stream settings</Link>.
                   </p>
@@ -67,7 +67,7 @@ function WebPixel() {
                   />
                 </List.Item>
                 <List.Item>
-                  <Button primary onClick={() => {
+                  <Button variant="primary" onClick={() => {
                     setAccessing(true);
                     // See https://shopify.dev/api/admin-graphql/2023-04/mutations/webPixelCreate"
                     authenticatedFetch(app)(`/webpixel?ga4Id=${ga4Id}&ga4Sec=${ga4Sec}&ga4Debug=${ga4Debug}`).then((response) => {
@@ -106,7 +106,7 @@ function WebPixel() {
             </Layout.Section>
           </Layout>
         </Card>
-      </VerticalStack>
+      </BlockStack>
     </Page>
   );
 }

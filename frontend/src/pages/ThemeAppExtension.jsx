@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
-import { Page, Card, Layout, Link, Badge, List, Button, TextField, VerticalStack } from '@shopify/polaris';
+import { Page, Card, Layout, Link, Badge, List, Button, TextField, BlockStack } from '@shopify/polaris';
 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
@@ -19,7 +19,7 @@ function ThemeAppExtension() {
 
     return (
         <Page title="Theme App Extension usage of Schema, Metafields and App Proxies for server communication">
-            <VerticalStack gap="5">
+            <BlockStack gap="500">
                 <Card sectioned={true}>
                     <Layout>
                         <Layout.Section>
@@ -38,7 +38,7 @@ function ThemeAppExtension() {
                                     />
                                 </List.Item>
                                 <List.Item>
-                                    <Button primary onClick={() => {
+                                    <Button variant="primary" onClick={() => {
                                         // See https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#simplified-installation-flow-with-deep-linking
                                         const path = `/themes/current/editor?context=apps&activateAppId=${id}/app-embed-block`;
                                         console.log(path);
@@ -80,7 +80,7 @@ function ThemeAppExtension() {
                         </Layout.Section>
                     </Layout>
                 </Card>
-            </VerticalStack>
+            </BlockStack>
         </Page>
     );
 }
