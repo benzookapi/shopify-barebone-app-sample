@@ -35,7 +35,7 @@ extensions/ ... automatically generated directory and code by Shopify CLI `npm r
     ../shopify.app.toml ... each extension configuration required by CLI commands.
 ```
 
-[React](https://reactjs.org/) ([JSX](https://reactjs.org/docs/introducing-jsx.html), [Props](https://reactjs.org/docs/components-and-props.html), [State](https://reactjs.org/docs/state-and-lifecycle.html), [Hooks](https://reactjs.org/docs/hooks-intro.html), etc.) and [GraphQL](https://graphql.org/) ([Query](https://graphql.org/learn/queries/), [Edges](https://graphql.org/learn/pagination/#pagination-and-edges), [Union](https://graphql.org/learn/schema/#union-types), etc.) are mandatory technologies for manipulating this sample.
+[React](https://react.dev/) ([JSX](https://react.dev/learn/writing-markup-with-jsx), [Props](https://react.dev/learn/passing-props-to-a-component), [State](https://react.dev/learn/state-a-components-memory), [Hooks](https://react.dev/reference/react/hooks), etc.) and [GraphQL](https://graphql.org/) ([Query](https://graphql.org/learn/queries/), [Edges](https://graphql.org/learn/pagination/#pagination-and-edges), [Union](https://graphql.org/learn/schema/#union-types), etc.) are mandatory technologies for manipulating this sample.
 
 
 For creating React frontend, the following contents might help you.
