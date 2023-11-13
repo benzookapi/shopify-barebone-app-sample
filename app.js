@@ -1975,8 +1975,8 @@ router.get('/storefront', async (ctx, next) => {
     const response = {
       "public_token": '',
       "private_token": '',
-      "errors": 0,
-      "apis": []
+      "error_count": 0,
+      "error_messages": []
     };
 
     try {
@@ -2007,8 +2007,8 @@ router.get('/storefront', async (ctx, next) => {
         }
       }));
       if (api_res.data.storefrontAccessTokenCreate.userErrors.length > 0) {
-        response.errors = response.errors + 1;
-        response.apis.push(`storefrontAccessTokenCreate: ${JSON.stringify(api_res.data.storefrontAccessTokenCreate.userErrors[0])}`);
+        response.error_count = response.error_count + 1;
+        response.error_messages.push(`storefrontAccessTokenCreate: ${JSON.stringify(api_res.data.storefrontAccessTokenCreate.userErrors[0])}`);
       } else {
         response.public_token = api_res.data.storefrontAccessTokenCreate.storefrontAccessToken.accessToken;
       }
@@ -2042,8 +2042,8 @@ router.get('/storefront', async (ctx, next) => {
         }
       }));
       if (api_res.data.delegateAccessTokenCreate.userErrors.length > 0) {
-        response.errors = response.errors + 1;
-        response.apis.push(`delegateAccessTokenCreate: ${JSON.stringify(api_res.data.delegateAccessTokenCreate.userErrors[0])}`);
+        response.error_count = response.error_count + 1;
+        response.error_messages.push(`delegateAccessTokenCreate: ${JSON.stringify(api_res.data.delegateAccessTokenCreate.userErrors[0])}`);
       } else {
         const id = api_res.data.delegateAccessTokenCreate.shop.id;
         response.private_token = api_res.data.delegateAccessTokenCreate.delegateAccessToken.accessToken;
@@ -2072,14 +2072,14 @@ router.get('/storefront', async (ctx, next) => {
           ]
         }));
         if (api_res.data.metafieldsSet.userErrors.length > 0) {
-          response.errors = response.errors + 1;
-          response.apis.push(`metafieldsSet: ${JSON.stringify(api_res.data.metafieldsSet.userErrors[0])}`);
+          response.error_count = response.error_count + 1;
+          response.error_messages.push(`metafieldsSet: ${JSON.stringify(api_res.data.metafieldsSet.userErrors[0])}`);
         }
       }
     } catch (e) {
       console.log(`${JSON.stringify(e)}`);
-      response.errors = response.errors + 1;
-      response.apis.push(`Unknown: ${JSON.stringify(e)}`);
+      response.error_count = response.error_count + 1;
+      response.error_messages.push(`Unknown: ${JSON.stringify(e)}`);
     }
 
     ctx.body.result.response = response;

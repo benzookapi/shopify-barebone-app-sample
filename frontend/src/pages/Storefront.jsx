@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, List, Badge, Checkbox, TextField, Button, Spinner, BlockStack } from '@shopify/polaris';
+import { Page, Card, Layout, Link, List, Button, Spinner, BlockStack } from '@shopify/polaris';
 
 import { _getShopFromQuery, _getAdminFromShop, foldLongLine } from "../utils/my_util";
 
@@ -50,7 +50,7 @@ function Storefront() {
                   Open the <Link onClick={() => {
                     redirect.dispatch(Redirect.Action.REMOTE, { url: `https://${window.location.hostname}/storefront?public_token=${result.public_token}`, newContext: true });
                   }}>plain custom storefont page
-                  </Link> using the generated token above.
+                  </Link> using the generated tokens above.
                 </List.Item>
               </List>
             </Layout.Section>
