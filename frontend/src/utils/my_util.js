@@ -11,3 +11,13 @@ export function _getShopFromQuery(window) {
 export function _getAdminFromShop(shop) {
     return `admin.shopify.com/store/${shop.replace('.myshopify.com', '')}`;
 }
+
+export function foldLongLine(line, max) {
+    let tmp = line;
+    let res = '';
+    while (tmp.length > 0) {
+        res += `${tmp.substring(0, max)}\n`;
+        tmp = tmp.substring(max);
+    }
+    return res;
+}

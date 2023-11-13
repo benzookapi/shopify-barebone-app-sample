@@ -4,7 +4,7 @@ import { Redirect } from '@shopify/app-bridge/actions';
 import { getSessionToken, authenticatedFetch } from "@shopify/app-bridge-utils";
 import { Page, Card, Layout, Link, Button, Badge, BlockStack, List } from '@shopify/polaris';
 
-import { _decodeSessionToken } from "../utils/my_util";
+import { _decodeSessionToken, foldLongLine } from "../utils/my_util";
 
 // App Bridge Session Token sample
 // See https://shopify.dev/apps/auth/oauth/session-tokens
@@ -19,16 +19,6 @@ function SessionToken() {
   const [auth, setAuth] = useState('');
   const [res, setRes] = useState('');
 
-  const foldLongLine = function (line) {
-    let tmp = line;
-    let res = '';
-    while (tmp.length > 0) {
-      res += `${tmp.substring(0, 80)}\n`;
-      tmp = tmp.substring(80);
-    }
-    return res;
-  };
-
   return (
     <Page title="Getting started with session token authentication">
       <BlockStack gap="500">
@@ -40,7 +30,7 @@ function SessionToken() {
             <Layout.Section>
               <Button variant="primary" onClick={() => {
                 getSessionToken(app).then((sessionToken) => {
-                  setRaw(foldLongLine(`${sessionToken}`));
+                  setRaw(foldLongLine(`${sessionToken}`, 80));
                   setDecoded(JSON.stringify(_decodeSessionToken(sessionToken), null, 4));
                 });
               }}>
@@ -73,7 +63,7 @@ function SessionToken() {
                   response.json().then((json) => {
                     console.log(JSON.stringify(json, null, 4));
                     setUrl(json.request_url);
-                    setAuth(foldLongLine(json.authentication_bearer));
+                    setAuth(foldLongLine(json.authentication_bearer, 80));
                     setRes(JSON.stringify(json.result, null, 4));
                   }).catch((e) => {
                     console.log(`${e}`);

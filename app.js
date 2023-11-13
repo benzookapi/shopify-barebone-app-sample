@@ -1934,6 +1934,176 @@ router.get('/bulkoperation', async (ctx, next) => {
 
 });
 
+/* --- Storefront API sample endpoint for admin --- */
+// See https://shopify.dev/docs/api/storefront
+router.get('/storefront', async (ctx, next) => {
+  console.log("+++++++++++++++ /storefront +++++++++++++++");
+
+  // Access by AppBride::authenticatedFetch
+  if (typeof ctx.request.header.authorization !== UNDEFINED) {
+    console.log('Authenticated fetch');
+    const token = getTokenFromAuthHeader(ctx);
+    if (!checkAuthFetchToken(token)[0]) {
+      ctx.body.result.message = "Signature unmatched. Incorrect authentication bearer sent";
+      ctx.status = 400;
+      return;
+    }
+
+    ctx.set('Content-Type', 'application/json');
+    ctx.body = {
+      "result": {
+        "message": "",
+        "response": {}
+      }
+    };
+
+    const shop = getShopFromAuthToken(token);
+    let shop_data = null;
+    try {
+      shop_data = await (getDB(shop));
+      if (shop_data == null) {
+        ctx.body.result.message = "Authorization failed. No shop data";
+        ctx.status = 400;
+        return;
+      }
+    } catch (e) {
+      ctx.body.result.message = "Internal error in retrieving shop data";
+      ctx.status = 500;
+      return;
+    }
+
+    const response = {
+      "public_token": '',
+      "private_token": '',
+      "errors": 0,
+      "apis": []
+    };
+
+    try {
+      // 1. Generate a public token which can be exposed to the browsers, mobiles and other client side to call the API directly.
+      // See https://shopify.dev/docs/api/admin-graphql/unstable/mutations/storefrontAccessTokenCreate    
+      let api_res = await (callGraphql(ctx, shop, `mutation storefrontAccessTokenCreate($input: StorefrontAccessTokenInput!) {
+        storefrontAccessTokenCreate(input: $input) {
+          shop {
+            id
+            name
+          }
+          storefrontAccessToken {
+            accessScopes {
+              description
+              handle
+            }
+            accessToken
+            id
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }`, null, GRAPHQL_PATH_ADMIN, {
+        "input": {
+          "title": "Barebone App Storefront"
+        }
+      }));
+      if (api_res.data.storefrontAccessTokenCreate.userErrors.length > 0) {
+        response.errors = response.errors + 1;
+        response.apis.push(`storefrontAccessTokenCreate: ${JSON.stringify(api_res.data.storefrontAccessTokenCreate.userErrors[0])}`);
+      } else {
+        response.public_token = api_res.data.storefrontAccessTokenCreate.storefrontAccessToken.accessToken;
+      }
+      // 2. Genrate a private token which can never to exposed to any clients, used for server side API calls only.
+      // See https://shopify.dev/docs/api/admin-graphql/unstable/mutations/delegateAccessTokenCreate
+      // See https://shopify.dev/docs/api/usage/access-scopes#unauthenticated-access-scopes
+      api_res = await (callGraphql(ctx, shop, `mutation delegateAccessTokenCreate($input: DelegateAccessTokenInput!) {
+        delegateAccessTokenCreate(input: $input) {
+          delegateAccessToken {
+            accessScopes
+            accessToken
+          }
+          shop {
+            id
+            name
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }`, null, GRAPHQL_PATH_ADMIN, {
+        "input": {
+          "delegateAccessScope": [
+            "unauthenticated_write_checkouts",
+            "unauthenticated_write_customers",
+            "unauthenticated_read_product_listings",
+            "unauthenticated_read_selling_plans"
+          ],
+          "expiresIn": 60 * 60 * 24
+        }
+      }));
+      if (api_res.data.delegateAccessTokenCreate.userErrors.length > 0) {
+        response.errors = response.errors + 1;
+        response.apis.push(`delegateAccessTokenCreate: ${JSON.stringify(api_res.data.delegateAccessTokenCreate.userErrors[0])}`);
+      } else {
+        const id = api_res.data.delegateAccessTokenCreate.shop.id;
+        response.private_token = api_res.data.delegateAccessTokenCreate.delegateAccessToken.accessToken;
+        // 3. store the private token to the shop metafield to use later in this server side.
+        api_res = await (callGraphql(ctx, shop, `mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
+        metafieldsSet(metafields: $metafields) {
+          metafields {
+            id
+            value
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+      `, null, GRAPHQL_PATH_ADMIN, {
+          "metafields": [
+            {
+              "key": "storefront_private_token",
+              "namespace": "barebone_app",
+              "ownerId": id,
+              "type": "single_line_text_field",
+              "value": response.private_token
+            }
+          ]
+        }));
+        if (api_res.data.metafieldsSet.userErrors.length > 0) {
+          response.errors = response.errors + 1;
+          response.apis.push(`metafieldsSet: ${JSON.stringify(api_res.data.metafieldsSet.userErrors[0])}`);
+        }
+      }
+    } catch (e) {
+      console.log(`${JSON.stringify(e)}`);
+      response.errors = response.errors + 1;
+      response.apis.push(`Unknown: ${JSON.stringify(e)}`);
+    }
+
+    ctx.body.result.response = response;
+    ctx.status = 200;
+    return;
+  }
+
+  if (typeof ctx.request.query.public_token !== UNDEFINED) {
+    const public_token = ctx.request.query.public_token;
+    return await ctx.render('storefront', {
+      public_token: public_token
+    });
+  }
+
+  if (!checkSignature(ctx.request.query)) {
+    ctx.status = 400;
+    return;
+  }
+  const shop = ctx.request.query.shop;
+  setContentSecurityPolicy(ctx, shop);
+  await ctx.render('index', {});
+
+});
+
 /* --- App proxies sample endpoint --- */
 // See https://shopify.dev/apps/online-store/app-proxies
 router.all('/appproxy', async (ctx, next) => {

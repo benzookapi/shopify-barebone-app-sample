@@ -21,6 +21,7 @@ import CheckoutUi from './pages/CheckoutUi';
 import OrderManage from './pages/OrderManage';
 import Multipass from './pages/Multipass';
 import BulkOperation from './pages/BulkOperation';
+import Storefront from './pages/Storefront';
 
 import { _getAdminFromShop, _getShopFromQuery } from "./utils/my_util";
 
@@ -101,7 +102,7 @@ function App() {
           },
           {
             label: 'Storefront API',
-            destination: '/storefrontapi',
+            destination: '/storefront',
           },
           {
             label: 'POS',
@@ -141,6 +142,7 @@ function App() {
             <Route path="/ordermanage" element={<OrderManage />} />
             <Route path="/multipass" element={<Multipass />} />
             <Route path="/bulkoperation" element={<BulkOperation />} />
+            <Route path="/storefront" element={<Storefront />} />
           </Routes>
         </BrowserRouter>
         {/* Each page content comes here */}

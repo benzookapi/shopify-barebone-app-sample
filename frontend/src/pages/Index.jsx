@@ -122,6 +122,14 @@ function Index() {
                             },
                             name: 'Bulk Operation',
                             location: 'Bulk Operation sample for product importing with file uploading',
+                        },
+                        {
+                            id: 13,
+                            onClick: (id) => {
+                                redirect.dispatch(Redirect.Action.APP, '/storefront');
+                            },
+                            name: 'Storefront API',
+                            location: 'Storefront API sample with public and private (delegated) tokens in a plain custom storefront',
                         }
                     ]}
                     renderItem={(item) => {
