@@ -11,7 +11,7 @@ import '@shopify/polaris/build/esm/styles.css';
 import Index from './pages/Index';
 import SessionToken from './pages/SessionToken';
 import AdminLink from './pages/AdminLink';
-import ThemeAppExtension from './pages/ThemeAppExtension';
+import ThemeApp from './pages/ThemeApp';
 import FunctionDiscount from './pages/FunctionDiscount';
 import FunctionShipping from './pages/FunctionShipping';
 import FunctionPayment from './pages/FunctionPayment';
@@ -62,7 +62,7 @@ function App() {
           },
           {
             label: 'Theme App Extension',
-            destination: '/themeappextension',
+            destination: '/themeapp',
           },
           {
             label: 'Function Discount',
@@ -132,7 +132,7 @@ function App() {
             <Route path="/" element={<Index />} />
             <Route path="/sessiontoken" element={<SessionToken />} />
             <Route path="/adminlink" element={<AdminLink />} />
-            <Route path="/themeappextension" element={<ThemeAppExtension />} />
+            <Route path="/themeapp" element={<ThemeApp />} />
             <Route path="/functiondiscount" element={<FunctionDiscount />} />
             <Route path="/functionshipping" element={<FunctionShipping />} />
             <Route path="/functionpayment" element={<FunctionPayment />} />

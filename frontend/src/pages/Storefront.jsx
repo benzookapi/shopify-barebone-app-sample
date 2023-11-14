@@ -23,8 +23,10 @@ function Storefront() {
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
-              <Link url="https://shopify.dev/docs/api/storefront" target="_blank">Dev. doc</Link>
-            </Layout.Section>
+              <Link url="https://shopify.dev/docs/api/storefront" target="_blank">Dev. doc</Link><br/>
+              <Link url="https://shopify.dev/docs/api/usage/authentication#access-tokens-for-the-storefront-api" target="_blank">Dev. doc</Link><br/>
+              <Link url="https://shopify.dev/docs/apps/auth/oauth/delegate-access-tokens" target="_blank">Dev. doc</Link>
+            </Layout.Section>        
             <Layout.Section>
               <List type="number">
                 <List.Item>
@@ -42,13 +44,13 @@ function Storefront() {
                       });
                     });
                   }}>
-                    Generate a storefront API access token
+                    Generate Storefront API access tokens
                   </Button>
                   <p><APIResult res={result} loading={accessing} /></p>
                 </List.Item>
                 <List.Item>
                   Open the <Link onClick={() => {
-                    redirect.dispatch(Redirect.Action.REMOTE, { url: `https://${window.location.hostname}/storefront?public_token=${result.public_token}`, newContext: true });
+                    redirect.dispatch(Redirect.Action.REMOTE, { url: `https://${window.location.hostname}/storefront?public_token=${result.public_token.accessToken}`, newContext: true });
                   }}>plain custom storefont page
                   </Link> using the generated tokens above.
                 </List.Item>
@@ -65,7 +67,7 @@ function APIResult(props) {
   if (props.loading) {
     return <Spinner accessibilityLabel="Calling Order GraphQL" size="small" />;
   }
-  return (<pre>{foldLongLine(JSON.stringify(props.res, null, 4), 120)}</pre>);
+  return (<pre>{JSON.stringify(props.res, null, 4)}</pre>);
 }
 
 export default Storefront

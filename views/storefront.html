@@ -31,7 +31,8 @@
 <body>
     <div>
         <h1>Plain Custom Storefront</h1>
-        <h2><a href="https://shopify.dev/docs/api/usage/authentication#access-tokens-for-the-storefront-api" target="_blank">Dev. doc</a></h2>
+        <h2><a href="https://shopify.dev/docs/api/usage/authentication#access-tokens-for-the-storefront-api"
+                target="_blank">Dev. doc</a></h2>
         <form method="POST" action="multipass">
             <fieldset>
                 <legend>Input your login data to convert to a Shopify customer ( "Email" is mandatory)
@@ -83,7 +84,18 @@
         </form>
     </div>
     <script>
-       
+        fetch(`https://myteststore20230606.myshopify.com/api/unstable/graphql.json`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Shopify-Storefront-Access-Token": "<%= public_token %>"
+            },
+            body: JSON.stringify({ "query": "{ products(first: 10) { edges { node { id title } } } }" })
+        }).then((res) => {
+            res.json().then((data, errors) => {
+                console.log(`data: ${JSON.stringify(data, null, 4)}`);
+            });
+        });
     </script>
 </body>
 

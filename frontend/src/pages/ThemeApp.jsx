@@ -8,7 +8,7 @@ import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 // Theme App Extension sample with App Proxies
 // See https://shopify.dev/apps/online-store/theme-app-extensions
 // See https://shopify.dev/apps/online-store/app-proxies
-function ThemeAppExtension() {
+function ThemeApp() {
     const app = useAppBridge();
     const redirect = Redirect.create(app);
 
@@ -85,4 +85,4 @@ function ThemeAppExtension() {
     );
 }
 
-export default ThemeAppExtension
+export default ThemeApp

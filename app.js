@@ -374,8 +374,8 @@ router.get('/adminlink', async (ctx, next) => {
 
 /* --- Theme App Extension sample endpoint --- */
 // See https://shopify.dev/apps/online-store/theme-app-extensions
-router.get('/themeappextension', async (ctx, next) => {
-  console.log("+++++++++++++++ /themeappextension +++++++++++++++");
+router.get('/themeapp', async (ctx, next) => {
+  console.log("+++++++++++++++ /themeapp +++++++++++++++");
   if (!checkSignature(ctx.request.query)) {
     ctx.status = 400;
     return;
@@ -1994,7 +1994,10 @@ router.get('/storefront', async (ctx, next) => {
               handle
             }
             accessToken
+            createdAt
             id
+            title            
+            updatedAt
           }
           userErrors {
             field
@@ -2010,7 +2013,7 @@ router.get('/storefront', async (ctx, next) => {
         response.error_count = response.error_count + 1;
         response.error_messages.push(`storefrontAccessTokenCreate: ${JSON.stringify(api_res.data.storefrontAccessTokenCreate.userErrors[0])}`);
       } else {
-        response.public_token = api_res.data.storefrontAccessTokenCreate.storefrontAccessToken.accessToken;
+        response.public_token = api_res.data.storefrontAccessTokenCreate.storefrontAccessToken;
       }
       // 2. Genrate a private token which can never to exposed to any clients, used for server side API calls only.
       // See https://shopify.dev/docs/api/admin-graphql/unstable/mutations/delegateAccessTokenCreate
@@ -2020,6 +2023,7 @@ router.get('/storefront', async (ctx, next) => {
           delegateAccessToken {
             accessScopes
             accessToken
+            createdAt
           }
           shop {
             id
@@ -2046,7 +2050,7 @@ router.get('/storefront', async (ctx, next) => {
         response.error_messages.push(`delegateAccessTokenCreate: ${JSON.stringify(api_res.data.delegateAccessTokenCreate.userErrors[0])}`);
       } else {
         const id = api_res.data.delegateAccessTokenCreate.shop.id;
-        response.private_token = api_res.data.delegateAccessTokenCreate.delegateAccessToken.accessToken;
+        response.private_token = api_res.data.delegateAccessTokenCreate.delegateAccessToken;
         // 3. store the private token to the shop metafield to use later in this server side.
         api_res = await (callGraphql(ctx, shop, `mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
         metafieldsSet(metafields: $metafields) {
@@ -2066,8 +2070,8 @@ router.get('/storefront', async (ctx, next) => {
               "key": "storefront_private_token",
               "namespace": "barebone_app",
               "ownerId": id,
-              "type": "single_line_text_field",
-              "value": response.private_token
+              "type": "json",
+              "value": JSON.stringify(response.private_token)
             }
           ]
         }));

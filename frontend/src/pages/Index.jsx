@@ -46,7 +46,7 @@ function Index() {
                         {
                             id: 3,
                             onClick: (id) => {
-                                redirect.dispatch(Redirect.Action.APP, '/themeappextension');
+                                redirect.dispatch(Redirect.Action.APP, '/themeapp');
                             },
                             name: 'Theme App Extension',
                             location: 'Theme App Extension with App Proxies use cases',
