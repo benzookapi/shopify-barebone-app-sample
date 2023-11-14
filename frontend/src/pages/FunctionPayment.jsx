@@ -97,7 +97,7 @@ function FunctionPayment() {
                   }}>
                     Create your payment customization
                   </Button>&nbsp;
-                  <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
+                  <Badge tone='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
                 </List.Item>
                 <List.Item>
                   Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/payments`} target="_blank">payment settings</Link> to check if the customization is created and visit <Link url={`https://${shop}`} target="_blank">your theme storefront</Link> to see how your customization works with your selected shipping rate.

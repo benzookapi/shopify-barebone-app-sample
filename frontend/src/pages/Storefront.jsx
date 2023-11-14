@@ -2,9 +2,9 @@ import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, List, Button, Spinner, BlockStack } from '@shopify/polaris';
+import { Page, Card, Layout, Link, List, Button, Spinner, BlockStack, Badge } from '@shopify/polaris';
 
-import { _getShopFromQuery, _getAdminFromShop, foldLongLine } from "../utils/my_util";
+import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
 // Storefront API sample
 // See https://shopify.dev/docs/api/storefront
@@ -23,9 +23,9 @@ function Storefront() {
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
-              <Link url="https://shopify.dev/docs/api/storefront" target="_blank">Dev. doc</Link><br/>
-              <Link url="https://shopify.dev/docs/api/usage/authentication#access-tokens-for-the-storefront-api" target="_blank">Dev. doc</Link><br/>
-              <Link url="https://shopify.dev/docs/apps/auth/oauth/delegate-access-tokens" target="_blank">Dev. doc</Link>
+              <Link url="https://shopify.dev/docs/api/storefront" target="_blank">Dev. doc (1)</Link><br/>
+              <Link url="https://shopify.dev/docs/api/usage/authentication#access-tokens-for-the-storefront-api" target="_blank">Dev. doc (2)</Link><br/>
+              <Link url="https://shopify.dev/docs/apps/auth/oauth/delegate-access-tokens" target="_blank">Dev. doc (3)</Link>
             </Layout.Section>        
             <Layout.Section>
               <List type="number">
@@ -47,10 +47,13 @@ function Storefront() {
                     Generate Storefront API access tokens
                   </Button>
                   <p><APIResult res={result} loading={accessing} /></p>
+                  <p>
+                    <Badge></Badge>
+                  </p>
                 </List.Item>
                 <List.Item>
                   Open the <Link onClick={() => {
-                    redirect.dispatch(Redirect.Action.REMOTE, { url: `https://${window.location.hostname}/storefront?public_token=${result.public_token.accessToken}`, newContext: true });
+                    redirect.dispatch(Redirect.Action.REMOTE, { url: `https://${window.location.hostname}/storefront?shop=${shop}&public_token=${result.public_token.accessToken}`, newContext: true });
                   }}>plain custom storefont page
                   </Link> using the generated tokens above.
                 </List.Item>

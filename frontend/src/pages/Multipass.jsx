@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { Page, Card, Layout, Link, List, Badge, Checkbox, TextField, Button, Spinner, BlockStack } from '@shopify/polaris';
+import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, BlockStack } from '@shopify/polaris';
 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
@@ -32,7 +32,7 @@ function Multipass() {
               <List type="number">
                 <List.Item>
                   <p>
-                    Make sure your Multipass turned on in <Link url={`https://${_getAdminFromShop(shop)}/settings/customer_accounts`} target="_blank">Customer account settings</Link>. Copy your <Badge status='info'>Multipass secret</Badge> from there to paste to the following input.
+                    Make sure your Multipass turned on in <Link url={`https://${_getAdminFromShop(shop)}/settings/customer_accounts`} target="_blank">Customer account settings</Link>. Copy your <Badge tone='info'>Multipass secret</Badge> from there to paste to the following input.
                   </p>
                   <BlockStack gap="500">
                     <TextField
@@ -65,7 +65,7 @@ function Multipass() {
                   }}>
                     Add your secret to shop metafields
                   </Button>&nbsp;
-                  <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
+                  <Badge tone='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
                 </List.Item>
                 <List.Item>
                   Open the <Link onClick={() => {

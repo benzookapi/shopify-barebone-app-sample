@@ -34,12 +34,12 @@ function PostPurchase() {
                   </p>
                   <List type="bullet">
                     <List.Item>
-                      <p>Namespace and key: <Badge>barebone_app_upsell.product_id</Badge> for <Badge status='info'>Products</Badge> in type of <Badge>Single line text</Badge>
+                      <p>Namespace and key: <Badge>barebone_app_upsell.product_id</Badge> for <Badge tone='info'>Products</Badge> in type of <Badge>Single line text</Badge>
                         (This needs <b>'storefronts'</b> checked) which has <b>product ids to upsell passed to the post-purchase flow</b>.
                       </p>
                     </List.Item>
                     <List.Item>
-                      <p>Namespace and key: <Badge>barebone_app_review.score</Badge> for <Badge status='info'>Customers</Badge> in type of <Badge>Integer</Badge>
+                      <p>Namespace and key: <Badge>barebone_app_review.score</Badge> for <Badge tone='info'>Customers</Badge> in type of <Badge>Integer</Badge>
                         which has <b>reviw scores given by customers in the post-purchase flow</b>.
                       </p>
                     </List.Item>
@@ -47,7 +47,7 @@ function PostPurchase() {
                 </List.Item>
                 <List.Item>
                   <p>
-                    Add this app raw URL (<Badge>https://{window.location.hostname}</Badge>) to <Badge status='info'>Shop</Badge> metafields which is invisible in admin and accessible through this app's API call only.
+                    Add this app raw URL (<Badge>https://{window.location.hostname}</Badge>) to <Badge tone='info'>Shop</Badge> metafields which is invisible in admin and accessible through this app's API call only.
                   </p>
                   <Button variant="primary" onClick={() => {
                     setAccessing(true);
@@ -69,7 +69,7 @@ function PostPurchase() {
                   }}>
                     Add the app URL to shop metafields
                   </Button>&nbsp;
-                  <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
+                  <Badge tone='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
                 </List.Item>
                 <List.Item>
                   <p>
@@ -79,7 +79,7 @@ function PostPurchase() {
                 </List.Item>
                 <List.Item>
                   <p>
-                    Select this app in <Badge status='info'>Post-purchase page</Badge> of <Link url={`https://${_getAdminFromShop(shop)}/settings/checkout`} target="_blank">checkout settings</Link> to enable this Post-purchase.
+                    Select this app in <Badge tone='info'>Post-purchase page</Badge> of <Link url={`https://${_getAdminFromShop(shop)}/settings/checkout`} target="_blank">checkout settings</Link> to enable this Post-purchase.
                   </p>
                 </List.Item>
               </List>

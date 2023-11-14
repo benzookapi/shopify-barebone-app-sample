@@ -60,7 +60,7 @@ function OrderManage() {
                         <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/orderCapture" target="_blank">Dev. doc (2)</Link>
                     </Layout.Section>
                     <Layout.Section>
-                        <Text as='h2'>Your selected data id: <Badge status='info'><Link url={`https://${_getAdminFromShop(shop)}/orders/${id}`} target="_blank">{id}</Link></Badge></Text>
+                        <Text as='h2'>Your selected data id: <Badge tone='info'><Link url={`https://${_getAdminFromShop(shop)}/orders/${id}`} target="_blank">{id}</Link></Badge></Text>
                         <Text>
                             <Link onClick={() => { redirect.dispatch(Redirect.Action.APP, '/ordermanage'); }}>
                                 Go back
@@ -85,7 +85,7 @@ function OrderManage() {
                                     setRes(``);
                                 });
                             });
-                        }}>Fulfillment this order</Button> with <Badge status='info'>fulfillment order ids</Badge> and <Badge status='info'>order.fulfillable = true</Badge>
+                        }}>Fulfillment this order</Button> with <Badge tone='info'>fulfillment order ids</Badge> and <Badge tone='info'>order.fulfillable = true</Badge>
                     </Layout.Section>
                     <Layout.Section>
                         <Button variant="primary" onClick={() => {
@@ -100,7 +100,7 @@ function OrderManage() {
                                     setRes(``);
                                 });
                             });
-                        }}>Capture this order</Button> with <Badge status='info'>transaction ids</Badge> and <Badge status='info'>order.capturable = true</Badge>
+                        }}>Capture this order</Button> with <Badge tone='info'>transaction ids</Badge> and <Badge tone='info'>order.capturable = true</Badge>
                     </Layout.Section>
                 </Layout>
             </Page>
@@ -119,7 +119,7 @@ function OrderManage() {
                             for <Link url={`https://${_getAdminFromShop(shop)}/orders`} target="_blank">order details</Link>.
                         </List.Item>
                         <List.Item>
-                            Once you click your extension label in <Badge status="info">More actions</Badge> in your selected order details, this page shows up again in a diffrent UI for <Badge>fulfillment / capture</Badge>, checking if the <Badge status="info">id</Badge> parameter is given or not.
+                            Once you click your extension label in <Badge tone="info">More actions</Badge> in your selected order details, this page shows up again in a diffrent UI for <Badge>fulfillment / capture</Badge>, checking if the <Badge tone="info">id</Badge> parameter is given or not.
                         </List.Item>
                         <List.Item>
                             Check the <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/objects/Order" target="_blank">admin order API specification</Link> to understand what data can be retrieved with it.
@@ -127,11 +127,11 @@ function OrderManage() {
                     </List>
                 </Card>
                 <Card sectioned={true}>
-                    <Link url="https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps" target="_blank">Dev. doc</Link>
+                    <Link url="https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps" target="_blank">Dev. doc (1)</Link>
                     <br />
-                    <Link url="https://shopify.dev/docs/apps/fulfillment/inventory-management-apps" target="_blank">Dev. doc</Link>
+                    <Link url="https://shopify.dev/docs/apps/fulfillment/inventory-management-apps" target="_blank">Dev. doc (2)</Link>
                     <br />
-                    <Link url="https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps/manage-fulfillments" target="_blank">Dev. doc</Link>
+                    <Link url="https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps/manage-fulfillments" target="_blank">Dev. doc (3)</Link>
                     <br /><br />
                     <List type="number">
                         <List.Item>
@@ -153,11 +153,11 @@ function OrderManage() {
                                     });
                                 });
                             }}>Create a fulfillment service for this app</Button>&nbsp;
-                            <Badge status='info'>Result: <APIResult2 res={result} loading={accessing} /></Badge>
+                            <Badge tone='info'>Result: <APIResult2 res={result} loading={accessing} /></Badge>
                         </List.Item>
                         <List.Item>
-                            Make sure <Badge>Barebone app fulfillment service</Badge> is registed to <Badge status='info'>App locations</Badge> in <Link url={`https://${_getAdminFromShop(shop)}/settings/locations`} target="_blank">location settings</Link>.
-                            Go to <Link url={`https://${_getAdminFromShop(shop)}/products`} target="_blank">product details</Link> to check <Badge>Barebone app fulfillment service</Badge> in <Badge status='info'>[Inventory] &gt; [Edit locations]</Badge> in your selected product page
+                            Make sure <Badge>Barebone app fulfillment service</Badge> is registed to <Badge tone='info'>App locations</Badge> in <Link url={`https://${_getAdminFromShop(shop)}/settings/locations`} target="_blank">location settings</Link>.
+                            Go to <Link url={`https://${_getAdminFromShop(shop)}/products`} target="_blank">product details</Link> to check <Badge>Barebone app fulfillment service</Badge> in <Badge tone='info'>[Inventory] &gt; [Edit locations]</Badge> in your selected product page
                             (If you have inventories in <b>other locations</b> for the product, <b>set zero</b> to use this app location for online checkout).
                         </List.Item>
                         <List.Item>
@@ -234,12 +234,12 @@ function OrderManage() {
                                     });
                                 });
                             }}>Add inventories to this fulfillment service location</Button>&nbsp;
-                            <Badge status='info'>Result: <APIResult2 res={result2} loading={accessing2} /></Badge>
+                            <Badge tone='info'>Result: <APIResult2 res={result2} loading={accessing2} /></Badge>
                             <br /><br />
                             <InventoryLink link={link}></InventoryLink>
                         </List.Item>
                         <List.Item>
-                            After you make a order of the procuct above through <Link url={`https://${shop}`} target="_blank">the storefront</Link> and go to <Link url={`https://${_getAdminFromShop(shop)}/orders`} target="_blank">the order page</Link>, you see the new button labeled <Badge status='info'>Request fulfillments</Badge>. Once you click the button, you see <Badge>{`{"kind":"FULFILLMENT_REQUEST"}`}</Badge>
+                            After you make a order of the procuct above through <Link url={`https://${shop}`} target="_blank">the storefront</Link> and go to <Link url={`https://${_getAdminFromShop(shop)}/orders`} target="_blank">the order page</Link>, you see the new button labeled <Badge tone='info'>Request fulfillments</Badge>. Once you click the button, you see <Badge>{`{"kind":"FULFILLMENT_REQUEST"}`}</Badge>
                             in your server log as accessing <Badge>/fulfillment_order_notification</Badge>.
                         </List.Item>
                         <List.Item>

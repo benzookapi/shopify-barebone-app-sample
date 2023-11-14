@@ -2091,9 +2091,11 @@ router.get('/storefront', async (ctx, next) => {
     return;
   }
 
-  if (typeof ctx.request.query.public_token !== UNDEFINED) {
+  if (typeof ctx.request.query.shop !== UNDEFINED && typeof ctx.request.query.public_token !== UNDEFINED) {
+    const shop = ctx.request.query.shop;
     const public_token = ctx.request.query.public_token;
     return await ctx.render('storefront', {
+      shop: shop,
       public_token: public_token
     });
   }

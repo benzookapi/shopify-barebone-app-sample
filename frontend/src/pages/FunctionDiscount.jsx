@@ -33,7 +33,7 @@ function FunctionDiscount() {
             </Layout.Section>
             <Layout.Section>
               <List type="number">
-                <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/settings/custom_data`} target="_blank">Metafields</Link> for <Badge status='info'>Customers</Badge>
+                <List.Item>Add <Link url={`https://${_getAdminFromShop(shop)}/settings/custom_data`} target="_blank">Metafields</Link> for <Badge tone='info'>Customers</Badge>
                   in type of <Badge>Integer</Badge> and input your Metafield <Badge>Namespace and key</Badge>
                   <TextField
                     label=""
@@ -90,7 +90,7 @@ function FunctionDiscount() {
                   }}>
                     Register your discount
                   </Button>&nbsp;
-                  <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
+                  <Badge tone='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
                 </List.Item>
                 <List.Item>
                   Go to <Link url={`https://${_getAdminFromShop(shop)}/discounts`} target="_blank">Discounts</Link> to check if the discount is activated and visit <Link url={`https://${shop}`} target="_blank">your theme storefront</Link> to see how your discount works with your specified customers

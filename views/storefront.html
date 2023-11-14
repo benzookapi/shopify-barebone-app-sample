@@ -6,24 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My barebone app storefront API sample</title>
     <style>
-        input[type="text"] {
-            width: 400px;
-        }
-
-        input[type="submit"] {
-            font-size: large;
-        }
-
         div {
             margin-left: 20%;
             margin-right: 20%;
             text-align: center;
         }
 
-        div.input {
+        pre {
             text-align: left;
-            margin-top: 1em;
-            margin-bottom: 1em;
+        }
+
+        button {
+            font-size: large;
         }
     </style>
 </head>
@@ -33,68 +27,55 @@
         <h1>Plain Custom Storefront</h1>
         <h2><a href="https://shopify.dev/docs/api/usage/authentication#access-tokens-for-the-storefront-api"
                 target="_blank">Dev. doc</a></h2>
-        <form method="POST" action="multipass">
-            <fieldset>
-                <legend>Input your login data to convert to a Shopify customer ( "Email" is mandatory)
-                </legend>
-                <div class="input">
-                    <label for="email"><b>Email:</b></label><br />
-                    <input type="text" name="email" id="email" placeholder="test@example.com" />
-                </div>
-                <div class="input">
-                    <label for="identifier">Identifier:</label> (for the existing customer given by <a
-                        href="https://shopify.dev/docs/api/admin-graphql/2023-10/objects/Customer#field-customer-multipassidentifier"
-                        target="_blank">Admin API</a>)<br />
-                    <input type="text" name="identifier" id="identifier" placeholder="nic123" />
-                </div>
-                <div class="input">
-                    <label for="password">Password:</label><br />
-                    <input type="text" name="password" id="password" disabled="true"
-                        value="Note that you don't have to give your password to Multipass!" />
-                </div>
-                <div class="input">
-                    <label for="first_name">First name:</label><br />
-                    <input type="text" name="first_name" id="first_name" placeholder="Nic" />
-                </div>
-                <div class="input">
-                    <label for="last_name">Last name:</label><br />
-                    <input type="text" name="last_name" id="last_name" placeholder="Potts" />
-                </div>
-                <div class="input">
-                    <label for="tag_string">Tags separated by ",":</label><br />
-                    <input type="text" name="tag_string" id="tag_string" placeholder="canadian, premium" />
-                </div>
-                <div class="input">
-                    <label for="remote_ip">Remote IP: (get via <a href="https://whatismyipaddress.com/"
-                            target="_blank">this site</a>)</label><br />
-                    <input type="text" name="remote_ip" id="remote_ip" placeholder="107.20.160.121" />
-                </div>
-                <div class="input">
-                    <label for="return_to">URL to return:</label><br />
-                    <input type="text" name="return_to" id="return_to"
-                        placeholder="http://your_store_or_some_specific_site" />
-                </div>
-            </fieldset>
-            <p>
-                <input type="submit" value="Login to the following store" />
-            </p>
+        <div><b>Store:</b></div>
+        <div>
+            <%= shop %>
+        </div>
+        <p></p>
+        <div><b>Public Token:</b></div>
+        <div>
+            <%= public_token %>
+        </div>
+        <p></p>
+        <div><b>Products to checkout retrieved by the public token on this page:</b></div>
+        <div>
+            <pre id="products"></pre>
+        </div>
+        <button>Checkout the products above with the public token on this page</button>
 
-            <label for="token">Public Token:</label>
-            <input type="text" name="public_token" value="<%= public_token %>" id="public_token">
-        </form>
     </div>
     <script>
-        fetch(`https://myteststore20230606.myshopify.com/api/unstable/graphql.json`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Shopify-Storefront-Access-Token": "<%= public_token %>"
-            },
-            body: JSON.stringify({ "query": "{ products(first: 10) { edges { node { id title } } } }" })
-        }).then((res) => {
-            res.json().then((data, errors) => {
-                console.log(`data: ${JSON.stringify(data, null, 4)}`);
+        const callStorefrontAPI = (query, variables, callback) => {
+            const url = `https://<%= shop %>/api/unstable/graphql.json`;
+            console.log(`callStorefrontAPI: calling... ${url} with query ${query} and variables ${JSON.stringify(variables, null, 4)}`);
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Shopify-Storefront-Access-Token": "<%= public_token %>"
+                },
+                body: JSON.stringify({
+                    "query": query.replace(/\n/g, ''),
+                    "variables": variables
+                })
+            }).then((res) => {
+                res.json().then((data, errors) => {
+                    console.log(`callStorefrontAPI response: ${JSON.stringify(data, null, 4)}`);
+                    callback(data);
+                });
             });
+        };
+        callStorefrontAPI(`{
+            products(first: 3) {
+              edges {
+                node {
+                  id
+                  title
+                }
+              }
+            }
+          }`, null, (data) => {
+            document.getElementById('products').innerHTML = JSON.stringify(data.data, null, 4);
         });
     </script>
 </body>

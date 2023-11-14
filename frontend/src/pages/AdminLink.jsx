@@ -38,7 +38,7 @@ function AdminLink() {
             <Page title="You seem to have come through Admin Link!">
                 <Layout>
                     <Layout.Section>
-                        <Text as='h2'>Your selected data id: <Badge status='info'>{id}</Badge></Text>
+                        <Text as='h2'>Your selected data id: <Badge tone='info'>{id}</Badge></Text>
                         <Text>
                             <Link onClick={() => { redirect.dispatch(Redirect.Action.APP, '/adminlink'); }}>
                                 Go back
@@ -46,7 +46,7 @@ function AdminLink() {
                         </Text>
                     </Layout.Section>
                     <Layout.Section>
-                        <Badge status="attention">If you come from a <b>product detail page</b>, you must see the following GraphQL response for the given id</Badge>
+                        <Badge tone="attention">If you come from a <b>product detail page</b>, you must see the following GraphQL response for the given id</Badge>
                     </Layout.Section>
                     <Layout.Section>
                         <Card>
@@ -64,8 +64,8 @@ function AdminLink() {
                 <Card sectioned={true}>
                     <List type="bullet">
                         <List.Item>
-                            This app endpoints (menus) accept embedded requests only with the parameter <Badge status="info">embedded</Badge> = 1 to be protected by <Link url="https://shopify.dev/apps/auth/oauth/getting-started#step-2-verify-the-installation-request" target="_blank">hmac signature verification</Link>,
-                            but this page accepts unembedded ones supposed to be <b>accessed outside Shopify to be protected by Shopify login</b> of <Link url="https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup#initialize-shopify-app-bridge-in-your-app" target="_blank">App Bridge force redirection</Link> (<Badge status="info">forceRedirect: true</Badge>).
+                            This app endpoints (menus) accept embedded requests only with the parameter <Badge tone="info">embedded</Badge> = 1 to be protected by <Link url="https://shopify.dev/apps/auth/oauth/getting-started#step-2-verify-the-installation-request" target="_blank">hmac signature verification</Link>,
+                            but this page accepts unembedded ones supposed to be <b>accessed outside Shopify to be protected by Shopify login</b> of <Link url="https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup#initialize-shopify-app-bridge-in-your-app" target="_blank">App Bridge force redirection</Link> (<Badge tone="info">forceRedirect: true</Badge>).
                         </List.Item>
                         <List.Item>
                             Copy <Badge>{`${rawUrl}?shop=${shop}`}</Badge> to another browser in which you are not logged in to check if the page gets redirected to Shopify login (Disclaimer: the initial page should be blank for production).
@@ -79,7 +79,7 @@ function AdminLink() {
                             for <Link url={`https://${_getAdminFromShop(shop)}/products`} target="_blank">product details</Link>.
                         </List.Item>
                         <List.Item>
-                            Once you click your extension label in <Badge status="info">More actions</Badge> in your selected product details, this page shows up again in a diffrent UI checking if the <Badge status="info">id</Badge> parameter is given or not.
+                            Once you click your extension label in <Badge tone="info">More actions</Badge> in your selected product details, this page shows up again in a diffrent UI checking if the <Badge tone="info">id</Badge> parameter is given or not.
                         </List.Item>
                     </List>
                 </Card>

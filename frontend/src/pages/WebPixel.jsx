@@ -36,7 +36,7 @@ function WebPixel() {
                 <List.Item>
                   <p>
                     Set up your <Link url="https://support.google.com/analytics/answer/9303323" target="_blank">Data Streams</Link> in <Link url="https://analytics.google.com" target="_blank">Google Analytics</Link>
-                    to send checkout events like <Badge status="info">checkout_started</Badge> within Web Pixel <Link url="https://www.w3schools.com/html/html5_webworkers.asp" target="_blank">Web Workers</Link> which cannot be done by
+                    to send checkout events like <Badge tone="info">checkout_started</Badge> within Web Pixel <Link url="https://www.w3schools.com/html/html5_webworkers.asp" target="_blank">Web Workers</Link> which cannot be done by
                     Theme App Extention or manual insertion of <Badge>header GA Tag</Badge>.
                     Other events outside checkouts like page views, adding to carts can be sent by the GA tag insertion automatically which can be tested by
                     <Link url={`https://${_getAdminFromShop(shop)}/themes/current/editor?context=apps`} target="_blank">the app embed block named 'Barebone App Embed TP' of this app</Link>.
@@ -88,7 +88,7 @@ function WebPixel() {
                   }}>
                     Create your Web Pixel
                   </Button>&nbsp;
-                  <Badge status='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
+                  <Badge tone='info'>Result: <APIResult res={result} loading={accessing} /></Badge>
                 </List.Item>
                 <List.Item>
                   Go to <Link url={`https://${_getAdminFromShop(shop)}/settings/customer_events`} target="_blank">customer events</Link> to check if the app pixel is created and visit <Link url={`https://${shop}`} target="_blank">your theme storefront</Link> with

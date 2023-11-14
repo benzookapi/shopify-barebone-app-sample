@@ -100,7 +100,7 @@ function BulkOperation() {
                             }}>
                                 Run the operation
                             </Button>&nbsp;
-                            <Badge status='info'>Result: <APIResult2 res={result} loading={accessing} /></Badge>
+                            <Badge tone='info'>Result: <APIResult2 res={result} loading={accessing} /></Badge>
                             <p>&nbsp;</p>
                         </List.Item>
                         <List.Item>

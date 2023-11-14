@@ -90,7 +90,7 @@ function SessionToken() {
               <List type="bullet">
                 <List.Item>
                   If you want to connect to your own service like <Link url={`https://${window.location.hostname}/mocklogin`} target="_blank">this</Link> outside Shopify Admin,
-                  you can use the session token validation for passing <Badge status="info">shop</Badge> in a secure way as the following button does.
+                  you can use the session token validation for passing <Badge tone="info">shop</Badge> in a secure way as the following button does.
                 </List.Item>
                 <List.Item>
                   If you add <Badge>?external=true</Badge> to <Link url="https://shopify.dev/apps/deployment/web#step-5-update-urls-in-the-partner-dashboard" target="_blank">YOUR_APP_URL</Link> (<Badge>https://{window.location.hostname}/?external=true</Badge>),
