@@ -19,11 +19,6 @@
         button {
             font-size: x-large;
         }
-
-        fieldset {
-            margin-left: 20%; 
-            margin-right: 20%;
-        }
     </style>
 </head>
 
@@ -54,53 +49,50 @@
             <span id="ip_address"></span>
         </div>
         <p></p>
-       <fieldset>
-        <legend><b>How do you call Storefront API?</b></legend>
-            <div> <input type="radio" value="public" name="type" id="type_public" checked>Call on this page with the
-                public
-                token (view the
-                page
-                source!)</input>
-            </div>
-            <div>
-                <input type="radio" value="private" id="type_private" name="type">Call on the server side with the
-                private
-                token mixed with
-                Admin
-                API</input>
-            </div>
-        </fieldset>
+
+        <div><b>How do you call Storefront API?</b></div>
+        <div> <input type="radio" value="public" name="type" id="type_public" checked>Call on this page with the
+            public
+            token (view the
+            page
+            source!)</input>
+        </div>
+        <div>
+            <input type="radio" value="private" id="type_private" name="type">Call on the server side with the
+            private
+            token mixed with
+            Admin
+            API</input>
+        </div>
         <p></p>
 
-        <div>
+        <fieldset>
             <button id="show_product">1. Show products to checkout</button>
             <p></p>
             <div>
                 <pre id="products"></pre>
             </div>
-        </div>
+        </fieldset>
         <p></p>
 
         <fieldset class="default_hidden" style="visibility: hidden;">
-        
             <p>
                 <label for="email">Email: </label><input type="text" name="email" value="" id="email">
             </p>
             <p>
                 <label for="password">Password: </label><input type="password" name="password" value="" id="password">
             </p>
-            <button id="create_checkout">2. Login as a customer (optional)</button>
+            <button id="login_customer">2. Login as a customer (optional)</button>
             <p></p>
             <div>
-                <pre id="login"></pre>
+                <pre id="customer"></pre>
             </div>
-      
         </fieldset>
         <p></p>
 
-        <div class="default_hidden" style="visibility: hidden;">
+        <fieldset class="default_hidden" style="visibility: hidden;">
             <button id="create_checkout">2. Create a checkout link with buyer info.</button>
-        </div>
+        </fieldset>
         <p></p>
 
 
@@ -159,13 +151,17 @@
             });
         });
 
-        // Show the products to checkout with APIs.
+        // 1. Show the products to checkout with APIs.
         document.getElementById('show_product').onclick = () => {
             const products = document.getElementById('products');
             products.innerHTML = 'Loading...';
+
+            document.getElementById('customer').innerHTML = '';
+
             document.querySelectorAll('.default_hidden').forEach((e) => {
                 e.style = "visibility: hidden;";
             });
+
             const callback = (data) => {
                 products.innerHTML = JSON.stringify(data.data, null, 4);
                 document.querySelectorAll('.default_hidden').forEach((e) => {
@@ -195,6 +191,43 @@
             } else {
                 // Use the private token.
                 accessAppServer('show_product', callback);
+            }
+        };
+
+        // 2. Login as a customer (optional).
+        document.getElementById('login_customer').onclick = () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const customer = document.getElementById('customer');
+            customer.innerHTML = 'Loading...';
+
+            const callback = (data) => {
+                customer.innerHTML = JSON.stringify(data.data, null, 4);
+            };
+            if (document.getElementById('type_public').checked) {
+                // Use the public token.
+                callStorefrontAPI(`mutation customerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
+                  customerAccessTokenCreate(input: $input) {
+                    customerAccessToken {
+                      accessToken
+                      expiresAt
+                    }
+                    customerUserErrors {
+                      code
+                      field
+                      message
+                    }
+                  }
+                }`, {
+                    "input": {
+                        "email": email,
+                        "password": password
+                    }
+                }, document.getElementById('ip_address').innerHTML, callback);
+            } else {
+                // Use the private token.
+                accessAppServer('login_customer', callback);
             }
         };
 
