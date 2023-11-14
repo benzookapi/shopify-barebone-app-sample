@@ -17,7 +17,12 @@
         }
 
         button {
-            font-size: large;
+            font-size: x-large;
+        }
+
+        fieldset {
+            margin-left: 20%; 
+            margin-right: 20%;
         }
     </style>
 </head>
@@ -25,34 +30,93 @@
 <body>
     <div>
         <h1>Plain Custom Storefront</h1>
+
         <h2><a href="https://shopify.dev/docs/api/usage/authentication#access-tokens-for-the-storefront-api"
                 target="_blank">Dev. doc</a></h2>
+
+        <h3><a href="https://github.com/benzookapi/shopify-barebone-app-sample/blob/main/views/storefront.html"
+                target="_blank">Get the code</a></h3>
+
         <div><b>Store:</b></div>
         <div>
             <%= shop %>
         </div>
         <p></p>
+
         <div><b>Public Token:</b></div>
         <div>
             <%= public_token %>
         </div>
         <p></p>
-        <div><b>Products to checkout retrieved by the public token on this page:</b></div>
+
+        <div><b>Your IP Address:</b></div>
         <div>
-            <pre id="products"></pre>
+            <span id="ip_address"></span>
         </div>
-        <button>Checkout the products above with the public token on this page</button>
+        <p></p>
+       <fieldset>
+        <legend><b>How do you call Storefront API?</b></legend>
+            <div> <input type="radio" value="public" name="type" id="type_public" checked>Call on this page with the
+                public
+                token (view the
+                page
+                source!)</input>
+            </div>
+            <div>
+                <input type="radio" value="private" id="type_private" name="type">Call on the server side with the
+                private
+                token mixed with
+                Admin
+                API</input>
+            </div>
+        </fieldset>
+        <p></p>
+
+        <div>
+            <button id="show_product">1. Show products to checkout</button>
+            <p></p>
+            <div>
+                <pre id="products"></pre>
+            </div>
+        </div>
+        <p></p>
+
+        <fieldset class="default_hidden" style="visibility: hidden;">
+        
+            <p>
+                <label for="email">Email: </label><input type="text" name="email" value="" id="email">
+            </p>
+            <p>
+                <label for="password">Password: </label><input type="password" name="password" value="" id="password">
+            </p>
+            <button id="create_checkout">2. Login as a customer (optional)</button>
+            <p></p>
+            <div>
+                <pre id="login"></pre>
+            </div>
+      
+        </fieldset>
+        <p></p>
+
+        <div class="default_hidden" style="visibility: hidden;">
+            <button id="create_checkout">2. Create a checkout link with buyer info.</button>
+        </div>
+        <p></p>
+
+
 
     </div>
     <script>
-        const callStorefrontAPI = (query, variables, callback) => {
+        // Call Shopify Storefront API directly over CORS with the public token.
+        const callStorefrontAPI = (query, variables, ip_address, callback) => {
             const url = `https://<%= shop %>/api/unstable/graphql.json`;
-            console.log(`callStorefrontAPI: calling... ${url} with query ${query} and variables ${JSON.stringify(variables, null, 4)}`);
+            console.log(`callStorefrontAPI: calling... ${url} with query ${query} and variables ${JSON.stringify(variables, null, 4)} and ip_address ${ip_address}`);
             fetch(url, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-Shopify-Storefront-Access-Token": "<%= public_token %>"
+                    "X-Shopify-Storefront-Access-Token": "<%= public_token %>",
+                    "Shopify-Storefront-Buyer-IP": ip_address
                 },
                 body: JSON.stringify({
                     "query": query.replace(/\n/g, ''),
@@ -65,18 +129,75 @@
                 });
             });
         };
-        callStorefrontAPI(`{
-            products(first: 3) {
-              edges {
-                node {
-                  id
-                  title
-                }
-              }
-            }
-          }`, null, (data) => {
-            document.getElementById('products').innerHTML = JSON.stringify(data.data, null, 4);
+
+        // Access to the app server to call Admin / Storefront APIs with the private (delegated) token in the shop metafield.
+        const accessAppServer = (action, callback) => {
+            const url = `/storefront?action=${action}`;
+            console.log(`accessAppServer: calling... ${url}`);
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "shop": "<%= shop %>"
+                })
+            }).then((res) => {
+                res.json().then((data, errors) => {
+                    console.log(`accessAppServer response: ${JSON.stringify(data, null, 4)}`);
+                    callback(data);
+                });
+            });
+        };
+
+        // Get the IP address.
+        fetch('https://api.ipify.org?format=json', {
+            method: "GET"
+        }).then((res) => {
+            res.json().then((json) => {
+                document.getElementById('ip_address').innerHTML = json.ip;
+            });
         });
+
+        // Show the products to checkout with APIs.
+        document.getElementById('show_product').onclick = () => {
+            const products = document.getElementById('products');
+            products.innerHTML = 'Loading...';
+            document.querySelectorAll('.default_hidden').forEach((e) => {
+                e.style = "visibility: hidden;";
+            });
+            const callback = (data) => {
+                products.innerHTML = JSON.stringify(data.data, null, 4);
+                document.querySelectorAll('.default_hidden').forEach((e) => {
+                    e.style = "visibility: visible;";
+                });
+            };
+            if (document.getElementById('type_public').checked) {
+                // Use the public token.
+                callStorefrontAPI(`{
+                  products(first: 3) {
+                    edges {
+                      node {
+                        id
+                        title
+                        variants(first: 1) {
+                          edges {
+                            node {
+                              id
+                              title
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }`, null, document.getElementById('ip_address').innerHTML, callback);
+            } else {
+                // Use the private token.
+                accessAppServer('show_product', callback);
+            }
+        };
+
     </script>
 </body>
 

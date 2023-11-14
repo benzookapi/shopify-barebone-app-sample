@@ -1938,6 +1938,7 @@ router.get('/bulkoperation', async (ctx, next) => {
 // See https://shopify.dev/docs/api/storefront
 router.get('/storefront', async (ctx, next) => {
   console.log("+++++++++++++++ /storefront +++++++++++++++");
+  console.log(`query ${JSON.stringify(ctx.request.query)}`);
 
   // Access by AppBride::authenticatedFetch
   if (typeof ctx.request.header.authorization !== UNDEFINED) {
@@ -1981,7 +1982,8 @@ router.get('/storefront', async (ctx, next) => {
 
     try {
       // 1. Generate a public token which can be exposed to the browsers, mobiles and other client side to call the API directly.
-      // See https://shopify.dev/docs/api/admin-graphql/unstable/mutations/storefrontAccessTokenCreate    
+      // See https://shopify.dev/docs/api/admin-graphql/unstable/mutations/storefrontAccessTokenCreate  
+      // Note that the public token can be used only for Storefront API which can be exposed to the client side.  
       let api_res = await (callGraphql(ctx, shop, `mutation storefrontAccessTokenCreate($input: StorefrontAccessTokenInput!) {
         storefrontAccessTokenCreate(input: $input) {
           shop {
@@ -2018,6 +2020,7 @@ router.get('/storefront', async (ctx, next) => {
       // 2. Genrate a private token which can never to exposed to any clients, used for server side API calls only.
       // See https://shopify.dev/docs/api/admin-graphql/unstable/mutations/delegateAccessTokenCreate
       // See https://shopify.dev/docs/api/usage/access-scopes#unauthenticated-access-scopes
+      // Note that the private token can be used NOT only for Storefront API but Admin API too which must be secret in the server side. 
       api_res = await (callGraphql(ctx, shop, `mutation delegateAccessTokenCreate($input: DelegateAccessTokenInput!) {
         delegateAccessTokenCreate(input: $input) {
           delegateAccessToken {
@@ -2037,6 +2040,10 @@ router.get('/storefront', async (ctx, next) => {
       }`, null, GRAPHQL_PATH_ADMIN, {
         "input": {
           "delegateAccessScope": [
+            "write_products",
+            "write_discounts",
+            "write_orders",
+            "write_payment_customizations",
             "unauthenticated_write_checkouts",
             "unauthenticated_write_customers",
             "unauthenticated_read_product_listings",
@@ -2067,7 +2074,7 @@ router.get('/storefront', async (ctx, next) => {
       `, null, GRAPHQL_PATH_ADMIN, {
           "metafields": [
             {
-              "key": "storefront_private_token",
+              "key": "delegated_private_token",
               "namespace": "barebone_app",
               "ownerId": id,
               "type": "json",
@@ -2107,6 +2114,68 @@ router.get('/storefront', async (ctx, next) => {
   const shop = ctx.request.query.shop;
   setContentSecurityPolicy(ctx, shop);
   await ctx.render('index', {});
+
+});
+
+/* --- Storefront API sameple endpoint for using the private token --- */
+// See https://shopify.dev/docs/api/usage/authentication#getting-started-with-private-access
+router.post('/storefront', async (ctx, next) => {
+  console.log("+++++++++++++++ /storefront +++++++++++++++");
+  console.log(`query ${JSON.stringify(ctx.request.query)}`);
+  console.log(`body: ${JSON.stringify(ctx.request.body, null, 4)}`);
+
+  const action = ctx.request.query.action;
+  console.log(`action ${action}`);
+
+  const shop = ctx.request.body.shop;
+  console.log(`shop ${shop}`);
+
+  try {
+    let api_res = await (callGraphql(ctx, shop, `{
+      shop {
+        id
+        metafield(namespace: "barebone_app", key: "delegated_private_token") {
+          id
+          value
+        }
+      }
+    }`, null, GRAPHQL_PATH_ADMIN, null));
+
+    const private_token = JSON.parse(api_res.data.shop.metafield.value);
+    console.log(`private_token ${JSON.stringify(private_token, null, 4)}`);
+
+    if (action === 'show_product') {
+      // Call Admin API with the given private (delegated) token, not the access token in the database.
+      api_res = await (callGraphql(ctx, shop, `{
+        products(first: 3) {
+          edges {
+            node {
+              id
+              title
+              variants(first: 1) {
+                edges {
+                  node {
+                    id
+                    title
+                  }
+                }
+              }
+            }
+          }
+        }
+      }`, private_token.accessToken, GRAPHQL_PATH_ADMIN, null));
+
+    }
+
+    ctx.body = api_res;
+    return;
+
+  } catch (e) {
+    console.log(`${e}`);
+    ctx.status = 500;
+    ctx.body = { "Error": "Unknown" };
+    return;
+  }
 
 });
 

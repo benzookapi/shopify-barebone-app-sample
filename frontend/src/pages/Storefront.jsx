@@ -23,10 +23,10 @@ function Storefront() {
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
-              <Link url="https://shopify.dev/docs/api/storefront" target="_blank">Dev. doc (1)</Link><br/>
-              <Link url="https://shopify.dev/docs/api/usage/authentication#access-tokens-for-the-storefront-api" target="_blank">Dev. doc (2)</Link><br/>
+              <Link url="https://shopify.dev/docs/api/storefront" target="_blank">Dev. doc (1)</Link><br />
+              <Link url="https://shopify.dev/docs/api/usage/authentication#access-tokens-for-the-storefront-api" target="_blank">Dev. doc (2)</Link><br />
               <Link url="https://shopify.dev/docs/apps/auth/oauth/delegate-access-tokens" target="_blank">Dev. doc (3)</Link>
-            </Layout.Section>        
+            </Layout.Section>
             <Layout.Section>
               <List type="number">
                 <List.Item>
@@ -47,9 +47,16 @@ function Storefront() {
                     Generate Storefront API access tokens
                   </Button>
                   <p><APIResult res={result} loading={accessing} /></p>
-                  <p>
-                    <Badge></Badge>
-                  </p>
+                  <List type="bullet">
+                    <List.Item>
+                      <Badge tone="info">Public token's access scopes</Badge> are inherited from the app OAuth scopes, but limited to
+                      <Badge>unauthenticated_XXX = Storefront API's only</Badge> (<b>*You can expose the token at the client side like browser page sources</b>).
+                    </List.Item>
+                    <List.Item>
+                      <Badge tone="info">Private token's access scopes</Badge> can be given any ones including Admin API, but limited   
+                      within <Badge>the app OAuth scopes = subset token</Badge> (<b>*You can NOT share the token which should be used in the server side only</b>).
+                    </List.Item>
+                  </List>
                 </List.Item>
                 <List.Item>
                   Open the <Link onClick={() => {
@@ -68,7 +75,7 @@ function Storefront() {
 
 function APIResult(props) {
   if (props.loading) {
-    return <Spinner accessibilityLabel="Calling Order GraphQL" size="small" />;
+    return <Spinner accessibilityLabel="Calling Order GraphQL" size="large" />;
   }
   return (<pre>{JSON.stringify(props.res, null, 4)}</pre>);
 }
