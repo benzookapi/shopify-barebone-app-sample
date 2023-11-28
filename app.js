@@ -2192,6 +2192,38 @@ router.post('/storefront', async (ctx, next) => {
       }, ip_address));
       api_res.data.used_api = "Server side Storefront API";
     }
+    if (action === 'create_checkout') {
+      // Call Storefront API with the given private (delegated) token.
+      api_res = await (callGraphql(ctx, shop, `mutation checkoutCreate($input: CheckoutCreateInput!) {
+        checkoutCreate(input: $input) {
+          checkout {
+            id
+            orderStatusUrl
+            ready
+            requiresShipping
+            lineItems(first: 10) {
+              edges {
+                node {
+                  id
+                  quantity
+                  title
+                }
+              }
+            }
+            webUrl
+          }
+          checkoutUserErrors {
+            code
+            field
+            message
+          }
+          queueToken
+        }
+      }`, private_token.accessToken, GRAPHQL_PATH_STOREFRONT, {
+        "input": variables
+      }, ip_address));
+      api_res.data.used_api = "Server side Storefront API";
+    }
 
     ctx.body = api_res;
     return;

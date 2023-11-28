@@ -14,6 +14,7 @@
 
         pre {
             text-align: left;
+            max-width: 500px;
         }
 
         button {
@@ -52,17 +53,17 @@
 
         <div><b>How do you call Storefront API?</b></div>
         <div> <input type="radio" value="public" name="type" id="type_public" checked>Call on this page with the
-            public
-            token (view the
+            given public
+            token <br /> (view the
             page
             source!)</input>
         </div>
         <div>
             <input type="radio" value="private" id="type_private" name="type">Call on the server side with the
-            private
+            stored private
             token mixed with
             Admin
-            API</input>
+            API <br /> (you need to install this app to the store first!)</input>
         </div>
         <p></p>
 
@@ -71,6 +72,9 @@
             <p></p>
             <div>
                 <pre id="products"></pre>
+                <p>
+                    <a href="" target="_blank" id="products_doc" style="visibility: hidden;">The used API. doc</a>
+                </p>
             </div>
         </fieldset>
         <p></p>
@@ -86,12 +90,24 @@
             <p></p>
             <div>
                 <pre id="customer"></pre>
+                <p>
+                    <a href="https://shopify.dev/docs/api/storefront/unstable/mutations/customerAccessTokenCreate"
+                        target="_blank">The used API. doc</a>
+                </p>
             </div>
         </fieldset>
         <p></p>
 
         <fieldset class="default_hidden" style="visibility: hidden;">
-            <button id="create_checkout">2. Create a checkout link with buyer info.</button>
+            <button id="create_checkout">2. Create a checkout link with the listed products added.</button>
+            <p></p>
+            <div>
+                <pre id="checkout"></pre>
+                <p>
+                    <a href="https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCreate"
+                        target="_blank">The used API. doc</a>
+                </p>
+            </div>
         </fieldset>
         <p></p>
 
@@ -116,8 +132,8 @@
                 })
             }).then((res) => {
                 res.json().then((data, errors) => {
-                    data.data.used_api = "Client side Storefront API";
                     console.log(`callStorefrontAPI response: ${JSON.stringify(data, null, 4)}`);
+                    data.data.used_api = "Client side Storefront API";
                     callback(data);
                 });
             });
@@ -170,6 +186,13 @@
                 document.querySelectorAll('.default_hidden').forEach((e) => {
                     e.style = "visibility: visible;";
                 });
+                const doc = document.getElementById('products_doc');
+                doc.style = "visibility: visible;";
+                if (document.getElementById('type_public').checked) {
+                    doc.href = "https://shopify.dev/docs/api/storefront/unstable/queries/products";
+                } else {
+                    doc.href = "https://shopify.dev/docs/api/admin-graphql/unstable/queries/products";
+                }
             };
             if (document.getElementById('type_public').checked) {
                 // Use the public token.
@@ -208,6 +231,11 @@
             const callback = (data) => {
                 customer.innerHTML = JSON.stringify(data.data, null, 4);
             };
+
+            const input = {
+                "email": email,
+                "password": password
+            };
             if (document.getElementById('type_public').checked) {
                 // Use the public token.
                 callStorefrontAPI(`mutation customerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
@@ -223,14 +251,79 @@
                     }
                   }
                 }`, {
-                    "input": {
-                        "email": email,
-                        "password": password
-                    }
+                    "input": input
                 }, document.getElementById('ip_address').innerHTML, callback);
             } else {
                 // Use the private token (passing the IP address to server side Storefront API).
-                accessAppServer('login_customer', { "email": email, "password": password }, document.getElementById('ip_address').innerHTML, callback);
+                accessAppServer('login_customer', input, document.getElementById('ip_address').innerHTML, callback);
+            }
+        };
+
+        // 2. Create a checkout with dummy info.
+        document.getElementById('create_checkout').onclick = () => {
+            const customer = document.getElementById('checkout');
+            customer.innerHTML = 'Loading...';
+
+            const callback = (data) => {
+                customer.innerHTML = JSON.stringify(data.data, null, 4);
+            };
+
+            const listed_products = JSON.parse(document.getElementById('products').innerHTML);
+            const line_items = [];
+            listed_products.products.edges.map((e) => {
+                e.node.variants.edges.map((e2) => {
+                    line_items.push({
+                        "variantId": e2.node.id,
+                        "quantity": 1,
+                        "customAttributes": {
+                            "key": "bareboneapp.storefront_product_id",
+                            "value": e.node.id
+                        }
+                    });
+                });
+            });
+            const input = {
+                "customAttributes": [
+                    {
+                        "key": "bareboneapp.storefront_ip",
+                        "value": document.getElementById('ip_address').innerHTML
+                    }
+                ],
+                "lineItems": line_items
+            };
+            if (document.getElementById('type_public').checked) {
+                // Use the public token.
+                callStorefrontAPI(`mutation checkoutCreate($input: CheckoutCreateInput!) {
+                  checkoutCreate(input: $input) {
+                    checkout {
+                      id
+                      orderStatusUrl
+                      ready
+                      requiresShipping
+                      lineItems(first: 10) {
+                        edges {
+                          node {
+                            id
+                            quantity
+                            title
+                          }
+                        }
+                      }
+                      webUrl
+                    }
+                    checkoutUserErrors {
+                      code
+                      field
+                      message
+                    }
+                    queueToken
+                  }
+                }`, {
+                    "input": input
+                }, document.getElementById('ip_address').innerHTML, callback);
+            } else {
+                // Use the private token (passing the IP address to server side Storefront API).
+                accessAppServer('create_checkout', input, document.getElementById('ip_address').innerHTML, callback);
             }
         };
 
