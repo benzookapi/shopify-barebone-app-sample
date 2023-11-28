@@ -2153,6 +2153,7 @@ router.post('/storefront', async (ctx, next) => {
 
     if (action === 'show_product') {
       // Call Admin API with the given private (delegated) token, not the access token in the database.
+      // See https://shopify.dev/docs/api/admin-graphql/unstable/queries/products
       api_res = await (callGraphql(ctx, shop, `{
         products(first: 3) {
           edges {
@@ -2164,6 +2165,7 @@ router.post('/storefront', async (ctx, next) => {
                   node {
                     id
                     title
+                    price
                   }
                 }
               }
@@ -2173,27 +2175,9 @@ router.post('/storefront', async (ctx, next) => {
       }`, private_token.accessToken, GRAPHQL_PATH_ADMIN, null));
       api_res.data.used_api = "Server side Admin API";
     }
-    if (action === 'login_customer') {
-      // Call Storefront API with the given private (delegated) token.
-      api_res = await (callGraphql(ctx, shop, `mutation customerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
-        customerAccessTokenCreate(input: $input) {
-          customerAccessToken {
-            accessToken
-            expiresAt
-          }
-          customerUserErrors {
-            code
-            field
-            message
-          }
-        }
-      }`, private_token.accessToken, GRAPHQL_PATH_STOREFRONT, {
-        "input": variables
-      }, ip_address));
-      api_res.data.used_api = "Server side Storefront API";
-    }
     if (action === 'create_checkout') {
       // Call Storefront API with the given private (delegated) token.
+      // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCreate
       api_res = await (callGraphql(ctx, shop, `mutation checkoutCreate($input: CheckoutCreateInput!) {
         checkoutCreate(input: $input) {
           checkout {
@@ -2222,6 +2206,136 @@ router.post('/storefront', async (ctx, next) => {
       }`, private_token.accessToken, GRAPHQL_PATH_STOREFRONT, {
         "input": variables
       }, ip_address));
+      api_res.data.used_api = "Server side Storefront API";
+    }
+    if (action === 'login_customer') {
+      // Call Storefront API with the given private (delegated) token.
+      // See https://shopify.dev/docs/api/storefront/unstable/mutations/customerAccessTokenCreate
+      api_res = await (callGraphql(ctx, shop, `mutation customerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
+        customerAccessTokenCreate(input: $input) {
+          customerAccessToken {
+            accessToken
+            expiresAt
+          }
+          customerUserErrors {
+            code
+            field
+            message
+          }
+        }
+      }`, private_token.accessToken, GRAPHQL_PATH_STOREFRONT, {
+        "input": variables
+      }, ip_address));
+      api_res.data.used_api = "Server side Storefront API";
+    }
+    if (action === 'customer_associate') {
+      // Call Storefront API with the given private (delegated) token.
+      // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCustomerAssociateV2
+      api_res = await (callGraphql(ctx, shop, `mutation checkoutCustomerAssociateV2($checkoutId: ID!, $customerAccessToken: String!) {
+        checkoutCustomerAssociateV2(checkoutId: $checkoutId, customerAccessToken: $customerAccessToken) {
+          checkout {
+            id
+            orderStatusUrl
+            ready
+            requiresShipping
+            lineItems(first: 10) {
+              edges {
+                node {
+                  id
+                  quantity
+                  title
+                }
+              }
+            }
+            shippingAddress {
+              address1
+              address2
+              city
+              company
+              country
+              countryCodeV2
+              firstName
+              lastName
+              phone
+              province
+              provinceCode
+              zip
+            }
+            webUrl
+          }
+          checkoutUserErrors {
+            code
+            field
+            message
+          }
+          customer {
+            id
+            email
+            addresses(first: 10) {
+              edges {
+                node {
+                  address1
+                  address2
+                  city
+                  company
+                  country
+                  countryCodeV2
+                  firstName
+                  lastName
+                  phone
+                  province
+                  provinceCode
+                  zip
+                }
+              }                          
+            }
+          }
+        }
+       }`, private_token.accessToken, GRAPHQL_PATH_STOREFRONT, variables, ip_address));
+      api_res.data.used_api = "Server side Storefront API";
+    }
+    if (action === 'apply_address') {
+      // Call Storefront API with the given private (delegated) token.
+      // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingAddressUpdateV2
+      api_res = await (callGraphql(ctx, shop, `mutation checkoutShippingAddressUpdateV2($checkoutId: ID!, $shippingAddress: MailingAddressInput!) {
+        checkoutShippingAddressUpdateV2(checkoutId: $checkoutId, shippingAddress: $shippingAddress) {
+          checkout {
+            id
+            orderStatusUrl
+            ready
+            requiresShipping
+            lineItems(first: 10) {
+              edges {
+                node {
+                  id
+                  quantity
+                  title
+                }
+              }
+            }
+            shippingAddress {
+              address1
+              address2
+              city
+              company
+              country
+              countryCodeV2
+              firstName
+              lastName
+              phone
+              province
+              provinceCode
+              zip
+            }
+            webUrl
+          }
+          checkoutUserErrors {
+            code
+            field
+            message
+          }
+        }
+      }`, private_token.accessToken, GRAPHQL_PATH_STOREFRONT, variables, ip_address));
       api_res.data.used_api = "Server side Storefront API";
     }
 
