@@ -116,6 +116,7 @@
                 })
             }).then((res) => {
                 res.json().then((data, errors) => {
+                    data.data.used_api = "Client side Storefront API";
                     console.log(`callStorefrontAPI response: ${JSON.stringify(data, null, 4)}`);
                     callback(data);
                 });
@@ -123,7 +124,7 @@
         };
 
         // Access to the app server to call Admin / Storefront APIs with the private (delegated) token in the shop metafield.
-        const accessAppServer = (action, callback) => {
+        const accessAppServer = (action, variables, ip_address, callback) => {
             const url = `/storefront?action=${action}`;
             console.log(`accessAppServer: calling... ${url}`);
             fetch(url, {
@@ -132,7 +133,9 @@
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    "shop": "<%= shop %>"
+                    "shop": "<%= shop %>",
+                    "variables": variables,
+                    "ip_address": ip_address
                 })
             }).then((res) => {
                 res.json().then((data, errors) => {
@@ -189,8 +192,8 @@
                   }
                 }`, null, document.getElementById('ip_address').innerHTML, callback);
             } else {
-                // Use the private token.
-                accessAppServer('show_product', callback);
+                // Use the private token (IP address is not used for Admin API calls).
+                accessAppServer('show_product', null, null, callback);
             }
         };
 
@@ -226,8 +229,8 @@
                     }
                 }, document.getElementById('ip_address').innerHTML, callback);
             } else {
-                // Use the private token.
-                accessAppServer('login_customer', callback);
+                // Use the private token (passing the IP address to server side Storefront API).
+                accessAppServer('login_customer', { "email": email, "password": password }, document.getElementById('ip_address').innerHTML, callback);
             }
         };
 

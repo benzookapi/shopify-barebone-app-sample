@@ -48,6 +48,7 @@ const CONTENT_TYPE_JSON = 'application/json';
 const CONTENT_TYPE_FORM = 'application/x-www-form-urlencoded';
 
 const GRAPHQL_PATH_ADMIN = `admin/api/${API_VERSION}/graphql.json`;
+const GRAPHQL_PATH_STOREFRONT = `api/${API_VERSION}/graphql.json`;
 
 const UNDEFINED = 'undefined';
 
@@ -2130,6 +2131,12 @@ router.post('/storefront', async (ctx, next) => {
   const shop = ctx.request.body.shop;
   console.log(`shop ${shop}`);
 
+  const variables = ctx.request.body.variables;
+  console.log(`variables ${JSON.stringify(variables)}`);
+
+  const ip_address = ctx.request.body.ip_address;
+  console.log(`ip_address ${ip_address}`);
+
   try {
     let api_res = await (callGraphql(ctx, shop, `{
       shop {
@@ -2164,7 +2171,26 @@ router.post('/storefront', async (ctx, next) => {
           }
         }
       }`, private_token.accessToken, GRAPHQL_PATH_ADMIN, null));
-
+      api_res.data.used_api = "Server side Admin API";
+    }
+    if (action === 'login_customer') {
+      // Call Storefront API with the given private (delegated) token.
+      api_res = await (callGraphql(ctx, shop, `mutation customerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
+        customerAccessTokenCreate(input: $input) {
+          customerAccessToken {
+            accessToken
+            expiresAt
+          }
+          customerUserErrors {
+            code
+            field
+            message
+          }
+        }
+      }`, private_token.accessToken, GRAPHQL_PATH_STOREFRONT, {
+        "input": variables
+      }, ip_address));
+      api_res.data.used_api = "Server side Storefront API";
     }
 
     ctx.body = api_res;
@@ -2471,7 +2497,7 @@ const decodeJWT = function (token) {
 };
 
 /* --- Call Shopify GraphQL --- */
-const callGraphql = function (ctx, shop, ql, token = null, path = GRAPHQL_PATH_ADMIN, vars = null) {
+const callGraphql = function (ctx, shop, ql, token = null, path = GRAPHQL_PATH_ADMIN, vars = null, ip_address = null) {
   return new Promise(function (resolve, reject) {
     let api_req = {};
     // Set Gqphql string into query field of the JSON  as string
@@ -2495,7 +2521,9 @@ const callGraphql = function (ctx, shop, ql, token = null, path = GRAPHQL_PATH_A
         return reject(e);
       });
     } else {
-      accessEndpoint(ctx, `https://${shop}/${path}`, api_req, access_token).then(function (api_res) {
+      let storefront = false;
+      if (path === GRAPHQL_PATH_STOREFRONT) storefront = true;
+      accessEndpoint(ctx, `https://${shop}/${path}`, api_req, access_token, CONTENT_TYPE_JSON, storefront, ip_address).then(function (api_res) {
         return resolve(api_res);
       }).catch(function (e) {
         //console.log(`callGraphql ${e}`);
@@ -2506,7 +2534,7 @@ const callGraphql = function (ctx, shop, ql, token = null, path = GRAPHQL_PATH_A
 };
 
 /* ---  HTTP access common function for GraphQL --- */
-const accessEndpoint = function (ctx, endpoint, req, token = null, content_type = CONTENT_TYPE_JSON) {
+const accessEndpoint = function (ctx, endpoint, req, token = null, content_type = CONTENT_TYPE_JSON, storefront = false, ip_address = null) {
   console.log(`[ accessEndpoint ] POST ${endpoint} ${JSON.stringify(req)}`);
   return new Promise(function (resolve, reject) {
     // Success callback
@@ -2522,7 +2550,13 @@ const accessEndpoint = function (ctx, endpoint, req, token = null, content_type 
     let headers = {};
     headers['Content-Type'] = content_type;
     if (token != null) {
-      headers['X-Shopify-Access-Token'] = token;
+      if (storefront) {
+        // See https://shopify.dev/docs/api/usage/authentication#getting-started-with-private-access
+        headers['Shopify-Storefront-Private-Token'] = token;
+        headers['Shopify-Storefront-Buyer-IP'] = ip_address;
+      } else {
+        headers['X-Shopify-Access-Token'] = token;
+      }
       headers['Content-Length'] = Buffer.byteLength(JSON.stringify(req));
       headers['User-Agent'] = 'My_Shopify_Barebone_App';
       headers['Host'] = endpoint.split('/')[2];
