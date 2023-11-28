@@ -80,7 +80,7 @@
     <p></p>
 
     <fieldset class="default_hidden layer_2" style="visibility: hidden;">
-      <button id="create_checkout">2. Create a checkout link with the listed products</button>
+      <button id="create_checkout">2. Create a checkout with the listed products</button>
       <p></p>
       <div>
         <pre id="checkout" class="default_empty"></pre>
@@ -89,7 +89,7 @@
             API. doc</a>
         </p>
         <h2 style="visibility: hidden;" id="checkout_1" class="default_hidden">
-          <a href="" target="_blank" id="checkout_1_link">👉 Checkout through the link of 'webUrl' above</a>
+          <a href="" target="_blank" id="checkout_1_link">👉 Checkout through the link of 'webUrl'</a>
           <br /><br />Or
           <br />⬇️
         </h2>
@@ -126,13 +126,35 @@
       <div>
         <pre id="address" class="default_empty"></pre>
         <p>
-          <a href="https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingAddressUpdateV2" target="_blank">The used
+          <a href="https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingAddressUpdateV2"
+            target="_blank">The used
             API. doc</a>
         </p>
         <h2 style="visibility: hidden;" id="checkout_2" class="default_hidden">
-          <a href="" target="_blank" id="checkout_2_link">👉 Checkout through the link of 'webUrl' above</a>
+          <a href="" target="_blank" id="checkout_2_link">👉 Checkout through the link of 'webUrl'</a>
           <br /><br />Or
           <br />⬇️
+        </h2>
+      </div>
+    </fieldset>
+    <p></p>
+
+    <fieldset class="default_hidden layer_4" style="visibility: hidden;">
+      <button id="set_rate">4. Set the last shipping rate to the checkout</button>
+      <p></p>
+      <div>
+        <pre id="rate" class="default_empty"></pre>
+        <pre id="rate_selected" class="default_empty"></pre>
+        <p>
+          <a href="https://shopify.dev/docs/api/storefront/unstable/objects/Checkout" target="_blank">The used
+            API. doc</a>
+          <br />
+          <a href="https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingLineUpdate"
+            target="_blank">The used
+            API. doc</a>
+        </p>
+        <h2 style="visibility: hidden;" id="checkout_3" class="default_hidden">
+          <a href="" target="_blank" id="checkout_3_link">👉 Checkout through the link of 'webUrl'</a>
         </h2>
       </div>
     </fieldset>
@@ -367,6 +389,7 @@
                             }
                           }
                         }
+                        email
                         shippingAddress {
                           address1
                           address2
@@ -455,6 +478,10 @@
         address.innerHTML = JSON.stringify(data.data, null, 4);
         document.getElementById('checkout_2').style = "visibility: visible;";
         document.getElementById('checkout_2_link').href = data.data.checkoutShippingAddressUpdateV2.checkout.webUrl;
+
+        document.querySelectorAll('.layer_4').forEach((e) => {
+          e.style = "visibility: visible;";
+        });
       };
 
       const checkout = JSON.parse(document.getElementById('checkout').innerHTML);
@@ -501,6 +528,7 @@
                           }
                         }
                       }
+                      email
                       shippingAddress {
                         address1
                         address2
@@ -527,6 +555,118 @@
       } else {
         // Use the private token (passing the IP address to server side Storefront API).
         accessAppServer('apply_address', input, document.getElementById('ip_address').innerHTML, callback);
+      }
+    };
+
+    // 4. Set the last shipping rate to the checkout.
+    document.getElementById('set_rate').onclick = () => {
+      const rate = document.getElementById('rate');
+      rate.innerHTML = 'Loading...';
+
+      const callback = (data) => {
+        rate.innerHTML = JSON.stringify(data.data, null, 4);
+
+        const rate_selected = document.getElementById('rate_selected');
+        rate_selected.innerHTML = 'Loading...';
+
+        const callback2 = (data) => {
+          rate_selected.innerHTML = JSON.stringify(data.data, null, 4);
+          document.getElementById('checkout_3').style = "visibility: visible;";
+          document.getElementById('checkout_3_link').href = data.data.checkoutShippingLineUpdate.checkout.webUrl;
+        };
+
+        const checkout = JSON.parse(document.getElementById('checkout').innerHTML);
+
+        const size = data.data.node.availableShippingRates.shippingRates.length;
+
+        const input = {
+          "checkoutId": checkout.checkoutCreate.checkout.id,
+          "shippingRateHandle": data.data.node.availableShippingRates.shippingRates[size - 1].handle
+        };
+
+        if (document.getElementById('type_public').checked) {
+          // Use the public token.
+          // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingLineUpdate
+          callStorefrontAPI(`mutation checkoutShippingLineUpdate($checkoutId: ID!, $shippingRateHandle: String!) {
+            checkoutShippingLineUpdate(checkoutId: $checkoutId, shippingRateHandle: $shippingRateHandle) {
+              checkout {
+                id
+                orderStatusUrl
+                ready
+                requiresShipping
+                lineItems(first: 10) {
+                  edges {
+                      node {
+                        id
+                        quantity
+                        title
+                      }
+                  }
+                }
+                email
+                shippingAddress {
+                  address1
+                  address2
+                  city
+                  company
+                  country
+                  countryCodeV2
+                  firstName
+                  lastName
+                  phone
+                  province
+                  provinceCode
+                  zip
+                }
+                shippingLine {
+                  handle
+                  title
+                  price {
+                    amount
+                    currencyCode
+                  }
+                }
+                webUrl            
+              }
+              checkoutUserErrors {
+                code
+                field
+                message
+              }
+             }
+          }`, input, document.getElementById('ip_address').innerHTML, callback2);
+        } else {
+          // Use the private token (passing the IP address to server side Storefront API).
+          accessAppServer('rate_selected', input, document.getElementById('ip_address').innerHTML, callback2);
+        }
+      };
+
+      const checkout = JSON.parse(document.getElementById('checkout').innerHTML);
+
+      if (document.getElementById('type_public').checked) {
+        // Use the public token.
+        // See https://shopify.dev/docs/api/storefront/unstable/objects/Checkout
+        callStorefrontAPI(`{
+          node(id: "${checkout.checkoutCreate.checkout.id}") {
+            id
+            ... on Checkout {
+              availableShippingRates { 
+                ready
+                shippingRates {
+                  handle
+                  title
+                  price {
+                    amount
+                    currencyCode
+                  }     
+                }           
+              }
+            }
+          }
+        }`, null, document.getElementById('ip_address').innerHTML, callback);
+      } else {
+        // Use the private token (passing the IP address to server side Storefront API).
+        accessAppServer(`set_rate&id=${checkout.checkoutCreate.checkout.id}`, null, document.getElementById('ip_address').innerHTML, callback);
       }
     };
 

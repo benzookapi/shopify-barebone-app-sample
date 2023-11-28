@@ -2338,6 +2338,82 @@ router.post('/storefront', async (ctx, next) => {
       }`, private_token.accessToken, GRAPHQL_PATH_STOREFRONT, variables, ip_address));
       api_res.data.used_api = "Server side Storefront API";
     }
+    if (action === 'set_rate') {
+      // Call Storefront API with the given private (delegated) token.
+      // See https://shopify.dev/docs/api/storefront/unstable/objects/Checkout
+      api_res = await (callGraphql(ctx, shop, `{
+        node(id: "${ctx.request.query.id}") {
+          id
+          ... on Checkout {
+            availableShippingRates { 
+              ready
+              shippingRates {
+                handle
+                title
+                price {
+                  amount
+                  currencyCode
+                }     
+              }           
+            }
+          }
+        }
+      }`, private_token.accessToken, GRAPHQL_PATH_STOREFRONT, null, ip_address));
+      api_res.data.used_api = "Server side Storefront API";
+    }
+    if (action === 'rate_selected') {
+      // Call Storefront API with the given private (delegated) token.
+      // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingLineUpdate
+      api_res = await (callGraphql(ctx, shop, `mutation checkoutShippingLineUpdate($checkoutId: ID!, $shippingRateHandle: String!) {
+        checkoutShippingLineUpdate(checkoutId: $checkoutId, shippingRateHandle: $shippingRateHandle) {
+          checkout {
+            id
+            orderStatusUrl
+            ready
+            requiresShipping
+            lineItems(first: 10) {
+              edges {
+                  node {
+                    id
+                    quantity
+                    title
+                  }
+              }
+            }
+            email
+            shippingAddress {
+              address1
+              address2
+              city
+              company
+              country
+              countryCodeV2
+              firstName
+              lastName
+              phone
+              province
+              provinceCode
+              zip
+            }
+            shippingLine {
+              handle
+              title
+              price {
+                amount
+                currencyCode
+              }
+            }
+            webUrl            
+          }
+          checkoutUserErrors {
+            code
+            field
+            message
+          }
+         }
+      }`, private_token.accessToken, GRAPHQL_PATH_STOREFRONT, variables, ip_address));
+      api_res.data.used_api = "Server side Storefront API";
+    }
 
     ctx.body = api_res;
     return;
