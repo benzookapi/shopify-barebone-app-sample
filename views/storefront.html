@@ -433,6 +433,9 @@
                   checkoutCreate(input: $input) {
                     checkout {
                       id
+                      buyerIdentity {
+                        countryCode
+                      }
                       orderStatusUrl
                       ready
                       requiresShipping
@@ -520,6 +523,9 @@
           cartCreate(input: $input) {
              cart {
                id
+               buyerIdentity {
+                  countryCode
+               }
                totalQuantity
                cost {
                 checkoutChargeAmount {
@@ -609,6 +615,9 @@
                     checkoutCustomerAssociateV2(checkoutId: $checkoutId, customerAccessToken: $customerAccessToken) {
                       checkout {
                         id
+                        buyerIdentity {
+                          countryCode
+                        }
                         orderStatusUrl
                         ready
                         requiresShipping
@@ -748,6 +757,9 @@
                   checkoutShippingAddressUpdateV2(checkoutId: $checkoutId, shippingAddress: $shippingAddress) {
                     checkout {
                       id
+                      buyerIdentity {
+                        countryCode
+                      }
                       orderStatusUrl
                       ready
                       requiresShipping
@@ -986,6 +998,9 @@
             checkoutShippingLineUpdate(checkoutId: $checkoutId, shippingRateHandle: $shippingRateHandle) {
               checkout {
                 id
+                buyerIdentity {
+                  countryCode
+                }
                 orderStatusUrl
                 ready
                 requiresShipping

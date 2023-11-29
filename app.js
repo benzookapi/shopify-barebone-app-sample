@@ -2184,6 +2184,9 @@ router.post('/storefront', async (ctx, next) => {
         checkoutCreate(input: $input) {
           checkout {
             id
+            buyerIdentity {
+              countryCode
+            }
             orderStatusUrl
             ready
             requiresShipping
@@ -2218,6 +2221,9 @@ router.post('/storefront', async (ctx, next) => {
         cartCreate(input: $input) {
            cart {
              id
+             buyerIdentity {
+              countryCode
+             }
              totalQuantity
              cost {
               checkoutChargeAmount {
@@ -2299,6 +2305,9 @@ router.post('/storefront', async (ctx, next) => {
         checkoutCustomerAssociateV2(checkoutId: $checkoutId, customerAccessToken: $customerAccessToken) {
           checkout {
             id
+            buyerIdentity {
+              countryCode
+            }
             orderStatusUrl
             ready
             requiresShipping
@@ -2365,6 +2374,9 @@ router.post('/storefront', async (ctx, next) => {
         checkoutShippingAddressUpdateV2(checkoutId: $checkoutId, shippingAddress: $shippingAddress) {
           checkout {
             id
+            buyerIdentity {
+              countryCode
+            }
             orderStatusUrl
             ready
             requiresShipping
@@ -2542,6 +2554,9 @@ router.post('/storefront', async (ctx, next) => {
         checkoutShippingLineUpdate(checkoutId: $checkoutId, shippingRateHandle: $shippingRateHandle) {
           checkout {
             id
+            buyerIdentity {
+              countryCode
+            }
             orderStatusUrl
             ready
             requiresShipping
