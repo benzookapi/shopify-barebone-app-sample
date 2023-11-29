@@ -2178,7 +2178,8 @@ router.post('/storefront', async (ctx, next) => {
     if (action === 'create_checkout') {
       // Call Storefront API with the given private (delegated) token.
       // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCreate
-      api_res = await (callGraphql(ctx, shop, `mutation checkoutCreate($input: CheckoutCreateInput!) {
+      const locale = JSON.parse(ctx.request.query.locale);
+      api_res = await (callGraphql(ctx, shop, `mutation checkoutCreate($input: CheckoutCreateInput!) @inContext(country: ${locale.country}, language: ${locale.lang}) {
         checkoutCreate(input: $input) {
           checkout {
             id

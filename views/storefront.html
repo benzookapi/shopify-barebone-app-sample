@@ -1,5 +1,14 @@
 <!DOCTYPE html>
 <html>
+<!--
+    Barebone Storefront API sameple.
+
+    Read these first.
+    https://shopify.dev/docs/api/usage/authentication#access-tokens-for-the-storefront-api
+    https://shopify.dev/docs/custom-storefronts/building-with-the-storefront-api/
+    https://shopify.dev/docs/api/storefront
+
+  -->
 
 <head>
   <meta charset="UTF-8" />
@@ -28,7 +37,14 @@
     <h1>Plain Custom Storefront</h1>
 
     <h2><a href="https://shopify.dev/docs/api/usage/authentication#access-tokens-for-the-storefront-api"
-        target="_blank">Dev. doc</a></h2>
+        target="_blank">Dev. doc(1)</a>
+
+      <a href="https://shopify.dev/docs/custom-storefronts/building-with-the-storefront-api/" target="_blank">Dev.
+        doc(2)</a>
+
+      <a href="https://shopify.dev/docs/api/storefront" target="_blank">Dev.
+        doc(3)</a>
+    </h2>
 
     <h3><a href="https://github.com/benzookapi/shopify-barebone-app-sample/blob/main/views/storefront.html"
         target="_blank">Get the code</a></h3>
@@ -54,6 +70,16 @@
     <div><b>Leave your note:</b></div>
     <div>
       <textarea id="note">This is my custom storefront purchase...</textarea>
+    </div>
+    <p></p>
+
+    <div><b>Select your locale:</b></div>
+    <div>
+      <select id="locale">
+        <option value="EN-US">EN-US</option>
+        <option value="JA-JP">JA-JP</option>
+        <option value="FR-FR">FR-FR</option>
+      </select>
     </div>
     <p></p>
 
@@ -223,6 +249,16 @@
       });
     });
 
+    const getLocale = () => {
+      const locale = document.getElementById('locale').options[document.getElementById('locale').selectedIndex].value;
+      const lang = locale.split('-')[0];
+      const country = locale.split('-')[1];
+      return {
+        "lang": lang,
+        "country": country
+      };
+    };
+
     // 1. Show the products to checkout with APIs.
     document.getElementById('show_product').onclick = () => {
       const products = document.getElementById('products');
@@ -234,6 +270,8 @@
       document.querySelectorAll('.default_empty').forEach((e) => {
         e.innerHTML = '';
       });
+
+      const locale = getLocale();
 
       const callback = (data) => {
         products.innerHTML = JSON.stringify(data.data, null, 4);
@@ -251,7 +289,7 @@
       if (document.getElementById('type_public').checked) {
         // Use the public token.
         // See https://shopify.dev/docs/api/storefront/unstable/queries/products
-        callStorefrontAPI(`{
+        callStorefrontAPI(`query products @inContext(country: ${locale.country}, language: ${locale.lang}) {
                   products(first: 3) {
                     edges {
                       node {
@@ -275,7 +313,7 @@
                 }`, null, document.getElementById('ip_address').innerHTML, callback);
       } else {
         // Use the private token (IP address is not used for Admin API calls).
-        accessAppServer('show_product', null, null, callback);
+        accessAppServer(`show_product`, null, null, callback);
       }
     };
 
@@ -318,10 +356,13 @@
         "lineItems": line_items,
         "note": document.getElementById('note').value
       };
+
+      const locale = getLocale();
+
       if (document.getElementById('type_public').checked) {
         // Use the public token.
         // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCreate
-        callStorefrontAPI(`mutation checkoutCreate($input: CheckoutCreateInput!) {
+        callStorefrontAPI(`mutation checkoutCreate($input: CheckoutCreateInput!) @inContext(country: ${locale.country}, language: ${locale.lang}) {
                   checkoutCreate(input: $input) {
                     checkout {
                       id
@@ -351,7 +392,7 @@
         }, document.getElementById('ip_address').innerHTML, callback);
       } else {
         // Use the private token (passing the IP address to server side Storefront API).
-        accessAppServer('create_checkout', input, document.getElementById('ip_address').innerHTML, callback);
+        accessAppServer(`create_checkout&locale=${JSON.stringify(locale)}`, input, document.getElementById('ip_address').innerHTML, callback);
       }
     };
 
