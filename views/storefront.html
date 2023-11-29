@@ -156,7 +156,7 @@
     <p></p>
 
 
-    <fieldset class="default_hidden layer_3" style="display: none;">
+    <fieldset class="default_hidden layer_3 flow_checkout flow_cart" style="display: none;">
       <p>
         <label for="email">Email: </label><input type="text" name="email" value="" id="email">
       </p>
@@ -198,6 +198,25 @@
     </fieldset>
     <p></p>
 
+    <fieldset class="default_hidden layer_3 flow_cart" style="display: none;">
+      <button id="update_buyer">3. Update the buyer indentity of the cart</button>
+      <p></p>
+      <div>
+        <pre id="buyer" class="default_empty"></pre>
+        <p>
+          <a href="https://shopify.dev/docs/api/storefront/unstable/mutations/cartBuyerIdentityUpdate"
+            target="_blank">The used
+            API. doc</a>
+        </p>
+        <h2 style="display: none;" id="cart_2" class="default_hidden">
+          <a href="" target="_blank" id="cart_2_link">👉 Checkout through the link of 'checkoutUrl'</a>
+          <br /><br />Or
+          <br />⬇️
+        </h2>
+      </div>
+    </fieldset>
+    <p></p>
+
     <fieldset class="default_hidden layer_4 flow_checkout" style="display: none;">
       <button id="set_rate">4. Set the last shipping rate to the checkout</button>
       <p></p>
@@ -214,6 +233,23 @@
         </p>
         <h2 style="display: none;" id="checkout_3" class="default_hidden">
           <a href="" target="_blank" id="checkout_3_link">👉 Checkout through the link of 'webUrl'</a>
+        </h2>
+      </div>
+    </fieldset>
+    <p></p>
+
+    <fieldset class="default_hidden layer_4 flow_cart" style="display: none;">
+      <button id="set_option">4. Set the last delivery option to the cart</button>
+      <p></p>
+      <div>
+        <pre id="option" class="default_empty"></pre>
+        <p>
+          <a href="https://shopify.dev/docs/api/storefront/unstable/mutations/cartSelectedDeliveryOptionsUpdate"
+            target="_blank">The used
+            API. doc</a>
+        </p>
+        <h2 style="display: none;" id="cart_3" class="default_hidden">
+          <a href="" target="_blank" id="cart_3_link">👉 Checkout through the link of 'checkoutUrl'</a>
         </h2>
       </div>
     </fieldset>
@@ -358,7 +394,7 @@
         document.getElementById('checkout_1').style = "visibility: visible;";
         document.getElementById('checkout_1_link').href = data.data.checkoutCreate.checkout.webUrl;
 
-        document.querySelectorAll('.layer_3').forEach((e) => {
+        document.querySelectorAll(`.layer_3.${getFlow()}`).forEach((e) => {
           e.style = "visibility: visible;";
         });
       };
@@ -437,7 +473,7 @@
         document.getElementById('cart_1').style = "visibility: visible;";
         document.getElementById('cart_1_link').href = data.data.cartCreate.cart.checkoutUrl;
 
-        document.querySelectorAll('.layer_3').forEach((e) => {
+        document.querySelectorAll(`.layer_3.${getFlow()}`).forEach((e) => {
           e.style = "visibility: visible;";
         });
       };
@@ -464,7 +500,7 @@
             "value": document.getElementById('ip_address').innerHTML
           }
         ],
-        "lines": line_items[0],
+        "lines": line_items,
         "metafields": [
           {
             "key": "bareboneapp.storefront_timestamp",
@@ -480,7 +516,7 @@
       if (document.getElementById('type_public').checked) {
         // Use the public token.
         // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCreate
-        callStorefrontAPI(`mutation cartCreate($input: CartInput!) {
+        callStorefrontAPI(`mutation cartCreate($input: CartInput!) @inContext(country: ${locale.country}, language: ${locale.lang}){
           cartCreate(input: $input) {
              cart {
                id
@@ -520,6 +556,11 @@
                     }
                   }
                 }
+               }
+               metafield(namespace: "bareboneapp", key: "storefront_timestamp") {
+                namespace
+                key
+                value
                }
                checkoutUrl
              }
@@ -670,7 +711,7 @@
         document.getElementById('checkout_2').style = "visibility: visible;";
         document.getElementById('checkout_2_link').href = data.data.checkoutShippingAddressUpdateV2.checkout.webUrl;
 
-        document.querySelectorAll('.layer_4').forEach((e) => {
+        document.querySelectorAll(`.layer_4.${getFlow()}`).forEach((e) => {
           e.style = "visibility: visible;";
         });
       };
@@ -746,6 +787,169 @@
       } else {
         // Use the private token (passing the IP address to server side Storefront API).
         accessAppServer('apply_address', input, document.getElementById('ip_address').innerHTML, callback);
+      }
+    };
+
+    // 3. Update the buyer identity of the cart.
+    document.getElementById('update_buyer').onclick = () => {
+      const buyer = document.getElementById('buyer');
+      buyer.innerHTML = 'Loading...';
+
+      const callback = (data) => {
+        buyer.innerHTML = JSON.stringify(data.data, null, 4);
+        document.getElementById('cart_2').style = "visibility: visible;";
+        document.getElementById('cart_2_link').href = data.data.cartBuyerIdentityUpdate.cart.checkoutUrl;
+
+        document.querySelectorAll(`.layer_4.${getFlow()}`).forEach((e) => {
+          e.style = "visibility: visible;";
+        });
+      };
+
+      const cart = JSON.parse(document.getElementById('cart').innerHTML);
+
+      const input = {
+        "buyerIdentity": {
+          "email": "test@example.com",
+          "deliveryAddressPreferences": [],
+          "walletPreferences": [
+            "shop_pay"
+          ]
+        },
+        "cartId": cart.cartCreate.cart.id
+      };
+
+      if (document.getElementById('customer_token').innerHTML !== '') {
+        const customer_token = JSON.parse(document.getElementById('customer_token').innerHTML);
+        input.buyerIdentity.customerAccessToken = customer_token.customerAccessTokenCreate.customerAccessToken.accessToken;
+      } else {
+        // This code produces an error.
+        /*input.buyerIdentity.deliveryAddressPreferences.push({
+          "deliveryAddress": {
+            "address1": "barebone street 1",
+            "address2": "barebone street 2",
+            "city": "Shibuya",
+            "company": "Barebone corp.",
+            "country": "JP",
+            "firstName": "Bare",
+            "lastName": "Bone",
+            "phone": "+819012345678",
+            "province": "Tokyo",
+            "zip": "1500001"
+          }
+        });*/
+      }
+
+      if (document.getElementById('type_public').checked) {
+        // Use the public token.
+        // See https://shopify.dev/docs/api/storefront/unstable/mutations/cartBuyerIdentityUpdate
+        callStorefrontAPI(`mutation cartBuyerIdentityUpdate($buyerIdentity: CartBuyerIdentityInput!, $cartId: ID!) {
+          cartBuyerIdentityUpdate(buyerIdentity: $buyerIdentity, cartId: $cartId) {
+            cart {
+               id
+               totalQuantity
+               cost {
+                checkoutChargeAmount {
+                  amount
+                  currencyCode
+                }
+                subtotalAmount {
+                  amount
+                  currencyCode
+                }
+                totalAmount {
+                  amount
+                  currencyCode
+                }
+                totalDutyAmount {
+                  amount
+                  currencyCode
+                }
+                totalTaxAmount {
+                  amount
+                  currencyCode
+                }
+               }
+               lines(first: 10) {
+                edges {
+                  node {
+                    id
+                    quantity
+                    merchandise {
+                      ... on ProductVariant {
+                        id
+                        title
+                      }
+                    }
+                  }
+                }
+               }
+               buyerIdentity {
+                countryCode
+                customer {
+                  id
+                  email
+                  firstName
+                  lastName
+                  defaultAddress {
+                    id
+                    address1
+                    address2
+                    city
+                    company
+                    country
+                    firstName
+                    lastName
+                    province
+                    zip
+                  }
+                }
+                email
+                phone
+                deliveryAddressPreferences {
+                  ... on MailingAddress {
+                    id
+                    address1
+                    address2
+                    city
+                    company
+                    country
+                    firstName
+                    lastName
+                    province
+                    zip
+                  }
+                }
+                walletPreferences
+               }
+               deliveryGroups(first: 10) {
+                edges {
+                  node {
+                    id
+                    deliveryOptions {
+                      code
+                      deliveryMethodType
+                      handle
+                      title
+                    }
+                    selectedDeliveryOption {
+                      code
+                      handle
+                      title
+                    }
+                  }
+                }
+               }
+               checkoutUrl
+            }
+            userErrors {
+              field
+              message
+            }
+            }
+          }`, input, document.getElementById('ip_address').innerHTML, callback);
+      } else {
+        // Use the private token (passing the IP address to server side Storefront API).
+        accessAppServer('update_buyer', input, document.getElementById('ip_address').innerHTML, callback);
       }
     };
 
@@ -858,6 +1062,150 @@
       } else {
         // Use the private token (passing the IP address to server side Storefront API).
         accessAppServer(`set_rate&id=${checkout.checkoutCreate.checkout.id}`, null, document.getElementById('ip_address').innerHTML, callback);
+      }
+    };
+
+    // 4. Set the last delivery option to the cart.
+    document.getElementById('set_option').onclick = () => {
+      const option = document.getElementById('option');
+      option.innerHTML = 'Loading...';
+
+      const callback = (data) => {
+        option.innerHTML = JSON.stringify(data.data, null, 4);
+
+        document.getElementById('cart_3').style = "visibility: visible;";
+        document.getElementById('cart_3_link').href = data.data.cartSelectedDeliveryOptionsUpdate.cart.checkoutUrl;
+      };
+
+      const cart = JSON.parse(document.getElementById('cart').innerHTML);
+
+      const buyer = JSON.parse(document.getElementById('buyer').innerHTML);
+
+      const input = {
+        "cartId": cart.cartCreate.cart.id,
+        "selectedDeliveryOptions": []
+      };
+
+      const size = buyer.cartBuyerIdentityUpdate.cart.deliveryGroups.edges.length;
+      if (size > 0) {
+        const size2 = buyer.cartBuyerIdentityUpdate.cart.deliveryGroups.edges[size - 1].node.deliveryOptions.length;
+        input.selectedDeliveryOptions.push({
+          "deliveryGroupId": buyer.cartBuyerIdentityUpdate.cart.deliveryGroups.edges[size - 1].node.id,
+          "deliveryOptionHandle": buyer.cartBuyerIdentityUpdate.cart.deliveryGroups.edges[size - 1].node.deliveryOptions[size2 - 1].handle
+        });
+      }
+
+      if (document.getElementById('type_public').checked) {
+        // Use the public token.
+        // See https://shopify.dev/docs/api/storefront/unstable/mutations/cartSelectedDeliveryOptionsUpdate
+        callStorefrontAPI(`mutation cartSelectedDeliveryOptionsUpdate($cartId: ID!, $selectedDeliveryOptions: [CartSelectedDeliveryOptionInput!]!) {
+          cartSelectedDeliveryOptionsUpdate(cartId: $cartId, selectedDeliveryOptions: $selectedDeliveryOptions) {
+            cart {
+               id
+               totalQuantity
+               cost {
+                checkoutChargeAmount {
+                  amount
+                  currencyCode
+                }
+                subtotalAmount {
+                  amount
+                  currencyCode
+                }
+                totalAmount {
+                  amount
+                  currencyCode
+                }
+                totalDutyAmount {
+                  amount
+                  currencyCode
+                }
+                totalTaxAmount {
+                  amount
+                  currencyCode
+                }
+               }
+               lines(first: 10) {
+                edges {
+                  node {
+                    id
+                    quantity
+                    merchandise {
+                      ... on ProductVariant {
+                        id
+                        title
+                      }
+                    }
+                  }
+                }
+               }
+               buyerIdentity {
+                countryCode
+                customer {
+                  id
+                  email
+                  firstName
+                  lastName
+                  defaultAddress {
+                    id
+                    address1
+                    address2
+                    city
+                    company
+                    country
+                    firstName
+                    lastName
+                    province
+                    zip
+                  }
+                }
+                email
+                phone
+                deliveryAddressPreferences {
+                  ... on MailingAddress {
+                    id
+                    address1
+                    address2
+                    city
+                    company
+                    country
+                    firstName
+                    lastName
+                    province
+                    zip
+                  }
+                }
+                walletPreferences
+               }
+               deliveryGroups(first: 10) {
+                edges {
+                  node {
+                    id
+                    deliveryOptions {
+                      code
+                      deliveryMethodType
+                      handle
+                      title
+                    }
+                    selectedDeliveryOption {
+                      code
+                      handle
+                      title
+                    }
+                  }
+                }
+               }
+               checkoutUrl
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }`, input, document.getElementById('ip_address').innerHTML, callback);
+      } else {
+        // Use the private token (passing the IP address to server side Storefront API).
+        accessAppServer(`set_option`, input, document.getElementById('ip_address').innerHTML, callback);
       }
     };
 

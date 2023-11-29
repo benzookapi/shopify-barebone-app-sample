@@ -2210,6 +2210,68 @@ router.post('/storefront', async (ctx, next) => {
       }, ip_address));
       api_res.data.used_api = "Server side Storefront API";
     }
+    if (action === 'create_cart') {
+      // Call Storefront API with the given private (delegated) token.
+      // See https://shopify.dev/docs/api/storefront/unstable/mutations/cartCreate
+      const locale = JSON.parse(ctx.request.query.locale);
+      api_res = await (callGraphql(ctx, shop, `mutation cartCreate($input: CartInput!) @inContext(country: ${locale.country}, language: ${locale.lang}){
+        cartCreate(input: $input) {
+           cart {
+             id
+             totalQuantity
+             cost {
+              checkoutChargeAmount {
+                amount
+                currencyCode
+              }
+              subtotalAmount {
+                amount
+                currencyCode
+              }
+              totalAmount {
+                amount
+                currencyCode
+              }
+              totalDutyAmount {
+                amount
+                currencyCode
+              }
+              totalTaxAmount {
+                amount
+                currencyCode
+              }
+             }
+             lines(first: 10) {
+              edges {
+                node {
+                  id
+                  quantity
+                  merchandise {
+                    ... on ProductVariant {
+                      id
+                      title
+                    }
+                  }
+                }
+              }
+             }
+             metafield(namespace: "bareboneapp", key: "storefront_timestamp") {
+              namespace
+              key
+              value
+             }
+             checkoutUrl
+           }
+           userErrors {
+              field
+              message
+            }
+          }
+        }`, private_token.accessToken, GRAPHQL_PATH_STOREFRONT, {
+        "input": variables
+      }, ip_address));
+      api_res.data.used_api = "Server side Storefront API";
+    }
     if (action === 'login_customer') {
       // Call Storefront API with the given private (delegated) token.
       // See https://shopify.dev/docs/api/storefront/unstable/mutations/customerAccessTokenCreate
@@ -2340,6 +2402,116 @@ router.post('/storefront', async (ctx, next) => {
       }`, private_token.accessToken, GRAPHQL_PATH_STOREFRONT, variables, ip_address));
       api_res.data.used_api = "Server side Storefront API";
     }
+    if (action === 'update_buyer') {
+      // Call Storefront API with the given private (delegated) token.
+      // See https://shopify.dev/docs/api/storefront/unstable/mutations/cartBuyerIdentityUpdate
+      api_res = await (callGraphql(ctx, shop, `mutation cartBuyerIdentityUpdate($buyerIdentity: CartBuyerIdentityInput!, $cartId: ID!) {
+        cartBuyerIdentityUpdate(buyerIdentity: $buyerIdentity, cartId: $cartId) {
+          cart {
+             id
+             totalQuantity
+             cost {
+              checkoutChargeAmount {
+                amount
+                currencyCode
+              }
+              subtotalAmount {
+                amount
+                currencyCode
+              }
+              totalAmount {
+                amount
+                currencyCode
+              }
+              totalDutyAmount {
+                amount
+                currencyCode
+              }
+              totalTaxAmount {
+                amount
+                currencyCode
+              }
+             }
+             lines(first: 10) {
+              edges {
+                node {
+                  id
+                  quantity
+                  merchandise {
+                    ... on ProductVariant {
+                      id
+                      title
+                    }
+                  }
+                }
+              }
+             }
+             buyerIdentity {
+              countryCode
+              customer {
+                id
+                email
+                firstName
+                lastName
+                defaultAddress {
+                  id
+                  address1
+                  address2
+                  city
+                  company
+                  country
+                  firstName
+                  lastName
+                  province
+                  zip
+                }
+              }
+              email
+              phone
+              deliveryAddressPreferences {
+                ... on MailingAddress {
+                  id
+                  address1
+                  address2
+                  city
+                  company
+                  country
+                  firstName
+                  lastName
+                  province
+                  zip
+                }
+              }
+              walletPreferences
+             }
+             deliveryGroups(first: 10) {
+              edges {
+                node {
+                  id
+                  deliveryOptions {
+                    code
+                    deliveryMethodType
+                    handle
+                    title
+                  }
+                  selectedDeliveryOption {
+                    code
+                    handle
+                    title
+                  }
+                }
+              }
+             }
+             checkoutUrl
+          }
+          userErrors {
+            field
+            message
+          }
+          }
+        }`, private_token.accessToken, GRAPHQL_PATH_STOREFRONT, variables, ip_address));
+      api_res.data.used_api = "Server side Storefront API";
+    }
     if (action === 'set_rate') {
       // Call Storefront API with the given private (delegated) token.
       // See https://shopify.dev/docs/api/storefront/unstable/objects/Checkout
@@ -2413,6 +2585,116 @@ router.post('/storefront', async (ctx, next) => {
             message
           }
          }
+      }`, private_token.accessToken, GRAPHQL_PATH_STOREFRONT, variables, ip_address));
+      api_res.data.used_api = "Server side Storefront API";
+    }
+    if (action === 'set_option') {
+      // Call Storefront API with the given private (delegated) token.
+      // See https://shopify.dev/docs/api/storefront/unstable/mutations/cartSelectedDeliveryOptionsUpdate
+      api_res = await (callGraphql(ctx, shop, `mutation cartSelectedDeliveryOptionsUpdate($cartId: ID!, $selectedDeliveryOptions: [CartSelectedDeliveryOptionInput!]!) {
+        cartSelectedDeliveryOptionsUpdate(cartId: $cartId, selectedDeliveryOptions: $selectedDeliveryOptions) {
+          cart {
+             id
+             totalQuantity
+             cost {
+              checkoutChargeAmount {
+                amount
+                currencyCode
+              }
+              subtotalAmount {
+                amount
+                currencyCode
+              }
+              totalAmount {
+                amount
+                currencyCode
+              }
+              totalDutyAmount {
+                amount
+                currencyCode
+              }
+              totalTaxAmount {
+                amount
+                currencyCode
+              }
+             }
+             lines(first: 10) {
+              edges {
+                node {
+                  id
+                  quantity
+                  merchandise {
+                    ... on ProductVariant {
+                      id
+                      title
+                    }
+                  }
+                }
+              }
+             }
+             buyerIdentity {
+              countryCode
+              customer {
+                id
+                email
+                firstName
+                lastName
+                defaultAddress {
+                  id
+                  address1
+                  address2
+                  city
+                  company
+                  country
+                  firstName
+                  lastName
+                  province
+                  zip
+                }
+              }
+              email
+              phone
+              deliveryAddressPreferences {
+                ... on MailingAddress {
+                  id
+                  address1
+                  address2
+                  city
+                  company
+                  country
+                  firstName
+                  lastName
+                  province
+                  zip
+                }
+              }
+              walletPreferences
+             }
+             deliveryGroups(first: 10) {
+              edges {
+                node {
+                  id
+                  deliveryOptions {
+                    code
+                    deliveryMethodType
+                    handle
+                    title
+                  }
+                  selectedDeliveryOption {
+                    code
+                    handle
+                    title
+                  }
+                }
+              }
+             }
+             checkoutUrl
+          }
+          userErrors {
+            field
+            message
+          }
+        }
       }`, private_token.accessToken, GRAPHQL_PATH_STOREFRONT, variables, ip_address));
       api_res.data.used_api = "Server side Storefront API";
     }
