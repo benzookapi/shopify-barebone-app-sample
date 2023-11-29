@@ -2104,7 +2104,8 @@ router.get('/storefront', async (ctx, next) => {
     const public_token = ctx.request.query.public_token;
     return await ctx.render('storefront', {
       shop: shop,
-      public_token: public_token
+      public_token: public_token,
+      api_version: API_VERSION
     });
   }
 
