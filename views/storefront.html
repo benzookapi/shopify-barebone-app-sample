@@ -51,6 +51,12 @@
     </div>
     <p></p>
 
+    <div><b>Leave your note:</b></div>
+    <div>
+      <textarea id="note">This is my custom storefront purchase...</textarea>
+    </div>
+    <p></p>
+
     <div><b>How do you call Storefront API?</b></div>
     <div> <input type="radio" value="public" name="type" id="type_public" checked>Call on this page with the
       given public
@@ -309,7 +315,8 @@
             "value": document.getElementById('ip_address').innerHTML
           }
         ],
-        "lineItems": line_items
+        "lineItems": line_items,
+        "note": document.getElementById('note').value
       };
       if (document.getElementById('type_public').checked) {
         // Use the public token.
