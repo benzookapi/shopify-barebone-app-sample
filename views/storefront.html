@@ -326,6 +326,53 @@
       return document.getElementById('flow_checkout').checked == true ? "flow_checkout" : "flow_cart";
     };
 
+    const getAddress = () => {
+      const locale = getLocale();
+      if (locale.country === 'US') {
+        return {
+          "address1": "4880 Haymond Rocks Road",
+          "address2": "barebone house",
+          "city": "Phoenix",
+          "company": "Barebone corp.",
+          "country": "US",
+          "firstName": "Bare",
+          "lastName": "Bone",
+          "phone": "+14844731366",
+          "province": "Oregon",
+          "zip": "97535"
+        };
+      }
+      if (locale.country === 'JP') {
+        return {
+          "address1": "Jingu Mae 2-22-16",
+          "address2": "barebone house",
+          "city": "Shibuya",
+          "company": "Barebone corp.",
+          "country": "JP",
+          "firstName": "Bare",
+          "lastName": "Bone",
+          "phone": "+819012345678",
+          "province": "Tokyo",
+          "zip": "1500001"
+        };
+      }
+      if (locale.country === 'FR') {
+        return {
+          "address1": "66 rue des six frères Ruellan",
+          "address2": "barebone house",
+          "city": "Sarcelles",
+          "company": "Barebone corp.",
+          "country": "FR",
+          "firstName": "Bare",
+          "lastName": "Bone",
+          "phone": "+819012345678",
+          "province": "Île-de-France",
+          "zip": "95200"
+        };
+      }
+      return {};
+    };
+
     // 1. Show the products to checkout with APIs.
     document.getElementById('show_product').onclick = () => {
       const products = document.getElementById('products');
@@ -729,18 +776,7 @@
 
       const input = {
         "checkoutId": checkout.checkoutCreate.checkout.id,
-        "shippingAddress": {
-          "address1": "barebone street 1",
-          "address2": "barebone street 2",
-          "city": "Shibuya",
-          "company": "Barebone corp.",
-          "country": "JP",
-          "firstName": "Bare",
-          "lastName": "Bone",
-          "phone": "+819012345678",
-          "province": "Tokyo",
-          "zip": "1500001"
-        }
+        "shippingAddress": getAddress()
       };
 
       if (document.getElementById('customer_associate').innerHTML !== '') {
@@ -834,20 +870,9 @@
         const customer_token = JSON.parse(document.getElementById('customer_token').innerHTML);
         input.buyerIdentity.customerAccessToken = customer_token.customerAccessTokenCreate.customerAccessToken.accessToken;
       } else {
-        // This code produces an error.
+        // This code produces an error because this address needs to be from the loggined in customer.
         /*input.buyerIdentity.deliveryAddressPreferences.push({
-          "deliveryAddress": {
-            "address1": "barebone street 1",
-            "address2": "barebone street 2",
-            "city": "Shibuya",
-            "company": "Barebone corp.",
-            "country": "JP",
-            "firstName": "Bare",
-            "lastName": "Bone",
-            "phone": "+819012345678",
-            "province": "Tokyo",
-            "zip": "1500001"
-          }
+          "deliveryAddress": getAddress()
         });*/
       }
 
