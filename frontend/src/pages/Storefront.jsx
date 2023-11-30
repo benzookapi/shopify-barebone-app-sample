@@ -23,7 +23,7 @@ function Storefront() {
         <Card sectioned={true}>
           <Layout>
             <Layout.Section>
-              <Link url="https://shopify.dev/docs/api/storefront" target="_blank">Dev. doc (1)</Link><br />
+              <Link url="https://shopify.dev/docs/custom-storefronts/building-with-the-storefront-api/" target="_blank">Dev. doc (1)</Link><br />
               <Link url="https://shopify.dev/docs/api/usage/authentication#access-tokens-for-the-storefront-api" target="_blank">Dev. doc (2)</Link><br />
               <Link url="https://shopify.dev/docs/apps/auth/oauth/delegate-access-tokens" target="_blank">Dev. doc (3)</Link>
             </Layout.Section>
