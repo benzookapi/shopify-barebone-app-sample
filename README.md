@@ -115,7 +115,7 @@ Or
 `you can install to your development stores from the app settings in partner dashboard.`
 
 # Sample list
-All sample are available at [Wiki](https://github.com/benzookapi/shopify-barebone-app-sample/wiki).
+All sample are available at [Wiki](/wiki).
 
 # Trouble shooting
 - Your server needs to render the top page at acceptable speed in the right way. Too slow access, error HTTP codes, or server shutdown causes the error above in live stores (not in development ones). Some cloud plarform like Render, Heroku, etc do the very slow response for the first time in a while with free plans, so you need to swtich to [Cloudflare tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) or [ngrok](https://ngrok.com/) hosting or pay those services for higher performence. 
