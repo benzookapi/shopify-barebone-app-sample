@@ -44,7 +44,7 @@ reactExtension('purchase.checkout.block.render', () => <Upsell />);
 */
 function Upsell() {
   const extensionApi = useApi();
-  //console.log(`my-checkout-ui-ext: extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
+  console.log(`my-checkout-ui-ext: extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
 
   const [upsellProducts, setUpsellProducts] = useState([]);
   const [upsellAdded, setUpsellAdded] = useState(false);
