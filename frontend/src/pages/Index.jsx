@@ -2,7 +2,7 @@ import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';
 import { getSessionToken } from "@shopify/app-bridge-utils";
 import { Page, Card, ResourceList, Icon, Text } from '@shopify/polaris';
-import { CircleRightMajor } from '@shopify/polaris-icons';
+import { CircleRightIcon } from '@shopify/polaris-icons';
 
 // Index for all sample UIs using ResourceList as a link list.
 // See https://polaris.shopify.com/components/resource-list
@@ -134,7 +134,7 @@ function Index() {
                     ]}
                     renderItem={(item) => {
                         const { id, onClick, name, location } = item;
-                        const media = <Icon source={CircleRightMajor} />;
+                        const media = <Icon source={CircleRightIcon} />;
                         return (
                             <ResourceList.Item id={id} onClick={onClick} media={media} >
                                 <Text variant="bodyMd" fontWeight="bold" as="h3">
