@@ -14,10 +14,10 @@ function FunctionPayment() {
 
   const shop = _getShopFromQuery(window);
 
-  const [method, setMethod] = useState('');
+  const [method, setMethod] = useState('Cash on Delivery (COD)');
   const methodChange = useCallback((newMethod) => setMethod(newMethod), []);
 
-  const [rate, setRate] = useState('');
+  const [rate, setRate] = useState('Standard');
   const rateChange = useCallback((newRate) => setRate(newRate), []);
 
   const [id, setId] = useState('');

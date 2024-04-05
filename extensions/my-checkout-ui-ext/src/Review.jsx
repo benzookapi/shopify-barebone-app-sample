@@ -10,7 +10,7 @@ import {
   reactExtension,
 
   // React hooks
-  useApi, 
+  useApi,
   useAppMetafields,
 
   // UI components
@@ -20,7 +20,8 @@ import {
   Button,
   BlockSpacer,
   ChoiceList,
-  Choice
+  Choice,
+  Link
   //CalloutBanner, available only for post-purchase extensions.
   //Layout, available only for post-purchase extensions.
   //TextContainer, available only for post-purchase extensions.
@@ -35,7 +36,7 @@ reactExtension('purchase.checkout.actions.render-before', () => <Review />);
 */
 function Review() {
   const extensionApi = useApi();
-  //console.log(`my-checkout-ui-ext (Review): extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
+  console.log(`my-checkout-ui-ext (Review): extensionApi ${JSON.stringify(extensionApi, null, 4)}`);
 
   const [score, setScore] = useState('2');
   const [reviewSent, setReviewSent] = useState(false);
@@ -92,9 +93,17 @@ function Review() {
         );
       } else {
         return (
-          <Text appearance="success" size="medium">
-            Thank you for your review! &#128591;
-          </Text>
+          <>
+            <Text appearance="success" size="medium">
+              Thank you for your review! &#128591;
+            </Text>
+            <BlockSpacer />
+            <Link onPress={() => {
+              setReviewSent(false);
+            }}>
+              My mind changed. &#129300;
+            </Link>
+          </>
         );
       }
 
@@ -128,6 +137,16 @@ function Review() {
                   }
                   setReviewSent(true);
                   setRes(data);
+
+                  // Add a discount based on the score dynamically in combination with Discount Function(../my-function-discount-ext).
+                  const value = score === '1' ? '0' : `${parseInt(score) * 10}`;
+                  extensionApi.applyAttributeChange({
+                    type: "updateAttribute",
+                    key: "discount_rate", // This need to be the same key as you set in the customer metafield.
+                    value: `${value}`
+                  }).then((result) => {
+                    console.log(`applyAttributeChange: ${result}`);
+                  });
                 });
               });
             });

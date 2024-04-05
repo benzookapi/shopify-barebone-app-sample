@@ -9,6 +9,9 @@ query Input($namespace: String!, $key: String!) {
         }
       }
     }
+    attribute (key: $key) {
+      value
+    }
   }
   discountNode {
     metafield(namespace: "barebone_app_function_discount", key: "customer_meta") {

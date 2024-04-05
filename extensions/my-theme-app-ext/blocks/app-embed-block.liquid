@@ -45,6 +45,7 @@ https://github.com/Shopify/theme-extension-getting-started
     </ul>
   </div>
 </div>
+
 <!--
 
 "target": "body" or "head" in schema means this is an "App Embed Block" as a theme wide fixed code.
@@ -82,16 +83,6 @@ https://github.com/Shopify/theme-extension-getting-started
     });
   });
 
-
-
-  /*const httpClient = new XMLHttpRequest();
-  httpClient.open("POST", appProxyUrl, false);
-  httpClient.send(cookieParam);
-  const res = JSON.parse(httpClient.responseText);
-  console.log(JSON.stringify(res, null, 4));*/
-
-  
-
   let aList = document.getElementsByClassName("barebone_app_proxy_json");
   for (let i = 0; i < aList.length; i++) {
     aList[i].setAttribute('href', `${appProxyUrl}`);
@@ -101,7 +92,6 @@ https://github.com/Shopify/theme-extension-getting-started
     aList[i].setAttribute('href', `${appProxyUrl}&format=liquid`);
   }
 </script>
-
 {% schema %}
   {
     "name": "Barebone App Embed",

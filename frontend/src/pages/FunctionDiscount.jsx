@@ -14,7 +14,7 @@ function FunctionDiscount() {
 
   const shop = _getShopFromQuery(window);
 
-  const [meta, setMeta] = useState('');
+  const [meta, setMeta] = useState('barebone_app.discount_rate');
   const metaChange = useCallback((newMeta) => setMeta(newMeta), []);
 
   const [id, setId] = useState('');
@@ -40,7 +40,7 @@ function FunctionDiscount() {
                     value={meta}
                     onChange={metaChange}
                     autoComplete="off"
-                    placeholder="Example: barebone_app.my_customer_discount_rate"
+                    placeholder="Example: barebone_app.discount_rate"
                   />
                 </List.Item>
                 <List.Item>

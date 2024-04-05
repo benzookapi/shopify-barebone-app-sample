@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "@koa/cors": "^5.0.0",
-    "@shopify/app": "^3.49.3",
-    "@shopify/cli": "^3.49.3",
+    "@shopify/app": "^3.58.2",
+    "@shopify/cli": "^3.58.2",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^3.1.2",
     "koa": "^2.14.2",

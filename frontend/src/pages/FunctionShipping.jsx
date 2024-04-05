@@ -14,10 +14,10 @@ function FunctionShipping() {
 
   const shop = _getShopFromQuery(window);
 
-  const [rate, setRate] = useState('');
+  const [rate, setRate] = useState('Standard');
   const rateChange = useCallback((newRate) => setRate(newRate), []);
 
-  const [zip, setZip] = useState('');
+  const [zip, setZip] = useState('100-0001');
   const zipChange = useCallback((newZip) => setZip(newZip), []);
 
   const [id, setId] = useState('');
@@ -51,7 +51,7 @@ function FunctionShipping() {
                     value={zip}
                     onChange={zipChange}
                     autoComplete="off"
-                    placeholder="Example: 107-6245"
+                    placeholder="Example: 100-0001"
                   />
                 </List.Item>
               </List>
