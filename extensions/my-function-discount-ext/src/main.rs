@@ -18,46 +18,13 @@ struct Configuration {
 
 }
 
-/*impl Configuration {
-    fn from_str(value: &str) -> Self {
-        serde_json::from_str(value).expect("Unable to parse configuration value from metafield")
-    }
-}*/
-
 #[shopify_function]
 fn function(input: input::ResponseData) -> Result<output::FunctionResult> {
-    /*let no_discount = output::FunctionResult {
-        discounts: vec![],
-        discount_application_strategy: output::DiscountApplicationStrategy::FIRST,
-    };*/
-
-    // See https://shopify.dev/apps/checkout/delivery-customizations/getting-started
-    
-    /*let _config = match input.discount_node.metafield {
-        Some(input::InputDiscountNodeMetafield { value }) => 
-            Configuration::from_str(&value),
-        None => return Ok(no_discount),
-    };*/
-
     // Debug logging
     //io::stderr().write_fmt(format_args!("{:#?}", 999));
 
-   /* let discount_rate = match input.cart.buyer_identity {
-        Some(buyer_identity) => match buyer_identity.customer {
-            Some(customer) => match customer.metafield {
-                Some(metafield) => metafield.value.to_string(),
-                None => match input.cart.attribute {
-                    Some(attribute) => match attribute.value {
-                        Some(value) => value.to_string(),
-                        None => "0.0".to_string()
-                    },
-                    None => "0.0".to_string()
-                }
-            },
-            None => "0.0".to_string()
-        },
-        None => "0.0".to_string()        
-    };*/
+    // See https://shopify.dev/docs/api/functions/reference/order-discounts/graphql/input 
+    // and ./input.graphql and schema.graphql
     let discount_rate = match input.cart.attribute {
         Some(attribute) => match attribute.value {
             Some(value) => value.to_string(),
