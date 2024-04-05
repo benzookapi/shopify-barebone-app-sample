@@ -102,7 +102,7 @@ CREATE TABLE shops ( _id VARCHAR(500) NOT NULL PRIMARY KEY, data JSON NOT NULL, 
 
 6. Turn **OFF** [Development store preview] in app extensions menu.
 
-7. Create `shopify.app.toml` file in the root directory copied from [this](https://shopify.dev/docs/apps/tools/cli/configuration) to replace `client_id` value with your `SHOPIFY_API_KEY`.
+7. Create `shopify.app.toml` file in the root directory copied from [this page](https://shopify.dev/docs/apps/tools/cli/configuration) to replace `client_id` value with your `SHOPIFY_API_KEY` and add `use_legacy_install_flow = true` under `scopes = ...` line (check [the details](https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes)).
 
 8. Execute `npm run deploy -- --reset` and follow its instruction (choose your partner account, connecting to the exising app, etc.) which registers extensions to your exising app and create `/.env` file which has extensiton ids used by this sample app (For [Shopify Functions](https://shopify.dev/api/functions) deployment using [Rust](https://www.rust-lang.org/), you need [Cargo](https://doc.rust-lang.org/cargo/) Wasm package installed first by `cargo install cargo-wasi`).
 
@@ -121,7 +121,6 @@ All sample are available at [Wiki](../../wiki).
 
 # Trouble shooting
 - Your server needs to render the top page at acceptable speed in the right way. Too slow access, error HTTP codes, or server shutdown causes the error above in live stores (not in development ones). Some cloud plarform like Render, Heroku, etc do the very slow response for the first time in a while with free plans, so you need to swtich to [Cloudflare tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) or [ngrok](https://ngrok.com/) hosting or pay those services for higher performence.
-- If you see `app_handle: App handle must be unique` error during `npm run deploy -- --reset`, choose `No, never` for `Include XXX.toml configuration on deploy?`.
 
 # TIPS
 - If you want to create other language versions of this app like PHP, Java, Ruby, Python, etc., the best way is [creating an extension-only app](https://shopify.dev/docs/apps/app-extensions/extension-only-apps) by **not choosing a Remix template in CLI steps** to add your server side code manually. 
