@@ -12,6 +12,11 @@ import {
   // React hooks
   useApi,
   useAppMetafields,
+  useSelectedPaymentOptions,
+  useDiscountAllocations,
+  useDiscountCodes,
+  useShippingAddress,
+  useApplyShippingAddressChange,
 
   // UI components
   BlockStack,
@@ -158,6 +163,74 @@ function Review() {
       );
     }
   };
+
+  const shippingAddress = useShippingAddress();
+  console.log(`shippingAddress: ${JSON.stringify(shippingAddress)}`);
+
+  const applyShippingAddressChange = useApplyShippingAddressChange();
+
+  // 1. Initial loading
+  useEffect(() => {
+    // This code runs endless when the screen gets loaded if useEffect() is removed.
+    applyShippingAddressChange({
+      type: "updateShippingAddress",
+      address: {
+        address2: `Time: ${new Date()}`
+      }
+    }).then((result) => {
+      console.log(`useApplyShippingAddressChange: ${result}`);
+    });
+  }, ['']);
+
+  // 2. Payment option change.
+  useSelectedPaymentOptions().map((option) => {
+    const json = JSON.stringify(option);
+    console.log(`useSelectedPaymentOptions().map(): ${json}`);
+
+    extensionApi.storage.read('option').then((d) => {
+      if (d != null && d === json) return;
+      console.log(`Payment option changed.`);
+      applyShippingAddressChange({
+        type: "updateShippingAddress",
+        address: {
+          address2: `Payment option: ${json}`
+        }
+      }).then((result) => {
+        console.log(`useApplyShippingAddressChange: ${result}`);
+        extensionApi.storage.write('option', json);
+      });
+    });
+  });
+
+  // Count up each log in the console. Direct logging without map() outputs empty data.
+  console.log(`extensionApi.discountCodes: ${JSON.stringify(extensionApi.discountCodes)}`);
+  const discountCodes = useDiscountCodes();
+  console.log(`discountCodes: ${JSON.stringify(discountCodes)}`);
+
+  // 3. Discount code change.
+  discountCodes.map((code) => {
+    const json = JSON.stringify(code);
+    console.log(`discountCodes.map(): ${json}`);
+
+    extensionApi.storage.read('code').then((d) => {
+      console.log(`code: ${d}`);
+      if (d != null && d === json) return;
+      console.log(`Discount code changed.`);
+      applyShippingAddressChange({
+        type: "updateShippingAddress",
+        address: {
+          address2: `Discount code: ${json}`
+        }
+      }).then((result) => {
+        console.log(`useApplyShippingAddressChange: ${result}`);
+        extensionApi.storage.write('code', json);
+      });
+    });
+  });
+
+  useDiscountAllocations().map((allocation) => {
+    console.log(`useDiscountAllocations(): ${JSON.stringify(allocation)}`);
+  });
 
   return (
     <Banner title={`${extensionApi.extensionPoint} <Review />`} status='critical'>
