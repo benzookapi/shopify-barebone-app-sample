@@ -2881,6 +2881,23 @@ router.post('/webhookgdpr', async (ctx, next) => {
   ctx.status = 200;
 });
 
+/* --- Flow app endpoint --- */
+router.post('/flowaction', async (ctx, next) => {
+  console.log("*************** flowaction ***************");
+  console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
+  console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
+
+  /* Check the signature (Flow endpoint uses the same validation as Webhook) */
+  const valid = await (checkWebhookSignature(ctx, API_SECRET));
+  if (!valid) {
+    console.log('Not a valid signature');
+    ctx.status = 401;
+    return;
+  }
+
+  ctx.status = 200;
+});
+
 /* --- Check if the given signature is correct or not --- */
 // See https://shopify.dev/apps/auth/oauth/getting-started#step-2-verify-the-installation-request
 const checkSignature = function (json) {

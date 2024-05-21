@@ -1,11 +1,11 @@
 import { register } from "@shopify/web-pixels-extension";
 
-register(({ analytics, browser, settings, init }) => {
+register(async ({ analytics, browser, settings, init }) => {
   // See https://shopify.dev/api/pixels/pixel-extension#app-web-pixels
   // See https://shopify.dev/apps/marketing/pixels/getting-started
 
   //console.log(`Web Pixel register: analytics ${JSON.stringify(analytics, null, 4)}`);
-  //console.log(`Web Pixel register: browser ${JSON.stringify(browser, null, 4)}`);
+  console.log(`Web Pixel register: browser ${JSON.stringify(browser, null, 4)}`);
   console.log(`Web Pixel register: settings ${JSON.stringify(settings, null, 4)}`);
   console.log(`Web Pixel register: init ${JSON.stringify(init, null, 4)}`);
 

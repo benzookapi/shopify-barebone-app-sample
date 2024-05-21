@@ -104,7 +104,7 @@ CREATE TABLE shops ( _id VARCHAR(500) NOT NULL PRIMARY KEY, data JSON NOT NULL, 
 
 7. Create `shopify.app.toml` file in the root directory copied from [this page](https://shopify.dev/docs/apps/tools/cli/configuration) to replace `client_id` value with your `SHOPIFY_API_KEY` and add `use_legacy_install_flow = true` under `scopes = ...` line (check [the details](https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes)).
 
-8. Execute `npm run deploy -- --reset` and follow its instruction (choose your partner account, connecting to the exising app, etc.) which registers extensions to your exising app and create `/.env` file which has extensiton ids used by this sample app (For [Shopify Functions](https://shopify.dev/api/functions) deployment using [Rust](https://www.rust-lang.org/), you need [Cargo](https://doc.rust-lang.org/cargo/) Wasm package installed first by `cargo install cargo-wasi`).
+8. Execute `npm run deploy -- --reset` and follow its instruction (choose your partner account, connecting to the exising app, include your configuration on deploy = YES, ?etc.) which registers extensions to your exising app and create `/.env` file which has extensiton ids used by this sample app (For [Shopify Functions](https://shopify.dev/api/functions) deployment using [Rust](https://www.rust-lang.org/), you need [Cargo](https://doc.rust-lang.org/cargo/) Wasm package installed first by `cargo install cargo-wasi`).
 
 9. For updating the extensions, execute `npm run deploy` (without `-- --reset`) to apply (upload) your local modified files to the created extensions (`-- --reset` is used for changing your targeted app only).
 
@@ -125,7 +125,9 @@ All sample are available at [Wiki](../../wiki).
 # TIPS
 - If you want to create other language versions of this app like PHP, Java, Ruby, Python, etc., the best way is [creating an extension-only app](https://shopify.dev/docs/apps/app-extensions/extension-only-apps) by **not choosing a Remix template in CLI steps** to add your server side code manually. 
 - You can use the endpoint of `webhookgdpr` for [GDPR Webhooks](https://shopify.dev/docs/apps/store/security/gdpr-webhooks).
-- If you fail to get [protected customer data](https://shopify.dev/docs/apps/store/data-protection/protected-customer-data) in Checkout UI Extension or API Webhook creation even in dev. stores, submit your app first which enable you get them. 
+- If you fail to get [protected customer data](https://shopify.dev/docs/apps/store/data-protection/protected-customer-data) in Checkout UI Extension or API Webhook creation even in dev. stores, submit your app first which enable you get them (this is for `public app distribution` only).
+- If you want to sync your existing app configration with local TOML files, choose `YES` to `Include xxx.toml configuration on deploy?` which overwrites the config values in partner dashboard setting with the local specified values (If you find `Scopes` section in the app configuration menu in the partner dashboard, which means your `use_legacy_install_flow = true` is not applied and you need to overwrite with your TOML file). 
+
 
 # Disclaimer
 - This code is fully _unofficial_ and NOT guaranteed to pass [the public app review](https://shopify.dev/apps/store/review) for Shopify app store. The official requirements are described [here](https://shopify.dev/apps/store/requirements). 
