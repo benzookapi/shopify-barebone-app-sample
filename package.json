@@ -7,7 +7,7 @@
     "node": ">=16.0.0"
   },
   "dependencies": {
-    "@shopify/cli": "*",
+    "@shopify/app": "*",
     "@koa/cors": "^5.0.0",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^3.1.2",
