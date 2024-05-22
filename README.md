@@ -140,7 +140,7 @@ All sample are available at [Wiki](../../wiki).
 - If you manage multiple apps in this single source code and swtich the target app, follow the steps below.
     1. Change the environment variables of `SHOPIFY_API_KEY` and `SHOPIFY_API_SECRET` and apply them (export).
     2. Execute `shopify app deploy --reset` and choose the target app (it is supposed to be created manually).
-    3. Entner the new toml file name or leave blank for the app.
+    3. Enter the new toml file name or leave blank for the app.
     4. The new toml file gets generated for the new app with the current config values in partner dashboard.
     5. Remember to replace `scopes in [auth]` with the same value as the original toml file which must be blank by default.
 
