@@ -1,7 +1,7 @@
 {
   "name": "my-shopify-barebone-app",
   "version": "1.0.0",
-  "description": "@shopify/cli must be installed by `npm install -g @shopify/cli`",
+  "description": "@shopify/cli must be installed by `npm install -g @shopify/cli`, and @shopify/app is used by `@shopify/ui-extensions-react` only.",
   "main": "app.js",
   "engines": {
     "node": ">=16.0.0"
