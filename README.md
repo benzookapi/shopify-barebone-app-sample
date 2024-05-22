@@ -77,8 +77,6 @@ SHOPIFY_WEBHOOK_SECRET:       YOUR_TEST_STORE_WEBHOOK_SIGNATURE given by the web
 Build command = npm install && npm run build (= cd frontend && npm install && npm run build && rm -rf ../public/assets && mv dist/assets ../public/assets && mv dist/index.html ../views/index.html  *Replacing Koa intex file with Vite buit code)
 
 Start command = npm run start (= node app.js)
-
-*NOTE THAT this sameple doesn't support `npm run dev` of Shopify CLI
 ```
 
 3. If you run locally, you need to tunnel localhost for public URL as follows (otherwise, you should use the command lines above for Render or other cloud platform deploy scripts).
@@ -104,9 +102,9 @@ CREATE TABLE shops ( _id VARCHAR(500) NOT NULL PRIMARY KEY, data JSON NOT NULL, 
 
 7. Create `shopify.app.toml` file in the root directory copied from [this page](https://shopify.dev/docs/apps/tools/cli/configuration) to replace `client_id` value with your `SHOPIFY_API_KEY` and add `use_legacy_install_flow = true` under `scopes = ...` line (check [the details](https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes)).
 
-8. Execute `npm run deploy -- --reset` and follow its instruction (choose your partner account, connecting to the exising app, include your configuration on deploy = YES, etc.) which registers extensions to your exising app and create `/.env` file which has extensiton ids used by this sample app (For [Shopify Functions](https://shopify.dev/api/functions) deployment using [Rust](https://www.rust-lang.org/), you need [Cargo](https://doc.rust-lang.org/cargo/) Wasm package installed first by `cargo install cargo-wasi`).
+8. Execute `shopify app deploy -- --reset` and follow its instruction (choose your partner account, connecting to the exising app, include your configuration on deploy = YES, etc.) which registers extensions to your exising app and create `/.env` file which has extensiton ids used by this sample app (For [Shopify Functions](https://shopify.dev/api/functions) deployment using [Rust](https://www.rust-lang.org/), you need [Cargo](https://doc.rust-lang.org/cargo/) Wasm package installed first by `cargo install cargo-wasi`).
 
-9. For updating the extensions, execute `npm run deploy` (without `-- --reset`) to apply (upload) your local modified files to the created extensions (`-- --reset` is used for changing your targeted app only).
+9. For updating the extensions, execute `shopify app deploy` (without `-- --reset`) to apply (upload) your local modified files to the created extensions (`-- --reset` is used for changing your targeted app only).
 
 # How to install
 Access to the following endpoit.
@@ -126,7 +124,7 @@ All sample are available at [Wiki](../../wiki).
 - If you want to create other language versions of this app like PHP, Java, Ruby, Python, etc., the best way is [creating an extension-only app](https://shopify.dev/docs/apps/app-extensions/extension-only-apps) by **not choosing a Remix template in CLI steps** to add your server side code manually. 
 - You can use the endpoint of `webhookgdpr` for [GDPR Webhooks](https://shopify.dev/docs/apps/store/security/gdpr-webhooks).
 - If you fail to get [protected customer data](https://shopify.dev/docs/apps/store/data-protection/protected-customer-data) in Checkout UI Extension or API Webhook creation even in dev. stores, submit your app first which enable you get them (this is for `public app distribution` only).
-- If you want to sync your existing app configration with local TOML files, choose `YES` to `Include xxx.toml configuration on deploy?` in `npm run deploy -- --reset` which overwrites the config values in partner dashboard with the local specified values (if you find `Scopes` section in the app configuration of partner dashboard, which means your `use_legacy_install_flow = true` is not applied and you need to overwrite with your TOML file). 
+- If you want to sync your existing app configration with local TOML files, choose `YES` to `Include xxx.toml configuration on deploy?` in `shopify app deploy -- --reset` which overwrites the config values in partner dashboard with the local specified values (if you find `Scopes` section in the app configuration of partner dashboard, which means your `use_legacy_install_flow = true` is not applied and you need to overwrite with your TOML file). 
 
 
 # Disclaimer

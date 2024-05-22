@@ -1,7 +1,7 @@
 {
   "name": "my-shopify-barebone-app",
   "version": "1.0.0",
-  "description": "",
+  "description": "@shopify/cli must be installed by `npm install -g @shopify/cli` and @shopify/app is for `shopify app deploy` only.",
   "main": "app.js",
   "engines": {
     "node": ">=16.0.0"
@@ -25,12 +25,7 @@
   },
   "scripts": {
     "build": "cd frontend && npm install && npm run build && rm -rf ../public/assets && mkdir -p ../public && mv dist/assets ../public/assets && mkdir -p ../views && mv dist/index.html ../views/index.html",
-    "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "shopify": "shopify",
-    "info": "shopify app info",
-    "generate": "shopify app generate",
-    "deploy": "shopify app deploy"
+    "start": "node app.js"
   },
   "keywords": [],
   "author": "",
