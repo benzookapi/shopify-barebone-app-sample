@@ -1,13 +1,12 @@
 {
   "name": "my-shopify-barebone-app",
   "version": "1.0.0",
-  "description": "@shopify/cli must be installed by `npm install -g @shopify/cli` and @shopify/app is for `shopify app deploy` only.",
+  "description": "@shopify/cli must be installed by `npm install -g @shopify/cli`",
   "main": "app.js",
   "engines": {
     "node": ">=16.0.0"
   },
   "dependencies": {
-    "@shopify/app": "*",
     "@koa/cors": "^5.0.0",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^3.1.2",
