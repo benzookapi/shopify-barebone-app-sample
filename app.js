@@ -42,7 +42,6 @@ app.use(serve(__dirname + '/public'));
 const API_KEY = `${process.env.SHOPIFY_API_KEY}`;
 const API_SECRET = `${process.env.SHOPIFY_API_SECRET}`;
 const API_VERSION = `${process.env.SHOPIFY_API_VERSION}`;
-const API_SCOPES = `${process.env.SHOPIFY_API_SCOPES}`;
 
 const CONTENT_TYPE_JSON = 'application/json';
 const CONTENT_TYPE_FORM = 'application/x-www-form-urlencoded';
@@ -116,8 +115,8 @@ router.get('/', async (ctx, next) => {
     }
     if (install) {
       // See https://shopify.dev/apps/auth/oauth/getting-started
-      const redirectUrl = `https://${shop}/admin/oauth/authorize?client_id=${API_KEY}&scope=${API_SCOPES}&redirect_uri=https://${ctx.request.host}/callback&state=&grant_options[]=`;
-      //const redirectUrl = `https://${getAdminFromShop(shop)}/oauth/authorize?client_id=${API_KEY}&scope=${API_SCOPES}&redirect_uri=https://${ctx.request.host}/callback&state=&grant_options[]=`;
+      // `&scope=` is no longer used because `app.toml` defines it with `shopify app deploy`.
+      const redirectUrl = `https://${shop}/admin/oauth/authorize?client_id=${API_KEY}&redirect_uri=https://${ctx.request.host}/callback&state=&grant_options[]=`;
       console.log(`Redirecting to ${redirectUrl} for OAuth flow...`);
       ctx.redirect(redirectUrl);
       return;
