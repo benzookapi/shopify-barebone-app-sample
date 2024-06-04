@@ -23,6 +23,9 @@ target = "purchase.checkout.contact.render-after"
 [[extensions.targeting]]
 module = "./src/Review.jsx"
 target = "purchase.checkout.actions.render-before"
+[[extensions.targeting]]
+module = "./src/Address.jsx"
+target = "purchase.address-autocomplete.suggest"
 
 [extensions.capabilities]
 # Gives your extension access to directly query Shopify’s storefront API.
