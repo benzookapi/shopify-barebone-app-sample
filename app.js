@@ -2860,8 +2860,7 @@ router.post('/webhookcommon', async (ctx, next) => {
 
   console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
 
-
-  
+  // WRITE YOUR CODE.  
 
   ctx.status = 200;
 });
