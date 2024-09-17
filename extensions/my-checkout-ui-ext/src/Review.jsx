@@ -17,6 +17,7 @@ import {
   useDiscountCodes,
   useShippingAddress,
   useApplyShippingAddressChange,
+  useAttributeValues,
 
   // UI components
   BlockStack,
@@ -26,7 +27,8 @@ import {
   BlockSpacer,
   ChoiceList,
   Choice,
-  Link
+  Link,
+  Select
   //CalloutBanner, available only for post-purchase extensions.
   //Layout, available only for post-purchase extensions.
   //TextContainer, available only for post-purchase extensions.
@@ -46,6 +48,11 @@ function Review() {
   const [score, setScore] = useState('2');
   const [reviewSent, setReviewSent] = useState(false);
   const [res, setRes] = useState({});
+
+  const initAttr = useAttributeValues(["barebone_cart_attribute"]); // This is supposed to the same attribute in `./my-theme-app-ext/blocks/app-block.liquid`
+  console.log(`initAttr: ${initAttr}`);
+
+  const [cartAttr, setCartAttr] = useState(initAttr);
 
   // Store the given score into the browser storage to keep across the pages.
   // See https://shopify.dev/docs/api/checkout-ui-extensions/apis/standardapi#properties-propertydetail-storage
@@ -150,7 +157,7 @@ function Review() {
                     key: "discount_rate", // This need to be the same key as you set in the customer metafield.
                     value: `${value}`
                   }).then((result) => {
-                    console.log(`applyAttributeChange: ${result}`);
+                    console.log(`applyAttributeChange: ${JSON.stringify(result)}`);
                   });
                 });
               });
@@ -178,7 +185,7 @@ function Review() {
         address2: `Time: ${new Date()}`
       }
     }).then((result) => {
-      console.log(`useApplyShippingAddressChange: ${result}`);
+      console.log(`useApplyShippingAddressChange: ${JSON.stringify(result)}`);
     });
   }, ['']);
 
@@ -196,7 +203,7 @@ function Review() {
           address2: `Payment option: ${json}`
         }
       }).then((result) => {
-        console.log(`useApplyShippingAddressChange: ${result}`);
+        console.log(`useApplyShippingAddressChange: ${JSON.stringify(result)}`);
         extensionApi.storage.write('option', json);
       });
     });
@@ -222,7 +229,7 @@ function Review() {
           address2: `Discount code: ${json}`
         }
       }).then((result) => {
-        console.log(`useApplyShippingAddressChange: ${result}`);
+        console.log(`useApplyShippingAddressChange: ${JSON.stringify(result)}`);
         extensionApi.storage.write('code', json);
       });
     });
@@ -248,6 +255,39 @@ function Review() {
           <Choice id="3">3 - Excellent</Choice>
           <Choice id="2">2 - Average</Choice>
           <Choice id="1">1 - Poor</Choice>
+        </BlockStack>
+        <BlockStack>
+          <Text>&nbsp;</Text>
+        </BlockStack>
+        <BlockStack>
+          <Select
+            label="Set your cart attribute value"
+            value={cartAttr}
+            options={[
+              {
+                value: 'Value-1',
+                label: 'Value-1',
+              },
+              {
+                value: 'Value-2',
+                label: 'Value-2',
+              },
+              {
+                value: 'Value-3',
+                label: 'Value-3',
+              }
+            ]}
+            onChange={(value) => {
+              setCartAttr(value);
+              extensionApi.applyAttributeChange({
+                type: "updateAttribute",
+                key: "barebone_cart_attribute", // This is supposed to the same attribute in `./my-theme-app-ext/blocks/app-block.liquid`
+                value: `${value}`
+              }).then((result) => {
+                console.log(`applyAttributeChang (for the cart attribute): ${JSON.stringify(result)}`);
+              });
+            }}
+          />
         </BlockStack>
       </ChoiceList>
       <BlockSpacer />

@@ -68,9 +68,9 @@
 
     <p><b>App proxy responses</b>: (You can check the difference of response data by login / logout)</p>
     <ul>
-      <li>       
+      <li>
         <p>POST response of the app proxy</p>
-         <!--
+        <!--
           Note that app embed is a section which can be some in the whole theme storefornt HTML in browsers, so you canot use 'id'.
         -->
         <pre class="barebone_app_proxy_response"></pre>
@@ -159,7 +159,7 @@
         <div>
           <input
             type="radio"
-            id="barebone_cart_attributey_2"
+            id="barebone_cart_attribute_2"
             name="barebone_cart_attribute"
             value="Value-2"
             onClick="radio_click(this);"
@@ -212,7 +212,9 @@
   // Note that you cannot call external functions defined in 'assets/***.js'. Also,imported script files by each block are global in theme storefront in browsers, which means any object are global scopes that cannot conflicts with others. For exmple, this script is possible to be inserted multiply if the merchant add multiple sections in the theme editor.console.log("blocks/app-block.liquid");
   document.getElementById('my_window_shopify_dump').innerText = JSON.stringify(window.Shopify, null, 4);
 
-  console.log('template.name: {{ template.name }} product.id: {{ product.id }} product.selected_variant.id: {{ product.selected_variant.id }}');
+  console.log(
+    'template.name: {{ template.name }} product.id: {{ product.id }} product.selected_variant.id: {{ product.selected_variant.id }}'
+  );
 </script>
 
 {% comment %}
@@ -248,7 +250,9 @@
   The following code is for product pages only to check how cart notes and attributes work.
 {% endcomment %}
 {%- if template.name == 'cart' -%}
-  <script type="text/javascript">
+  <script
+    type="text/javascript"
+  >
     // "text_change" is called in "onChange" of textarea defined above.
     const text_change = (obj) => {
       const cart_forms = document.querySelectorAll('form[action="/cart"]');
@@ -286,6 +290,22 @@
         input.value = obj.value;
       });
     };
+
+    const init_attr_value = '{{ cart.attributes['barebone_cart_attribute'] }}';
+    console.log(`init_attr_value (Liquid value): ${init_attr_value}`);
+    switch (init_attr_value) {
+      case 'Value-1':
+        document.getElementById('barebone_cart_attribute_1').checked = true;
+        break;
+      case 'Value-2':
+        document.getElementById('barebone_cart_attribute_2').checked = true;
+        break;
+      case 'Value-3':
+        document.getElementById('barebone_cart_attribute_3').checked = true;
+        break;
+      default:
+        break;
+    }
   </script>
 {%- endif -%}
 
