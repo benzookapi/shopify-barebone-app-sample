@@ -256,43 +256,39 @@ function Review() {
           <Choice id="2">2 - Average</Choice>
           <Choice id="1">1 - Poor</Choice>
         </BlockStack>
-        <BlockStack>
-          <Text>&nbsp;</Text>
-        </BlockStack>
-        <BlockStack>
-          <Select
-            label="Set your cart attribute value"
-            value={cartAttr}
-            options={[
-              {
-                value: 'Value-1',
-                label: 'Value-1',
-              },
-              {
-                value: 'Value-2',
-                label: 'Value-2',
-              },
-              {
-                value: 'Value-3',
-                label: 'Value-3',
-              }
-            ]}
-            onChange={(value) => {
-              setCartAttr(value);
-              extensionApi.applyAttributeChange({
-                type: "updateAttribute",
-                key: "barebone_cart_attribute", // This is supposed to the same attribute in `./my-theme-app-ext/blocks/app-block.liquid`
-                value: `${value}`
-              }).then((result) => {
-                console.log(`applyAttributeChang (for the cart attribute): ${JSON.stringify(result)}`);
-              });
-            }}
-          />
-        </BlockStack>
       </ChoiceList>
       <BlockSpacer />
       {/* Switch the sending buttom and thank you massage */}
       <ReviewActions />
+      <BlockSpacer />
+      <Select
+        label="Set your cart attribute value"
+        value={cartAttr}
+        options={[
+          {
+            value: 'Value-1',
+            label: 'Value-1',
+          },
+          {
+            value: 'Value-2',
+            label: 'Value-2',
+          },
+          {
+            value: 'Value-3',
+            label: 'Value-3',
+          }
+        ]}
+        onChange={(value) => {
+          setCartAttr(value);
+          extensionApi.applyAttributeChange({
+            type: "updateAttribute",
+            key: "barebone_cart_attribute", // This is supposed to the same attribute in `./my-theme-app-ext/blocks/app-block.liquid`
+            value: `${value}`
+          }).then((result) => {
+            console.log(`applyAttributeChang (for the cart attribute): ${JSON.stringify(result)}`);
+          });
+        }}
+      />
     </Banner>
   );
 
