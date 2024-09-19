@@ -266,6 +266,10 @@ function Review() {
         value={cartAttr}
         options={[
           {
+            value: '',
+            label: '',
+          },
+          {
             value: 'Value-1',
             label: 'Value-1',
           },

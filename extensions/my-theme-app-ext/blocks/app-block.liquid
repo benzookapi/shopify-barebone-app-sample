@@ -149,12 +149,22 @@
         <div>
           <input
             type="radio"
+            id="barebone_cart_attribute_0"
+            name="barebone_cart_attribute"
+            value=""
+            onClick="radio_click(this);"
+          >
+          <label for="barebone_cart_attribute_0">(Empty)</label>
+        </div>
+        <div>
+          <input
+            type="radio"
             id="barebone_cart_attribute_1"
             name="barebone_cart_attribute"
             value="Value-1"
             onClick="radio_click(this);"
           >
-          <label for="barebone_cart_attribute_1"> Value 1 </label>
+          <label for="barebone_cart_attribute_1">Value 1</label>
         </div>
         <div>
           <input
@@ -164,7 +174,7 @@
             value="Value-2"
             onClick="radio_click(this);"
           >
-          <label for="barebone_cart_attribute_2"> Value 2 </label>
+          <label for="barebone_cart_attribute_2">Value 2</label>
         </div>
         <div>
           <input
@@ -174,7 +184,7 @@
             value="Value-3"
             onClick="radio_click(this);"
           >
-          <label for="barebone_cart_attribute_3"> Value 3 </label>
+          <label for="barebone_cart_attribute_3">Value 3</label>
         </div>
         <strong
           >See
@@ -294,6 +304,9 @@
     const init_attr_value = '{{ cart.attributes['barebone_cart_attribute'] }}';
     console.log(`init_attr_value (Liquid value): ${init_attr_value}`);
     switch (init_attr_value) {
+      case '':
+        document.getElementById('barebone_cart_attribute_0').checked = true;
+        break;
       case 'Value-1':
         document.getElementById('barebone_cart_attribute_1').checked = true;
         break;
