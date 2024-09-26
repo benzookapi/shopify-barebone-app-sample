@@ -208,7 +208,7 @@ function Upsell() {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ "Checkout UI Extension WebWorker": JSON.stringify(this) })
+      body: JSON.stringify({ "Checkout UI Extension WebWorker": "Upsell()" })
     }).then((res) => {
       res.json().then((data, errors) => {
         if (typeof errors !== 'undefined') {
