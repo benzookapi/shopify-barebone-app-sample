@@ -80,6 +80,7 @@ function Extension() {
   const discountCode = useDiscountCodes().map((c) => c.code).join('');
   console.log(`Extension() / discountCode: ${JSON.stringify(discountCode)}`);
 
+  // Control the checkout block based on the result of applying discount code.
   const [block, setBlock] = useState(false);
   useBuyerJourneyIntercept(
     ({ canBlockProgress }) => {
