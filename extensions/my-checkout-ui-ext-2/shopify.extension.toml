@@ -16,6 +16,8 @@ type = "ui_extension"
 # https://shopify.dev/docs/api/checkout-ui-extensions/unstable/extension-targets-overview
 
 [[extensions.targeting]]
+# If you want to test Vanila JS code, use CheckoutNoReact.js
+#module = "./src/CheckoutNoReact.js"
 module = "./src/Checkout.jsx"
 target = "purchase.checkout.block.render"
 

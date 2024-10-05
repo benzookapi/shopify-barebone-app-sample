@@ -21,13 +21,13 @@ export default reactExtension("purchase.checkout.block.render", () => (
 ));
 
 function Extension() {
-  const translate = useTranslate();
   const api = useApi();
+  const translate = useTranslate();  
   const instructions = useInstructions();
   const applyAttributeChange = useApplyAttributeChange();
   const applyDiscountCodeChange = useApplyDiscountCodeChange();
 
-  // console.log(`Checkout.jsx api: ${JSON.stringify(api, null, 4)}`);
+  // console.log(`Extension() api: ${JSON.stringify(api, null, 4)}`);
 
   // The following useAppMetafields can retrieve all metafields with target type specfication.
   // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#useappmetafields-propertydetail-filters
