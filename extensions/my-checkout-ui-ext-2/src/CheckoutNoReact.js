@@ -36,12 +36,14 @@ function Extension(root, api) {
       // Instead of useEffect and useState in React
       // You have to reactive the components below.
       api.storage.read('value').then((cache) => {
+        // Update the code only when the value has changed using local storage cache.
         if (cache === attrValue) return;
         api.applyDiscountCodeChange({
           type: 'addDiscountCode',
           code: attrValue
         }).then((res) => {
           console.log(`Extension() / api.attributes.subscribe / applyDiscountCodeChange type: addDiscountCode code: ${attrValue} reponse: ${JSON.stringify(res)}`);
+          // Write the cache.
           api.storage.write('value', 'attrValue');
         }).catch((e) => {
           console.log(`Extension() / api.attributes.subscribe / applyDiscountCodeChange type: addDiscountCode code: ${attrValue} exception: ${JSON.stringify(e)}`);
@@ -60,6 +62,7 @@ function Extension(root, api) {
       // Instead of useEffect and useState in React
       // You have to reactive the components below.
       api.storage.read('code').then((cache) => {
+        // Update the attribute only when the value has changed using local storage cache as a flag.
         if (cache === discountCode) return;
         api.applyAttributeChange({
           type: "updateAttribute",
@@ -67,6 +70,7 @@ function Extension(root, api) {
           value: discountCode,
         }).then((res) => {
           console.log(`Extension() / api.discountCodes.subscribe / applyAttributeChange value: ${discountCode} reponse: ${JSON.stringify(res)}`);
+          // Write the cache.
           api.storage.write('code', discountCode);
         }).catch((e) => {
           console.log(`Extension() / api.discountCodes.subscribe / applyAttributeChange value: ${discountCode} exception: ${JSON.stringify(e)}`);

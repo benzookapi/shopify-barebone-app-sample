@@ -12,9 +12,10 @@ import {
   useApplyDiscountCodeChange,
   useAttributeValues,
   useDiscountCodes,
-  useDiscountAllocations
+  useDiscountAllocations,
+  useBuyerJourneyIntercept
 } from "@shopify/ui-extensions-react/checkout";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default reactExtension("purchase.checkout.block.render", () => (
   <Extension />
@@ -22,7 +23,7 @@ export default reactExtension("purchase.checkout.block.render", () => (
 
 function Extension() {
   const api = useApi();
-  const translate = useTranslate();  
+  const translate = useTranslate();
   const instructions = useInstructions();
   const applyAttributeChange = useApplyAttributeChange();
   const applyDiscountCodeChange = useApplyDiscountCodeChange();
@@ -79,6 +80,26 @@ function Extension() {
   const discountCode = useDiscountCodes().map((c) => c.code).join('');
   console.log(`Extension() / discountCode: ${JSON.stringify(discountCode)}`);
 
+  const [block, setBlock] = useState(false);
+  useBuyerJourneyIntercept(
+    ({ canBlockProgress }) => {
+      return canBlockProgress && block
+        ? {
+          behavior: 'block',
+          reason: 'Failed to apply the given discount code',
+          errors: [
+            {
+              message:
+                'Please set the discount code again.'
+            }
+          ]
+        }
+        : {
+          behavior: 'allow',
+        };
+    },
+  );
+
   useEffect(() => {
     // This is the timing of the current attribute value changed.
     // If you want to do something like fetch external URL with the value, write here.
@@ -94,23 +115,34 @@ function Extension() {
       // The buyer set the code in cart and it is being applied to checkout initially (Case 1), or 
       // the buyer remove the code in checkout (Case 2).
       api.storage.read('applied').then((cache) => {
+        // For detecting Case 1 or 2, use local storage cache in the browser.
         if (cache == null) {
+          // If the cache is empty, Case 1 = initial loading.
           applyDiscountCodeChange({
             type: 'addDiscountCode',
             code: attrValue
           }).then((res) => {
             console.log(`Extension() / useEffect() / Case 1 applyDiscountCodeChange type: addDiscountCode code: ${attrValue} reponse: ${JSON.stringify(res)}`);
-            api.storage.write('applied', 'true');
+            if (typeof res.type !== 'undefined' && res.type === 'error') {
+              // If the code fails to be applied, bloch the checkout.
+              setBlock(true);
+            } else {
+              // If the code gets applied successfully, unblock the checkout, and wite the cache flag.
+              setBlock(false);
+              api.storage.write('applied', 'true');
+            }
           }).catch((e) => {
             console.log(`Extension() / useEffect() / Case 1 applyDiscountCodeChange type: addDiscountCode code: ${attrValue} exception: ${JSON.stringify(e)}`);
           });
         } else {
+          // If the cache exists, Case 2 = buyer's manual input after the loading.
           applyAttributeChange({
             type: "updateAttribute",
             key: "barebone_cart_attribute_code",
             value: '',
           }).then((res) => {
             console.log(`Extension() / useEffect() / Case 2 applyAttributeChange value: ${discountCode} reponse: ${JSON.stringify(res)}`);
+            // Clear the cache for the next initial loading after back and forth to cart.
             api.storage.delete('applied');
           }).catch((e) => {
             console.log(`Extension() / useEffect() / Case 2 applyAttributeChange value: ${discountCode} exception: ${JSON.stringify(e)}`);

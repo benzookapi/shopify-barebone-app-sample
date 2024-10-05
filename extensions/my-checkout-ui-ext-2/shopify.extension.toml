@@ -31,6 +31,10 @@ api_access = true
 # https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
 network_access = true
 
+# Gives your extension access to block checkout.
+# https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#block-progress
+block_progress = true
+
 # Loads metafields on checkout resources, including the cart,
 # products, customers, and more. Learn more:
 # https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#metafields
