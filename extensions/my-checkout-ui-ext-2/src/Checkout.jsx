@@ -51,6 +51,17 @@ function Extension() {
     .map((m) => { return m.metafield.value; }).join('');
   console.log(`Extension() / metafield2: ${JSON.stringify(metafield2)}`);
 
+  useEffect(() => {
+    // This is the timing of some of metafields changed.
+    // If you want to do something like fetch external URL with the value, write here.
+    console.log(`Extension() / useEffect() / appMetafield1: ${JSON.stringify(appMetafield1)} 
+      appMetafield2: ${JSON.stringify(appMetafield2)} metafield1: ${JSON.stringify(metafield1)} 
+      metafield2: ${JSON.stringify(metafield2)}`);
+
+    // DO SOMETHING
+
+  }, [appMetafield1, appMetafield2, metafield1, metafield2]);
+
   // Check if the discount update eligibility.
   if (!instructions.discounts.canUpdateDiscountCodes) {
     return (
@@ -60,49 +71,86 @@ function Extension() {
     );
   }
 
-  // Get the cart attirbute that stores the input discount code in the cart Liquid page to apply to the checkout.
+  // Get the current cart attribute value of the discount code.
   const attrValue = useAttributeValues(["barebone_cart_attribute_code"]).map((v) => v).join(''); // This is supposed to the same attribute in `./my-theme-app-ext/blocks/app-block.liquid`
   console.log(`Extension() / attrValue: ${attrValue}`);
-  useEffect(() => {
-    const type = attrValue !== '' ? 'addDiscountCode' : 'removeDiscountCode';
-    applyDiscountCodeChange({
-      type: type,
-      code: attrValue
-    }).then((res) => {
-      console.log(`Extension() / useEffect() / applyDiscountCodeChange type: ${type} code: ${attrValue} reponse: ${JSON.stringify(res)}`);
-      if (typeof res.type !== 'undefined' && res.type === 'success') {
-        api.storage.write('initiate', 'true').then(() => {
-          console.log(`Extension() / useEffect() / applyDiscountCodeChange type: ${type} code: ${attrValue} / api.storage.write('initiate', 'true') void`);
-        });
-      }
-    }).catch((e) => {
-      console.log(`Extension() / useEffect() / applyDiscountCodeChange type: ${type} code: ${attrValue} exception: ${JSON.stringify(e)}`);
-    });
-  }, [attrValue]);
 
-  // If the applied discount code changed = remove or input another code manually, set the value to the cart attirbute too.
+  // Get the current discount code to be in the cart attribute above.
   const discountCode = useDiscountCodes().map((c) => c.code).join('');
   console.log(`Extension() / discountCode: ${JSON.stringify(discountCode)}`);
+
   useEffect(() => {
-    api.storage.read('initiate').then((value) => {
-      console.log(`Extension() / useEffect() / api.storage.read('initiate') ${value}`);
-      if (value == null) return;
+    // This is the timing of the current attribute value changed.
+    // If you want to do something like fetch external URL with the value, write here.
+    console.log(`Extension() / useEffect() / attrValue: ${attrValue}  
+      discountCode: ${discountCode}`);
+
+    // Buyer operation cases between cart and checkout
+    if (attrValue === '' && discountCode === '') {
+      // No discount code set in cart or checkout (Case 0).
+      // Do nothing.
+      console.log(`Extension() / useEffect() / Case 0`);
+    } else if (attrValue !== '' && discountCode === '') {
+      // The buyer set the code in cart and it is being applied to checkout initially (Case 1), or 
+      // the buyer remove the code in checkout (Case 2).
+      api.storage.read('applied').then((cache) => {
+        if (cache == null) {
+          applyDiscountCodeChange({
+            type: 'addDiscountCode',
+            code: attrValue
+          }).then((res) => {
+            console.log(`Extension() / useEffect() / Case 1 applyDiscountCodeChange type: addDiscountCode code: ${attrValue} reponse: ${JSON.stringify(res)}`);
+            api.storage.write('applied', 'true');
+          }).catch((e) => {
+            console.log(`Extension() / useEffect() / Case 1 applyDiscountCodeChange type: addDiscountCode code: ${attrValue} exception: ${JSON.stringify(e)}`);
+          });
+        } else {
+          applyAttributeChange({
+            type: "updateAttribute",
+            key: "barebone_cart_attribute_code",
+            value: '',
+          }).then((res) => {
+            console.log(`Extension() / useEffect() / Case 2 applyAttributeChange value: ${discountCode} reponse: ${JSON.stringify(res)}`);
+            api.storage.delete('applied');
+          }).catch((e) => {
+            console.log(`Extension() / useEffect() / Case 2 applyAttributeChange value: ${discountCode} exception: ${JSON.stringify(e)}`);
+          });
+        }
+      });
+    } else if (attrValue !== '' && discountCode !== '') {
+      // The buyer set the code in cart and it has been applied to checkout (Case 3), or 
+      // the buyer changed the code in checkout (Case 4).
+      if (attrValue === discountCode) {
+        // Case 3, do nothing.
+        console.log(`Extension() / useEffect() / Case 3`);
+      } else {
+        // Case 4, overwrite the attribute with the current code (if they want to reset, they need to clear the code in Case 2)
+        applyAttributeChange({
+          type: "updateAttribute",
+          key: "barebone_cart_attribute_code",
+          value: discountCode,
+        }).then((res) => {
+          console.log(`Extension() / useEffect() / Case 4 applyAttributeChange value: ${discountCode} reponse: ${JSON.stringify(res)}`);
+        }).catch((e) => {
+          console.log(`Extension() / useEffect() / Case 4 applyAttributeChange value: ${discountCode} exception: ${JSON.stringify(e)}`);
+        });
+      }
+    } else if (attrValue === '' && discountCode !== '') {
+      // The buyer didn't set the code in cart but did in checkout (Case 5).
       applyAttributeChange({
         type: "updateAttribute",
         key: "barebone_cart_attribute_code",
         value: discountCode,
       }).then((res) => {
-        console.log(`Extension() / useEffect() / api.storage.read('initiate') ${value} / applyAttributeChange value: ${discountCode} reponse: ${JSON.stringify(res)}`);
-        if (typeof res.type !== 'undefined' && res.type === 'success') {
-          api.storage.delete('initiate').then(() => {
-            console.log(`Extension() / useEffect() / api.storage.read('initiate') ${value} / applyAttributeChange value: ${discountCode} / api.storage.delete('initiate') void`);
-          });
-        }
+        console.log(`Extension() / useEffect() / Case 5 applyAttributeChange value: ${discountCode} reponse: ${JSON.stringify(res)}`);
       }).catch((e) => {
-        console.log(`Extension() / useEffect() / api.storage.read('initiate') ${value} / applyAttributeChange value: ${discountCode} exception: ${JSON.stringify(e)}`);
+        console.log(`Extension() / useEffect() / Case 5 applyAttributeChange value: ${discountCode} exception: ${JSON.stringify(e)}`);
       });
-    });
-  }, [discountCode]);
+    } else {
+      // No cases.
+    }
+
+  }, [attrValue, discountCode]);
 
   // Check the current discont allocations.
   useDiscountAllocations().map((json) => {
@@ -121,6 +169,12 @@ function Extension() {
       </Banner>
       <Banner>
         <Text emphasis="bold">App Metafield 2 Value: </Text><Text> {appMetafield2}</Text>
+      </Banner>
+      <Banner>
+        <Text emphasis="bold">Your current attribute value: </Text><Text> {attrValue}</Text>
+      </Banner>
+      <Banner>
+        <Text emphasis="bold">Your current discount code: </Text><Text> {discountCode}</Text>
       </Banner>
     </BlockStack>
   );
