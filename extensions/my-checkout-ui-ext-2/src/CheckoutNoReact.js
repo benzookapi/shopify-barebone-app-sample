@@ -14,12 +14,12 @@ function Extension(root, api) {
   let discountCode = '';
 
   api.appMetafields.subscribe((entry) => {
-    console.log(`api.appMetafields.subscribe entry: ${JSON.stringify(entry)}`);
+    console.log(`Extension() / api.appMetafields.subscribe entry: ${JSON.stringify(entry)}`);
     entry.map((m) => {
       if (m.target === 'shop' && m.namespace === 'barebone_app' && m.key === 'url') appMetafield1 = m.value;
       if (m.target === 'product' && m.namespace === 'barebone_app_upsell' && m.key === 'product_id') appMetafield2 = m.value;
     });
-    console.log(`api.appMetafields.subscribe appMetafield1: ${appMetafield1} appMetafield2 ${appMetafield2}`);
+    console.log(`Extension() / api.appMetafields.subscribe appMetafield1: ${appMetafield1} appMetafield2 ${appMetafield2}`);
     if (appMetafield1 !== '' || appMetafield2 !== '') {
       // Instead of useEffect and useState in React
       // You have to reactive the components below.
@@ -27,11 +27,11 @@ function Extension(root, api) {
   });
 
   api.attributes.subscribe((entry) => {
-    console.log(`api.attributes.subscribe entry: ${JSON.stringify(entry)}`);
+    console.log(`Extension() / api.attributes.subscribe entry: ${JSON.stringify(entry)}`);
     entry.map((m) => {
       if (m.target === 'shop' && m.namespace === 'barebone_app' && m.key === 'barebone_cart_attribute_code') attrValue = m.value;
     });
-    console.log(`api.attributes.subscribe attrValue: ${attrValue}`);
+    console.log(`Extension() / api.attributes.subscribe attrValue: ${attrValue}`);
     if (attrValue !== '') {
       // Instead of useEffect and useState in React
       // You have to reactive the components below.
@@ -53,11 +53,11 @@ function Extension(root, api) {
   });
 
   api.discountCodes.subscribe((entry) => {
-    console.log(`api.discountCodes.subscribe entry: ${JSON.stringify(entry)}`);
+    console.log(`Extension() / api.discountCodes.subscribe entry: ${JSON.stringify(entry)}`);
     entry.map((m) => {
       discountCode = m.code;
     });
-    console.log(`api.discountCodes.subscribe discountCode: ${discountCode}`);
+    console.log(`Extension() / api.discountCodes.subscribe discountCode: ${discountCode}`);
     if (discountCode !== '') {
       // Instead of useEffect and useState in React
       // You have to reactive the components below.
