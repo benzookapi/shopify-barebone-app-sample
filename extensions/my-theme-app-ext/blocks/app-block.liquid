@@ -245,7 +245,7 @@
     // Test the multiple line item properties for the single product to split line items.
     // "radio_click" is called in "onClick" of each radio box defined above.
     const radio_click = (obj) => {
-      const cart_add_forms = document.querySelectorAll('form[action="/cart/add"]');
+      const cart_add_forms = document.querySelectorAll('form[action$="/cart/add"]');
       cart_add_forms.forEach((form) => {
         console.log(`cart_add_forms: ${form.innerHTML}`);
         // Adding an line item property to the existing form.
@@ -275,7 +275,7 @@
   >
     // "text_change" is called in "onChange" of textarea defined above.
     const text_change = (obj) => {
-      const cart_forms = document.querySelectorAll('form[action="/cart"]');
+      const cart_forms = document.querySelectorAll('form[action$="/cart"]');
       cart_forms.forEach((form) => {
         console.log(`cart_forms: ${form.innerHTML}`);
         // Adding a cart note to the existing form.
@@ -295,7 +295,7 @@
 
     // "radio_click" is called in "onClick" of each radio box defined above.
     const radio_click = (obj) => {
-      const cart_forms = document.querySelectorAll('form[action="/cart"]');
+      const cart_forms = document.querySelectorAll('form[action$="/cart"]');
       cart_forms.forEach((form) => {
         console.log(`cart_forms: ${form.innerHTML}`);
         // Adding a cart attribute to the existing form.
@@ -332,7 +332,7 @@
 
     // "input_change" is called in "onChange" of text input defined above.
     const input_change = (obj) => {
-      const cart_forms = document.querySelectorAll('form[action^="/cart"]');
+      const cart_forms = document.querySelectorAll('form[action$="/cart"]');
       cart_forms.forEach((form) => {
         console.log(`cart_forms: ${form.innerHTML}`);
         // Adding a cart attribute to the existing form.
