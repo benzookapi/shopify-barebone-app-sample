@@ -29,7 +29,7 @@ function Extension(root, api) {
   api.attributes.subscribe((entry) => {
     console.log(`Extension() / api.attributes.subscribe entry: ${JSON.stringify(entry)}`);
     entry.map((m) => {
-      if (m.target === 'shop' && m.namespace === 'barebone_app' && m.key === 'barebone_cart_attribute_code') attrValue = m.value;
+      if (m.key === 'barebone_cart_attribute_code') attrValue = m.value;
     });
     console.log(`Extension() / api.attributes.subscribe attrValue: ${attrValue}`);
     if (attrValue !== '') {
