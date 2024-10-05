@@ -186,6 +186,16 @@
           >
           <label for="barebone_cart_attribute_3">Value 3</label>
         </div>
+        <div>
+          <label for="barebone_cart_attribute_code">Paste your discount code: </label>
+          <input
+            type="text"
+            id="barebone_cart_attribute_code"
+            name="barebone_cart_attribute_code"
+            value=""
+            onChange="input_change(this);"
+          >          
+        </div>
         <strong
           >See
           <a
@@ -282,6 +292,7 @@
         input.value = obj.value;
       });
     };
+
     // "radio_click" is called in "onClick" of each radio box defined above.
     const radio_click = (obj) => {
       const cart_forms = document.querySelectorAll('form[action="/cart"]');
@@ -300,7 +311,6 @@
         input.value = obj.value;
       });
     };
-
     const init_attr_value = '{{ cart.attributes['barebone_cart_attribute'] }}';
     console.log(`init_attr_value (Liquid value): ${init_attr_value}`);
     switch (init_attr_value) {
@@ -319,6 +329,28 @@
       default:
         break;
     }
+
+    // "input_change" is called in "onChange" of text input defined above.
+    const input_change = (obj) => {
+      const cart_forms = document.querySelectorAll('form[action="/cart"]');
+      cart_forms.forEach((form) => {
+        console.log(`cart_forms: ${form.innerHTML}`);
+        // Adding a cart attribute to the existing form.
+        // See https://shopify.dev/docs/themes/architecture/templates/cart#cart-attributes
+        const cart_attribute_input = document.createElement('input');
+        cart_attribute_input.type = 'hidden';
+        cart_attribute_input.name = 'attributes[barebone_cart_attribute_code]';
+        cart_attribute_input.value = '';
+        form.appendChild(cart_attribute_input);
+      });
+      const cart_attribute_inputs = document.querySelectorAll('input[name="attributes[barebone_cart_attribute_code]"]');
+      cart_attribute_inputs.forEach((input) => {
+        input.value = obj.value;
+      });
+    };
+    const init_attr_value_code = '{{ cart.attributes['barebone_cart_attribute_code'] }}';
+    console.log(`init_attr_value_code (Liquid value): ${init_attr_value_code}`);
+    document.getElementById('barebone_cart_attribute_code').value = init_attr_value_code;
   </script>
 {%- endif -%}
 
