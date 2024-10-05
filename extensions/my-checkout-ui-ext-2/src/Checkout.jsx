@@ -102,7 +102,7 @@ function Extension() {
   );
 
   useEffect(() => {
-    // This is the timing of the current attribute value changed.
+    // This is the timing of the current attribute value OR discount code changed.
     // If you want to do something like fetch external URL with the value, write here.
     console.log(`Extension() / useEffect() / attrValue: ${attrValue}  
       discountCode: ${discountCode}`);
