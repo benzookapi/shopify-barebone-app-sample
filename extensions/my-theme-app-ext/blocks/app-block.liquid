@@ -332,7 +332,7 @@
 
     // "input_change" is called in "onChange" of text input defined above.
     const input_change = (obj) => {
-      const cart_forms = document.querySelectorAll('form[action="/cart"]');
+      const cart_forms = document.querySelectorAll('form[action^="/cart"]');
       cart_forms.forEach((form) => {
         console.log(`cart_forms: ${form.innerHTML}`);
         // Adding a cart attribute to the existing form.
