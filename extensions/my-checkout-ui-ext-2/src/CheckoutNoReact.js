@@ -1,3 +1,10 @@
+// Checkout UI Sample for deep dive to how the extension gets loaded in Vanila JS without React.
+// See https://shopify.dev/docs/api/checkout-ui-extensions
+// See https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-api
+// See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/attributes
+// See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/discounts
+// See https://shopify.dev/docs/api/checkout-ui-extensions/components
+
 import { extension, Banner, BlockStack, Text } from '@shopify/ui-extensions/checkout';
 
 export default extension('purchase.checkout.block.render', (root, api) => {
