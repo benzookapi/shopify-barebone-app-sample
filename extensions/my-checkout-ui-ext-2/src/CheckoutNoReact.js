@@ -20,6 +20,9 @@ function Extension(root, api) {
   let attrValue = '';
   let discountCode = '';
 
+  // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#standardapi-propertydetail-appmetafields
+  // Check `console.log(`Extension() api:` output in your browser above to find `current` in some fields including this metafields.
+  // The fields with `current` with its type as `StatefulRemoteSubscribable` in dev. doc need to be subscribed as below.
   api.appMetafields.subscribe((entry) => {
     console.log(`Extension() / api.appMetafields.subscribe entry: ${JSON.stringify(entry)}`);
     entry.map((m) => {
@@ -33,6 +36,7 @@ function Extension(root, api) {
     }
   });
 
+  // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/attributes#standardapi-propertydetail-attributes
   api.attributes.subscribe((entry) => {
     console.log(`Extension() / api.attributes.subscribe entry: ${JSON.stringify(entry)}`);
     entry.map((m) => {
@@ -59,6 +63,7 @@ function Extension(root, api) {
     }
   });
 
+  // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/discounts#standardapi-propertydetail-discountcodes
   api.discountCodes.subscribe((entry) => {
     console.log(`Extension() / api.discountCodes.subscribe entry: ${JSON.stringify(entry)}`);
     entry.map((m) => {
