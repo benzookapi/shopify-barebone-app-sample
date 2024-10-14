@@ -14,7 +14,7 @@ type = "ui_extension"
 # and the file that contains your extension’s source code. Learn more:
 # https://shopify.dev/docs/api/checkout-ui-extensions/unstable/extension-targets-overview
 
-# If you want to test Vanila JS code, use Checkout.js
+# If you want to test Vanila JS code, use "./src/Checkout.js"
 [[extensions.targeting]]
 module = "./src/Checkout.jsx"
 #module = "./src/Checkout.js"
