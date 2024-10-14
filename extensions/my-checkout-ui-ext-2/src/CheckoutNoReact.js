@@ -10,6 +10,9 @@ import { extension, Banner, BlockStack, Text } from '@shopify/ui-extensions/chec
 export default extension('purchase.checkout.block.render', (root, api) => {
   return Extension(root, api);
 });
+extension('purchase.checkout.actions.render-before', (root, api) => {
+  return ExtensionStatic(root, api);
+});
 
 function Extension(root, api) {
 
@@ -122,4 +125,9 @@ function Extension(root, api) {
 
   return root;
 
+}
+
+function ExtensionStatic(root, api) {
+  console.log(`ExtensionStatic() / Do nothing, no UI`);
+  return root;
 }

@@ -28,6 +28,8 @@ import { useEffect, useState } from "react";
 export default reactExtension("purchase.checkout.block.render", () => (
   <Extension />
 ));
+reactExtension('purchase.checkout.actions.render-before', () => <ExtensionStatic />);
+
 
 function Extension() {
   const api = useApi();
@@ -56,6 +58,7 @@ function Extension() {
     .map((m) => { return m.metafield.value; }).join('');
   console.log(`Extension() / metafield2: ${metafield2}`);
 
+  // See https://react.dev/reference/react/useEffect
   useEffect(() => {
     // This is the timing of some of metafields changed (including empty values).
     // If you want to do something like fetch external URL with the value, write here.
@@ -118,6 +121,7 @@ function Extension() {
     },
   );
 
+  // See https://react.dev/reference/react/useEffect
   useEffect(() => {
     // This is the timing of the current attribute value OR discount code changed (including empty values).
     console.log(`Extension() / useEffect() / attrValue: ${attrValue}  
@@ -228,4 +232,9 @@ function Extension() {
     </BlockStack>
   );
 
+}
+
+function ExtensionStatic() {
+  console.log(`ExtensionStatic() / Do nothing, no UI`);
+  return (<></>);
 }
