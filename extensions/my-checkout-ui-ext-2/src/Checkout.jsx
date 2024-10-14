@@ -75,7 +75,7 @@ function Extension() {
   }, [appMetafield1, appMetafield2, metafield1, metafield2]);
 
   // This is another approach for getting app metafields data without useEffect.
-  // If you don't use React hooks, you can do this with subscribe() through api directly. Check `./CheckoutNoReact.js`.
+  // If you don't use React hooks, you can do this with subscribe() through api directly. Check `./Checkout.js`.
   let meta1 = '';
   let meta2 = '';
   useAppMetafields().map((m) => {

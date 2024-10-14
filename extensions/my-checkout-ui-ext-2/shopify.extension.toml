@@ -14,16 +14,16 @@ type = "ui_extension"
 # and the file that contains your extension’s source code. Learn more:
 # https://shopify.dev/docs/api/checkout-ui-extensions/unstable/extension-targets-overview
 
-# If you want to test Vanila JS code, use CheckoutNoReact.js
+# If you want to test Vanila JS code, use Checkout.js
 [[extensions.targeting]]
 module = "./src/Checkout.jsx"
-#module = "./src/CheckoutNoReact.js"
+#module = "./src/Checkout.js"
 target = "purchase.checkout.block.render"
 
 # You can use the same source code (module) for dynamic and static targets both with different functions registered.
 [[extensions.targeting]]
 module = "./src/Checkout.jsx"
-#module = "./src/CheckoutNoReact.js"
+#module = "./src/Checkout.js"
 target = "purchase.checkout.actions.render-before"
 
 [extensions.capabilities]
