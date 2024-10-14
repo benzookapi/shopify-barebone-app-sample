@@ -16,14 +16,14 @@ type = "ui_extension"
 
 # If you want to test Vanila JS code, use CheckoutNoReact.js
 [[extensions.targeting]]
-#module = "./src/Checkout.jsx"
-module = "./src/CheckoutNoReact.js"
+module = "./src/Checkout.jsx"
+#module = "./src/CheckoutNoReact.js"
 target = "purchase.checkout.block.render"
 
 # You can use the same source code (module) for dynamic and static targets both with different functions registered.
 [[extensions.targeting]]
-#module = "./src/Checkout.jsx"
-module = "./src/CheckoutNoReact.js"
+module = "./src/Checkout.jsx"
+#module = "./src/CheckoutNoReact.js"
 target = "purchase.checkout.actions.render-before"
 
 [extensions.capabilities]
