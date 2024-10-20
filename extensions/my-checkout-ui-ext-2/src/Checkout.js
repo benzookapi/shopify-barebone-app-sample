@@ -41,7 +41,8 @@ function Extension(root, api) {
   let attrValue = '';
   let discountCode = '';
 
-  // Function to Reactive the components called by the follwoing sbscribe callbacks later.
+  // Function to reactivate (render again) the components that is called when the following metafileds / attributes / discounts codes 
+  // subscribe() callbacks get new values.
   // See https://github.com/Shopify/ui-extensions/blob/unstable/packages/ui-extensions/docs/surfaces/checkout/staticPages/examples/extension-apis.example.ts
   const renderUI = () => {
     for (const child of root.children) {
@@ -101,6 +102,8 @@ function Extension(root, api) {
   if (read_attributes == null || read_attributes == true) {
     // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/attributes#standardapi-propertydetail-attributes
     api.attributes.subscribe((entry) => {
+      // Unlike React hooks in `Checkout.jsx`, Vanila JS doesn't load Extension() again when the used values have changed,
+      // just call subscribe callbacks.
       console.log(`Extension() / api.attributes.subscribe entry: ${JSON.stringify(entry)}`);
       entry.map((m) => {
         if (m.key === 'barebone_cart_attribute_code') attrValue = m.value;
