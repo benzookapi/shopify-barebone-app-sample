@@ -5,7 +5,13 @@
 // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/discounts
 // See https://shopify.dev/docs/api/checkout-ui-extensions/components
 
-import { extension, Banner, BlockStack, Text } from '@shopify/ui-extensions/checkout';
+import {
+  extension,
+
+  Banner,
+  BlockStack,
+  Text
+} from '@shopify/ui-extensions/checkout';
 
 // My own common functions shared by multiple files.
 import { commonFuncExternal } from "./common";
@@ -24,6 +30,9 @@ extension('purchase.checkout.actions.render-before', (root, api) => {
 function Extension(root, api) {
 
   console.log(`Extension() api: ${JSON.stringify(api, null, 4)}`);
+
+  const read_metafields = api.settings.current.read_metafields;
+  console.log(`Extension() read_metafields: ${read_metafields} typeof read_metafields: ${typeof read_metafields}`);
 
   let appMetafield1 = '';
   let appMetafield2 = '';
@@ -65,23 +74,27 @@ function Extension(root, api) {
     root.appendChild(blockStack);
   };
 
-  // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#standardapi-propertydetail-appmetafields
-  // Check `console.log(`Extension() api:` output in your browser above to find `current` in some fields including this metafields.
-  // The fields with `current` with its type as `StatefulRemoteSubscribable` in dev. doc need to be subscribed as below.
-  // NOTE TAHT subscribe's callback (entry) => {} happens ASYNC, so appMetafield1 and appMetafield2 are always empty in 
-  // the following steps. 
-  api.appMetafields.subscribe((entry) => {
-    console.log(`Extension() / api.appMetafields.subscribe entry: ${JSON.stringify(entry)}`);
-    entry.map((m) => {
-      if (m.target.type === 'shop' && m.metafield.namespace === 'barebone_app' && m.metafield.key === 'url') appMetafield1 = m.metafield.value;
-      if (m.target.type === 'product' && m.metafield.namespace === 'barebone_app_upsell' && m.metafield.key === 'product_id') appMetafield2 = m.metafield.value;
+  if (read_metafields == null || read_metafields == true) {
+    // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#standardapi-propertydetail-appmetafields
+    // Check `console.log(`Extension() api:` output in your browser above to find `current` in some fields including this metafields.
+    // The fields with `current` with its type as `StatefulRemoteSubscribable` in dev. doc need to be subscribed as below.
+    // NOTE TAHT subscribe's callback (entry) => {} happens async, so appMetafield1 and appMetafield2 are always empty in 
+    // the next sequential steps. 
+    // Also  (entry) => {} is not triggered in other callbacks like Button.onPress(), which means you have to read the data 
+    // in the loading, not in button clicks.
+    api.appMetafields.subscribe((entry) => {
+      console.log(`Extension() / api.appMetafields.subscribe entry: ${JSON.stringify(entry)}`);
+      entry.map((m) => {
+        if (m.target.type === 'shop' && m.metafield.namespace === 'barebone_app' && m.metafield.key === 'url') appMetafield1 = m.metafield.value;
+        if (m.target.type === 'product' && m.metafield.namespace === 'barebone_app_upsell' && m.metafield.key === 'product_id') appMetafield2 = m.metafield.value;
+      });
+      console.log(`Extension() / api.appMetafields.subscribe appMetafield1: ${appMetafield1} appMetafield2 ${appMetafield2}`);
+      if (appMetafield1 !== '' || appMetafield2 !== '') {
+        // Instead of useEffect and useState in React hooks, you have to reactive the components by yourself.
+        renderUI();
+      }
     });
-    console.log(`Extension() / api.appMetafields.subscribe appMetafield1: ${appMetafield1} appMetafield2 ${appMetafield2}`);
-    if (appMetafield1 !== '' || appMetafield2 !== '') {
-      // Instead of useEffect and useState in React hooks, you have to reactive the components by yourself.
-      renderUI();
-    }
-  });
+  }
 
   // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/attributes#standardapi-propertydetail-attributes
   api.attributes.subscribe((entry) => {

@@ -8,9 +8,11 @@
 
 import {
   reactExtension,
+
   Banner,
   BlockStack,
   Text,
+
   useApi,
   useApplyAttributeChange,
   useInstructions,
@@ -21,7 +23,8 @@ import {
   useAttributeValues,
   useDiscountCodes,
   useDiscountAllocations,
-  useBuyerJourneyIntercept
+  useBuyerJourneyIntercept,
+  useSettings
 } from "@shopify/ui-extensions-react/checkout";
 
 import { useEffect, useState } from "react";
@@ -38,58 +41,63 @@ export default reactExtension("purchase.checkout.block.render", () => (
 // Added for the static target.
 reactExtension('purchase.checkout.actions.render-before', () => <ExtensionStatic />);
 
-
 function Extension() {
   const api = useApi();
+  // console.log(`Extension() api: ${JSON.stringify(api, null, 4)}`);
+
   const translate = useTranslate();
   const instructions = useInstructions();
   const applyAttributeChange = useApplyAttributeChange();
   const applyDiscountCodeChange = useApplyDiscountCodeChange();
 
-  // console.log(`Extension() api: ${JSON.stringify(api, null, 4)}`);
+  // See https://shopify.dev/docs/apps/build/app-extensions/configure-app-extensions
+  const { read_metafields } = useSettings();
+  console.log(`Extension() read_metafields: ${read_metafields} typeof read_metafields: ${typeof read_metafields}`);
 
-  // The following useAppMetafields can retrieve all metafields with target type specfication.
-  // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#useappmetafields-propertydetail-filters
-  const appMetafield1 = useAppMetafields({ "namespace": "barebone_app", "key": "url", "type": "shop" })
-    .map((m) => { return m.metafield.value; }).join(' ');
-  console.log(`Extension() / appMetafield1: ${appMetafield1}`);
-  const appMetafield2 = useAppMetafields({ "namespace": "barebone_app_upsell", "key": "product_id", "type": "product" })
-    .map((m) => { return m.metafield.value; }).join(' ');
-  console.log(`Extension() / appMetafield2: ${appMetafield2}`);
+  let appMetafield1 = '';
+  let appMetafield2 = '';
+  if (read_metafields == null || read_metafields == true) {
+    // The following useAppMetafields can retrieve all metafields with target type specfication.
+    // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#useappmetafields-propertydetail-filters
+    // NOTE THAT React hooks (use***()) cannot be called in callbacks like Button.onPress(), which means you have to read the 
+    // data through them like metafields, attibutes, discount codes, and shipping address in the loading, not in callbacks like 
+    // button clicks. Check https://react.dev/warnings/invalid-hook-call-warning
+    appMetafield1 = useAppMetafields({ "namespace": "barebone_app", "key": "url", "type": "shop" })
+      .map((m) => { return m.metafield.value; }).join(' ');
+    appMetafield2 = useAppMetafields({ "namespace": "barebone_app_upsell", "key": "product_id", "type": "product" })
+      .map((m) => { return m.metafield.value; }).join(' ');
+    console.log(`Extension() / appMetafield1: ${appMetafield1} appMetafield2: ${appMetafield2}`);
 
-  // The following useMetafields can retrieve checkout related metafields only. 
-  // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#usemetafields-propertydetail-filters
-  const metafield1 = useMetafields({ "namespace": "barebone_app", "key": "url" })
-    .map((m) => { return m.metafield.value; }).join('');
-  console.log(`Extension() / metafield1: ${metafield1}`);
-  const metafield2 = useMetafields({ "namespace": "barebone_app_upsell", "key": "product_id" })
-    .map((m) => { return m.metafield.value; }).join('');
-  console.log(`Extension() / metafield2: ${metafield2}`);
+    // This is another approach for getting app metafields data without useEffect.
+    // If you don't use React hooks, you can do this with subscribe() through api directly. Check `./Checkout.js`.
+    /*useAppMetafields().map((m) => {
+      console.log(`Extension() / useAppMetafields map() / data: ${JSON.stringify(m)}`);
+      if (m.target.type === 'shop' && m.metafield.namespace === 'barebone_app' && m.metafield.key === 'url') appMetafield1 = m.metafield.value;
+      if (m.target.type === 'product' && m.metafield.namespace === 'barebone_app_upsell' && m.metafield.key === 'product_id') appMetafield2 = m.metafield.value;
+    });
+    console.log(`Extension() / appMetafield1: ${appMetafield1} appMetafield2: ${appMetafield2}`);*/
+
+    // The following useMetafields can retrieve checkout related metafields only. 
+    // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#usemetafields-propertydetail-filters
+    /*const metafield1 = useMetafields({ "namespace": "barebone_app", "key": "url" })
+      .map((m) => { return m.metafield.value; }).join('');
+    const metafield2 = useMetafields({ "namespace": "barebone_app_upsell", "key": "product_id" })
+      .map((m) => { return m.metafield.value; }).join('');
+    console.log(`Extension() / metafield1: ${metafield1} metafield2: ${metafield2}`);*/
+  }
 
   // See https://react.dev/reference/react/useEffect
   useEffect(() => {
     // This is the timing of some of metafields changed (including empty values).
     // If you want to do something like fetch external URL with the value, write here.
-    console.log(`Extension() / useEffect() / appMetafield1: ${appMetafield1} appMetafield2: ${appMetafield2} 
-      metafield1: ${metafield1} metafield2: ${metafield2}`);
+    console.log(`Extension() / useEffect() / appMetafield1: ${appMetafield1} appMetafield2: ${appMetafield2}`);
 
     // If the metafields are not retrived yet, return and expect to get them in the next loading.
     if (appMetafield1 === '' || appMetafield2 === '') return;
 
     // DO SOMETHING
 
-  }, [appMetafield1, appMetafield2, metafield1, metafield2]);
-
-  // This is another approach for getting app metafields data without useEffect.
-  // If you don't use React hooks, you can do this with subscribe() through api directly. Check `./Checkout.js`.
-  let meta1 = '';
-  let meta2 = '';
-  useAppMetafields().map((m) => {
-    console.log(`Extension() / useAppMetafields map() / data: ${JSON.stringify(m)}`);
-    if (m.target.type === 'shop' && m.metafield.namespace === 'barebone_app' && m.metafield.key === 'url') meta1 = m.metafield.value;
-    if (m.target.type === 'product' && m.metafield.namespace === 'barebone_app_upsell' && m.metafield.key === 'product_id') meta2 = m.metafield.value;
-    console.log(`Extension() / useAppMetafields map() / meta1: ${meta1} meta2: ${meta2}`);
-  });
+  }, [appMetafield1, appMetafield2]);
 
   // Check if the discount update eligibility.
   if (!instructions.discounts.canUpdateDiscountCodes) {
@@ -102,11 +110,9 @@ function Extension() {
 
   // Get the current cart attribute value of the discount code.
   const attrValue = useAttributeValues(["barebone_cart_attribute_code"]).map((v) => v).join(''); // This is supposed to the same attribute in `./my-theme-app-ext/blocks/app-block.liquid`
-  console.log(`Extension() / attrValue: ${attrValue}`);
-
   // Get the current discount code to be in the cart attribute above.
   const discountCode = useDiscountCodes().map((c) => c.code).join('');
-  console.log(`Extension() / discountCode: ${JSON.stringify(discountCode)}`);
+  console.log(`Extension() / attrValue: ${attrValue} discountCode: ${JSON.stringify(discountCode)}`);
 
   // Control the checkout block based on the result of applying discount code.
   const [block, setBlock] = useState(false);
