@@ -59,5 +59,15 @@ key = "url"
   [[extensions.settings.fields]]
   key = "read_metafields"
   type = "boolean"
-  name = "Read metafields"
+  name = "Read Metafields"
   description = "Whether to read metafields in the loading to check how the number of loadings changes."
+  [[extensions.settings.fields]]
+  key = "read_attributes"
+  type = "boolean"
+  name = "Read Cart Attributes"
+  description = "Whether to read cart attributes in the loading to check how the number of loadings changes."
+  [[extensions.settings.fields]]
+  key = "read_discounts"
+  type = "boolean"
+  name = "Read Discounts"
+  description = "Whether to read discount codes in the loading to check how the number of loadings changes."

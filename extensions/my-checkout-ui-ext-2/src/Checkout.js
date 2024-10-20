@@ -32,7 +32,9 @@ function Extension(root, api) {
   console.log(`Extension() api: ${JSON.stringify(api, null, 4)}`);
 
   const read_metafields = api.settings.current.read_metafields;
-  console.log(`Extension() read_metafields: ${read_metafields} typeof read_metafields: ${typeof read_metafields}`);
+  const read_attributes = api.settings.current.read_attributes;
+  const read_discounts = api.settings.current.read_discounts;
+  console.log(`Extension() / api.settings read_metafields: ${read_metafields} read_attributes: ${read_attributes} read_discounts: ${read_discounts}`);
 
   let appMetafield1 = '';
   let appMetafield2 = '';
@@ -50,9 +52,9 @@ function Extension(root, api) {
       padding: "tight"
     }, [
       root.createComponent(Banner, {
-        title: "api.extension.target"
+        title: "api.extension.target (Vanila JS)"
       }, api.i18n.translate('welcome', {
-        target: root.createComponent(Text, { emphasis: "bold" }, api.extension.target)
+        target: root.createComponent(Text, { emphasis: "bold" }, `Dynamic: ${api.extension.target}`)
       })),
       root.createComponent(Banner, undefined, [
         root.createComponent(Text, { emphasis: "bold" }, 'App Metafield 1 Value: '),
@@ -96,67 +98,73 @@ function Extension(root, api) {
     });
   }
 
-  // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/attributes#standardapi-propertydetail-attributes
-  api.attributes.subscribe((entry) => {
-    console.log(`Extension() / api.attributes.subscribe entry: ${JSON.stringify(entry)}`);
-    entry.map((m) => {
-      if (m.key === 'barebone_cart_attribute_code') attrValue = m.value;
-    });
-    if (entry.length == 0) attrValue = '';
-    console.log(`Extension() / api.attributes.subscribe attrValue: ${attrValue}`);
-    // Instead of useEffect and useState in React hooks, you have to reactive the components by yourself.
-    renderUI();
-    if (attrValue !== '') {
-      api.storage.read('value').then((cache) => {
-        // Update the code only when the value has changed using local storage cache.
-        if (cache === attrValue) return;
-        api.applyDiscountCodeChange({
-          type: 'addDiscountCode',
-          code: attrValue
-        }).then((res) => {
-          console.log(`Extension() / api.attributes.subscribe / applyDiscountCodeChange type: addDiscountCode code: ${attrValue} reponse: ${JSON.stringify(res)}`);
-          // Write the cache.
-          api.storage.write('value', 'attrValue');
-        }).catch((e) => {
-          console.log(`Extension() / api.attributes.subscribe / applyDiscountCodeChange type: addDiscountCode code: ${attrValue} exception: ${JSON.stringify(e)}`);
-        });
+  if (read_attributes == null || read_attributes == true) {
+    // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/attributes#standardapi-propertydetail-attributes
+    api.attributes.subscribe((entry) => {
+      console.log(`Extension() / api.attributes.subscribe entry: ${JSON.stringify(entry)}`);
+      entry.map((m) => {
+        if (m.key === 'barebone_cart_attribute_code') attrValue = m.value;
       });
-    }
-  });
+      if (entry.length == 0) attrValue = '';
+      console.log(`Extension() / api.attributes.subscribe attrValue: ${attrValue}`);
+      // Instead of useEffect and useState in React hooks, you have to reactive the components by yourself.
+      renderUI();
+      if (attrValue !== '') {
+        api.storage.read('value').then((cache) => {
+          // Update the code only when the value has changed using local storage cache.
+          if (cache === attrValue) return;
+          api.applyDiscountCodeChange({
+            type: 'addDiscountCode',
+            code: attrValue
+          }).then((res) => {
+            console.log(`Extension() / api.attributes.subscribe / applyDiscountCodeChange type: addDiscountCode code: ${attrValue} reponse: ${JSON.stringify(res)}`);
+            // Write the cache.
+            api.storage.write('value', 'attrValue');
+          }).catch((e) => {
+            console.log(`Extension() / api.attributes.subscribe / applyDiscountCodeChange type: addDiscountCode code: ${attrValue} exception: ${JSON.stringify(e)}`);
+          });
+        });
+      }
+    });
+  }
 
-  // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/discounts#standardapi-propertydetail-discountcodes
-  api.discountCodes.subscribe((entry) => {
-    console.log(`Extension() / api.discountCodes.subscribe entry: ${JSON.stringify(entry)}`);
-    entry.map((m) => {
-      discountCode = m.code;
-    });
-    if (entry.length == 0) discountCode = '';
-    console.log(`Extension() / api.discountCodes.subscribe discountCode: ${discountCode}`);
-    // Instead of useEffect and useState in React hooks, you have to reactive the components by yourself.
-    renderUI();
-    if (discountCode !== '') {
-      api.storage.read('code').then((cache) => {
-        // Update the attribute only when the value has changed using local storage cache as a flag.
-        if (cache === discountCode) return;
-        api.applyAttributeChange({
-          type: "updateAttribute",
-          key: "barebone_cart_attribute_code",
-          value: discountCode,
-        }).then((res) => {
-          console.log(`Extension() / api.discountCodes.subscribe / applyAttributeChange value: ${discountCode} reponse: ${JSON.stringify(res)}`);
-          // Write the cache.
-          api.storage.write('code', discountCode);
-        }).catch((e) => {
-          console.log(`Extension() / api.discountCodes.subscribe / applyAttributeChange value: ${discountCode} exception: ${JSON.stringify(e)}`);
-        });
+  if (read_discounts == null || read_discounts == true) {
+    // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/discounts#standardapi-propertydetail-discountcodes
+    api.discountCodes.subscribe((entry) => {
+      console.log(`Extension() / api.discountCodes.subscribe entry: ${JSON.stringify(entry)}`);
+      entry.map((m) => {
+        discountCode = m.code;
       });
-    }
-  });
+      if (entry.length == 0) discountCode = '';
+      console.log(`Extension() / api.discountCodes.subscribe discountCode: ${discountCode}`);
+      // Instead of useEffect and useState in React hooks, you have to reactive the components by yourself.
+      renderUI();
+      if (discountCode !== '') {
+        api.storage.read('code').then((cache) => {
+          // Update the attribute only when the value has changed using local storage cache as a flag.
+          if (cache === discountCode) return;
+          api.applyAttributeChange({
+            type: "updateAttribute",
+            key: "barebone_cart_attribute_code",
+            value: discountCode,
+          }).then((res) => {
+            console.log(`Extension() / api.discountCodes.subscribe / applyAttributeChange value: ${discountCode} reponse: ${JSON.stringify(res)}`);
+            // Write the cache.
+            api.storage.write('code', discountCode);
+          }).catch((e) => {
+            console.log(`Extension() / api.discountCodes.subscribe / applyAttributeChange value: ${discountCode} exception: ${JSON.stringify(e)}`);
+          });
+        });
+      }
+    });
+  }
 
   // Checking the common function in the same file.
   commonFuncInFile(`Extension() / test text 1`);
   // Checking the common function in the external file.
   commonFuncExternal(`Extension() / test text 1`);
+
+  renderUI();
 
   return root;
 
@@ -168,6 +176,20 @@ function ExtensionStatic(root, api) {
   commonFuncInFile(`ExtensionStatic() / test text 2`);
   // Checking the common function in the external file.
   commonFuncExternal(`ExtensionStatic() / test text 2`);
+
+  // `current` instance of the api doesn't make multiple loading.
+  const read_metafields = api.settings.current.read_metafields;
+  const read_attributes = api.settings.current.read_attributes;
+  const read_discounts = api.settings.current.read_discounts;
+  console.log(`ExtensionStatic() / api.settings read_metafields: ${read_metafields} read_attributes: ${read_attributes} read_discounts: ${read_discounts}`);
+
+  root.appendChild(root.createComponent(Banner, {
+    title: "api.extension.target (Vanila JS)",
+    status: "critical"
+  }, api.i18n.translate('welcome', {
+    target: root.createComponent(Text, { emphasis: "bold" }, `Static: ${api.extension.target}`)
+  })));
+
   return root;
 }
 

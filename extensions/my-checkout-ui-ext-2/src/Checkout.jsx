@@ -51,8 +51,8 @@ function Extension() {
   const applyDiscountCodeChange = useApplyDiscountCodeChange();
 
   // See https://shopify.dev/docs/apps/build/app-extensions/configure-app-extensions
-  const { read_metafields } = useSettings();
-  console.log(`Extension() read_metafields: ${read_metafields} typeof read_metafields: ${typeof read_metafields}`);
+  const { read_metafields, read_attributes, read_discounts } = useSettings();
+  console.log(`Extension() / useSettings read_metafields: ${read_metafields} read_attributes: ${read_attributes} read_discounts: ${read_discounts}`);
 
   let appMetafield1 = '';
   let appMetafield2 = '';
@@ -108,11 +108,19 @@ function Extension() {
     );
   }
 
-  // Get the current cart attribute value of the discount code.
-  const attrValue = useAttributeValues(["barebone_cart_attribute_code"]).map((v) => v).join(''); // This is supposed to the same attribute in `./my-theme-app-ext/blocks/app-block.liquid`
-  // Get the current discount code to be in the cart attribute above.
-  const discountCode = useDiscountCodes().map((c) => c.code).join('');
-  console.log(`Extension() / attrValue: ${attrValue} discountCode: ${JSON.stringify(discountCode)}`);
+  let attrValue = '';
+  let discountCode = '';
+  if (read_attributes == null || read_attributes == true) {
+    // Get the current cart attribute value of the discount code.
+    // (This is supposed to the same attribute in `./my-theme-app-ext/blocks/app-block.liquid`)
+    attrValue = useAttributeValues(["barebone_cart_attribute_code"]).map((v) => v).join('');
+    console.log(`Extension() / attrValue: ${attrValue}`);
+  }
+  if (read_discounts == null || read_discounts == true) {
+    // Get the current discount code to be in the cart attribute above.
+    discountCode = useDiscountCodes().map((c) => c.code).join('');
+    console.log(`Extension() / discountCode: ${JSON.stringify(discountCode)}`);
+  }
 
   // Control the checkout block based on the result of applying discount code.
   const [block, setBlock] = useState(false);
@@ -220,9 +228,9 @@ function Extension() {
   }, [attrValue, discountCode]);
 
   // Check the current discont allocations.
-  useDiscountAllocations().map((json) => {
+  /*useDiscountAllocations().map((json) => {
     console.log(`Extension() / useDiscountAllocations() json: ${JSON.stringify(json)}`);
-  });
+  });*/
 
   // Checking the common function in the same file.
   commonFuncInFile(`Extension() / test text 1`);
@@ -231,9 +239,9 @@ function Extension() {
 
   return (
     <BlockStack border={"dotted"} padding={"tight"}>
-      <Banner title="api.extension.target">
+      <Banner title="api.extension.target (React)">
         {translate("welcome", {
-          target: <Text emphasis="bold">{api.extension.target}</Text>,
+          target: <Text emphasis="bold">Dynamic: {api.extension.target}</Text>,
         })}
       </Banner>
       <Banner>
@@ -254,12 +262,30 @@ function Extension() {
 }
 
 function ExtensionStatic() {
+  const api = useApi();
+  const translate = useTranslate();
+
   console.log(`ExtensionStatic() / Do nothing, no UI`);
   // Checking the common function in the same file.
   commonFuncInFile(`ExtensionStatic() / test text 2`);
   // Checking the common function in the external file.
   commonFuncExternal(`ExtensionStatic() / test text 2`);
-  return (<></>);
+
+  // If you toggle the following codes uncommented, this function = ExtensionStatic() gets executed multiple times.
+  //const { read_metafields, read_attributes, read_discounts } = useSettings();
+  //console.log(`ExtensionStatic() / useSettings read_metafields: ${read_metafields} read_attributes: ${read_attributes} read_discounts: ${read_discounts}`);
+
+  // `current` instance of the api doesn't make multiple loading.
+  const read_metafields = api.settings.current.read_metafields;
+  const read_attributes = api.settings.current.read_attributes;
+  const read_discounts = api.settings.current.read_discounts;
+  console.log(`ExtensionStatic() / api.settings read_metafields: ${read_metafields} read_attributes: ${read_attributes} read_discounts: ${read_discounts}`);
+
+  return (<Banner title="api.extension.target (React)" status='critical'>
+    {translate("welcome", {
+      target: <Text emphasis="bold">Static: {api.extension.target}</Text>,
+    })}
+  </Banner>);
 }
 
 // Common function in the same file.
