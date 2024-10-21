@@ -143,6 +143,7 @@ All sample are available at [Wiki](../../wiki).
     3. Enter the new toml file name or leave blank for the app.
     4. The new toml file gets generated for the new app with the current config values in partner dashboard.
     5. Remember to replace `scopes in [auth]` with the same value as the original toml file which must be blank by default.
+- [Checkout UI Extension Integration Deep Dive](../../wiki/Checkout-UI-Extension-Integration-Deep-Dive) help you to understand how the extension work deeply and avoid some pitfalls.
 
 # Disclaimer
 - This code is fully _unofficial_ and NOT guaranteed to pass [the public app review](https://shopify.dev/apps/store/review) for Shopify app store. The official requirements are described [here](https://shopify.dev/apps/store/requirements). 
