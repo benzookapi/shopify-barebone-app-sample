@@ -83,9 +83,7 @@ For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and C
     cloudflared tunnel --url localhost:3000 or ./ngrok http 3000
     ```
 
-4. Set `YOUR_APP_URL` (your cloudflared or ngrok or other platform `root` URL) and `YOUR_APP_URL/callback` to your app settings in [partner dashboard](https://partners.shopify.com/). If you add `?external=true` parameter to `YOUR_APP_URL`, the app UX turns into a [service connector](https://github.com/benzookapi/shopify-barebone-app-sample/wiki#for-external-service-connection) which tries to connect Shopify stores with their users. **Note that if you disable the app embedded (non embedeed app), App Bridge and its Session Token cannot be used so this app shows the same external page using its own JWT which contains "shop", instead of Session Token.** (See [this demo](https://github.com/benzookapi/shopify-barebone-app-sample/wiki#non-embedded-apps-cannot-use-app-bridge-or-session-token-so-should-render-the-external-page-with-your-own-jwt))
-
-5. (For PostgreSQL or MySQL users only,) create the following table in your database (in `psql` or `mysql` command or other tools).
+4. (For PostgreSQL or MySQL users only,) create the following table in your database (in `psql` or `mysql` command or other tools).
     ```
     For PostgreSQL:
 
@@ -97,12 +95,12 @@ For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and C
 
     ```
 
-6. Turn **OFF** [Development store preview] in app extensions menu.
+5. Turn **OFF** [Development store preview] in app extensions menu.
 
-7. Create `shopify.app.toml` file in the root directory copied from [this page](https://shopify.dev/docs/apps/tools/cli/configuration) and replace each value as follows.
+6. Create `shopify.app.toml` file in the root directory copied from [this page](https://shopify.dev/docs/apps/tools/cli/configuration) and replace each value as follows.
     - _name_ = `YOUR_APP_NAME`
     - _client_id_ = `SHOPIFY_API_KEY`
-    - _application_url_ = `YOUR_APP_URL`
+    - _application_url_ = `YOUR_APP_URL` **(*1)**
     - _handle_ = `YOUR_CREATED_ONE_IN_PARTNER_DASHBOARD`
     - _scopes in [access_scopes]_ = "write_products,write_discounts,write_orders,write_payment_customizations,write_delivery_customizations,write_pixels,read_customer_events,write_customers,write_assigned_fulfillment_orders,write_merchant_managed_fulfillment_orders,write_third_party_fulfillment_orders,write_fulfillments,write_inventory,unauthenticated_write_checkouts,unauthenticated_read_product_listings,unauthenticated_write_customers,unauthenticated_read_selling_plans"
     - _redirect_urls in [auth]_ = [`YOUR_APP_URL/callback`]
@@ -114,10 +112,11 @@ For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and C
     - _subpath in [app_proxy]_ = "bareboneproxy"
     - _prefix in [app_proxy]_ = "apps"
     - _url in [app_preferences]_ = `YOUR_APP_URL`
+    ***1**) `YOUR_APP_URL` is your cloudflared or ngrok or other platform `root` URL. If you add `?external=true` parameter to `YOUR_APP_URL`, the app UX turns into a [service connector](https://github.com/benzookapi/shopify-barebone-app-sample/wiki#for-external-service-connection) which tries to connect Shopify stores with their users. **Note that if you disable the app embedded (non embedeed app), App Bridge and its Session Token cannot be used so this app shows the same external page using its own JWT which contains "shop", instead of Session Token.** (See [this demo](https://github.com/benzookapi/shopify-barebone-app-sample/wiki#non-embedded-apps-cannot-use-app-bridge-or-session-token-so-should-render-the-external-page-with-your-own-jwt))
 
-8. Execute `shopify app deploy --reset` and follow its instruction (choose your partner account, connecting to the exising app, include your configuration on deploy = YES, etc.) which registers extensions to your exising app and create `/.env` file which has extensiton ids used by this sample app (For [Shopify Functions](https://shopify.dev/api/functions) deployment using [Rust](https://www.rust-lang.org/), you need [Cargo](https://doc.rust-lang.org/cargo/) Wasm package installed first by `cargo install cargo-wasi`).
+7. Execute `shopify app deploy --reset` and follow its instruction (choose your partner account, connecting to the exising app, include your configuration on deploy = YES, etc.) which registers extensions to your exising app and create `/.env` file which has extensiton ids used by this sample app (For [Shopify Functions](https://shopify.dev/api/functions) deployment using [Rust](https://www.rust-lang.org/), you need [Cargo](https://doc.rust-lang.org/cargo/) Wasm package installed first by `cargo install cargo-wasi`).
 
-9. For updating the extensions, execute `shopify app deploy` (without `--reset`) to apply (upload) your local modified files to the created extensions (`--reset` is used for changing your targeted app only).
+8. For updating the extensions, execute `shopify app deploy` (without `--reset`) to apply (upload) your local modified files to the created extensions (`--reset` is used for changing your targeted app only).
 
 # How to install
 Access to the following endpoit.
