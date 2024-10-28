@@ -12,6 +12,7 @@ import {
   Banner,
   BlockStack,
   Text,
+  Checkbox,
 
   useApi,
   useApplyAttributeChange,
@@ -129,11 +130,11 @@ function Extension() {
       return canBlockProgress && block
         ? {
           behavior: 'block',
-          reason: 'Failed to apply the given discount code',
+          reason: 'Failed to apply the given discount code or check the box',
           errors: [
             {
               message:
-                'Please set the discount code again.'
+                'Your checkout was blocked.'
             }
           ]
         }
@@ -255,6 +256,13 @@ function Extension() {
       </Banner>
       <Banner>
         <Text emphasis="bold">Your current discount code: </Text><Text> {discountCode}</Text>
+      </Banner>
+      <Banner status="warning">
+        <Checkbox onChange={(value) => {
+          setBlock(!value);
+        }} checked={!block}>
+          Check this to unblock the checkout
+        </Checkbox>
       </Banner>
     </BlockStack>
   );
