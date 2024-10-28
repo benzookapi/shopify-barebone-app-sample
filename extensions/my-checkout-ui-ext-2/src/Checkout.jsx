@@ -125,16 +125,17 @@ function Extension() {
 
   // Control the checkout block based on the result of applying discount code.
   const [block, setBlock] = useState(false);
+  const [blockMessage, setBlockMessage] = useState('');
+  const [blockReason, setBlockReason] = useState('');
   useBuyerJourneyIntercept(
     ({ canBlockProgress }) => {
       return canBlockProgress && block
         ? {
           behavior: 'block',
-          reason: 'Failed to apply the given discount code or check the box',
+          reason: blockReason,
           errors: [
             {
-              message:
-                'Your checkout was blocked.'
+              message: blockMessage
             }
           ]
         }
@@ -170,9 +171,13 @@ function Extension() {
             if (typeof res.type !== 'undefined' && res.type === 'error') {
               // If the code fails to be applied, bloch the checkout.
               setBlock(true);
+              setBlockMessage('Set your discount code again.');
+              setBlockReason('Failed to apply the given discount code.');
             } else {
               // If the code gets applied successfully, unblock the checkout, and wite the cache flag.
               setBlock(false);
+              setBlockMessage('');
+              setBlockReason('');
               api.storage.write('applied', 'true');
             }
           }).catch((e) => {
@@ -260,7 +265,14 @@ function Extension() {
       <Banner status="warning">
         <Checkbox onChange={(value) => {
           setBlock(!value);
-        }} checked={!block}>
+          if (!value) {
+            setBlockMessage('Check the warning box below.');
+            setBlockReason('The checkbox is not checked.');
+          } else {
+            setBlockMessage('');
+            setBlockReason('');
+          }
+        }} checked={!block} error={blockReason}>
           Check this to unblock the checkout
         </Checkbox>
       </Banner>
