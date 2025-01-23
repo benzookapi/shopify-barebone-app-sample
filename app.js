@@ -1782,7 +1782,8 @@ router.post('/multipass', async (ctx, next) => {
       "province_code": province_code,
       "zip": zip,
       "country": country,
-      "country_code": country_code
+      "country_code": country_code,
+      "default": true
     });
   }
 
