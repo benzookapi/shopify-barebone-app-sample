@@ -1756,6 +1756,14 @@ router.post('/multipass', async (ctx, next) => {
   const remote_ip = ctx.request.body.remote_ip;
   const return_to = ctx.request.body.return_to;
 
+  const address1 = ctx.request.body.address1;
+  const city = ctx.request.body.city;
+  const province = ctx.request.body.province;
+  const province_code = ctx.request.body.province_code;
+  const zip = ctx.request.body.zip;
+  const country = ctx.request.body.country;
+  const country_code = ctx.request.body.country_code;
+
   const json = {};
   if (email !== '') json.email = email;
   if (identifier !== '') json.identifier = identifier;
@@ -1764,6 +1772,20 @@ router.post('/multipass', async (ctx, next) => {
   if (tag_string !== '') json.tag_string = tag_string;
   if (remote_ip !== '') json.remote_ip = remote_ip;
   if (return_to !== '') json.return_to = return_to;
+
+  if (address1 !== '') {
+    json.addresses = [];
+    json.addresses.push({
+      "address1": address1,
+      "city": city,
+      "province": province,
+      "province_code": province_code,
+      "zip": zip,
+      "country": country,
+      "country_code": country_code
+    });
+  }
+
   json.created_at = new Date().toISOString();
 
   try {
