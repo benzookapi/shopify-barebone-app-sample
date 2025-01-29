@@ -1748,6 +1748,9 @@ router.post('/multipass', async (ctx, next) => {
 
   console.log(`shop ${shop}`);
 
+  // CAUTION: you need to implement password authentication with ctx.request.body.email + ctx.request.body.password
+  // to block fraud login!
+
   const email = ctx.request.body.email;
   const identifier = ctx.request.body.identifier;
   const first_name = ctx.request.body.first_name;
