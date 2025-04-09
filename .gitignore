@@ -6,3 +6,5 @@ package-lock.json
 /views/index.html
 /.my_env.sh
 /*.toml
+.shopify
+dist
