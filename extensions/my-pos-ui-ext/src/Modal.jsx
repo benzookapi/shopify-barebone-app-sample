@@ -1,17 +1,35 @@
-import React from 'react'
+import React, { useEffect } from 'react';
+import {
+  CameraScanner,
+  Screen,
+  Text,
+  useScannerDataSubscription,
+  reactExtension,
+} from '@shopify/ui-extensions-react/point-of-sale';
 
-import { Text, Screen, ScrollView, Navigator, reactExtension } from '@shopify/ui-extensions-react/point-of-sale'
+const SmartGridModal = () => {
+  const { data } = useScannerDataSubscription();
 
-const Modal = () => {
+  useEffect(() => {
+    if (data) {
+      console.log('Scanner data changed:', data);
+      // Call app server side to use Admin API with session token.
+      // https://shopify.dev/docs/api/pos-ui-extensions/2025-01/server-communication     
+    }
+  }, [data]);
+
   return (
-    <Navigator>
-      <Screen name="HelloWorld" title="Hello World!">
-        <ScrollView>
-          <Text>Welcome to the extension!</Text>
-        </ScrollView>
-      </Screen>
-    </Navigator>
-  )
-}
+    <Screen
+      name="CameraScanner"
+      title="Camera Scanner Title"
+    >
+      <CameraScanner />
+      <Text>{`Scanned data: ${data || ''}`}</Text>
+    </Screen>
+  );
+};
 
-export default reactExtension('pos.home.modal.render', () => <Modal />);
+export default reactExtension(
+  'pos.home.modal.render',
+  () => <SmartGridModal />,
+);
