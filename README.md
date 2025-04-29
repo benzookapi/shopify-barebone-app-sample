@@ -133,14 +133,11 @@ Or
 # Sample list
 All sample are available at [Wiki](../../wiki).
 
-# Trouble shooting
-- Your server needs to render the top page at acceptable speed in the right way. Too slow access, error HTTP codes, or server shutdown causes the error above in live stores (not in development ones). Some cloud plarform like Render, Heroku, etc do the very slow response for the first time in a while with free plans, so you need to swtich to [Cloudflare tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) or [ngrok](https://ngrok.com/) hosting or pay those services for higher performence.
-
 # TIPS
 - If you want to create other language versions of this app like PHP, Java, Ruby, Python, etc., the best way is [creating an extension-only app](https://shopify.dev/docs/apps/app-extensions/extension-only-apps) by **not choosing a Remix template in CLI steps** to add your server side code manually. 
 - If you fail to get [protected customer data](https://shopify.dev/docs/apps/store/data-protection/protected-customer-data) in Checkout UI Extension or API Webhook creation even in dev. stores, submit your app first which enable you get them (this is for `public app distribution` only).
 - If you update some environment variables shared with `shopify.app.toml` (e.g. `SHOPIFY_API_KEY`), change the coressponding value in the file to run `shopify app deploy` to apply the change to the app configration in partner dashboard (if you change other toml file values, do the same).
-- If you manage multiple apps in this single source code and swtich the target app, follow the steps below.
+- If you manage **multiple apps in this single source code** and swtich the target app, follow the steps below.
     1. Change the environment variables of `SHOPIFY_API_KEY` and `SHOPIFY_API_SECRET` and apply them (export).
     2. Execute `shopify app deploy --reset` and choose the target app (it is supposed to be created manually).
     3. Enter the new toml file name or leave blank for the app.
