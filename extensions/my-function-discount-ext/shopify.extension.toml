@@ -3,8 +3,11 @@ type = "order_discounts"
 api_version = "unstable"
 
 [build]
-command = "cargo wasi build --release"
-path = "target/wasm32-wasi/release/my-function-discount-ext.wasm"
+# For old Rust 
+#command = "cargo wasi build --release"
+#path = "target/wasm32-wasi/release/my-function-discount-ext.wasm"
+command = "cargo build --target=wasm32-wasip1 --release"
+path = "target/wasm32-wasip1/release/my-function-discount-ext.wasm"
 watch = [ "src/**/*.rs" ]
 
 [ui.paths]

@@ -45,6 +45,8 @@ For creating React frontend, the following contents might help you.
 For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and Checkout Extensions, refer to the [app extensions](https://shopify.dev/apps/app-extensions) page.
 
 # How to run
+0. Create your Shopify partner account from [here](https://www.shopify.com/partners) and create a Shopify app manually (not choosing Shopify CLI) in the app menu of your dashboard. Also, [create a development store](https://shopify.dev/docs/api/development-stores#create-a-development-store-to-test-your-app) to install this app too.
+
 1. Add the following environmental variables locally or in cloud platforms like Render / Heroku / Fly, etc.
     ```
     SHOPIFY_API_KEY:              YOUR_API_KEY (Copy and paste from your app settings in partner dashboard)
@@ -80,7 +82,7 @@ For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and C
 
 3. If you run locally, you need to tunnel localhost for public URL as follows (otherwise, you should use the command lines above for Render or other cloud platform deploy scripts).
     ```
-    cloudflared tunnel --url localhost:3000 or ./ngrok http 3000
+    cloudflared tunnel --url localhost:3000 or ./ngrok http 3000 (This should be run on another terminal window from the app running)
     ```
 
 4. (For PostgreSQL or MySQL users only,) create the following table in your database (in `psql` or `mysql` command or other tools).
@@ -101,13 +103,12 @@ For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and C
     - _name_ = `YOUR_APP_NAME`
     - _client_id_ = `SHOPIFY_API_KEY`
     - _application_url_ = `YOUR_APP_URL` (***1**)
-    - _handle_ = `YOUR_CREATED_ONE_IN_PARTNER_DASHBOARD`
-    - _scopes in [access_scopes]_ = "write_products,write_discounts,write_orders,write_payment_customizations,write_delivery_customizations,write_pixels,read_customer_events,write_customers,write_assigned_fulfillment_orders,write_merchant_managed_fulfillment_orders,write_third_party_fulfillment_orders,write_fulfillments,write_inventory,unauthenticated_write_checkouts,unauthenticated_read_product_listings,unauthenticated_write_customers,unauthenticated_read_selling_plans"
+    - _handle_ = `UNIQUE_ID_USED_FOR_ADMIN_URL_PATH` (In general, lowercase letters of the app name replacing '_' with '-')
+    - _scopes in [access_scopes]_ = "write_products,write_discounts,write_orders,write_payment_customizations,write_delivery_customizations,write_pixels,read_customer_events,write_customers,write_assigned_fulfillment_orders,write_merchant_managed_fulfillment_orders,write_third_party_fulfillment_orders,write_fulfillments,write_inventory,unauthenticated_write_checkouts,unauthenticated_read_product_listings,unauthenticated_write_customers,unauthenticated_read_selling_plans,read_locations"
+    - _direct_api_mode in [access.admin]_ = "offline"
     - _redirect_urls in [auth]_ = [`YOUR_APP_URL/callback`]
     - _api_version in [webhooks]_ = `SHOPIFY_API_VERSION`
-    - _customer_deletion_url in [webhooks]_ = `YOUR_APP_URL/webhookgdpr`
-    - _customer_data_request_url in [webhooks]_ = `YOUR_APP_URL/webhookgdpr`
-    - _shop_deletion_url in [webhooks]_ = `YOUR_APP_URL/webhookgdpr`
+    - _uri in [webhooks.subscriptions]_ = `/webhookgdpr`
     - _url in [app_proxy]_ = `YOUR_APP_URL/appproxy`
     - _subpath in [app_proxy]_ = "bareboneproxy"
     - _prefix in [app_proxy]_ = "apps"
@@ -115,9 +116,11 @@ For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and C
 
     ***1** `YOUR_APP_URL` is your cloudflared or ngrok or other platform `root` URL. If you add `?external=true` parameter to `YOUR_APP_URL`, the app UX turns into a [service connector](https://github.com/benzookapi/shopify-barebone-app-sample/wiki#for-external-service-connection) which tries to connect Shopify stores with their users. **Note that if you disable the app embedded (non embedeed app), App Bridge and its Session Token cannot be used so this app shows the same external page using its own JWT which contains "shop", instead of Session Token.** (See [this demo](https://github.com/benzookapi/shopify-barebone-app-sample/wiki#non-embedded-apps-cannot-use-app-bridge-or-session-token-so-should-render-the-external-page-with-your-own-jwt))
 
-7. Execute `shopify app deploy --reset` and follow its instruction (choose your partner account, connecting to the exising app, include your configuration on deploy = YES, etc.) which registers extensions to your exising app and create `/.env` file which has extensiton ids used by this sample app (For [Shopify Functions](https://shopify.dev/api/functions) deployment using [Rust](https://www.rust-lang.org/), you need [Cargo](https://doc.rust-lang.org/cargo/) Wasm package installed first by `cargo install cargo-wasi`).
+7. Terminate `npm run start` with Ctrl+C and execute `shopify app deploy` and follow its instruction (choose your partner account, connecting to the exising app, include your configuration on deploy = YES, etc.) which registers extensions to your exising app and create `/.env` file which has extensiton ids used by this sample app (For [Shopify Functions](https://shopify.dev/api/functions) deployment using [Rust](https://www.rust-lang.org/), you need to install [Cargo](https://doc.rust-lang.org/cargo/) Wasm package  before executing `shopify app deploy` by `cargo install cargo-wasi`).
 
-8. For updating the extensions, execute `shopify app deploy` (without `--reset`) to apply (upload) your local modified files to the created extensions (`--reset` is used for changing your targeted app only).
+8. For updating the extensions, execute `shopify app deploy` to apply (upload) your local modified files to the created extensions (For changing your targeted app, use `shopify app deploy --reset`).
+
+9. Run `npm run start` again and make sure if `YOUR_APP_URL` is still alive if you run locally with `cloudflared` or `ngrok` (If the URL is dead, restart the app and set the new URL to `YOUR_APP_URL`).
 
 # How to install
 Access to the following endpoit.

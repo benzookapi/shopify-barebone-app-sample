@@ -461,7 +461,6 @@ router.get('/functiondiscount', async (ctx, next) => {
           "functionId": id,
           "metafields": [
             {
-              "description": "Discount rate by customer metafields",
               //"id": "",
               // See https://shopify.dev/api/functions/input-query-variables
               // Setting this metafield enables no code input data filtering.
@@ -571,7 +570,6 @@ router.get('/functionshipping', async (ctx, next) => {
           "functionId": id,
           "metafields": [
             {
-              "description": "Shipping rate and zip code filter",
               //"id": "",
               "key": "filter",
               "namespace": "barebone_app_function_shipping",
@@ -678,7 +676,6 @@ router.get('/functionpayment', async (ctx, next) => {
           "functionId": id,
           "metafields": [
             {
-              "description": "Payment method and shipping rate filter",
               //"id": "",
               "key": "filter",
               "namespace": "barebone_app_function_payment",
@@ -1303,17 +1300,15 @@ router.get('/ordermanage', async (ctx, next) => {
         }
         fs_id = null;
       }
-      api_res = await (callGraphql(ctx, shop, `mutation fulfillmentServiceCreate($callbackUrl: URL!, $fulfillmentOrdersOptIn: Boolean!, 
-        $inventoryManagement: Boolean!, $permitsSkuSharing: Boolean!, $trackingSupport: Boolean!, $name: String!) {
-        fulfillmentServiceCreate(callbackUrl: $callbackUrl, fulfillmentOrdersOptIn: $fulfillmentOrdersOptIn, 
-          inventoryManagement: $inventoryManagement, permitsSkuSharing: $permitsSkuSharing, trackingSupport: $trackingSupport, name: $name) {
+      api_res = await (callGraphql(ctx, shop, `mutation fulfillmentServiceCreate($callbackUrl: URL!, 
+        $inventoryManagement: Boolean!, $trackingSupport: Boolean!, $name: String!) {
+        fulfillmentServiceCreate(callbackUrl: $callbackUrl, inventoryManagement: $inventoryManagement, 
+        trackingSupport: $trackingSupport, name: $name) {
           fulfillmentService {
             id
             serviceName
             callbackUrl
-            fulfillmentOrdersOptIn
             inventoryManagement            
-            permitsSkuSharing
             location {
               id
             }
@@ -1326,9 +1321,7 @@ router.get('/ordermanage', async (ctx, next) => {
         }
       }`, null, GRAPHQL_PATH_ADMIN, {
         "callbackUrl": `https://${ctx.request.host}`,
-        "fulfillmentOrdersOptIn": true,
         "inventoryManagement": true,
-        "permitsSkuSharing": true,
         "trackingSupport": true,
         "name": "Barebone app fulfillment service"
       }));

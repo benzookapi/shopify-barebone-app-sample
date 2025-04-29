@@ -3,8 +3,11 @@ type = "delivery_customization"
 api_version = "unstable"
 
 [build]
-command = "cargo wasi build --release"
-path = "target/wasm32-wasi/release/my-function-shipping-ext.wasm"
+# For old Rust
+#command = "cargo wasi build --release"
+#path = "target/wasm32-wasi/release/my-function-shipping-ext.wasm"
+command = "cargo build --target=wasm32-wasip1 --release"
+path = "target/wasm32-wasip1/release/my-function-shipping-ext.wasm"
 watch = [ "src/**/*.rs" ]
 
 [ui.paths]

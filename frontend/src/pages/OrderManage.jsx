@@ -259,7 +259,7 @@ function OrderManage() {
                     </List>
                     <List type="bullet">
                         <List.Item>
-                            If you want to make this app a <Badge>shipping rate provider</Badge>, you have to register <Link url="https://shopify.dev/docs/api/admin-rest/unstable/resources/carrierservice#post-carrier-services" target="_blank">CarrierService</Link> which is available in <Badge>REST API</Badge> only. Instead, you can add your app defined shipping rate natively
+                            If you want to make this app a <Badge>shipping rate provider</Badge>, you have to call <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/carrierServiceCreate" target="_blank">carrierServiceCreate</Link> API for app defined rate registration. Instead, you can add your app defined shipping rate natively
                             with <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/deliveryProfileCreate" target="_blank">deliveryProfileCreate</Link> API.
                         </List.Item>
                     </List>
