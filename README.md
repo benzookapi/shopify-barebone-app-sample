@@ -97,15 +97,12 @@ For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and C
 
     ```
 
-5. Turn **OFF** [Development store preview] in app extensions menu.
-
-6. Create `shopify.app.toml` file in the root directory copied from [this page](https://shopify.dev/docs/apps/tools/cli/configuration) and replace each value as follows.
+5. Create `shopify.app.toml` file in the root directory copied from [this page](https://shopify.dev/docs/apps/tools/cli/configuration) and replace each value as follows.
     - _name_ = `YOUR_APP_NAME`
     - _client_id_ = `SHOPIFY_API_KEY`
     - _application_url_ = `YOUR_APP_URL` (***1**)
     - _handle_ = `UNIQUE_ID_USED_FOR_ADMIN_URL_PATH` (In general, lowercase letters of the app name replacing '_' with '-')
     - _scopes in [access_scopes]_ = "write_products,write_discounts,write_orders,write_payment_customizations,write_delivery_customizations,write_pixels,read_customer_events,write_customers,write_assigned_fulfillment_orders,write_merchant_managed_fulfillment_orders,write_third_party_fulfillment_orders,write_fulfillments,write_inventory,unauthenticated_write_checkouts,unauthenticated_read_product_listings,unauthenticated_write_customers,unauthenticated_read_selling_plans,read_locations"
-    - _direct_api_mode in [access.admin]_ = "offline"
     - _redirect_urls in [auth]_ = [`YOUR_APP_URL/callback`]
     - _api_version in [webhooks]_ = `SHOPIFY_API_VERSION`
     - _uri in [webhooks.subscriptions]_ = `/webhookgdpr`
@@ -116,11 +113,19 @@ For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and C
 
     ***1** `YOUR_APP_URL` is your cloudflared or ngrok or other platform `root` URL. If you add `?external=true` parameter to `YOUR_APP_URL`, the app UX turns into a [service connector](https://github.com/benzookapi/shopify-barebone-app-sample/wiki#for-external-service-connection) which tries to connect Shopify stores with their users. **Note that if you disable the app embedded (non embedeed app), App Bridge and its Session Token cannot be used so this app shows the same external page using its own JWT which contains "shop", instead of Session Token.** (See [this demo](https://github.com/benzookapi/shopify-barebone-app-sample/wiki#non-embedded-apps-cannot-use-app-bridge-or-session-token-so-should-render-the-external-page-with-your-own-jwt))
 
-7. Terminate `npm run start` with Ctrl+C and execute `shopify app deploy` and follow its instruction (choose your partner account, connecting to the exising app, include your configuration on deploy = YES, etc.) which registers extensions to your exising app and create `/.env` file which has extensiton ids used by this sample app (For [Shopify Functions](https://shopify.dev/api/functions) deployment using [Rust](https://www.rust-lang.org/), you need to install [Cargo](https://doc.rust-lang.org/cargo/) Wasm package  before executing `shopify app deploy` by `cargo install cargo-wasi`).
+6. Terminate `npm run start` with Ctrl+C and execute `shopify app deploy` and follow its instruction (choose your partner account, connecting to the exising app, include your configuration on deploy = YES, etc.) which registers extensions to your exising app and create `/.env` file which has extensiton ids used by this sample app (For [Shopify Functions](https://shopify.dev/api/functions) deployment using [Rust](https://www.rust-lang.org/), you need to install [Cargo](https://doc.rust-lang.org/cargo/) Wasm package  before executing `shopify app deploy` by `cargo install cargo-wasi`).
+    If you see the cargo specific error for function build (this typically happens in old Rust environment), try the following commands.
+    ```
+    rustup target remove wasm32-wasi
 
-8. For updating the extensions, execute `shopify app deploy` to apply (upload) your local modified files to the created extensions (For changing your targeted app, use `shopify app deploy --reset`).
+    rustup update
 
-9. Run `npm run start` again and make sure if `YOUR_APP_URL` is still alive if you run locally with `cloudflared` or `ngrok` (If the URL is dead, restart the app and set the new URL to `YOUR_APP_URL`).
+    rustup target add wasm32-wasip1
+    ```
+
+7. For updating the extensions, execute `shopify app deploy` to apply (upload) your local modified files to the created extensions (For changing your targeted app, use `shopify app deploy --reset`).
+
+8. Run `npm run start` again and make sure if `YOUR_APP_URL` is still alive if you run locally with `cloudflared` or `ngrok` (If the URL is dead, restart the app and set the new URL to `YOUR_APP_URL`).
 
 # How to install
 Access to the following endpoit.
