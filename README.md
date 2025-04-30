@@ -101,7 +101,7 @@ For extensions like Admin Link, Theme App Extensinons, Shopify Functtions, and C
     - _name_ = `YOUR_APP_NAME`
     - _client_id_ = `SHOPIFY_API_KEY`
     - _application_url_ = `YOUR_APP_URL` (***1**)
-    - _handle_ = `UNIQUE_ID_USED_FOR_ADMIN_URL_PATH` (In general, lowercase letters of the app name replacing '_' with '-')
+    - _handle_ = `YOUR_APP_HANDLE` (In general, lowercase letters of the app name replacing '_' with '-' used for admin URL path for the app and toml file name for multiple app hanlding)
     - _scopes in [access_scopes]_ = "write_products,write_discounts,write_orders,write_payment_customizations,write_delivery_customizations,write_pixels,read_customer_events,write_customers,write_assigned_fulfillment_orders,write_merchant_managed_fulfillment_orders,write_third_party_fulfillment_orders,write_fulfillments,write_inventory,unauthenticated_write_checkouts,unauthenticated_read_product_listings,unauthenticated_write_customers,unauthenticated_read_selling_plans,read_locations"
     - _redirect_urls in [auth]_ = [`YOUR_APP_URL/callback`]
     - _api_version in [webhooks]_ = `SHOPIFY_API_VERSION`
@@ -145,7 +145,7 @@ All sample are available at [Wiki](../../wiki).
 - If you manage **multiple apps in this single source code** and swtich the target app, follow the steps below.
     1. Change the environment variables of `SHOPIFY_API_KEY` and `SHOPIFY_API_SECRET` and apply them (export).
     2. Execute `shopify app deploy --reset` and choose the target app (it is supposed to be created manually).
-    3. Enter the new toml file name or leave blank for the app.
+    3. Enter the new toml file name (use `YOUR_APP_HANDLE`) or leave blank for the app.
     4. The new toml file gets generated for the new app with the current config values in partner dashboard.
     5. Remember to replace `scopes in [auth]` with the same value as the original toml file which must be blank by default.
 - [Checkout UI Extension Integration Deep Dive](../../wiki/Checkout-UI-Extension-Integration-Deep-Dive) (Japanese version is [here](../../wiki/Checkout-UI-Extension-%E5%AE%9F%E8%A3%85%E8%A9%B3%E7%B4%B0)) help you to understand how the extension work deeply and avoid some pitfalls.
