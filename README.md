@@ -45,9 +45,9 @@ For creating React frontend, the following contents might help you.
 For extensions like Theme App Extensinons, Shopify Functtions, and Checkout Extensions, refer to the [app extensions](https://shopify.dev/docs/apps/build/app-extensions) page.
 
 # How to run
-0. Create your Shopify partner account from [here](https://www.shopify.com/partners) and create a Shopify app manually (not choosing Shopify CLI) in the app menu of your dashboard. Also, [create a development store](https://shopify.dev/docs/api/development-stores#create-a-development-store-to-test-your-app) to install this app too.
+0. Create your Shopify partner account from [here](https://www.shopify.com/partners) and create a Shopify app **manually** (not choosing Shopify CLI) in the app menu of your dashboard. Also, [create a development store](https://shopify.dev/docs/api/development-stores#create-a-development-store-to-test-your-app) to install this app too. If you want to customize this sample code, don't forget to clone (fork) this repository to make your own one.
 
-1. Decide if you run this app locally **OR** in cloud hosting serivces like [Render](https://render.com/), [Fly.io](https://fly.io/), [Heroku](https://www.heroku.com/), and [AWS EC2](https://aws.amazon.com/), etc. If you run it locally, you need to use network tunneling tool like [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) because your app server url (described as `YOUR_APP_URL` below) needs to be **public**, not localhost directly, so you need to bind your localhost to a public URL. If your company **blocks network tunneling**, you have to choose a cloud hosting serivce. This app has no limtation of hosting serivce choise, but [Render](https://render.com/) is recommneded as they provide free plan, and just conneting a [GitHub repository](../../../shopify-barebone-app-sample) enables you to create a web service, and [Shopify CLI app hosting](https://render.com/docs/deploy-shopify-app) is supported natively with the Docker file.
+1. Decide if you run this app locally **or** in cloud hosting serivces like [Render](https://render.com/), [Fly.io](https://fly.io/), [Heroku](https://www.heroku.com/), and [AWS EC2](https://aws.amazon.com/), etc. If you run it locally, you need to use network tunneling tool like [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) because your app server url (described as `YOUR_APP_URL` below) needs to be **public**, not localhost directly, so you need to bind your localhost to a public URL. If your company **blocks network tunneling**, you have to choose a cloud hosting serivce. This app has no limtation of hosting serivce choise, but [Render](https://render.com/) is recommneded as they provide free plan, and just conneting a [GitHub repository](../../../shopify-barebone-app-sample) enables you to create a web service, and [Shopify CLI app hosting](https://render.com/docs/deploy-shopify-app) is supported natively with the Docker file.
 
 2. Add the following environmental variables locally (export in the terminal) or in the cloud platform (in environmental variable settings).
     ```
@@ -124,8 +124,13 @@ For extensions like Theme App Extensinons, Shopify Functtions, and Checkout Exte
 
     rustup target add wasm32-wasip1
     ```
+    If you see the **toml file error** like `Validation errors`, update the field **manually** in the app `Configuration` in your partner dashboard and run again.
 
-8. If you run it locally, execute the start command (`npm run start`). If you use cloud hosting, specify the start command in the appropriate settings or run it directly. Accessing `YOUR_APP_URL` from the browser shows `Bad request` message, but this is expected. Make sure if no other errors happen like 404 / 500.
+8. Go to the app `API access` in your partner dashboard to `Allow network access`. => This is required for [using fetch() in Checkout UI Extensions](../../../shopify-barebone-app-sample/blob/main/extensions/my-checkout-ui-ext/src/Upsell.jsx). 
+
+9. Go to the app `Distrobution` in your partner dashboard to select `Public` or `Custom` (if you selected the custom app, use your development store domain for the link). => This is required for [using useShippingAddress() in Checkout UI Extensions](../../../shopify-barebone-app-sample/blob/main/extensions/my-checkout-ui-ext/src/Review.jsx). 
+
+10. If you run it locally, execute the start command (`npm run start`). If you use cloud hosting, specify the start command in the appropriate settings or run it directly. Accessing `YOUR_APP_URL` from the browser shows `Bad request` message, but this is expected. Make sure if no other errors happen like 404 / 500.
 
 # How to install
 Access to the following endpoit.
@@ -133,7 +138,7 @@ Access to the following endpoit.
 
 Or 
 
-`you can install to your development stores from the app settings in partner dashboard.`
+you can install to your development stores from the app `Overview` in your partner dashboard.
 
 # How to update
 - For server side update (`app.js` or `views` in Koa), run the start command (`npm run start`) again works. Some cloud services like Render enables it with `git commit & git push`.
