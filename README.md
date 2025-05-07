@@ -49,7 +49,7 @@ For extensions like Theme App Extensinons, Shopify Functtions, and Checkout Exte
 
 1. Decide if you run this app locally **or** in cloud hosting serivces like [Render](https://render.com/), [Fly.io](https://fly.io/), [Heroku](https://www.heroku.com/), and [AWS EC2](https://aws.amazon.com/), etc. If you run it locally, you need to use network tunneling tool like [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) because your app server url (described as `YOUR_APP_URL` below) needs to be **public**, not localhost directly, so you need to bind your localhost to a public URL. If your company **blocks network tunneling**, you have to choose a cloud hosting serivce. This app has no limtation of hosting serivce choise, but [Render](https://render.com/) is recommneded as they provide free plan, and just conneting a [GitHub repository](../../../shopify-barebone-app-sample) enables you to create a web service, and [Shopify CLI app hosting](https://render.com/docs/deploy-shopify-app) is supported natively with the Docker file.
 
-2. Add the following environmental variables locally (export in the terminal) or in the cloud platform (in environmental variable settings).
+2. Add the following environmental variables locally (export in the terminal) where you develop this sample app. Add the same variables in the cloud hosting service (in environmental variable settings) if you chose it as the running place.
     ```
     SHOPIFY_API_KEY:              YOUR_API_KEY (Copy and paste from your app settings in partner dashboard)
     SHOPIFY_API_SECRET:           YOUR_API_SECRET (Copy and paste from your app settings in partner dashboard)
