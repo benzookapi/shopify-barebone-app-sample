@@ -8,3 +8,4 @@ package-lock.json
 /*.toml
 .shopify
 dist
+.vscode
