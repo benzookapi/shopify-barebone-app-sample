@@ -6,9 +6,9 @@ import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, Bloc
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
 // Shopify Functions for shipping method sample
-// See https://shopify.dev/apps/checkout/delivery-customizations
+// Read https://shopify.dev/apps/checkout/delivery-customizations
 // This sample doesn't use Shopify given libraries for the app UX, create an extention manually. 
-// See https://shopify.dev/api/functions/reference/delivery-customization
+// Read https://shopify.dev/api/functions/reference/delivery-customization
 function FunctionShipping() {
   const app = useAppBridge();
 
@@ -78,7 +78,7 @@ function FunctionShipping() {
                 <List.Item>
                   <Button variant="primary" onClick={() => {
                     setAccessing(true);
-                    // See https://shopify.dev/api/admin-graphql/2023-04/mutations/deliveryCustomizationCreate"
+                    // Read https://shopify.dev/api/admin-graphql/2023-04/mutations/deliveryCustomizationCreate"
                     authenticatedFetch(app)(`/functionshipping?rate=${rate}&zip=${zip}&id=${id}`).then((response) => {
                       response.json().then((json) => {
                         console.log(JSON.stringify(json, null, 4));

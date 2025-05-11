@@ -5,10 +5,10 @@ import { Page, Card, Layout, Link, List, Badge, BlockStack } from '@shopify/pola
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
 // Checkout UI sample
-// See https://shopify.dev/docs/api/checkout-ui-extensions
-// See https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-api
-// See https://shopify.dev/docs/apps/checkout/product-offers
-// See https://shopify.dev/docs/api/checkout-ui-extensions/components
+// Read https://shopify.dev/docs/api/checkout-ui-extensions
+// Read https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-api
+// Read https://shopify.dev/docs/apps/checkout/product-offers
+// Read https://shopify.dev/docs/api/checkout-ui-extensions/components
 function CheckoutUi() {
   const app = useAppBridge();
   const redirect = Redirect.create(app);

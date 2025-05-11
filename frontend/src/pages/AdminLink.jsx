@@ -7,8 +7,8 @@ import { Page, Card, Layout, Link, Badge, Text, Spinner, List, BlockStack } from
 import { _decodeSessionToken, _getAdminFromShop, _getShopFromQuery } from "../utils/my_util";
 
 // Admin link sample with App Bridge redirection
-// See https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup
-// See https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link
+// Read https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup
+// Read https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link
 function AdminLink() {
     const app = useAppBridge();
     const redirect = Redirect.create(app);

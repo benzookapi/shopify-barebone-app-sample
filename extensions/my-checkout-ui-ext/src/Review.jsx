@@ -1,8 +1,8 @@
 // Checkout UI sample
-// See https://shopify.dev/docs/api/checkout-ui-extensions
-// See https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-api
-// See https://shopify.dev/docs/apps/checkout/product-offers
-// See https://shopify.dev/docs/api/checkout-ui-extensions/components
+// Read https://shopify.dev/docs/api/checkout-ui-extensions
+// Read https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-api
+// Read https://shopify.dev/docs/apps/checkout/product-offers
+// Read https://shopify.dev/docs/api/checkout-ui-extensions/components
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -39,7 +39,7 @@ reactExtension('purchase.checkout.actions.render-before', () => <Review />);
 /* 
 * --------- Review component for static render --------- 
 * (Static extension point)
-* See https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-overview#static-extension-points
+* Read https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-overview#static-extension-points
 */
 function Review() {
   const extensionApi = useApi();
@@ -55,7 +55,7 @@ function Review() {
   const [cartAttr, setCartAttr] = useState(initAttr);
 
   // Store the given score into the browser storage to keep across the pages.
-  // See https://shopify.dev/docs/api/checkout-ui-extensions/apis/standardapi#properties-propertydetail-storage
+  // Read https://shopify.dev/docs/api/checkout-ui-extensions/apis/standardapi#properties-propertydetail-storage
   const writeScore = (value) => {
     extensionApi.storage.write('barebone_app_score', value);
   };
@@ -69,7 +69,7 @@ function Review() {
   readScore();
 
   // Get the filtered metafield values defined by the toml file.
-  // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#useAppMetafields
+  // Read https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#useAppMetafields
   /* ==========================================================================================================
   *  NOTE THAT `useAppMetafields` (and other subscribed data) doesn't return the instances at the first rendering 
   *  so this area's code outside useEffect() are called many times asynchronously until 
@@ -124,13 +124,13 @@ function Review() {
       return (
         <Button kind="secondary" onPress={() => {
           // Setting the given score to the customer metafield in a secure way of passing shop data with SessionToken.
-          // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/standardapi#session-token-session-token-claims
+          // Read https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/standardapi#session-token-session-token-claims
           extensionApi.sessionToken.get().then((token) => {
             // Updating the customer metafield with the server side Admin API call.            
             // Security consideration : https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
             // NOTE THAT you shouldn't pass the customer id directly in parameters for your production, 
             // use token -> decode in your server -> token.sub, instead (but this is valid for logged-in buyers only...)
-            // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/session-token
+            // Read https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/session-token
             // Get the stored app url from the browser storage.
             extensionApi.storage.read('barebone_app_url').then((app_url) => {
               const url = `${app_url}/postpurchase?score=${score}`;

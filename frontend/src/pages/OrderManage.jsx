@@ -7,7 +7,7 @@ import { Page, Card, Layout, Link, Badge, Text, Spinner, List, BlockStack, Butto
 import { _decodeSessionToken, _getAdminFromShop, _getShopFromQuery } from "../utils/my_util";
 
 // Order management sample for fulfillment, inventory, and fulfillment services with inventory management.
-// See https://shopify.dev/docs/apps/fulfillment
+// Read https://shopify.dev/docs/apps/fulfillment
 function OrderManage() {
     const app = useAppBridge();
     const redirect = Redirect.create(app);

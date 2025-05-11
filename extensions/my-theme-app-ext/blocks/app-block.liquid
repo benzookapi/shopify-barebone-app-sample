@@ -44,7 +44,7 @@
       <p class="_my_app_block_editor">"I think you are viewing this app block within theme editor, right? &#x1f609"</p>
     {% endif %}
 
-    <!-- See https://shopify.dev/api/liquid -->
+    <!-- Read https://shopify.dev/api/liquid -->
     <ul>
       <li>
         <b>'block.settings.product'</b>
@@ -249,7 +249,7 @@
       cart_add_forms.forEach((form) => {
         console.log(`cart_add_forms: ${form.innerHTML}`);
         // Adding an line item property to the existing form.
-        // See https://shopify.dev/docs/themes/architecture/templates/product#line-item-properties
+        // Read https://shopify.dev/docs/themes/architecture/templates/product#line-item-properties
         const line_item_property_input = document.createElement('input');
         line_item_property_input.type = 'hidden';
         line_item_property_input.name = 'properties[barebone_line_item_property]';
@@ -279,7 +279,7 @@
       cart_forms.forEach((form) => {
         console.log(`cart_forms: ${form.innerHTML}`);
         // Adding a cart note to the existing form.
-        // See https://shopify.dev/docs/themes/architecture/templates/cart#cart-notes
+        // Read https://shopify.dev/docs/themes/architecture/templates/cart#cart-notes
         const cart_note_input = document.createElement('input');
         cart_note_input.type = 'hidden';
         cart_note_input.name = 'note';
@@ -299,7 +299,7 @@
       cart_forms.forEach((form) => {
         console.log(`cart_forms: ${form.innerHTML}`);
         // Adding a cart attribute to the existing form.
-        // See https://shopify.dev/docs/themes/architecture/templates/cart#cart-attributes
+        // Read https://shopify.dev/docs/themes/architecture/templates/cart#cart-attributes
         const cart_attribute_input = document.createElement('input');
         cart_attribute_input.type = 'hidden';
         cart_attribute_input.name = 'attributes[barebone_cart_attribute]';
@@ -336,7 +336,7 @@
       cart_forms.forEach((form) => {
         console.log(`cart_forms: ${form.innerHTML}`);
         // Adding a cart attribute to the existing form.
-        // See https://shopify.dev/docs/themes/architecture/templates/cart#cart-attributes
+        // Read https://shopify.dev/docs/themes/architecture/templates/cart#cart-attributes
         const cart_attribute_input = document.createElement('input');
         cart_attribute_input.type = 'hidden';
         cart_attribute_input.name = 'attributes[barebone_cart_attribute_code]';

@@ -7,7 +7,7 @@ import { Page, Card, Layout, Link, List, Button, Spinner, BlockStack, Badge } fr
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
 // Storefront API sample
-// See https://shopify.dev/docs/api/storefront
+// Read https://shopify.dev/docs/api/storefront
 function Storefront() {
   const app = useAppBridge();
   const redirect = Redirect.create(app);

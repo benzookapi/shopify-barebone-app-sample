@@ -22,7 +22,7 @@ validations =  [
   { name = "min", value = "1" }
 ]
 
-# See https://shopify.dev/docs/apps/custom-data/metafields/definitions/validation
+# Read https://shopify.dev/docs/apps/custom-data/metafields/definitions/validation
 [settings.fields.ga4Debug]
 name = "GA4 Debug"
 description = "GA4 debug on or off = true or false"

@@ -7,7 +7,7 @@ import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, Bloc
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
 // Multipass sample
-// See https://shopify.dev/docs/api/multipass
+// Read https://shopify.dev/docs/api/multipass
 function Multipass() {
   const app = useAppBridge();
   const redirect = Redirect.create(app);

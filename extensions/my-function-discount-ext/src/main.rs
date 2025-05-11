@@ -23,7 +23,7 @@ fn function(input: input::ResponseData) -> Result<output::FunctionResult> {
     // Debug logging
     //io::stderr().write_fmt(format_args!("{:#?}", 999));
 
-    // See https://shopify.dev/docs/api/functions/reference/order-discounts/graphql/input 
+    // Read https://shopify.dev/docs/api/functions/reference/order-discounts/graphql/input 
     // and ./input.graphql and schema.graphql
     let discount_rate = match input.cart.attribute {
         Some(attribute) => match attribute.value {
@@ -42,7 +42,7 @@ fn function(input: input::ResponseData) -> Result<output::FunctionResult> {
         }
     };
 
-   // See https://shopify.dev/api/functions/reference/order-discounts/graphql/functionresult
+   // Read https://shopify.dev/api/functions/reference/order-discounts/graphql/functionresult
     Ok(output::FunctionResult {
         discounts: vec![output::Discount {
             message: Some("Function order discount worked!".to_string()),

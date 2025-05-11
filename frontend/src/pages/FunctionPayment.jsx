@@ -6,9 +6,9 @@ import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, Bloc
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
 // Shopify Functions for payment method sample
-// See https://shopify.dev/apps/checkout/payment-customizations
+// Read https://shopify.dev/apps/checkout/payment-customizations
 // This sample doesn't use Shopify given libraries for the app UX, create an extention manually. 
-// See https://shopify.dev/api/functions/reference/payment-customization
+// Read https://shopify.dev/api/functions/reference/payment-customization
 function FunctionPayment() {
   const app = useAppBridge();
 
@@ -78,7 +78,7 @@ function FunctionPayment() {
                 <List.Item>
                   <Button variant="primary" onClick={() => {
                     setAccessing(true);
-                    // See https://shopify.dev/api/admin-graphql/2023-04/mutations/paymentCustomizationCreate"
+                    // Read https://shopify.dev/api/admin-graphql/2023-04/mutations/paymentCustomizationCreate"
                     authenticatedFetch(app)(`/functionpayment?method=${method}&rate=${rate}&id=${id}`).then((response) => {
                       response.json().then((json) => {
                         console.log(JSON.stringify(json, null, 4));

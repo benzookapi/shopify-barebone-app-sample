@@ -1,8 +1,8 @@
 // Checkout UI sample
-// See https://shopify.dev/docs/api/checkout-ui-extensions
-// See https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-api
-// See https://shopify.dev/docs/apps/checkout/product-offers
-// See https://shopify.dev/docs/api/checkout-ui-extensions/components
+// Read https://shopify.dev/docs/api/checkout-ui-extensions
+// Read https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-api
+// Read https://shopify.dev/docs/apps/checkout/product-offers
+// Read https://shopify.dev/docs/api/checkout-ui-extensions/components
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -27,7 +27,7 @@ reactExtension('purchase.checkout.contact.render-after', () => <Validation />);
 /* 
 * --------- Validation component for static render --------- 
 * (Static extension point)
-* See https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-overview#static-extension-points
+* Read https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-overview#static-extension-points
 */
 function Validation() {
   const extensionApi = useApi();

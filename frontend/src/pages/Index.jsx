@@ -5,7 +5,7 @@ import { Page, Card, ResourceList, Icon, Text } from '@shopify/polaris';
 import { CircleRightIcon } from '@shopify/polaris-icons';
 
 // Index for all sample UIs using ResourceList as a link list.
-// See https://polaris.shopify.com/components/resource-list
+// Read https://polaris.shopify.com/components/resource-list
 function Index() {
     const app = useAppBridge();
     const redirect = Redirect.create(app);
@@ -27,7 +27,7 @@ function Index() {
                         {
                             id: 1,
                             onClick: (id) => {
-                                // See https://shopify.dev/apps/tools/app-bridge/actions/navigation/redirect-navigate
+                                // Read https://shopify.dev/apps/tools/app-bridge/actions/navigation/redirect-navigate
                                 // 'url' = simple link doesn't work due to lack of the right hmac signature.
                                 // App Bridge redirect embeds it. 
                                 redirect.dispatch(Redirect.Action.APP, '/sessiontoken');

@@ -6,9 +6,9 @@ import { Page, Card, Layout, Link, List, Badge, TextField, Button, Spinner, Bloc
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
 // Shopify Functions for discounts sample
-// See https://shopify.dev/apps/discounts
+// Read https://shopify.dev/apps/discounts
 // This sample doesn't use Shopify given libraries for the app UX, create an extention manually. 
-// See https://shopify.dev/api/functions/reference/order-discounts/
+// Read https://shopify.dev/api/functions/reference/order-discounts/
 function FunctionDiscount() {
   const app = useAppBridge();
 
@@ -71,7 +71,7 @@ function FunctionDiscount() {
                 <List.Item>
                   <Button variant="primary" onClick={() => {
                     setAccessing(true);
-                    // See https://shopify.dev/api/admin-graphql/2023-01/mutations/discountAutomaticAppCreate"
+                    // Read https://shopify.dev/api/admin-graphql/2023-01/mutations/discountAutomaticAppCreate"
                     authenticatedFetch(app)(`/functiondiscount?meta=${meta}&id=${id}`).then((response) => {
                       response.json().then((json) => {
                         console.log(JSON.stringify(json, null, 4));

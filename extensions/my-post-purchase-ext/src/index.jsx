@@ -1,12 +1,12 @@
 // Simple upsell post-purchase with metafields.
-// See https://shopify.dev/docs/api/checkout-extensions/extension-points
-// See https://shopify.dev/docs/apps/checkout/post-purchase/getting-started-post-purchase-extension
+// Read https://shopify.dev/docs/api/checkout-extensions/extension-points
+// Read https://shopify.dev/docs/apps/checkout/post-purchase/getting-started-post-purchase-extension
 
 import { useState } from 'react';
 import { extend, render, useExtensionInput, BlockStack, Button, TextContainer, Text, TextBlock, Radio, Layout, CalloutBanner, Banner, Heading, Image } from '@shopify/post-purchase-ui-extensions-react';
 
 /* --- Step 1: Check if current products offer upsells and store the data --- */
-// See https://shopify.dev/docs/api/checkout-extensions/extension-points/api#postpurchaseshouldrenderapi
+// Read https://shopify.dev/docs/api/checkout-extensions/extension-points/api#postpurchaseshouldrenderapi
 extend('Checkout::PostPurchase::ShouldRender', async ({ inputData, storage }) => {
   console.log(`Post-purchase inputData: ${JSON.stringify(inputData, null, 4)}`);
 
@@ -57,8 +57,8 @@ render('Checkout::PostPurchase::Render', () => <App />);
 
 // Render extension result component
 // Note that this extension point needs to return remote-ui componet by Shopify which means you cannot create your own standard HTML DOM.
-// See https://shopify.dev/docs/api/checkout-extensions/extension-points/api#renderextension
-// See https://github.com/Shopify/remote-ui
+// Read https://shopify.dev/docs/api/checkout-extensions/extension-points/api#renderextension
+// Read https://github.com/Shopify/remote-ui
 export function App() {
   const { storage, inputData, calculateChangeset, applyChangeset, done } = useExtensionInput();
 
@@ -74,8 +74,8 @@ export function App() {
   // Change (add) offered products as variant ids to apply the checkout.
   const acceptOffer = async () => {
     const changes = upsell_products.map((product) => {
-      // See https://shopify.dev/docs/api/checkout-extensions/extension-points/api#changeset
-      // See https://shopify.dev/docs/api/checkout-extensions/extension-points/api#addvariantchange
+      // Read https://shopify.dev/docs/api/checkout-extensions/extension-points/api#changeset
+      // Read https://shopify.dev/docs/api/checkout-extensions/extension-points/api#addvariantchange
       return { type: 'add_variant', variantId: product.node.variants.edges[0].node.id.replace('gid://shopify/ProductVariant/', ''), quantity: 1 };
     });
     const app_url = `${inputData.shop.metafields[0].value}/postpurchase?changes=${JSON.stringify(changes)}`;
@@ -109,7 +109,7 @@ export function App() {
     // Security consideration : https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
     // NOTE THAT you shouldn't pass the customer id directly in parameters for your production, 
     // use inputData.token -> decode in your server -> token.input_data.initialPurchase.customerId, instead.
-    // See https://shopify.dev/docs/api/checkout-extensions/post-purchase/api#inputdata
+    // Read https://shopify.dev/docs/api/checkout-extensions/post-purchase/api#inputdata
     const app_url = `${inputData.shop.metafields[0].value}/postpurchase?score=${score}`;
     console.log(`Updaing the customer metafield with the given score in... ${app_url}`);
     const json = await (await fetch(app_url, {
@@ -124,7 +124,7 @@ export function App() {
     done();
   };
 
-  // See https://shopify.dev/docs/api/checkout-extensions/components
+  // Read https://shopify.dev/docs/api/checkout-extensions/components
   return (
     <BlockStack spacing="loose" alignment="center">
       <CalloutBanner>

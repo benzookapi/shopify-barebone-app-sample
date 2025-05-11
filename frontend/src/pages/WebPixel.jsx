@@ -6,8 +6,8 @@ import { Page, Card, Layout, Link, List, Badge, Checkbox, TextField, Button, Spi
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
 // Web Pixel sample
-// See https://shopify.dev/api/pixels
-// See https://shopify.dev/apps/marketing/pixels/getting-started
+// Read https://shopify.dev/api/pixels
+// Read https://shopify.dev/apps/marketing/pixels/getting-started
 function WebPixel() {
   const app = useAppBridge();
 
@@ -69,7 +69,7 @@ function WebPixel() {
                 <List.Item>
                   <Button variant="primary" onClick={() => {
                     setAccessing(true);
-                    // See https://shopify.dev/api/admin-graphql/2023-04/mutations/webPixelCreate"
+                    // Read https://shopify.dev/api/admin-graphql/2023-04/mutations/webPixelCreate"
                     authenticatedFetch(app)(`/webpixel?ga4Id=${ga4Id}&ga4Sec=${ga4Sec}&ga4Debug=${ga4Debug}`).then((response) => {
                       response.json().then((json) => {
                         console.log(JSON.stringify(json, null, 4));

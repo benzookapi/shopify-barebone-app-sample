@@ -7,8 +7,8 @@ import { Page, Card, Layout, Link, List, Badge, Button, Spinner, BlockStack } fr
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
 // Post-purchase sample
-// See https://shopify.dev/docs/api/checkout-extensions/extension-points
-// See https://shopify.dev/docs/apps/checkout/post-purchase/getting-started-post-purchase-extension
+// Read https://shopify.dev/docs/api/checkout-extensions/extension-points
+// Read https://shopify.dev/docs/apps/checkout/post-purchase/getting-started-post-purchase-extension
 function PostPurchase() {
   const app = useAppBridge();
   const redirect = Redirect.create(app);

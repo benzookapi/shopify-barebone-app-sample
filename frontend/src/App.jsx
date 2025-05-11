@@ -2,10 +2,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Provider, NavigationMenu, TitleBar } from '@shopify/app-bridge-react';
 import { AppProvider, FooterHelp } from '@shopify/polaris';
 
-// See https://www.npmjs.com/package/@shopify/polaris
+// Read https://www.npmjs.com/package/@shopify/polaris
 import '@shopify/polaris/build/esm/styles.css';
 
-// See https://www.npmjs.com/package/@shopify/react-i18n 
+// Read https://www.npmjs.com/package/@shopify/react-i18n 
 //import translations from "@shopify/polaris/locales/en.json";
 
 import Index from './pages/Index';
@@ -25,17 +25,17 @@ import Storefront from './pages/Storefront';
 
 import { _getAdminFromShop, _getShopFromQuery } from "./utils/my_util";
 
-// See https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup
+// Read https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup
 const config = {
   apiKey: API_KEY, // See ../vite.config.js
   host: new URLSearchParams(window.location.search).get("host"),
   forceRedirect: true
   // If false, the page accessed outside admin keeps the location where App Bridge doesn't work.
-  // See https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup#initialize-shopify-app-bridge-in-your-app
+  // Read https://shopify.dev/apps/tools/app-bridge/getting-started/app-setup#initialize-shopify-app-bridge-in-your-app
 };
 
 // If the page is accessed directly outside the admin unembedded, shop is used for the host.
-// See https://shopify.dev/apps/auth/oauth/getting-started#step-6-redirect-to-your-apps-ui
+// Read https://shopify.dev/apps/auth/oauth/getting-started#step-6-redirect-to-your-apps-ui
 if (config.host == null) {
   console.log(`The config.host is null, being set from 'shop'.`);
   config.host = window.btoa(_getAdminFromShop(_getShopFromQuery(window))).replace(/=/g, '');
@@ -45,8 +45,8 @@ console.log(`AppBrige settings: config.apiKey [${config.apiKey}] config.host [${
 
 // All Polaris compoments which you can copy the React snipets from. https://polaris.shopify.com/components
 // AppProvider is the base layout compoment. https://polaris.shopify.com/components/app-provider
-// See https://shopify.dev/apps/tools/app-bridge/getting-started/using-react
-// See https://polaris.shopify.com/components/app-provider 
+// Read https://shopify.dev/apps/tools/app-bridge/getting-started/using-react
+// Read https://polaris.shopify.com/components/app-provider 
 function App() {
   return (
     <Provider config={config}>

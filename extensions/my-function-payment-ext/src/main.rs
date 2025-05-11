@@ -14,7 +14,7 @@ struct Configuration {
     method: String,
     rate: String
 }
-// See https://shopify.dev/apps/checkout/payment-customizations/config
+// Read https://shopify.dev/apps/checkout/payment-customizations/config
 
 impl Configuration {
     fn from_str(value: &str) -> Self {
@@ -32,7 +32,7 @@ fn function(input: input::ResponseData) -> Result<output::FunctionResult> {
         None => return Ok(no_changes),
     };
 
-    // See https://shopify.dev/apps/checkout/delivery-customizations/getting-started
+    // Read https://shopify.dev/apps/checkout/delivery-customizations/getting-started
     let is_hide = input.cart.delivery_groups.iter().filter(|group| {
         let selected_option = group.selected_delivery_option.as_ref();
         match selected_option {
@@ -44,7 +44,7 @@ fn function(input: input::ResponseData) -> Result<output::FunctionResult> {
         }
     }).next().is_some();
 
-    // See https://shopify.dev/apps/checkout/payment-customizations/getting-started
+    // Read https://shopify.dev/apps/checkout/payment-customizations/getting-started
     let hide_payment_method = input.payment_methods.iter()
     .find(|&method| { // find = return the 1st one
         if is_hide {

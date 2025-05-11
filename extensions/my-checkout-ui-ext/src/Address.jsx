@@ -1,5 +1,5 @@
 // Checkout UI sample for address suggestion.
-// See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/targets/address/purchase-address-autocomplete-suggest
+// Read https://shopify.dev/docs/api/checkout-ui-extensions/unstable/targets/address/purchase-address-autocomplete-suggest
 
 import { extension } from '@shopify/ui-extensions/checkout';
 

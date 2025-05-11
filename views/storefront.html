@@ -402,7 +402,7 @@
       };
       if (document.getElementById('type_public').checked) {
         // Use the public token.
-        // See https://shopify.dev/docs/api/storefront/unstable/queries/products
+        // Read https://shopify.dev/docs/api/storefront/unstable/queries/products
         callStorefrontAPI(`query products @inContext(country: ${locale.country}, language: ${locale.lang}) {
                   products(first: 3) {
                     edges {
@@ -475,7 +475,7 @@
 
       if (document.getElementById('type_public').checked) {
         // Use the public token.
-        // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCreate
+        // Read https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCreate
         callStorefrontAPI(`mutation checkoutCreate($input: CheckoutCreateInput!) @inContext(country: ${locale.country}, language: ${locale.lang}) {
                   checkoutCreate(input: $input) {
                     checkout {
@@ -565,7 +565,7 @@
 
       if (document.getElementById('type_public').checked) {
         // Use the public token.
-        // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCreate
+        // Read https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCreate
         callStorefrontAPI(`mutation cartCreate($input: CartInput!) @inContext(country: ${locale.country}, language: ${locale.lang}){
           cartCreate(input: $input) {
              cart {
@@ -657,7 +657,7 @@
 
         if (document.getElementById('type_public').checked) {
           // Use the public token.
-          // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCustomerAssociateV2
+          // Read https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCustomerAssociateV2
           callStorefrontAPI(`mutation checkoutCustomerAssociateV2($checkoutId: ID!, $customerAccessToken: String!) {
                     checkoutCustomerAssociateV2(checkoutId: $checkoutId, customerAccessToken: $customerAccessToken) {
                       checkout {
@@ -735,7 +735,7 @@
       };
       if (document.getElementById('type_public').checked) {
         // Use the public token.
-        // See https://shopify.dev/docs/api/storefront/unstable/mutations/customerAccessTokenCreate
+        // Read https://shopify.dev/docs/api/storefront/unstable/mutations/customerAccessTokenCreate
         callStorefrontAPI(`mutation customerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
                   customerAccessTokenCreate(input: $input) {
                     customerAccessToken {
@@ -788,7 +788,7 @@
 
       if (document.getElementById('type_public').checked) {
         // Use the public token.
-        // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingAddressUpdateV2
+        // Read https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingAddressUpdateV2
         callStorefrontAPI(`mutation checkoutShippingAddressUpdateV2($checkoutId: ID!, $shippingAddress: MailingAddressInput!) {
                   checkoutShippingAddressUpdateV2(checkoutId: $checkoutId, shippingAddress: $shippingAddress) {
                     checkout {
@@ -878,7 +878,7 @@
 
       if (document.getElementById('type_public').checked) {
         // Use the public token.
-        // See https://shopify.dev/docs/api/storefront/unstable/mutations/cartBuyerIdentityUpdate
+        // Read https://shopify.dev/docs/api/storefront/unstable/mutations/cartBuyerIdentityUpdate
         callStorefrontAPI(`mutation cartBuyerIdentityUpdate($buyerIdentity: CartBuyerIdentityInput!, $cartId: ID!) {
           cartBuyerIdentityUpdate(buyerIdentity: $buyerIdentity, cartId: $cartId) {
             cart {
@@ -1018,7 +1018,7 @@
 
         if (document.getElementById('type_public').checked) {
           // Use the public token.
-          // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingLineUpdate
+          // Read https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingLineUpdate
           callStorefrontAPI(`mutation checkoutShippingLineUpdate($checkoutId: ID!, $shippingRateHandle: String!) {
             checkoutShippingLineUpdate(checkoutId: $checkoutId, shippingRateHandle: $shippingRateHandle) {
               checkout {
@@ -1080,7 +1080,7 @@
 
       if (document.getElementById('type_public').checked) {
         // Use the public token.
-        // See https://shopify.dev/docs/api/storefront/unstable/objects/Checkout
+        // Read https://shopify.dev/docs/api/storefront/unstable/objects/Checkout
         callStorefrontAPI(`{
           node(id: "${checkout.checkoutCreate.checkout.id}") {
             id
@@ -1137,7 +1137,7 @@
 
       if (document.getElementById('type_public').checked) {
         // Use the public token.
-        // See https://shopify.dev/docs/api/storefront/unstable/mutations/cartSelectedDeliveryOptionsUpdate
+        // Read https://shopify.dev/docs/api/storefront/unstable/mutations/cartSelectedDeliveryOptionsUpdate
         callStorefrontAPI(`mutation cartSelectedDeliveryOptionsUpdate($cartId: ID!, $selectedDeliveryOptions: [CartSelectedDeliveryOptionInput!]!) {
           cartSelectedDeliveryOptionsUpdate(cartId: $cartId, selectedDeliveryOptions: $selectedDeliveryOptions) {
             cart {

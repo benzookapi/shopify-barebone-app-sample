@@ -7,7 +7,7 @@ import { Page, Card, Layout, Link, Button, Badge, BlockStack, List } from '@shop
 import { _decodeSessionToken, foldLongLine } from "../utils/my_util";
 
 // App Bridge Session Token sample
-// See https://shopify.dev/apps/auth/oauth/session-tokens
+// Read https://shopify.dev/apps/auth/oauth/session-tokens
 function SessionToken() {
   const app = useAppBridge();
   const redirect = Redirect.create(app);
@@ -102,7 +102,7 @@ function SessionToken() {
               <Button variant="primary" onClick={() => {
                 getSessionToken(app).then((sessionToken) => {
                   // Use the current session token for external site validation for connectihg shops.
-                  // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
+                  // Read https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
                   redirect.dispatch(Redirect.Action.REMOTE, { url: `https://${window.location.hostname}/mocklogin?sessiontoken=${sessionToken}`, newContext: true });
                 });
               }}>Connect to your service with the session token

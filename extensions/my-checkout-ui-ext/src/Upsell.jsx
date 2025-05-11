@@ -1,8 +1,8 @@
 // Checkout UI sample
-// See https://shopify.dev/docs/api/checkout-ui-extensions
-// See https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-api
-// See https://shopify.dev/docs/apps/checkout/product-offers
-// See https://shopify.dev/docs/api/checkout-ui-extensions/components
+// Read https://shopify.dev/docs/api/checkout-ui-extensions
+// Read https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-api
+// Read https://shopify.dev/docs/apps/checkout/product-offers
+// Read https://shopify.dev/docs/api/checkout-ui-extensions/components
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -40,7 +40,7 @@ reactExtension('purchase.checkout.block.render', () => <Upsell />);
 /* 
 * --------- Upsell component for dynamic render --------- 
 * (Dynamitc extension point)
-* See https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-overview#dynamic-extension-points
+* Read https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-overview#dynamic-extension-points
 */
 function Upsell() {
   const extensionApi = useApi();
@@ -54,7 +54,7 @@ function Upsell() {
   const apiUrl = `https://${extensionApi.shop.myshopifyDomain}/api/${apiVersion}/graphql.json`;
 
   // Get the filtered metafield values defined by the toml file.
-  // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#useAppMetafields
+  // Read https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/metafields#useAppMetafields
   /* ==========================================================================================================
   *  NOTE THAT `useAppMetafields` (and other subscribed data) doesn't return the instances at the first rendering 
   *  so this area's code outside useEffect() are called many times asynchronously until 
@@ -81,7 +81,7 @@ function Upsell() {
     if (app_url === '' || upsell_product_ids.length == 0) return;
 
     // Getting the upsell product info in a secure way of passing shop data with SessionToken.
-    // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/standardapi
+    // Read https://shopify.dev/docs/api/checkout-ui-extensions/unstable/apis/standardapi
     extensionApi.sessionToken.get().then((token) => {
       // Retriveing upsell product data to render in the components below from the server side Admin API call.
       const url = `${app_url}/postpurchase?upsell_product_ids=${JSON.stringify(upsell_product_ids)}`;
@@ -104,7 +104,7 @@ function Upsell() {
           // Calling Storefront API mutation for creating a new checkout to use in the link below.
           // Note that all mutations are not supported and unsupported one like 'customerCreate' produces the error "Access denied for customerCreate field. Required access: `unauthenticated_write_customers` access scope."
           // Adding `unauthenticated_write_customers` to the app OAuth itself doesn't work.
-          // See https://shopify.dev/docs/api/checkout-ui-extensions/configuration#api-access
+          // Read https://shopify.dev/docs/api/checkout-ui-extensions/configuration#api-access
           const query = {
             query: `mutation cartCreate($input: CartInput!) {
                         cartCreate(input: $input) {
@@ -199,7 +199,7 @@ function Upsell() {
     });
 
     // Testing the app proxy access.
-    // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
+    // Read https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
     // Note that dev. store app proxies are protected with their passwords which means this fetch always fails.
     const appProxy = `https://${extensionApi.shop.myshopifyDomain}/apps/bareboneproxy`;
     console.log(`Accessing the app proxy ${appProxy}...`);

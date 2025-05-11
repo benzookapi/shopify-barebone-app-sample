@@ -7,7 +7,7 @@ import { Page, Card, Layout, Link, Badge, Text, Spinner, List, BlockStack, Butto
 import { _decodeSessionToken, _getAdminFromShop, _getShopFromQuery } from "../utils/my_util";
 
 // Bulk opearation sample for product impporting with a file uploader.
-// See https://shopify.dev/docs/api/usage/bulk-operations/imports
+// Read https://shopify.dev/docs/api/usage/bulk-operations/imports
 function BulkOperation() {
     const app = useAppBridge();
 

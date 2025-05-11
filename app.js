@@ -77,9 +77,9 @@ const MYSQL_DATABASE = `${process.env.SHOPIFY_MYSQL_DATABASE}`;
 const MYSQL_TABLE = 'shops';
 
 /* --- App top URL reigstered as the base one in the app settings in partner dashbord. --- */
-// See https://shopify.dev/apps/auth/oauth/getting-started
-// See https://shopify.dev/apps/best-practices/performance/admin
-// See https://shopify.dev/apps/tools/app-bridge/updating-overview#ensure-compatibility-with-the-new-shopify-admin-domain
+// Read https://shopify.dev/apps/auth/oauth/getting-started
+// Read https://shopify.dev/apps/best-practices/performance/admin
+// Read https://shopify.dev/apps/tools/app-bridge/updating-overview#ensure-compatibility-with-the-new-shopify-admin-domain
 router.get('/', async (ctx, next) => {
   console.log("+++++++++++++++ / +++++++++++++++");
   if (!checkSignature(ctx.request.query)) {
@@ -114,7 +114,7 @@ router.get('/', async (ctx, next) => {
       }
     }
     if (install) {
-      // See https://shopify.dev/apps/auth/oauth/getting-started
+      // Read https://shopify.dev/apps/auth/oauth/getting-started
       // `&scope=` is no longer used because `app.toml` defines it with `shopify app deploy`.
       const redirectUrl = `https://${shop}/admin/oauth/authorize?client_id=${API_KEY}&redirect_uri=https://${ctx.request.host}/callback&state=&grant_options[]=`;
       console.log(`Redirecting to ${redirectUrl} for OAuth flow...`);
@@ -134,14 +134,14 @@ router.get('/', async (ctx, next) => {
     return;
   }
 
-  // See https://shopify.dev/apps/store/security/iframe-protection
+  // Read https://shopify.dev/apps/store/security/iframe-protection
   setContentSecurityPolicy(ctx, shop);
   await ctx.render('index', {});
 
 });
 
 /* --- Callback URL redirected by Shopify after the authentication which needs to be registered as the while listed URL in the app settings in partner dashboard. --- */
-// See https://shopify.dev/apps/auth/oauth/getting-started
+// Read https://shopify.dev/apps/auth/oauth/getting-started
 router.get('/callback', async (ctx, next) => {
   console.log("+++++++++++++++ /callback +++++++++++++++");
   if (!checkSignature(ctx.request.query)) {
@@ -188,15 +188,15 @@ router.get('/callback', async (ctx, next) => {
       }`, res.access_token, GRAPHQL_PATH_ADMIN, null));
   } catch (e) { }
 
-  // See https://shopify.dev/apps/auth/oauth/update
+  // Read https://shopify.dev/apps/auth/oauth/update
   // Do server side redirection because this is NOT embedded ("embedded" parameter is not passed).
-  // See https://shopify.dev/apps/tools/app-bridge/updating-overview#ensure-compatibility-with-the-new-shopify-admin-domain
+  // Read https://shopify.dev/apps/tools/app-bridge/updating-overview#ensure-compatibility-with-the-new-shopify-admin-domain
   ctx.redirect(`https://${getAdminFromShop(shop)}/apps/${api_res.data.app.handle}`);
 
 });
 
 /* --- Session Token sample endpoint --- */
-// See https://shopify.dev/apps/auth/oauth/session-tokens
+// Read https://shopify.dev/apps/auth/oauth/session-tokens
 router.get('/sessiontoken', async (ctx, next) => {
   console.log("+++++++++++++++ /sessiontoken +++++++++++++++");
   if (!checkSignature(ctx.request.query)) {
@@ -210,14 +210,14 @@ router.get('/sessiontoken', async (ctx, next) => {
 });
 
 /* --- authenticated fetch endpoint --- */
-// See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
+// Read https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
 router.get('/authenticated', async (ctx, next) => {
   console.log("+++++++++++++++ /authenticated +++++++++++++++");
   console.log(`request: ${JSON.stringify(ctx.request, null, 4)}`);
 
   // The token is the same as the client session token given by App Bridge in 'Authorization Bearer' for OAuth 2.0 Flow which encodes shop, app id, etc for YOUR OWN authorization.
-  // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
-  // See https://www.rfc-editor.org/rfc/rfc6750
+  // Read https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
+  // Read https://www.rfc-editor.org/rfc/rfc6750
   const token = getTokenFromAuthHeader(ctx);
 
   ctx.set('Content-Type', 'application/json');
@@ -234,7 +234,7 @@ router.get('/authenticated', async (ctx, next) => {
     }
   };
 
-  // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#verify-the-session-tokens-signature    
+  // Read https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#verify-the-session-tokens-signature    
   const [verified, sig] = checkAuthFetchToken(token);
   ctx.body.result.signature_generated = sig;
   if (!verified) {
@@ -245,7 +245,7 @@ router.get('/authenticated', async (ctx, next) => {
   ctx.body.result.signature_verified = true;
 
   // If the signature gets verified, we trust the token payload to get stored token for the given shop.
-  // See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#optional-obtain-session-details-and-verify-the-session-token-manually
+  // Read https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#optional-obtain-session-details-and-verify-the-session-token-manually
   const shop = getShopFromAuthToken(token);
   ctx.body.result.shop_from_payload = shop;
 
@@ -271,7 +271,7 @@ router.get('/authenticated', async (ctx, next) => {
 });
 
 /* --- Admin Link sample endpoint --- */
-// See https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link
+// Read https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link
 router.get('/adminlink', async (ctx, next) => {
   console.log("+++++++++++++++ /adminlink +++++++++++++++");
   console.log(`query ${JSON.stringify(ctx.request.query)}`);
@@ -373,7 +373,7 @@ router.get('/adminlink', async (ctx, next) => {
 });
 
 /* --- Theme App Extension sample endpoint --- */
-// See https://shopify.dev/apps/online-store/theme-app-extensions
+// Read https://shopify.dev/apps/online-store/theme-app-extensions
 router.get('/themeapp', async (ctx, next) => {
   console.log("+++++++++++++++ /themeapp +++++++++++++++");
   if (!checkSignature(ctx.request.query)) {
@@ -387,7 +387,7 @@ router.get('/themeapp', async (ctx, next) => {
 });
 
 /* --- Function Discount sample endpoint --- */
-// See https://shopify.dev/apps/discounts
+// Read https://shopify.dev/apps/discounts
 router.get('/functiondiscount', async (ctx, next) => {
   console.log("+++++++++++++++ /functiondiscount +++++++++++++++");
   console.log(`query ${JSON.stringify(ctx.request.query)}`);
@@ -462,7 +462,7 @@ router.get('/functiondiscount', async (ctx, next) => {
           "metafields": [
             {
               //"id": "",
-              // See https://shopify.dev/api/functions/input-query-variables
+              // Read https://shopify.dev/api/functions/input-query-variables
               // Setting this metafield enables no code input data filtering.
               "key": "customer_meta",
               "namespace": "barebone_app_function_discount",
@@ -497,7 +497,7 @@ router.get('/functiondiscount', async (ctx, next) => {
 });
 
 /* --- Function Shipping method sample endpoint --- */
-// See https://shopify.dev/apps/checkout/delivery-customizations
+// Read https://shopify.dev/apps/checkout/delivery-customizations
 router.get('/functionshipping', async (ctx, next) => {
   console.log("+++++++++++++++ /functionshipping +++++++++++++++");
   console.log(`query ${JSON.stringify(ctx.request.query)}`);
@@ -603,7 +603,7 @@ router.get('/functionshipping', async (ctx, next) => {
 });
 
 /* --- Function Payment method sample endpoint --- */
-// See https://shopify.dev/apps/checkout/payment-customizations
+// Read https://shopify.dev/apps/checkout/payment-customizations
 router.get('/functionpayment', async (ctx, next) => {
   console.log("+++++++++++++++ /functionpayment +++++++++++++++");
   console.log(`query ${JSON.stringify(ctx.request.query)}`);
@@ -709,7 +709,7 @@ router.get('/functionpayment', async (ctx, next) => {
 });
 
 /* --- Web Pixel sample endpoint --- */
-// See https://shopify.dev/apps/marketing/pixels
+// Read https://shopify.dev/apps/marketing/pixels
 router.get('/webpixel', async (ctx, next) => {
   console.log("+++++++++++++++ /webpixel +++++++++++++++");
   console.log(`query ${JSON.stringify(ctx.request.query)}`);
@@ -796,8 +796,8 @@ router.get('/webpixel', async (ctx, next) => {
 });
 
 /* --- Post-purchase Extension sample endpoint --- */
-// See https://shopify.dev/docs/apps/checkout/post-purchase
-// See https://shopify.dev/docs/api/checkout-extensions/extension-points
+// Read https://shopify.dev/docs/apps/checkout/post-purchase
+// Read https://shopify.dev/docs/api/checkout-extensions/extension-points
 router.get('/postpurchase', async (ctx, next) => {
   console.log("+++++++++++++++ /postpurchase +++++++++++++++");
 
@@ -933,8 +933,8 @@ router.post('/postpurchase', async (ctx, next) => {
   const input_data = typeof decoded_token.input_data !== UNDEFINED ? decoded_token.input_data : null;
   console.log(`input_data: ${JSON.stringify(input_data)}`);
 
-  // See https://shopify.dev/docs/api/checkout-extensions/post-purchase/api#inputdata
-  // See https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
+  // Read https://shopify.dev/docs/api/checkout-extensions/post-purchase/api#inputdata
+  // Read https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access
   const shop = input_data != null ? input_data.shop.domain : decoded_token.dest;
   console.log(`shop: ${shop}`);
   const customer_id = input_data != null ? `${input_data.initialPurchase.customerId}` : typeof decoded_token.sub !== UNDEFINED ? `${decoded_token.sub}` : '';
@@ -1039,8 +1039,8 @@ router.post('/postpurchase', async (ctx, next) => {
 });
 
 /* --- Checkout UI sample endpoint --- */
-// See https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-api
-// See https://shopify.dev/docs/apps/checkout/product-offers/add-product-offer
+// Read https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-api
+// Read https://shopify.dev/docs/apps/checkout/product-offers/add-product-offer
 router.get('/checkoutui', async (ctx, next) => {
   console.log("+++++++++++++++ /checkoutui +++++++++++++++");
 
@@ -1055,7 +1055,7 @@ router.get('/checkoutui', async (ctx, next) => {
 });
 
 /* --- Order management sample endpoint --- */
-// See https://shopify.dev/docs/apps/fulfillment
+// Read https://shopify.dev/docs/apps/fulfillment
 router.get('/ordermanage', async (ctx, next) => {
   console.log("+++++++++++++++ /ordermanage +++++++++++++++");
   console.log(`query ${JSON.stringify(ctx.request.query)}`);
@@ -1462,7 +1462,7 @@ router.get('/ordermanage', async (ctx, next) => {
 });
 
 /* --- Fulfillment service endpoint --- */
-// See https://shopify.dev/docs/api/admin-graphql/unstable/objects/FulfillmentService
+// Read https://shopify.dev/docs/api/admin-graphql/unstable/objects/FulfillmentService
 // The validation and request data are the same as webhooks.
 router.post('/fulfillment_order_notification', async (ctx, next) => {
   console.log("*************** fulfillment_order_notification ***************");
@@ -1562,8 +1562,8 @@ router.post('/fulfillment_order_notification', async (ctx, next) => {
 });
 
 /* --- Fulfillment service tracking number endpoint --- */
-// See https://shopify.dev/docs/api/admin-graphql/unstable/objects/FulfillmentService
-// See https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps/manage-fulfillments#step-8-optional-enable-tracking-support
+// Read https://shopify.dev/docs/api/admin-graphql/unstable/objects/FulfillmentService
+// Read https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps/manage-fulfillments#step-8-optional-enable-tracking-support
 router.get('/fetch_tracking_numbers.json', async (ctx, next) => {
   console.log("*************** fetch_tracking_numbers.json ***************");
   console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
@@ -1593,8 +1593,8 @@ router.get('/fetch_tracking_numbers.json', async (ctx, next) => {
 });
 
 /* --- Fulfillment service inventory endpoint --- */
-// See https://shopify.dev/docs/api/admin-graphql/unstable/objects/FulfillmentService
-// See https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps/manage-fulfillments#step-9-optional-share-inventory-levels-with-shopify
+// Read https://shopify.dev/docs/api/admin-graphql/unstable/objects/FulfillmentService
+// Read https://shopify.dev/docs/apps/fulfillment/fulfillment-service-apps/manage-fulfillments#step-9-optional-share-inventory-levels-with-shopify
 router.get('/fetch_stock.json', async (ctx, next) => {
   console.log("*************** fetch_stock.json ***************");
   console.log(`*** request *** ${JSON.stringify(ctx.request)}`);
@@ -1624,7 +1624,7 @@ router.get('/fetch_stock.json', async (ctx, next) => {
 });
 
 /* --- Multipass sample endpoint for admin --- */
-// See https://shopify.dev/docs/api/multipass
+// Read https://shopify.dev/docs/api/multipass
 router.get('/multipass', async (ctx, next) => {
   console.log("+++++++++++++++ /multipass +++++++++++++++");
 
@@ -1732,7 +1732,7 @@ router.get('/multipass', async (ctx, next) => {
 });
 
 /* --- Multipass sample endpoint for login --- */
-// See https://shopify.dev/docs/api/multipass
+// Read https://shopify.dev/docs/api/multipass
 router.post('/multipass', async (ctx, next) => {
   console.log("+++++++++++++++ /multipass +++++++++++++++");
   console.log(`body: ${JSON.stringify(ctx.request.body, null, 4)}`);
@@ -1810,7 +1810,7 @@ router.post('/multipass', async (ctx, next) => {
 });
 
 /* --- Bulk operation sample endpoint --- */
-// See https://shopify.dev/docs/api/usage/bulk-operations
+// Read https://shopify.dev/docs/api/usage/bulk-operations
 router.get('/bulkoperation', async (ctx, next) => {
   console.log("+++++++++++++++ /bulkoperation +++++++++++++++");
   console.log(`query ${JSON.stringify(ctx.request.query)}`);
@@ -1954,7 +1954,7 @@ router.get('/bulkoperation', async (ctx, next) => {
 });
 
 /* --- Storefront API sample endpoint for admin --- */
-// See https://shopify.dev/docs/api/storefront
+// Read https://shopify.dev/docs/api/storefront
 router.get('/storefront', async (ctx, next) => {
   console.log("+++++++++++++++ /storefront +++++++++++++++");
   console.log(`query ${JSON.stringify(ctx.request.query)}`);
@@ -2001,7 +2001,7 @@ router.get('/storefront', async (ctx, next) => {
 
     try {
       // 1. Generate a public token which can be exposed to the browsers, mobiles and other client side to call the API directly.
-      // See https://shopify.dev/docs/api/admin-graphql/unstable/mutations/storefrontAccessTokenCreate  
+      // Read https://shopify.dev/docs/api/admin-graphql/unstable/mutations/storefrontAccessTokenCreate  
       // Note that the public token can be used only for Storefront API which can be exposed to the client side.  
       let api_res = await (callGraphql(ctx, shop, `mutation storefrontAccessTokenCreate($input: StorefrontAccessTokenInput!) {
         storefrontAccessTokenCreate(input: $input) {
@@ -2037,8 +2037,8 @@ router.get('/storefront', async (ctx, next) => {
         response.public_token = api_res.data.storefrontAccessTokenCreate.storefrontAccessToken;
       }
       // 2. Genrate a private token which can never to exposed to any clients, used for server side API calls only.
-      // See https://shopify.dev/docs/api/admin-graphql/unstable/mutations/delegateAccessTokenCreate
-      // See https://shopify.dev/docs/api/usage/access-scopes#unauthenticated-access-scopes
+      // Read https://shopify.dev/docs/api/admin-graphql/unstable/mutations/delegateAccessTokenCreate
+      // Read https://shopify.dev/docs/api/usage/access-scopes#unauthenticated-access-scopes
       // Note that the private token can be used NOT only for Storefront API but Admin API too which must be secret in the server side. 
       api_res = await (callGraphql(ctx, shop, `mutation delegateAccessTokenCreate($input: DelegateAccessTokenInput!) {
         delegateAccessTokenCreate(input: $input) {
@@ -2138,7 +2138,7 @@ router.get('/storefront', async (ctx, next) => {
 });
 
 /* --- Storefront API sameple endpoint for using the private token --- */
-// See https://shopify.dev/docs/api/usage/authentication#getting-started-with-private-access
+// Read https://shopify.dev/docs/api/usage/authentication#getting-started-with-private-access
 router.post('/storefront', async (ctx, next) => {
   console.log("+++++++++++++++ /storefront +++++++++++++++");
   console.log(`query ${JSON.stringify(ctx.request.query)}`);
@@ -2172,7 +2172,7 @@ router.post('/storefront', async (ctx, next) => {
 
     if (action === 'show_product') {
       // Call Admin API with the given private (delegated) token, not the access token in the database.
-      // See https://shopify.dev/docs/api/admin-graphql/unstable/queries/products
+      // Read https://shopify.dev/docs/api/admin-graphql/unstable/queries/products
       api_res = await (callGraphql(ctx, shop, `{
         products(first: 3) {
           edges {
@@ -2196,7 +2196,7 @@ router.post('/storefront', async (ctx, next) => {
     }
     if (action === 'create_checkout') {
       // Call Storefront API with the given private (delegated) token.
-      // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCreate
+      // Read https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCreate
       const locale = JSON.parse(ctx.request.query.locale);
       api_res = await (callGraphql(ctx, shop, `mutation checkoutCreate($input: CheckoutCreateInput!) @inContext(country: ${locale.country}, language: ${locale.lang}) {
         checkoutCreate(input: $input) {
@@ -2233,7 +2233,7 @@ router.post('/storefront', async (ctx, next) => {
     }
     if (action === 'create_cart') {
       // Call Storefront API with the given private (delegated) token.
-      // See https://shopify.dev/docs/api/storefront/unstable/mutations/cartCreate
+      // Read https://shopify.dev/docs/api/storefront/unstable/mutations/cartCreate
       const locale = JSON.parse(ctx.request.query.locale);
       api_res = await (callGraphql(ctx, shop, `mutation cartCreate($input: CartInput!) @inContext(country: ${locale.country}, language: ${locale.lang}){
         cartCreate(input: $input) {
@@ -2298,7 +2298,7 @@ router.post('/storefront', async (ctx, next) => {
     }
     if (action === 'login_customer') {
       // Call Storefront API with the given private (delegated) token.
-      // See https://shopify.dev/docs/api/storefront/unstable/mutations/customerAccessTokenCreate
+      // Read https://shopify.dev/docs/api/storefront/unstable/mutations/customerAccessTokenCreate
       api_res = await (callGraphql(ctx, shop, `mutation customerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
         customerAccessTokenCreate(input: $input) {
           customerAccessToken {
@@ -2318,7 +2318,7 @@ router.post('/storefront', async (ctx, next) => {
     }
     if (action === 'customer_associate') {
       // Call Storefront API with the given private (delegated) token.
-      // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCustomerAssociateV2
+      // Read https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCustomerAssociateV2
       api_res = await (callGraphql(ctx, shop, `mutation checkoutCustomerAssociateV2($checkoutId: ID!, $customerAccessToken: String!) {
         checkoutCustomerAssociateV2(checkoutId: $checkoutId, customerAccessToken: $customerAccessToken) {
           checkout {
@@ -2387,7 +2387,7 @@ router.post('/storefront', async (ctx, next) => {
     }
     if (action === 'apply_address') {
       // Call Storefront API with the given private (delegated) token.
-      // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingAddressUpdateV2
+      // Read https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingAddressUpdateV2
       api_res = await (callGraphql(ctx, shop, `mutation checkoutShippingAddressUpdateV2($checkoutId: ID!, $shippingAddress: MailingAddressInput!) {
         checkoutShippingAddressUpdateV2(checkoutId: $checkoutId, shippingAddress: $shippingAddress) {
           checkout {
@@ -2434,7 +2434,7 @@ router.post('/storefront', async (ctx, next) => {
     }
     if (action === 'update_buyer') {
       // Call Storefront API with the given private (delegated) token.
-      // See https://shopify.dev/docs/api/storefront/unstable/mutations/cartBuyerIdentityUpdate
+      // Read https://shopify.dev/docs/api/storefront/unstable/mutations/cartBuyerIdentityUpdate
       api_res = await (callGraphql(ctx, shop, `mutation cartBuyerIdentityUpdate($buyerIdentity: CartBuyerIdentityInput!, $cartId: ID!) {
         cartBuyerIdentityUpdate(buyerIdentity: $buyerIdentity, cartId: $cartId) {
           cart {
@@ -2544,7 +2544,7 @@ router.post('/storefront', async (ctx, next) => {
     }
     if (action === 'set_rate') {
       // Call Storefront API with the given private (delegated) token.
-      // See https://shopify.dev/docs/api/storefront/unstable/objects/Checkout
+      // Read https://shopify.dev/docs/api/storefront/unstable/objects/Checkout
       api_res = await (callGraphql(ctx, shop, `{
         node(id: "${ctx.request.query.id}") {
           id
@@ -2567,7 +2567,7 @@ router.post('/storefront', async (ctx, next) => {
     }
     if (action === 'rate_selected') {
       // Call Storefront API with the given private (delegated) token.
-      // See https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingLineUpdate
+      // Read https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingLineUpdate
       api_res = await (callGraphql(ctx, shop, `mutation checkoutShippingLineUpdate($checkoutId: ID!, $shippingRateHandle: String!) {
         checkoutShippingLineUpdate(checkoutId: $checkoutId, shippingRateHandle: $shippingRateHandle) {
           checkout {
@@ -2623,7 +2623,7 @@ router.post('/storefront', async (ctx, next) => {
     }
     if (action === 'set_option') {
       // Call Storefront API with the given private (delegated) token.
-      // See https://shopify.dev/docs/api/storefront/unstable/mutations/cartSelectedDeliveryOptionsUpdate
+      // Read https://shopify.dev/docs/api/storefront/unstable/mutations/cartSelectedDeliveryOptionsUpdate
       api_res = await (callGraphql(ctx, shop, `mutation cartSelectedDeliveryOptionsUpdate($cartId: ID!, $selectedDeliveryOptions: [CartSelectedDeliveryOptionInput!]!) {
         cartSelectedDeliveryOptionsUpdate(cartId: $cartId, selectedDeliveryOptions: $selectedDeliveryOptions) {
           cart {
@@ -2745,7 +2745,7 @@ router.post('/storefront', async (ctx, next) => {
 });
 
 /* --- App proxies sample endpoint --- */
-// See https://shopify.dev/apps/online-store/app-proxies
+// Read https://shopify.dev/apps/online-store/app-proxies
 router.all('/appproxy', async (ctx, next) => {
   console.log("+++++++++++++++ /appproxy +++++++++++++++");
   console.log(`request ${JSON.stringify(ctx.request, null, 4)}`);
@@ -2790,7 +2790,7 @@ router.all('/appproxy', async (ctx, next) => {
 });
 
 /* --- Mock login for external service connection demo --- */
-// See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
+// Read https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
 router.get('/mocklogin', async (ctx, next) => {
   console.log("------------ mocklogin ------------");
   console.log(`query ${JSON.stringify(ctx.request.query)}`);
@@ -2919,7 +2919,7 @@ router.post('/flowaction', async (ctx, next) => {
 });
 
 /* --- Check if the given signature is correct or not --- */
-// See https://shopify.dev/apps/auth/oauth/getting-started#step-2-verify-the-installation-request
+// Read https://shopify.dev/apps/auth/oauth/getting-started#step-2-verify-the-installation-request
 const checkSignature = function (json) {
   let temp = JSON.parse(JSON.stringify(json));
   console.log(`checkSignature ${JSON.stringify(temp)}`);
@@ -2936,7 +2936,7 @@ const checkSignature = function (json) {
 };
 
 /* --- Check if the given signature is correct or not for app proxies --- */
-// See https://shopify.dev/apps/online-store/app-proxies#calculate-a-digital-signature
+// Read https://shopify.dev/apps/online-store/app-proxies#calculate-a-digital-signature
 const checkAppProxySignature = function (json) {
   let temp = JSON.parse(JSON.stringify(json));
   console.log(`checkAppProxySignature ${JSON.stringify(temp)}`);
@@ -2953,7 +2953,7 @@ const checkAppProxySignature = function (json) {
 };
 
 /* --- Check if the given signarure is corect or not for Webhook --- */
-// See https://shopify.dev/apps/webhooks/configuration/https#step-5-verify-the-webhook
+// Read https://shopify.dev/apps/webhooks/configuration/https#step-5-verify-the-webhook
 const checkWebhookSignature = function (ctx, secret) {
   return new Promise(function (resolve, reject) {
     console.log(`checkWebhookSignature Headers ${JSON.stringify(ctx.headers)}`);
@@ -2969,7 +2969,7 @@ const checkWebhookSignature = function (ctx, secret) {
 };
 
 /* --- Generate a token for Multipass with a given customer data and secret --- */
-// See https://shopify.dev/docs/api/multipass
+// Read https://shopify.dev/docs/api/multipass
 const generateMultipassToken = function (json, secret) {
   const json_str = JSON.stringify(json);
   console.log(`generateMultipassToken json ${json_str} secret ${secret}`);
@@ -2986,13 +2986,13 @@ const generateMultipassToken = function (json, secret) {
 }
 
 /* --- Get a token string from a given authorization header --- */
-// See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
+// Read https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#step-2-authenticate-your-requests
 const getTokenFromAuthHeader = function (ctx) {
   return ctx.request.header.authorization.replace('Bearer ', '');
 };
 
 /* --- Get a shop from a token from a given authorization header --- */
-// See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#optional-obtain-session-details-and-verify-the-session-token-manually
+// Read https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#optional-obtain-session-details-and-verify-the-session-token-manually
 const getShopFromAuthToken = function (token) {
   const payload = jwt_decode(token);
   console.log(`payload: ${JSON.stringify(payload, null, 4)}`);
@@ -3000,7 +3000,7 @@ const getShopFromAuthToken = function (token) {
 };
 
 /* --- Check if the given signarure is corect or not for App Bridge authenticated requests --- */
-// See https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#verify-the-session-tokens-signature
+// Read https://shopify.dev/apps/auth/oauth/session-tokens/getting-started#verify-the-session-tokens-signature
 const checkAuthFetchToken = function (token) {
   const [header, payload, signature] = token.split("\.");
   console.log(`checkAuthFetchToken header: ${header} payload: ${payload} signature: ${signature}`);
@@ -3027,14 +3027,14 @@ const getIdFromShop = function (shop) {
 };
 
 /* --- Get Admin domain and path from shop domain --- */
-// See https://shopify.dev/apps/tools/app-bridge/updating-overview#ensure-compatibility-with-the-new-shopify-admin-domain
-// See https://www.shopify.com/partners/blog/september-product-updates-for-partners-and-developers
+// Read https://shopify.dev/apps/tools/app-bridge/updating-overview#ensure-compatibility-with-the-new-shopify-admin-domain
+// Read https://www.shopify.com/partners/blog/september-product-updates-for-partners-and-developers
 const getAdminFromShop = function (shop) {
   return `admin.shopify.com/store/${getIdFromShop(shop)}`;
 };
 
 /* --- Set Content-Security-Policy header for admin embedded types --- */
-// See https://shopify.dev/apps/store/security/iframe-protection
+// Read https://shopify.dev/apps/store/security/iframe-protection
 const setContentSecurityPolicy = function (ctx, shop) {
   if (isEmbedded(ctx)) {
     ctx.response.set('Content-Security-Policy', `frame-ancestors https://${shop} https://admin.shopify.com;`);
@@ -3109,7 +3109,7 @@ const accessEndpoint = function (ctx, endpoint, req, token = null, content_type 
     headers['Content-Type'] = content_type;
     if (token != null) {
       if (storefront) {
-        // See https://shopify.dev/docs/api/usage/authentication#getting-started-with-private-access
+        // Read https://shopify.dev/docs/api/usage/authentication#getting-started-with-private-access
         headers['Shopify-Storefront-Private-Token'] = token;
         headers['Shopify-Storefront-Buyer-IP'] = ip_address;
       } else {

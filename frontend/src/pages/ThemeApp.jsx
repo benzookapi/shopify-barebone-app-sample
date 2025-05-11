@@ -6,8 +6,8 @@ import { Page, Card, Layout, Link, Badge, List, Button, TextField, BlockStack } 
 import { _getShopFromQuery, _getAdminFromShop } from "../utils/my_util";
 
 // Theme App Extension sample with App Proxies
-// See https://shopify.dev/apps/online-store/theme-app-extensions
-// See https://shopify.dev/apps/online-store/app-proxies
+// Read https://shopify.dev/apps/online-store/theme-app-extensions
+// Read https://shopify.dev/apps/online-store/app-proxies
 function ThemeApp() {
     const app = useAppBridge();
     const redirect = Redirect.create(app);
@@ -39,7 +39,7 @@ function ThemeApp() {
                                 </List.Item>
                                 <List.Item>
                                     <Button variant="primary" onClick={() => {
-                                        // See https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#simplified-installation-flow-with-deep-linking
+                                        // Read https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#simplified-installation-flow-with-deep-linking
                                         const path = `/themes/current/editor?context=apps&activateAppId=${id}/app-embed-block`;
                                         console.log(path);
                                         redirect.dispatch(Redirect.Action.ADMIN_PATH, {
