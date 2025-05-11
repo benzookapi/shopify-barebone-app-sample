@@ -42,7 +42,7 @@ For creating React frontend, the following contents might help you.
 - [App Bridge Actions](https://shopify.dev/apps/tools/app-bridge/actions)
 - [Polaris Compoments by React](https://polaris.shopify.com/components)
 
-For extensions like Theme App Extensinons, Shopify Functtions, and Checkout Extensions, refer to the [app extensions](https://shopify.dev/docs/apps/build/app-extensions) page.
+For extensions like Theme App Extensinons, Shopify Functions, and Checkout UI Extensions, refer to the [App extensions](https://shopify.dev/docs/apps/build/app-extensions) and [List of app extensions](https://shopify.dev/docs/apps/build/app-extensions/list-of-app-extensions).
 
 # How to run
 0. Create your Shopify partner account from [here](https://www.shopify.com/partners) and create a Shopify app **manually** (not choosing Shopify CLI) in the app menu of your dashboard. Also, [create a development store](https://shopify.dev/docs/api/development-stores#create-a-development-store-to-test-your-app) to install this app too. If you want to customize this sample code, don't forget to clone (fork) this repository to make your own one.
@@ -144,6 +144,7 @@ you can install to your development stores from the app `Overview` in your partn
 - For server side update (`app.js` or `views` in Koa), run the start command (`npm run start`) again works. Some cloud services like Render enables it with `git commit & git push`.
 - For fronend update (`frontend` in React), run the build command (`npm run build`) again. If you change the value of `SHOPIFY_API_KEY`, you need to build again. Some cloud services like Render enables it with `git commit & git push`.
 - For extension update (`extensions`), run `shopify app deploy` again. This needs to be done in your local (development) PC, not in the cloud hosting service.  If you change the value of `SHOPIFY_API_KEY`, you need to deploy again with the toml file updated as described below.
+- For adding a new extension under `extensions`, run `shopify app generate extension` to choose your prefered one with a template. 
 
 # Sample list
 All sample are available at [Wiki](../../wiki).
