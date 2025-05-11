@@ -76,7 +76,7 @@ const MYSQL_PASSWORD = `${process.env.SHOPIFY_MYSQL_PASSWORD}`;
 const MYSQL_DATABASE = `${process.env.SHOPIFY_MYSQL_DATABASE}`;
 const MYSQL_TABLE = 'shops';
 
-/* --- App root URL reigstered in the app settings manually or `shopify app deploy` with `app.toml`. --- */
+/* --- App root URL reigstered in the app settings manually or `shopify app deploy` with `shopify.app.toml`. --- */
 // Read https://shopify.dev/apps/auth/oauth/getting-started For the OAuth flow
 // Read https://shopify.dev/apps/best-practices/performance/admin For the embedded app
 router.get('/', async (ctx, next) => {
@@ -114,7 +114,7 @@ router.get('/', async (ctx, next) => {
     }
     if (install) {
       // Read https://shopify.dev/apps/auth/oauth/getting-started
-      // `&scope=` is no longer used because `app.toml` defines it with `shopify app deploy`.
+      // `&scope=` is no longer used because `shopify.app.toml` defines it with `shopify app deploy`.
       const redirectUrl = `https://${shop}/admin/oauth/authorize?client_id=${API_KEY}&redirect_uri=https://${ctx.request.host}/callback&state=&grant_options[]=`;
       console.log(`Redirecting to ${redirectUrl} for OAuth flow...`);
       ctx.redirect(redirectUrl);
