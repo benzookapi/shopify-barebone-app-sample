@@ -76,10 +76,9 @@ const MYSQL_PASSWORD = `${process.env.SHOPIFY_MYSQL_PASSWORD}`;
 const MYSQL_DATABASE = `${process.env.SHOPIFY_MYSQL_DATABASE}`;
 const MYSQL_TABLE = 'shops';
 
-/* --- App top URL reigstered as the base one in the app settings in partner dashbord. --- */
-// Read https://shopify.dev/apps/auth/oauth/getting-started
-// Read https://shopify.dev/apps/best-practices/performance/admin
-// Read https://shopify.dev/apps/tools/app-bridge/updating-overview#ensure-compatibility-with-the-new-shopify-admin-domain
+/* --- App root URL reigstered in the app settings manually or `shopify app deploy` with `app.toml`. --- */
+// Read https://shopify.dev/apps/auth/oauth/getting-started For the OAuth flow
+// Read https://shopify.dev/apps/best-practices/performance/admin For the embedded app
 router.get('/', async (ctx, next) => {
   console.log("+++++++++++++++ / +++++++++++++++");
   if (!checkSignature(ctx.request.query)) {
