@@ -473,7 +473,7 @@ router.get('/functiondiscount', async (ctx, next) => {
             }
           ],
           "startsAt": new Date().toISOString(),
-          "title": `Barebone App Function Discount`
+          "title": `Barebone App Function Discount - ${new Date().toISOString()}`,
         }
       }));
     } catch (e) {
