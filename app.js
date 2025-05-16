@@ -452,9 +452,9 @@ router.get('/functiondiscount', async (ctx, next) => {
       `, null, GRAPHQL_PATH_ADMIN, {
         "automaticAppDiscount": {
           "combinesWith": {
-            "orderDiscounts": false,
-            "productDiscounts": false,
-            "shippingDiscounts": false
+            "orderDiscounts": true,
+            "productDiscounts": true,
+            "shippingDiscounts": true
           },
           //"endsAt": "",
           "functionId": id,
