@@ -254,7 +254,7 @@ function OrderManage() {
                         <List.Item>
                             <p>The inventory status changes as follows.</p>
                             <p><b>Before checkout:</b> <Badge>Available</Badge> -&gt; <b>After checkout:</b> <Badge>Committed</Badge> -&gt; <b>After fulfillment:</b> <Badge>No status = the quantity is decreased</Badge></p>
-                            You can catch the change in <Link url='https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#value-inventorylevelsupdate' target='_blank'>inventory_levels/update webhook</Link> to query <Link url='https://shopify.dev/docs/apps/fulfillment/inventory-management-apps/quantities-states' target='_blank'>Inventory Item & Inventory Level</Link> to send back the latest quantities and status to your external system.
+                            You can catch the change in <Link url='https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-INVENTORY_LEVELS_UPDATE' target='_blank'>inventory_levels/update webhook</Link> to query <Link url='https://shopify.dev/docs/apps/fulfillment/inventory-management-apps/quantities-states' target='_blank'>Inventory Item & Inventory Level</Link> to send back the latest quantities and status to your external system.
                         </List.Item>
                     </List>
                     <List type="bullet">

@@ -1528,8 +1528,8 @@ router.post('/fulfillment_order_notification', async (ctx, next) => {
               }
             }
           }`, null, GRAPHQL_PATH_ADMIN, null).then((res) => {
-        callGraphql(ctx, shop, `mutation fulfillmentCreateV2($fulfillment: FulfillmentV2Input!) {
-                fulfillmentCreateV2(fulfillment: $fulfillment) {
+        callGraphql(ctx, shop, `mutation fulfillmentCreate($fulfillment: FulfillmentInput!, $message: String) {
+                fulfillmentCreate(fulfillment: $fulfillment, message: $message) {
                   fulfillment {
                     id
                     name
@@ -1543,15 +1543,22 @@ router.post('/fulfillment_order_notification', async (ctx, next) => {
           "fulfillment": {
             "lineItemsByFulfillmentOrder": [
               {
-                "fulfillmentOrderId": e.node.id
+                "fulfillmentOrderId": e.node.id,
+                "fulfillmentOrderLineItems": e.node.lineItems.edges.map((li) => {
+                  return {
+                    "id": li.node.id,
+                    "quantity": li.node.remainingQuantity
+                  };
+                })
               }
             ],
             "trackingInfo": {
               "company": "Barebone app shipping carrier",
               "number": `service-${new Date().getTime()}`,
-              "url": "https://github.com/benzookapi"
+              "url": "https://www.shopify.com"
             }
-          }
+          },
+          "message": "Your fulfillment has been created by the fulfillment service app!"
         });
       });
     });
