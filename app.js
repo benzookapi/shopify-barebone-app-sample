@@ -1533,30 +1533,34 @@ router.post('/fulfillment_order_notification', async (ctx, next) => {
                   fulfillment {
                     id
                     name
-                    inventoryLevels(first: 10) {
-                      edges {
-                        node {
-                          id
-                          item {
+                    location {
+                      id
+                      name
+                      inventoryLevels(first: 10) {
+                        edges {
+                          node {
                             id
-                            variant {
+                            item {
                               id
-                              title
-                              product {
+                              variant {
                                 id
                                 title
+                                product {
+                                  id
+                                  title
+                                }
                               }
                             }
-                          }
-                          quantities(names: ["available", "incoming", "committed", "damaged", "on_hand", "quality_control", "reserved", "safety_stock"]) {
-                            id
-                            name
-                            quantity
-                            updatedAt
+                            quantities(names: ["available", "incoming", "committed", "damaged", "on_hand", "quality_control", "reserved", "safety_stock"]) {
+                              id
+                              name
+                              quantity
+                              updatedAt
+                            }
                           }
                         }
                       }
-                    }
+                    }                 
                   }
                   userErrors {
                     field
