@@ -2904,7 +2904,8 @@ router.post('/webhookcommon', async (ctx, next) => {
   console.log(`*** body *** ${JSON.stringify(ctx.request.body)}`);
 
   // Check the signature
-  const valid = await (checkWebhookSignature(ctx, WEBHOOK_SECRET));
+  //const valid = await (checkWebhookSignature(ctx, WEBHOOK_SECRET));
+  const valid = await (checkWebhookSignature(ctx, API_SECRET));
   if (!valid) {
     console.log('Not a valid signature');
     ctx.status = 401;
@@ -2990,24 +2991,6 @@ const checkAppProxySignature = function (json) {
 // Read https://shopify.dev/apps/webhooks/configuration/https#step-5-verify-the-webhook
 const checkWebhookSignature = function (ctx, secret) {
   return new Promise(function (resolve, reject) {
-
-const shopifyHmac = ctx.headers['x-shopify-hmac-sha256'];
-  const byteArray = ctx.request.rawBody;
-  const bodyString = byteArray.toString('utf8');
-
-  const calculatedHmacDigest = crypto.createHmac('sha256', secret).update(byteArray).digest('base64');
-  const hmacValid = crypto.timingSafeEqual(Buffer.from(calculatedHmacDigest), Buffer.from(shopifyHmac));
-
-  if (hmacValid) {
-    return resolve(true);
-  } else {
-    return resolve(false);
-  }
-
-
-
-/*
-
     console.log(`checkWebhookSignature Headers ${JSON.stringify(ctx.headers)}`);
     let receivedSig = ctx.headers["x-shopify-hmac-sha256"];
     console.log(`checkWebhookSignature Given ${receivedSig}`);
@@ -3016,7 +2999,7 @@ const shopifyHmac = ctx.headers['x-shopify-hmac-sha256'];
     hmac.update(Buffer.from(ctx.request.rawBody, 'utf8').toString('utf8'));
     let signature = hmac.digest('base64');
     console.log(`checkWebhookSignature Created: ${signature}`);
-    return resolve(receivedSig === signature ? true : false);*/
+    return resolve(receivedSig === signature ? true : false);
   });
 };
 
