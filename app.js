@@ -2546,7 +2546,6 @@ router.post('/storefront', async (ctx, next) => {
                   zip
                 }
               }
-              walletPreferences
              }
              deliveryGroups(first: 10) {
               edges {
@@ -2735,7 +2734,6 @@ router.post('/storefront', async (ctx, next) => {
                   zip
                 }
               }
-              walletPreferences
              }
              deliveryGroups(first: 10) {
               edges {
