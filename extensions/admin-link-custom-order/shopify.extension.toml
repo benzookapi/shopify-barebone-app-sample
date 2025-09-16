@@ -1,0 +1,8 @@
+[[extensions]]
+type = "admin_link"
+name = "Admin Link Custom - Order"
+handle = "admin-link-custom-order"
+
+  [[extensions.targeting]]
+  url = "app://ordermanage"
+  target = "admin.order-details.action.link"
