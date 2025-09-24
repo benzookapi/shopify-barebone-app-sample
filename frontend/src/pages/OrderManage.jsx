@@ -115,7 +115,7 @@ function OrderManage() {
                     <br /><br />
                     <List type="number">
                         <List.Item>
-                            Add <Badge>{`${rawUrl}`}</Badge> to <Link url="https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link" target="_blank">Admin Link extension</Link> on the app extension settings
+                            Check if <Badge>app://ordermanage</Badge> is added in the admin link extension setting in <Badge>extensions/my-admin-link-order-details/shopify.extension.toml</Badge> file 
                             for <Link url={`https://${_getAdminFromShop(shop)}/orders`} target="_blank">order details</Link>.
                         </List.Item>
                         <List.Item>
