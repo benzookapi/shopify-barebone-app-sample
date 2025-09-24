@@ -66,8 +66,7 @@ function FunctionPayment() {
             <Layout.Section>
               <List type="number">
                 <List.Item>
-                  Input your <Badge>Shopify Functions ID (uid)</Badge> in <Badge>extensions/my-function-payment-ext/shopify.extension.toml</Badge> or 
-                  <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/queries/shopifyFunctions" target="_blank">Shopify Functions Admin API</Link>
+                  Input your <Badge>Shopify Functions ID (uid)</Badge> in <Badge>extensions/my-function-payment-ext/shopify.extension.toml</Badge> or <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/queries/shopifyFunctions" target="_blank">Shopify Functions Admin API</Link>
                   <TextField
                     label=""
                     value={id}
