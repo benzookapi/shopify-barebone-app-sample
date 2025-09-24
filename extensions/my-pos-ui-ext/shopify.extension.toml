@@ -3,6 +3,7 @@
 api_version = "unstable"
 
 [[extensions]]
+uid = "8389d821-26b8-6b4e-93ae-23777a68dcb3b35668dc"
 type = "ui_extension"
 name = "my-pos-ui-ext"
 

@@ -8,6 +8,7 @@ api_version = "unstable"
 [[extensions]]
 name = "Barebone App UI extension 2"
 handle = "my-checkout-ui-ext-2"
+uid = "f75737c6-d4fe-e9f4-ee3a-c5e3338671d0faeb6481"
 type = "ui_extension"
 
 # Controls where in Shopify your extension will be injected,

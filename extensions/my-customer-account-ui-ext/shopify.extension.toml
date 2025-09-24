@@ -8,6 +8,7 @@ api_version = "2025-07"
 [[extensions]]
 name = "my-customer-account-ui-ext"
 handle = "my-customer-account-ui-ext"
+uid = "505daf4c-96a0-5805-e945-70f5fe3a843447ac3b90"
 type = "ui_extension"
 
 

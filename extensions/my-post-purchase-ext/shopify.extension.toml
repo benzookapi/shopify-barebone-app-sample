@@ -1,3 +1,5 @@
+
+uid = "69170756-268f-a8ea-97c2-1290f5a3bea66104b203"
 type = "checkout_post_purchase"
 name = "my-post-purchase-ext"
 

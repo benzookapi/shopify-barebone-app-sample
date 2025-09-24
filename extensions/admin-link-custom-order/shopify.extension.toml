@@ -1,8 +1,60 @@
 [[extensions]]
-type = "admin_link"
-name = "Admin Link Custom - Order"
-handle = "admin-link-custom-order"
+# Name will be used for your link text and is defined in locales/en.default.json and other locale files
+name = "t:name"
 
-  [[extensions.targeting]]
-  url = "app://ordermanage"
-  target = "admin.order-details.action.link"
+handle = "admin-link-custom-order"
+type = "admin_link"
+uid = "03df9c49-f86f-c486-6265-f474a316df349c676982"
+
+# For embedded apps URIs are defined relative to the domain of the configured application_url in your shopify.app.toml
+# If you enter an empty path the link will resolve to the configured application_url in your shopify.app.toml
+# For example, app:// or / will resolve to the application_url https://my-app-domain.com/home
+# All other paths will be resolved relative to the domain of the application_url
+# For example, app://path or /path with configured application_url https://my-app-domain.com/home will resolve to https://my-app-domain.com/path
+# url = "app://path"
+# For non-embedded apps URIs are an absolute path to your app
+# url = "https://yourappdomain.com/path"
+[[extensions.targeting]]
+target = "admin.order-details.action.link"
+url = "app://ordermanage"
+
+# Valid Extension Targets
+#
+# Abandoned Checkout Details Page
+#  - admin.abandoned-checkout-details.action.link
+#
+# Collection Index and Detail Pages
+#  - admin.collection-index.action.link
+#  - admin.collection-details.action.link
+#
+# Customer Index and Detail Pages
+#  - admin.customer-index.action.link
+#  - admin.customer-details.action.link
+#  - admin.customer-index.selection.action.link
+#
+# Discount Index and Detail Pages
+#  - admin.discount-index.action.link
+#  - admin.discount-details.action.link
+#
+# Draft Order Index and Detail Pages
+#  - admin.draft-order-index.action.link
+#  - admin.draft-order-details.action.link
+#  - admin.draft-order-index.selection.action.link
+#
+# Order Index, Detail Pages, and Order Fulfilled Card
+#  - admin.order-index.action.link
+#  - admin.order-details.action.link
+#  - admin.order-index.selection.action.link
+#  - admin.order.fulfilled-card.link
+#
+# Product Index and Detail Pages
+#  - admin.product-index.action.link
+#  - admin.product-details.action.link
+#  - admin.product-index.selection.action.link
+#
+# Product Variant Detail Pages
+#  - admin.product-variant-details.action.link
+#
+# Get Support Buttons
+#  - admin.app.support.link
+

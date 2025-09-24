@@ -1,4 +1,5 @@
 name = "my-function-discount-ext"
+uid = "b6fe61fd-7371-1552-2859-6fb19ee291d0098c3a5d"
 type = "order_discounts"
 api_version = "unstable"
 

@@ -6,6 +6,7 @@
 api_version = "unstable"
 
 [[extensions]]
+uid = "44079f59-e8c2-4cd7-4513-d4cc4e656ebf723a3cbf"
 type = "ui_extension"
 name = "Barebone App UI extension"
 handle = "my-checkout-ui-ext"

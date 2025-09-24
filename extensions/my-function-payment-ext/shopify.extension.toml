@@ -1,4 +1,5 @@
 name = "my-function-payment-ext"
+uid = "50ffef5d-48f5-1e8d-5bb2-6ac50c471a8ad0f054dd"
 type = "payment_customization"
 api_version = "unstable"
 
