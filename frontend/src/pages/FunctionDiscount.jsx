@@ -59,13 +59,14 @@ function FunctionDiscount() {
             <Layout.Section>
               <List type="number">
                 <List.Item>
-                  Input your <Badge>Shopify Functions ID</Badge> available in your app extension overview in <Link url="https://shopify.dev/api/functions/errors#debugging" target="_blank">partner dashboard</Link> given by <Badge>`npm run deploy`</Badge>
+                  Input your <Badge>Shopify Functions ID (uid)</Badge> in <Badge>extensions/my-function-discount-ext/shopify.extension.toml</Badge> or 
+                  <Link url="https://shopify.dev/docs/api/admin-graphql/unstable/queries/shopifyFunctions" target="_blank">Shopify Functions Admin API</Link>
                   <TextField
                     label=""
                     value={id}
                     onChange={idChange}
                     autoComplete="off"
-                    placeholder="Example: 01GQVSPSWHVQDASZXCTXYSBHH9"
+                    placeholder="Example: 0eb42b0c-f71e-4956-bca2-485b6442ccad"
                   />
                 </List.Item>
                 <List.Item>
