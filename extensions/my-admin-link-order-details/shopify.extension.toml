@@ -15,8 +15,8 @@ uid = "03df9c49-f86f-c486-6265-f474a316df349c676982"
 # For non-embedded apps URIs are an absolute path to your app
 # url = "https://yourappdomain.com/path"
 [[extensions.targeting]]
-target = "admin.product-details.action.link"
-url = "app://adminlink"
+target = "admin.order-details.action.link"
+url = "app://ordermanage"
 
 # Valid Extension Targets
 #
