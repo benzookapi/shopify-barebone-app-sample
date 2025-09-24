@@ -75,7 +75,7 @@ function AdminLink() {
                 <Card sectioned={true}>
                     <List type="bullet">
                         <List.Item>
-                            Add <Badge>{`${rawUrl}`}</Badge> to <Link url="https://shopify.dev/apps/app-extensions/getting-started#add-an-admin-link" target="_blank">Admin Link extension</Link> on the app extension settings
+                            Check <Badge>app://adminlink</Badge> is added in the admin extension setting in <Badge>extensions/my-admin-link-product-details/shopify.extension.toml</Badge> file 
                             for <Link url={`https://${_getAdminFromShop(shop)}/products`} target="_blank">product details</Link>.
                         </List.Item>
                         <List.Item>

@@ -104,7 +104,7 @@ For extensions like Theme App Extensinons, Shopify Functions, and Checkout UI Ex
     - _client_id_ = `SHOPIFY_API_KEY`
     - _application_url_ = `YOUR_APP_URL` (***1**)
     - _handle_ = `YOUR_APP_HANDLE` (In general, lowercase letters of the app name replacing '_' with '-' used for admin URL path for the app and toml file name for multiple app hanlding)
-    - _scopes in [access_scopes]_ = "write_products,write_discounts,write_orders,write_payment_customizations,write_delivery_customizations,write_pixels,read_customer_events,write_customers,write_assigned_fulfillment_orders,write_merchant_managed_fulfillment_orders,write_third_party_fulfillment_orders,write_fulfillments,write_inventory,unauthenticated_write_checkouts,unauthenticated_read_product_listings,unauthenticated_write_customers,unauthenticated_read_selling_plans,read_locations"
+    - _scopes in [access_scopes]_ = "write_app_proxy,write_products,write_discounts,write_orders,write_payment_customizations,write_delivery_customizations,write_pixels,read_customer_events,write_customers,write_assigned_fulfillment_orders,write_merchant_managed_fulfillment_orders,write_third_party_fulfillment_orders,write_fulfillments,write_inventory,unauthenticated_write_checkouts,unauthenticated_read_product_listings,unauthenticated_write_customers,unauthenticated_read_selling_plans,read_locations"
     - _redirect_urls in [auth]_ = [`YOUR_APP_URL/callback`]
     - _api_version in [webhooks]_ = `SHOPIFY_API_VERSION`
     - _uri in [webhooks.subscriptions]_ = `/webhookgdpr`

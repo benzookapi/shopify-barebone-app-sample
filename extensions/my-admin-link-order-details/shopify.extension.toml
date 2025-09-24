@@ -2,7 +2,7 @@
 # Name will be used for your link text and is defined in locales/en.default.json and other locale files
 name = "t:name"
 
-handle = "admin-link-custom-order"
+handle = "my-admin-link-order-details"
 type = "admin_link"
 uid = "03df9c49-f86f-c486-6265-f474a316df349c676982"
 
@@ -15,8 +15,8 @@ uid = "03df9c49-f86f-c486-6265-f474a316df349c676982"
 # For non-embedded apps URIs are an absolute path to your app
 # url = "https://yourappdomain.com/path"
 [[extensions.targeting]]
-target = "admin.order-details.action.link"
-url = "app://ordermanage"
+target = "admin.product-details.action.link"
+url = "app://adminlink"
 
 # Valid Extension Targets
 #
