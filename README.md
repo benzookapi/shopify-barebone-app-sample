@@ -165,4 +165,3 @@ All sample are available at [Wiki](../../wiki).
 - You need to follow [Shopi API Licene and Terms of Use](https://www.shopify.com/legal/api-terms) even for custom app usage.
 - This code is supposed to be used as tutorials mainly for catching up Shopify app dev and does **NOT** guarantees all security covered like [this consideration](https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#network-access). If you use this code for your production, **all resposibilties are owned by you**.
 
-
