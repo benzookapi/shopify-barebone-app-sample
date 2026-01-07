@@ -1,0 +1,30 @@
+# Learn more about configuring your checkout UI extension:
+# https://shopify.dev/docs/api/checkout-ui-extensions/latest/configuration
+
+# The version of APIs your extension will receive. Learn more:
+# https://shopify.dev/docs/api/usage/versioning
+api_version = "unstable"
+
+[[extensions]]
+name = "Barebone App UI extension 3"
+handle = "my-checkout-ui-ext-3"
+type = "ui_extension"
+uid = "72b52e50-12a4-4a89-89e2-1e85aebfb792d101d6c4"
+
+# Controls where in Shopify your extension will be injected,
+# and the file that contains your extension’s source code. Learn more:
+# https://shopify.dev/docs/api/checkout-ui-extensions/latest/extension-targets-overview
+
+[[extensions.targeting]]
+module = "./src/Checkout.jsx"
+target = "purchase.checkout.block.render"
+
+[extensions.capabilities]
+# Gives your extension access to directly query Shopify’s storefront API.
+# https://shopify.dev/docs/api/checkout-ui-extensions/latest/configuration#api-access
+api_access = true
+
+# Gives your extension access to block checkout.
+# https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#block-progress
+block_progress = true
+
