@@ -9,3 +9,6 @@ package-lock.json
 .shopify
 dist
 .vscode
+
+# Claude Code
+.claude/
