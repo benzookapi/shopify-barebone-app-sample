@@ -75,9 +75,12 @@ For extensions like Theme App Extensinons, Shopify Functions, and Checkout UI Ex
 
     ```
 
-3.  If you run it locally, run the following build command (`pnpm install && pnpm run build`). If you use cloud hosting, specify the build command in the appropriate settings or run it directly. You can see the details of command definition in `package.json`.
+3.  If you run it locally, run the following build command (`pnpm install && pnpm run build`). If you use cloud hosting (e.g. Render), use `pnpm install --prod=false` instead to ensure devDependencies (e.g. Vite) are installed even when `NODE_ENV=production`. You can see the details of command definition in `package.json`.
     ```
-    Build command = pnpm install && pnpm run build (= cd frontend && pnpm install && pnpm run build && rm -rf ../public/assets && mv dist/assets ../public/assets && mv dist/index.html ../views/index.html  *Replacing Koa intex file with Vite buit code)
+    Build command (local)  = pnpm install && pnpm run build
+    Build command (Render) = pnpm install --prod=false && pnpm run build
+    (* Both commands install frontend dependencies via pnpm workspaces and build the React app with Vite,
+       then replace Koa's index file with the Vite built code under public/assets and views/index.html)
 
     Start command = pnpm run start (= node app.js)
     ```
