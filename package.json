@@ -23,13 +23,10 @@
     "uuid": "^9.0.1"
   },
   "scripts": {
-    "build": "cd frontend && npm install && npm run build && rm -rf ../public/assets && mkdir -p ../public && mv dist/assets ../public/assets && mkdir -p ../views && mv dist/index.html ../views/index.html",
+    "build": "cd frontend && pnpm install && pnpm run build && rm -rf ../public/assets && mkdir -p ../public && mv dist/assets ../public/assets && mkdir -p ../views && mv dist/index.html ../views/index.html",
     "start": "node app.js"
   },
   "keywords": [],
   "author": "",
-  "license": "",
-  "workspaces": [
-    "extensions/*"
-  ]
+  "license": ""
 }
