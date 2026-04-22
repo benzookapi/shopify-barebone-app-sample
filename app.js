@@ -1414,8 +1414,8 @@ router.get('/ordermanage', async (ctx, next) => {
           error += "This app's fulfillment service has no inventoryLevels! Check if it is used by at least one product as inventort location.";
         } else {
           for await (const edge of api_res.data.fulfillmentService.location.inventoryLevels.edges) {
-            const res = await (callGraphql(ctx, shop, `mutation inventoryAdjustQuantities($input: InventoryAdjustQuantitiesInput!) {
-                inventoryAdjustQuantities(input: $input) {
+            const res = await (callGraphql(ctx, shop, `mutation inventoryAdjustQuantities($input: InventoryAdjustQuantitiesInput!, $idempotencyKey: String!) {
+                inventoryAdjustQuantities(input: $input) @idempotent(key: $idempotencyKey) {
                   inventoryAdjustmentGroup {
                     id
                   }
@@ -1437,7 +1437,8 @@ router.get('/ordermanage', async (ctx, next) => {
                 ],
                 "name": name,
                 "reason": reason
-              }
+              },
+              "idempotencyKey": uuidv4()
             }));
             if (res.data.inventoryAdjustQuantities.userErrors.length > 0) {
               error += res.data.inventoryAdjustQuantities.userErrors.map((e) => { return e.message; }).toString();
