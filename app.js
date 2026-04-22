@@ -1431,7 +1431,8 @@ router.get('/ordermanage', async (ctx, next) => {
                     "delta": parseInt(delta),
                     "inventoryItemId": edge.node.item.id,
                     "locationId": api_res.data.fulfillmentService.location.id,
-                    "ledgerDocumentUri": uri
+                    "ledgerDocumentUri": uri || null,
+                    "changeFromQuantity": null
                   }
                 ],
                 "name": name,
