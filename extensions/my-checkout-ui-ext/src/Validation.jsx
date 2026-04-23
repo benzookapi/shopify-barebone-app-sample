@@ -10,7 +10,8 @@ import {
   reactExtension,
 
   // React hooks
-  useApi, 
+  useApi,
+  useBuyerJourneyIntercept,
 
   // UI components
   Banner,
@@ -24,8 +25,8 @@ import {
 
 reactExtension('purchase.checkout.contact.render-after', () => <Validation />);
 
-/* 
-* --------- Validation component for static render --------- 
+/*
+* --------- Validation component for static render ---------
 * (Static extension point)
 * Read https://shopify.dev/docs/api/checkout-ui-extensions/extension-points-overview#static-extension-points
 */
@@ -42,50 +43,53 @@ function Validation() {
   const [quantity, setQuantity] = useState('');
   const [quantityReset, setQuantityReset] = useState(false);
 
-  // Get the IP address to block from the extension settings.
   const block_ip = extensionApi.settings.current.validation_ip;
   console.log(`block_ip: ${block_ip}`);
+
+  const block_text = extensionApi.settings.current.validation_text;
+  console.log(`block_text: ${block_text}`);
+
+  const reset_quantity = extensionApi.settings.current.validation_quantity;
+  console.log(`reset_quantity: ${reset_quantity}`);
+
+  // Must be called at the top level of the component (not inside useEffect).
+  // The callback is invoked by the platform when the buyer tries to navigate.
+  useBuyerJourneyIntercept(({ canBlockProgress }) => {
+    if (canBlockProgress && (ipBlocked || textBlocked)) {
+      const message = ipBlocked
+        ? `Your IP address ${ip} was blocked and you cannot proceed the checkout.`
+        : `Checkout is blocked due to: ${text}`;
+      return {
+        behavior: 'block',
+        reason: 'InvalidExtensionState',
+        errors: [{ message }]
+      };
+    }
+    return { behavior: 'allow' };
+  });
+
   useEffect(() => {
     console.log(`Checking IP blocking...`);
-    // Check if the current global JP is the specified one or not.
     fetch('https://api.ipify.org?format=json', {
       method: "GET"
     }).then((res) => {
       res.json().then((json) => {
         setIp(json.ip);
         if (json.ip === block_ip) {
-          // Block the checkout progress.
-          extensionApi.buyerJourney.intercept({
-            canBlockProgress: false
-          }).then((r) => {
-            console.log(`intercept (block_ip): ${r}`);
-            setIpBlocked(true);
-          });
+          setIpBlocked(true);
         }
       });
     });
-  }, ['']);
+  }, [block_ip]);
 
-
-  // Get the text to block from the extension settings.
-  const block_text = extensionApi.settings.current.validation_text;
-  console.log(`block_text: ${block_text}`);
   useEffect(() => {
     console.log(`Checking text blocking...`);
     if (block_text != null) {
       setText(block_text);
-      extensionApi.buyerJourney.intercept({
-        canBlockProgress: false
-      }).then((r) => {
-        console.log(`intercept (block_text): ${r}`);
-        setTextBlocked(true);
-      });
+      setTextBlocked(true);
     }
-  }, ['']);
+  }, [block_text]);
 
-  // Get the quantity to reset the cart from the extension settings.
-  const reset_quantity = extensionApi.settings.current.validation_quantity;
-  console.log(`reset_quantity: ${reset_quantity}`);
   useEffect(() => {
     console.log(`Checking quantity reset...`);
     if (reset_quantity != null) {
@@ -94,7 +98,7 @@ function Validation() {
         return total + l.quantity;
       }, 0);
       if (size > parseInt(reset_quantity)) {
-        extensionApi.lines.current.map((l) => {
+        extensionApi.lines.current.forEach((l) => {
           extensionApi.applyCartLinesChange({
             type: "removeCartLine",
             id: l.id,
@@ -108,7 +112,7 @@ function Validation() {
         setQuantityReset(true);
       }
     }
-  }, ['']);
+  }, [reset_quantity]);
 
   // Swtich the message on the check result with the IP address
   const IpBlockInfo = function (props) {
@@ -182,4 +186,3 @@ function Validation() {
   );
 
 }
-
