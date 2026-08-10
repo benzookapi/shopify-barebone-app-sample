@@ -1,0 +1,42 @@
+{
+  "barebone": {
+    "shared": {
+      "theme_app_extension": "Theme App Extension",
+      "with": "with",
+      "in": "in",
+      "value": "Value",
+      "empty": "(Empty)",
+      "see": "See",
+      "developer_site": "Dev. Site"
+    },
+    "app_block": {
+      "name": "App Block",
+      "color_description": "with the color defined by the value of block.settings.color.",
+      "editor_message": "I think you are viewing this app block within the theme editor, right? 😉",
+      "product_setting": "in Product",
+      "text_setting": "in Text",
+      "proxy_responses": "App proxy responses",
+      "proxy_description": "You can check the response data difference when logged in or logged out.",
+      "proxy_post_response": "POST response of the app proxy",
+      "proxy_get_response": "GET response of the app proxy",
+      "proxy_liquid_response": "Liquid response of the app proxy",
+      "shopify_dump": "window.Shopify dump",
+      "line_item_legend": "Choose your line item property value",
+      "line_item_documentation": "for Line Item Properties.",
+      "cart_legend": "Set your cart note and attribute value",
+      "discount_code_label": "Paste your discount code:",
+      "cart_documentation": "for Cart Notes and Attributes."
+    },
+    "app_embed": {
+      "name": "App Embed Block",
+      "image_alt": "Barebone theme app extension",
+      "background_description": "with the background color defined by assets/barebone.css.",
+      "message_setting": "in Your message"
+    },
+    "snippet": {
+      "name": "Snippet",
+      "rendered_by_parent": "rendered by the parent block",
+      "background_description": "with the background color defined by assets/barebone.css."
+    }
+  }
+}

@@ -4,190 +4,396 @@ schema {
 }
 
 """
-Exactly one field of input must be provided, and all others omitted.
+Only allow the field to be queried when targeting one of the specified targets.
+"""
+directive @restrictTarget(only: [String!]!) on FIELD_DEFINITION
+
+"""
+Scale the Functions resource limits based on the field's length.
+"""
+directive @scaleLimits(rate: Float!) on FIELD_DEFINITION
+
+"""
+Requires that exactly one field must be supplied and that field must not be `null`.
 """
 directive @oneOf on INPUT_OBJECT
 
 """
-Represents a generic custom attribute.
+A discount code that is associated with a discount candidate.
+"""
+input AssociatedDiscountCode {
+  """
+  The discount code.
+  """
+  code: String!
+}
+
+"""
+A custom property. Attributes are used to store additional information about a Shopify resource, such as
+products, customers, or orders. Attributes are stored as key-value pairs.
+
+For example, a list of attributes might include whether a customer is a first-time buyer (`"customer_first_order": "true"`),
+whether an order is gift-wrapped (`"gift_wrapped": "true"`), a preferred delivery date
+(`"preferred_delivery_date": "2025-10-01"`), the discount applied (`"loyalty_discount_applied": "10%"`), and any
+notes provided by the customer (`"customer_notes": "Please leave at the front door"`).
 """
 type Attribute {
   """
-  Key or name of the attribute.
+  The key or name of the attribute. For example, `"customer_first_order"`.
   """
   key: String!
 
   """
-  Value of the attribute.
+  The value of the attribute. For example, `"true"`.
   """
   value: String
 }
 
 """
-Represents information about the buyer that is interacting with the cart.
+Information about the customer that's interacting with the cart. It includes details such as the
+customer's email and phone number, and the total amount of money the customer has spent in the store.
+This information helps personalize the checkout experience and ensures that accurate pricing and delivery options
+are displayed to customers.
 """
 type BuyerIdentity {
   """
-  The customer associated with the cart.
+  The [customer](https://help.shopify.com/manual/customers/manage-customers) that's interacting with the cart.
   """
   customer: Customer
 
   """
-  The email address of the buyer that is interacting with the cart.
+  The email address of the customer that's interacting with the cart.
   """
   email: String
 
   """
-  The phone number of the buyer that is interacting with the cart.
+  Whether the customer is authenticated through their
+  [customer account](https://help.shopify.com/manual/customers/customer-accounts).
+  """
+  isAuthenticated: Boolean!
+
+  """
+  The phone number of the customer that's interacting with the cart.
   """
   phone: String
 
   """
-  The purchasing company associated with the cart.
+  The company of a B2B customer that's interacting with the cart.
+  Used to manage and track purchases made by businesses rather than individual customers.
   """
   purchasingCompany: PurchasingCompany
+
+  """
+  Represents the [Shop User](https://help.shopify.com/en/manual/online-sales-channels/shop/sign-in-features)
+   corresponding to the customer within the shop, if the buyer is a Shop User. Can be used to request [Shop User
+   metafields](https://shopify.dev/docs/api/shop-user-custom-data).
+  """
+  shopUser: ShopUser
 }
 
 """
-A cart represents the merchandise that a buyer intends to purchase, and the cost associated with the cart.
+The cart where the Function is running. A cart contains the merchandise that a customer intends to purchase
+and information about the customer, such as the customer's email address and phone number.
 """
-type Cart {
+type Cart implements HasMetafields {
   """
-  The attributes associated with the cart. Attributes are represented as key-value pairs.
+  The custom attributes associated with a cart to store additional information. Cart attributes
+  allow you to collect specific information from customers on the **Cart** page, such as order notes,
+  gift wrapping requests, or custom product details. Attributes are stored as key-value pairs.
   """
   attribute(
     """
-    The key of the attribute to retrieve.
+    The key of the cart attribute to retrieve. For example, `"gift_wrapping"`.
     """
     key: String
   ): Attribute
 
   """
-  Information about the buyer that is interacting with the cart.
+  The billing address associated with the cart.
+  """
+  billingAddress: MailingAddress
+
+  """
+  Information about the customer that's interacting with the cart. It includes details such as the
+  customer's email and phone number, and the total amount of money the customer has spent in the store.
+  This information helps personalize the checkout experience and ensures that accurate pricing and delivery options
+  are displayed to customers.
   """
   buyerIdentity: BuyerIdentity
 
   """
-  The costs that the buyer will pay at checkout.
+  A breakdown of the costs that the customer will pay at checkout. It includes the total amount,
+  the subtotal before taxes and duties, the tax amount, and duty charges.
   """
   cost: CartCost!
 
   """
-  The delivery groups available for the cart based on the buyer's shipping address.
+  The items in a cart that are eligible for fulfillment and can be delivered to the customer.
+  """
+  deliverableLines: [DeliverableCartLine!]!
+
+  """
+  A collection of items that are grouped by shared delivery characteristics. Delivery groups streamline
+  fulfillment by organizing items that can be shipped together, based on the customer's
+  shipping address. For example, if a customer orders a t-shirt and a pair of shoes that can be shipped
+  together, then the items are included in the same delivery group.
+
+  In the [Order Discount](https://shopify.dev/docs/api/functions/reference/order-discounts) and
+  [Product Discount](https://shopify.dev/docs/api/functions/reference/product-discounts) legacy APIs,
+  the `cart.deliveryGroups` input is always an empty array. This means you can't access delivery groups when
+  creating Order Discount or Product Discount Functions. If you need to apply discounts to shipping costs,
+  then use the [Discount Function API](https://shopify.dev/docs/api/functions/reference/discount)
+  instead.
   """
   deliveryGroups: [CartDeliveryGroup!]!
 
   """
-  A list of lines containing information about the items the customer intends to purchase.
+  The discounts that have been applied to the cart.
   """
-  lines: [CartLine!]!
+  discountApplications: [DiscountApplication!]!
+
+  """
+  The items in a cart that the customer intends to purchase. A cart line is an entry in the
+  customer's cart that represents a single unit of a product variant. For example, if a customer adds two
+  different sizes of the same t-shirt to their cart, then each size is represented as a separate cart line.
+  """
+  lines: [CartLine!]! @scaleLimits(rate: 0.005)
+
+  """
+  The additional fields on the **Cart** page that are required for international orders in specific countries,
+  such as customs information or tax identification numbers.
+  """
+  localizedFields(
+    """
+    The keys of the localized fields to retrieve.
+    """
+    keys: [LocalizedFieldKey!]! = []
+  ): [LocalizedField!]!
+
+  """
+  A [custom field](https://shopify.dev/docs/apps/build/custom-data) that stores additional information
+  about a Shopify resource, such as products, orders, and
+  [many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+  Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+  enables you to customize the checkout experience.
+  """
+  metafield(
+    """
+    The unique identifier for the metafield within its namespace. A metafield is composed of a
+    namespace and a key, in the format `namespace.key`.
+    """
+    key: String!
+
+    """
+    A category that organizes a group of metafields. Namespaces are used to prevent naming conflicts
+    between different apps or different parts of the same app. If omitted, then the
+    [app-reserved namespace](https://shopify.dev/docs/apps/build/custom-data/ownership)
+    is used.
+    """
+    namespace: String
+  ): Metafield
+
+  """
+  A purchase order number associated with the cart, often used for B2B transactions
+  to reference the buyer's internal purchase order.
+  """
+  poNumber: String
+
+  """
+  The physical location where a retail order is created or completed.
+  """
+  retailLocation: Location
 }
 
 """
-The cost that the buyer will pay at checkout.
+A breakdown of the costs that the customer will pay at checkout. It includes the total amount,
+the subtotal before taxes and duties, the tax amount, and duty charges.
 """
 type CartCost {
   """
-  The amount, before taxes and discounts, for the customer to pay.
+  The amount, before taxes and cart-level discounts, for the customer to pay.
   """
   subtotalAmount: MoneyV2!
 
   """
-  The total amount for the customer to pay.
+  The total amount for the customer to pay at checkout.
   """
   totalAmount: MoneyV2!
 
   """
-  The duty amount for the customer to pay at checkout.
+  The duty charges for a customer to pay at checkout.
   """
   totalDutyAmount: MoneyV2
 
   """
-  The tax amount for the customer to pay at checkout.
+  The total tax amount for the customer to pay at checkout.
   """
   totalTaxAmount: MoneyV2
 }
 
 """
-Information about the options available for one or more line items to be delivered to a specific address.
+Information about items in a cart that are grouped by shared delivery characteristics.
+Delivery groups streamline fulfillment by organizing items that can be shipped together, based on the customer's
+shipping address. For example, if a customer orders a t-shirt and a pair of shoes that can be shipped
+together, then the items are included in the same delivery group.
 """
 type CartDeliveryGroup {
   """
-  A list of cart lines for the delivery group.
+  Information about items in a cart that a customer intends to purchase. A cart line is an entry in the
+  customer's cart that represents a single unit of a product variant. For example, if a customer adds two
+  different sizes of the same t-shirt to their cart, then each size is represented as a separate cart line.
   """
-  cartLines: [CartLine!]!
+  cartLines: [CartLine!]! @scaleLimits(rate: 0.005)
 
   """
-  The destination address for the delivery group.
+  The shipping or destination address associated with the delivery group.
   """
   deliveryAddress: MailingAddress
 
   """
-  The delivery options available for the delivery group.
+  The delivery options available for the delivery group. Delivery options are the different ways that customers
+  can choose to have their orders shipped. Examples include express shipping or standard shipping.
   """
   deliveryOptions: [CartDeliveryOption!]!
 
   """
-  Unique identifier for the delivery group.
+  The discounts that have been applied to the delivery group.
+  """
+  discountAllocations: [DiscountAllocation!]!
+
+  """
+  The type of merchandise in the delivery group.
+  """
+  groupType: CartDeliveryGroupType!
+
+  """
+  A [globally-unique ID](https://shopify.dev/docs/api/usage/gids)
+  for the delivery group.
   """
   id: ID!
 
   """
-  Information about the delivery option the buyer has selected.
+  Information about the delivery option that the customer has selected.
   """
   selectedDeliveryOption: CartDeliveryOption
 }
 
 """
-Information about a delivery option.
+Defines what type of merchandise is in the delivery group.
+"""
+enum CartDeliveryGroupType {
+  """
+  The delivery group only contains merchandise that is either a one time purchase or a first delivery of
+  subscription merchandise.
+  """
+  ONE_TIME_PURCHASE
+
+  """
+  The delivery group only contains subscription merchandise.
+  """
+  SUBSCRIPTION
+}
+
+"""
+Information about a delivery option that's available for an item in a cart. Delivery options are the different
+ways that customers can choose to have their orders shipped. Examples include express shipping or standard
+shipping.
 """
 type CartDeliveryOption {
   """
-  The code of the delivery option.
+  A unique identifier that represents the delivery option offered to customers.
+  For example, `Canada Post Expedited`.
   """
   code: String
 
   """
-  The cost for the delivery option.
+  The amount that the customer pays if they select the delivery option.
   """
   cost: MoneyV2!
 
   """
-  The method for the delivery option.
+  The delivery method associated with the delivery option. A delivery method is a way that merchants can
+  fulfill orders from their online stores. Delivery methods include shipping to an address,
+  [local pickup](https://help.shopify.com/manual/fulfillment/setup/delivery-methods/pickup-in-store),
+  and shipping to a [pickup point](https://help.shopify.com/manual/fulfillment/shopify-shipping/pickup-points),
+  all of which are natively supported by Shopify checkout.
   """
   deliveryMethodType: DeliveryMethod!
 
   """
-  The description of the delivery option.
+  A single-line description of the delivery option, with HTML tags removed.
   """
   description: String
 
   """
-  The title of the delivery option.
+  A unique, human-readable identifier of the delivery option's title.
+  A handle can contain letters, hyphens (`-`), and numbers, but not spaces.
+  For example, `standard-shipping`.
+  """
+  handle: Handle!
+
+  """
+  The name of the delivery option that displays to customers. The title is used to construct the delivery
+  option's handle. For example, if a delivery option is titled "Standard Shipping", then the handle is
+  `standard-shipping`.
   """
   title: String
 }
 
 """
-Represents information about the merchandise in the cart.
+The cart.delivery-options.discounts.generate.fetch target result. Refer to [network access](https://shopify.dev/apps/build/functions/input-output/network-access/graphql)
+for Shopify Functions.
+"""
+input CartDeliveryOptionsDiscountsGenerateFetchResult {
+  """
+  The attributes associated with an HTTP request.
+  """
+  request: HttpRequest
+}
+
+"""
+The cart.delivery-options.discounts.generate.run target result.
+"""
+input CartDeliveryOptionsDiscountsGenerateRunResult {
+  """
+  An ordered list of operations to generate delivery discounts, such as validating and applying discounts to the cart.
+  """
+  operations: [DeliveryOperation!]!
+}
+
+"""
+Information about an item in a cart that a customer intends to purchase. A cart line is an entry in the
+customer's cart that represents a single unit of a product variant. For example, if a customer adds two
+different sizes of the same t-shirt to their cart, then each size is represented as a separate cart line.
 """
 type CartLine {
   """
-  Retrieve a cart line attribute by key.
+  The custom attributes associated with a cart to store additional information. Cart attributes
+  allow you to collect specific information from customers on the **Cart** page, such as order notes,
+  gift wrapping requests, or custom product details. Attributes are stored as key-value pairs.
 
-  Cart line attributes are also known as line item properties in Liquid.
+  Cart line attributes are equivalent to the
+  [`line_item`](https://shopify.dev/docs/api/liquid/objects/line_item)
+  object in Liquid.
   """
   attribute(
     """
-    The key of the attribute to retrieve.
+    The key of the cart attribute to retrieve. For example, `"gift_wrapping"`.
     """
     key: String
   ): Attribute
 
   """
-  The cost of the merchandise line that the buyer will pay at checkout.
+  The cost of an item in a cart that the customer intends to purchase. Cart lines are entries in the customer's
+  cart that represent a single unit of a product variant. For example, if a customer adds two different sizes of
+  the same t-shirt to their cart, then each size is represented as a separate cart line.
   """
   cost: CartLineCost!
+
+  """
+  The discounts that have been applied to the cart line.
+  """
+  discountAllocations: [DiscountAllocation!]!
 
   """
   The ID of the cart line.
@@ -195,39 +401,209 @@ type CartLine {
   id: ID!
 
   """
-  The merchandise that the buyer intends to purchase.
+  The item that the customer intends to purchase.
   """
   merchandise: Merchandise!
 
   """
-  The quantity of the merchandise that the customer intends to purchase.
+  The [nested relationship](https://shopify.dev/docs/apps/build/product-merchandising/nested-cart-lines)
+  between this line and its parent line, if any.
+  """
+  parentRelationship: CartLineParentRelationship
+
+  """
+  The quantity of the item that the customer intends to purchase.
+  """
+  quantity: Int!
+
+  """
+  The [selling plan](https://shopify.dev/docs/apps/build/purchase-options/subscriptions/selling-plans)
+  associated with the cart line, including information about how a product variant can be sold and purchased.
+  """
+  sellingPlanAllocation: SellingPlanAllocation
+}
+
+"""
+The cost of an item in a cart that the customer intends to purchase. Cart lines are entries in the customer's
+cart that represent a single unit of a product variant. For example, if a customer adds two different sizes of
+the same t-shirt to their cart, then each size is represented as a separate cart line.
+"""
+type CartLineCost {
+  """
+  The cost of a single unit. For example, if a customer purchases three units of a product
+  that are priced at $10 each, then the `amountPerQuantity` is $10.
+  """
+  amountPerQuantity: MoneyV2!
+
+  """
+  The `compareAt` price of a single unit before any discounts are applied. This field is used to calculate and display
+  savings for customers. For example, if a product's `compareAtAmountPerQuantity` is $25 and its current price
+  is $20, then the customer sees a $5 discount. This value can change based on the buyer's identity and is
+  `null` when the value is hidden from buyers.
+  """
+  compareAtAmountPerQuantity: MoneyV2
+
+  """
+  The cost of items in the cart before applying any discounts to certain items.
+  This amount serves as the starting point for calculating any potential savings customers
+  might receive through promotions or discounts.
+  """
+  subtotalAmount: MoneyV2!
+
+  """
+  The total cost of items in a cart.
+  """
+  totalAmount: MoneyV2!
+}
+
+"""
+The condition for checking the minimum quantity of products across a group of cart lines.
+"""
+input CartLineMinimumQuantity {
+  """
+  Cart line IDs with a merchandise line price that's included to calculate the
+  minimum quantity purchased to receive the discount.
+  """
+  ids: [ID!]!
+
+  """
+  The minimum quantity of a cart line to be eligible for a discount candidate.
+  """
+  minimumQuantity: Int!
+}
+
+"""
+The condition for checking the minimum subtotal of products across a group of cart lines.
+"""
+input CartLineMinimumSubtotal {
+  """
+  Cart line IDs with a merchandise line price that's included to calculate the
+  minimum subtotal purchased to receive the discount.
+  """
+  ids: [ID!]!
+
+  """
+  The minimum subtotal amount of the cart line to be eligible for a discount candidate in the shop's currency.
+  """
+  minimumAmount: Decimal!
+}
+
+"""
+Represents the relationship between a cart line and its parent line.
+"""
+type CartLineParentRelationship {
+  """
+  The parent line in the relationship.
+  """
+  parent: CartLine!
+}
+
+"""
+A cart line that is required for the discount candidate to be applicable. A cart line is an entry in the
+customer's cart that represents a single unit of a product variant. For example, if a customer adds two
+different sizes of the same t-shirt to their cart, then each size is represented as a separate cart line.
+"""
+input CartLinePrerequisite {
+  """
+  The ID of the prerequisite cart line.
+  """
+  id: ID!
+
+  """
+  The number of line items that are required for the discount candidate to be applicable.
+
+  The value is validated against: > 0.
   """
   quantity: Int!
 }
 
 """
-The cost of the merchandise line that the buyer will pay at checkout.
+A method for applying a discount to a specific line item in the cart. A cart line is an entry in the
+customer's cart that represents a single unit of a product variant. For example, if a customer adds two
+different sizes of the same t-shirt to their cart, then each size is represented as a separate cart line.
 """
-type CartLineCost {
+input CartLineTarget {
   """
-  The amount of the merchandise line.
+  The ID of the targeted cart line.
   """
-  amountPerQuantity: MoneyV2!
+  id: ID!
 
   """
-  The compare at amount of the merchandise line.
+  The number of line items that are being discounted.
+  The default value is `null`, which represents the quantity of the matching line items.
+
+  The value is validated against: > 0.
   """
-  compareAtAmountPerQuantity: MoneyV2
+  quantity: Int
+}
+
+"""
+The cart.lines.discounts.generate.fetch target result. Refer to [network access](https://shopify.dev/apps/build/functions/input-output/network-access/graphql)
+for Shopify Functions.
+"""
+input CartLinesDiscountsGenerateFetchResult {
+  """
+  The HTTP request object.
+  """
+  request: HttpRequest
+}
+
+"""
+The cart.lines.discounts.generate.run target result.
+"""
+input CartLinesDiscountsGenerateRunResult {
+  """
+  The list of operations to apply discounts to the cart.
+  """
+  operations: [CartOperation!]!
+}
+
+"""
+The operations that can be performed to apply discounts to the cart.
+"""
+input CartOperation @oneOf {
+  """
+  An operation that selects which entered discount codes to accept. Use this to
+  validate discount codes from external systems.
+  """
+  enteredDiscountCodesAccept: EnteredDiscountCodesAcceptOperation
 
   """
-  The cost of the merchandise line before line-level discounts.
+  An operation that rejects entered discount codes with a custom message. Use
+  this to conditionally reject discount codes based on business logic. This
+  operation can only be used if the function is backed by an automatic discount.
   """
-  subtotalAmount: MoneyV2!
+  enteredDiscountCodesReject: EnteredDiscountCodesRejectOperation
 
   """
-  The total cost of the merchandise line.
+  An operation that applies order discounts to a cart that share a selection strategy.
   """
-  totalAmount: MoneyV2!
+  orderDiscountsAdd: OrderDiscountsAddOperation
+
+  """
+  An operation that applies product discounts to a cart that share a selection strategy.
+  """
+  productDiscountsAdd: ProductDiscountsAddOperation
+}
+
+"""
+Whether the product is in the specified collection.
+
+A collection is a group of products that can be displayed in online stores and other sales channels in
+categories, which makes it easy for customers to find them. For example, an athletics store might create
+different collections for running attire and accessories.
+"""
+type CollectionMembership {
+  """
+  A [globally-unique ID](https://shopify.dev/docs/api/usage/gids)
+  for the collection.
+  """
+  collectionId: ID!
+
+  """
+  Whether the product is in the specified collection.
+  """
+  isMember: Boolean!
 }
 
 """
@@ -240,7 +616,7 @@ type Company implements HasMetafields {
   createdAt: DateTime!
 
   """
-  A unique externally-supplied identifier for the company.
+  A unique externally-supplied ID for the company.
   """
   externalId: String
 
@@ -250,18 +626,26 @@ type Company implements HasMetafields {
   id: ID!
 
   """
-  Returns a metafield by namespace and key that belongs to the resource.
+  A [custom field](https://shopify.dev/docs/apps/build/custom-data) that stores additional information
+  about a Shopify resource, such as products, orders, and
+  [many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+  Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+  enables you to customize the checkout experience.
   """
   metafield(
     """
-    The key for the metafield.
+    The unique identifier for the metafield within its namespace. A metafield is composed of a
+    namespace and a key, in the format `namespace.key`.
     """
     key: String!
 
     """
-    The namespace for the metafield.
+    A category that organizes a group of metafields. Namespaces are used to prevent naming conflicts
+    between different apps or different parts of the same app. If omitted, then the
+    [app-reserved namespace](https://shopify.dev/docs/apps/build/custom-data/ownership)
+    is used.
     """
-    namespace: String!
+    namespace: String
   ): Metafield
 
   """
@@ -318,7 +702,7 @@ type CompanyLocation implements HasMetafields {
   createdAt: DateTime!
 
   """
-  A unique externally-supplied identifier for the company.
+  A unique externally-supplied ID for the company.
   """
   externalId: String
 
@@ -333,24 +717,42 @@ type CompanyLocation implements HasMetafields {
   locale: String
 
   """
-  Returns a metafield by namespace and key that belongs to the resource.
+  A [custom field](https://shopify.dev/docs/apps/build/custom-data) that stores additional information
+  about a Shopify resource, such as products, orders, and
+  [many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+  Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+  enables you to customize the checkout experience.
   """
   metafield(
     """
-    The key for the metafield.
+    The unique identifier for the metafield within its namespace. A metafield is composed of a
+    namespace and a key, in the format `namespace.key`.
     """
     key: String!
 
     """
-    The namespace for the metafield.
+    A category that organizes a group of metafields. Namespaces are used to prevent naming conflicts
+    between different apps or different parts of the same app. If omitted, then the
+    [app-reserved namespace](https://shopify.dev/docs/apps/build/custom-data/ownership)
+    is used.
     """
-    namespace: String!
+    namespace: String
   ): Metafield
 
   """
   The name of the company location.
   """
   name: String!
+
+  """
+  The number of orders placed at this company location.
+  """
+  ordersCount: Int!
+
+  """
+  The total amount spent at this company location.
+  """
+  totalSpent: MoneyV2!
 
   """
   The date and time ([ISO 8601 format](http://en.wikipedia.org/wiki/ISO_8601))
@@ -360,27 +762,29 @@ type CompanyLocation implements HasMetafields {
 }
 
 """
-The condition to apply the discount.
+The conditions that satisfy the discount candidate to be applied to a cart line.
 """
 input Condition @oneOf {
+  """
+  The condition for checking the minimum quantity of products across a group of cart lines.
+  """
+  cartLineMinimumQuantity: CartLineMinimumQuantity
+
+  """
+  The condition for checking the minimum subtotal of products across a group of cart lines.
+  """
+  cartLineMinimumSubtotal: CartLineMinimumSubtotal
+
   """
   The condition for checking the minimum subtotal amount of the order.
   """
   orderMinimumSubtotal: OrderMinimumSubtotal
-
-  """
-  The condition for checking the minimum quantity of a product.
-  """
-  productMinimumQuantity: ProductMinimumQuantity
-
-  """
-  The condition for checking the minimum subtotal amount of the product.
-  """
-  productMinimumSubtotal: ProductMinimumSubtotal
 }
 
 """
-A country.
+The country for which the store is customized, reflecting local preferences and regulations.
+Localization might influence the language, currency, and product offerings available in a store to enhance
+the shopping experience for customers in that region.
 """
 type Country {
   """
@@ -1492,7 +1896,7 @@ enum CountryCode {
   TO
 
   """
-  Turkey.
+  Türkiye.
   """
   TR
 
@@ -1623,9 +2027,9 @@ enum CountryCode {
 }
 
 """
-The three-letter currency codes that represent the world currencies used in
-stores. These include standard ISO 4217 codes, legacy codes,
-and non-standard codes.
+The currency codes that represent the world currencies throughout the Admin API. Currency codes include
+[standard ISO 4217 codes](https://en.wikipedia.org/wiki/ISO_4217), legacy codes, non-standard codes,
+digital currency codes.
 """
 enum CurrencyCode {
   """
@@ -1751,7 +2155,7 @@ enum CurrencyCode {
   """
   Belarusian Ruble (BYR).
   """
-  BYR @deprecated(reason: "`BYR` is deprecated. Use `BYN` available from version `2021-01` onwards instead.")
+  BYR @deprecated(reason: "Use `BYN` instead.")
 
   """
   Belize Dollar (BZD).
@@ -2276,7 +2680,7 @@ enum CurrencyCode {
   """
   Sao Tome And Principe Dobra (STD).
   """
-  STD @deprecated(reason: "`STD` is deprecated. Use `STN` available from version `2022-07` onwards instead.")
+  STD @deprecated(reason: "Use `STN` instead.")
 
   """
   Sao Tome And Principe Dobra (STN).
@@ -2354,6 +2758,11 @@ enum CurrencyCode {
   USD
 
   """
+  United States Dollars Coin (USDC).
+  """
+  USDC
+
+  """
   Uruguayan Pesos (UYU).
   """
   UYU
@@ -2371,10 +2780,10 @@ enum CurrencyCode {
   """
   Venezuelan Bolivares (VEF).
   """
-  VEF @deprecated(reason: "`VEF` is deprecated. Use `VES` available from version `2020-10` onwards instead.")
+  VEF @deprecated(reason: "Use `VES` instead.")
 
   """
-  Venezuelan Bolivares (VES).
+  Venezuelan Bolivares Soberanos (VES).
   """
   VES
 
@@ -2435,7 +2844,10 @@ enum CurrencyCode {
 }
 
 """
-A custom product.
+A custom product represents a product that doesn't map to Shopify's
+[standard product categories](https://help.shopify.com/manual/products/details/product-type).
+For example, you can use a custom product to manage gift cards, shipping requirements, localized product
+information, or weight measurements and conversions.
 """
 type CustomProduct {
   """
@@ -2444,76 +2856,126 @@ type CustomProduct {
   isGiftCard: Boolean!
 
   """
-  Whether the merchandise requires shipping.
+  Whether the item needs to be shipped to the customer. For example, a
+  digital gift card doesn't need to be shipped, but a t-shirt does
+  need to be shipped.
   """
   requiresShipping: Boolean!
 
   """
-  The weight of the product variant in the unit system specified with `weight_unit`.
+  The localized name for the product that displays to customers. The title is used to construct the product's
+  handle, which is a unique, human-readable string of the product's title. For example, if a product is titled
+  "Black Sunglasses", then the handle is `black-sunglasses`.
+  """
+  title: String!
+
+  """
+  The product variant's weight, in the system of measurement set in the `weightUnit` field.
   """
   weight: Float
 
   """
-  Unit of measurement for weight.
+  The unit of measurement for weight.
   """
   weightUnit: WeightUnit!
 }
 
 """
-Represents a customer with the shop.
+Represents a [customer](https://help.shopify.com/manual/customers/manage-customers).
+`Customer` returns data including the customer's contact information and order history.
 """
 type Customer implements HasMetafields {
   """
-  The total amount of money spent by the customer. Converted from the shop's
-  currency to the currency of the cart using a market rate.
+  The total amount that the customer has spent on orders.
+  The amount is converted from the shop's currency to the currency of the cart using a market rate.
   """
   amountSpent: MoneyV2!
 
   """
-  The customer’s name, email or phone number.
+  The full name of the customer, based on the values for `firstName` and `lastName`.
+  If `firstName` and `lastName` aren't specified, then the value is the customer's email address.
+  If the email address isn't specified, then the value is the customer's phone number.
   """
   displayName: String!
 
   """
-  The customer’s email address.
+  The customer's email address.
   """
   email: String
 
   """
-  Whether the customer has any of the given tags.
+  The customer's first name.
+  """
+  firstName: String
+
+  """
+  Whether the customer is associated with any of the specified tags. The customer must have at least one tag
+  from the list to return `true`.
   """
   hasAnyTag(
     """
-    The tags to search for.
+    A comma-separated list of searchable keywords that are associated with the customer. For example,
+    `"VIP, Gold"` returns customers with either the `VIP` or `Gold` tag.
     """
     tags: [String!]! = []
   ): Boolean!
 
   """
-  A unique identifier for the customer.
+  Whether the customer is associated with the specified tags.
+  """
+  hasTags(
+    """
+    A comma-separated list of searchable keywords that are associated with the customer. For example,
+    `"VIP, Gold"` returns customers with both the `VIP` and `Gold` tags.
+    """
+    tags: [String!]! = []
+  ): [HasTagResponse!]!
+
+  """
+  A [globally-unique ID](https://shopify.dev/docs/api/usage/gids)
+  for the customer.
   """
   id: ID!
 
   """
-  Returns a metafield by namespace and key that belongs to the resource.
+  The customer's last name.
+  """
+  lastName: String
+
+  """
+  A [custom field](https://shopify.dev/docs/apps/build/custom-data) that stores additional information
+  about a Shopify resource, such as products, orders, and
+  [many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+  Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+  enables you to customize the checkout experience.
   """
   metafield(
     """
-    The key for the metafield.
+    The unique identifier for the metafield within its namespace. A metafield is composed of a
+    namespace and a key, in the format `namespace.key`.
     """
     key: String!
 
     """
-    The namespace for the metafield.
+    A category that organizes a group of metafields. Namespaces are used to prevent naming conflicts
+    between different apps or different parts of the same app. If omitted, then the
+    [app-reserved namespace](https://shopify.dev/docs/apps/build/custom-data/ownership)
+    is used.
     """
-    namespace: String!
+    namespace: String
   ): Metafield
 
   """
-  The number of orders made by the customer.
+  The total number of orders that the customer has made at the store.
   """
   numberOfOrders: Int!
 }
+
+"""
+Represents an [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)-encoded date string.
+For example, September 7, 2019 is represented as `"2019-07-16"`.
+"""
+scalar Date
 
 """
 Represents an [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)-encoded date and time string.
@@ -2523,11 +2985,166 @@ represented as `"2019-09-07T15:50:00Z`".
 scalar DateTime
 
 """
+A subset of the [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format that
+includes the date and time but not the timezone which is determined from context.
+
+For example, "2018-01-01T00:00:00".
+"""
+scalar DateTimeWithoutTimezone
+
+"""
 A signed decimal number, which supports arbitrary precision and is serialized as a string.
 
 Example values: `"29.99"`, `"29.999"`.
 """
 scalar Decimal
+
+"""
+Represents information about the merchandise in the cart.
+"""
+type DeliverableCartLine {
+  """
+  The custom attributes associated with a cart to store additional information. Cart attributes
+  allow you to collect specific information from customers on the **Cart** page, such as order notes,
+  gift wrapping requests, or custom product details. Attributes are stored as key-value pairs.
+
+  Cart line attributes are equivalent to the
+  [`line_item`](https://shopify.dev/docs/api/liquid/objects/line_item)
+  object in Liquid.
+  """
+  attribute(
+    """
+    The key of the cart attribute to retrieve. For example, `"gift_wrapping"`.
+    """
+    key: String
+  ): Attribute
+
+  """
+  The ID of the cart line.
+  """
+  id: ID!
+
+  """
+  The item that the customer intends to purchase.
+  """
+  merchandise: Merchandise!
+
+  """
+  The quantity of the item that the customer intends to purchase.
+  """
+  quantity: Int!
+}
+
+"""
+The discount that's eligible to be applied to a delivery.
+"""
+input DeliveryDiscountCandidate {
+  """
+  An optional discount code associated with this discount candidate, for use
+  with automatic discounts. If a code discount is the function trigger, the
+  associated discount code will be overwritten by the triggering discount code.
+  """
+  associatedDiscountCode: AssociatedDiscountCode
+
+  """
+  A notification on the **Cart** page informs customers about available
+  discounts. If an automatic discount applies, the notification displays this
+  message, such as "Save 20% on all t-shirts." If a discount code is entered,
+  the notification displays the code instead.
+  """
+  message: String
+
+  """
+  The targets of the discount that are eligible to be applied to a delivery.
+  """
+  targets: [DeliveryDiscountCandidateTarget!]!
+
+  """
+  The value of the discount that's eligible to be applied to a delivery.
+  """
+  value: DeliveryDiscountCandidateValue!
+}
+
+"""
+The target of the eligible delivery discount.
+"""
+input DeliveryDiscountCandidateTarget @oneOf {
+  """
+  A method for applying a discount to a delivery group. Delivery groups streamline
+  fulfillment by organizing items that can be shipped together, based on the customer's shipping address.
+  For example, if a customer orders a t-shirt and a pair of shoes that can be shipped together, then the
+  items are included in the same delivery group.
+  """
+  deliveryGroup: DeliveryGroupTarget
+
+  """
+  A method for applying a discount to a delivery option within a delivery group.
+  Delivery options are the different ways that customers can choose to have their
+  orders shipped. Examples of delivery options include express shipping or standard shipping.
+  """
+  deliveryOption: DeliveryOptionTarget
+}
+
+"""
+The value of the eligible delivery discount.
+"""
+input DeliveryDiscountCandidateValue @oneOf {
+  """
+  A fixed amount value.
+  """
+  fixedAmount: FixedAmount
+
+  """
+  A percentage value.
+  """
+  percentage: Percentage
+}
+
+"""
+The strategy that's applied to the list of discounts that are eligible to be applied to a delivery.
+"""
+enum DeliveryDiscountSelectionStrategy {
+  """
+  Apply all discounts that are eligible to be applied to a delivery with
+  conditions that are satisfied. This doesn't override
+  discount combination or stacking rules.
+  """
+  ALL
+}
+
+"""
+Applies delivery discounts to a cart that share a method for determining which
+shipping and delivery discounts to apply when multiple discounts are eligible.
+"""
+input DeliveryDiscountsAddOperation {
+  """
+  The list of discounts that are eligible to be applied to a delivery.
+  """
+  candidates: [DeliveryDiscountCandidate!]!
+
+  """
+  The method for determining which shipping and delivery discounts to apply when
+  multiple discounts are eligible. For example, when the "ALL" strategy is
+  selected, every shipping and delivery discount that qualifies is applied to
+  the cart (for example, free shipping on orders over $50 and $5 off express
+  shipping). This controls how shipping and delivery discounts interact when
+  multiple conditions are satisfied simultaneously.
+  """
+  selectionStrategy: DeliveryDiscountSelectionStrategy!
+}
+
+"""
+A method for applying a discount to a delivery group. Delivery groups streamline
+fulfillment by organizing items that can be shipped together, based on the customer's shipping address.
+For example, if a customer orders a t-shirt and a pair of shoes that can be shipped together, then the
+items are included in the same delivery group.
+"""
+input DeliveryGroupTarget {
+  """
+  The ID of the target delivery group.
+  """
+  id: ID!
+}
 
 """
 List of different delivery method types.
@@ -2565,66 +3182,281 @@ enum DeliveryMethod {
 }
 
 """
-The discount to be applied.
+The operations to apply discounts to shipping and delivery charges in a
+customer's cart. These operations allow you to reduce the cost of shipping by
+applying percentage or fixed-amount discounts to specific delivery options (such
+as standard shipping and express shipping) or delivery groups (such as
+collections of delivery options).
 """
-input Discount {
+input DeliveryOperation @oneOf {
   """
-  The condition to apply the discount.
+  Applies delivery discounts to a cart that share a method for determining which
+  shipping and delivery discounts to apply when multiple discounts are eligible.
   """
-  conditions: [Condition!]
+  deliveryDiscountsAdd: DeliveryDiscountsAddOperation
 
   """
-  The discount message.
+  An operation that selects which entered discount codes to accept. Use this to
+  validate discount codes from external systems.
   """
-  message: String
+  enteredDiscountCodesAccept: EnteredDiscountCodesAcceptOperation
 
   """
-  The targets of the discount.
-
-  The value is validated against: targets should contain only one type of `Target`.
-  For example, targets that contain a list of `ProductVariantTarget` targets are valid.
+  An operation that rejects entered discount codes with a custom message. Use
+  this to conditionally reject discount codes based on business logic. This
+  operation can only be used if the function is backed by an automatic discount.
   """
-  targets: [Target!]!
-
-  """
-  The value of the discount.
-  """
-  value: Value!
+  enteredDiscountCodesReject: EnteredDiscountCodesRejectOperation
 }
 
 """
-The strategy that's applied to the list of discounts.
+A method for applying a discount to a delivery option within a delivery group.
+Delivery options are the different ways that customers can choose to have their
+orders shipped. Examples of delivery options include express shipping or standard shipping.
 """
-enum DiscountApplicationStrategy {
+input DeliveryOptionTarget {
   """
-  Only apply the first discount with conditions that are satisfied.
+  The handle of the target delivery option.
   """
-  FIRST
-
-  """
-  Only apply the discount that offers the maximum reduction.
-  """
-  MAXIMUM
+  handle: Handle!
 }
 
 """
-A discount wrapper node.
+The discount that invoked the [Discount Function](https://shopify.dev/docs/apps/build/discounts#build-with-shopify-functions)).
 """
-type DiscountNode implements HasMetafields {
+type Discount implements HasMetafields {
   """
-  Returns a metafield by namespace and key that belongs to the resource.
+  The [discount classes](https://shopify.dev/docs/apps/build/discounts/#discount-classes) that the [discountNode](https://shopify.dev/docs/api/admin-graphql/latest/queries/discountNode) supports.
+  """
+  discountClasses: [DiscountClass!]!
+
+  """
+  A [custom field](https://shopify.dev/docs/apps/build/custom-data) that stores additional information
+  about a Shopify resource, such as products, orders, and
+  [many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+  Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+  enables you to customize the checkout experience.
   """
   metafield(
     """
-    The key for the metafield.
+    The unique identifier for the metafield within its namespace. A metafield is composed of a
+    namespace and a key, in the format `namespace.key`.
     """
     key: String!
 
     """
-    The namespace for the metafield.
+    A category that organizes a group of metafields. Namespaces are used to prevent naming conflicts
+    between different apps or different parts of the same app. If omitted, then the
+    [app-reserved namespace](https://shopify.dev/docs/apps/build/custom-data/ownership)
+    is used.
     """
-    namespace: String!
+    namespace: String
   ): Metafield
+}
+
+"""
+The discount application and the amount applied.
+"""
+type DiscountAllocation {
+  """
+  The discount that was applied.
+  """
+  discountApplication: DiscountApplication!
+
+  """
+  The amount that was discounted.
+  """
+  discountedAmount: MoneyV2!
+}
+
+"""
+Discount that has been applied to the cart.
+"""
+type DiscountApplication implements HasMetafields {
+  """
+  The method by which the discount's value is allocated to its entitled items.
+  """
+  allocationMethod: DiscountApplicationAllocationMethod!
+
+  """
+  A [custom field](https://shopify.dev/docs/apps/build/custom-data) that stores additional information
+  about a Shopify resource, such as products, orders, and
+  [many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+  Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+  enables you to customize the checkout experience.
+  """
+  metafield(
+    """
+    The unique identifier for the metafield within its namespace. A metafield is composed of a
+    namespace and a key, in the format `namespace.key`.
+    """
+    key: String!
+
+    """
+    A category that organizes a group of metafields. Namespaces are used to prevent naming conflicts
+    between different apps or different parts of the same app. If omitted, then the
+    [app-reserved namespace](https://shopify.dev/docs/apps/build/custom-data/ownership)
+    is used.
+    """
+    namespace: String
+  ): Metafield
+
+  """
+  The lines on the cart targeted by the discount.
+  """
+  targetSelection: DiscountApplicationTargetSelection!
+
+  """
+  The type of line (i.e. line item or shipping line) on a cart that the discount is applicable towards.
+  """
+  targetType: DiscountApplicationTarget!
+
+  """
+  The total allocated amount of the discount across all items.
+  """
+  totalAllocatedAmount: MoneyV2!
+
+  """
+  The value of the discount.
+  """
+  value: PricingValue!
+}
+
+"""
+The method by which the discount's value is allocated onto its entitled lines.
+"""
+enum DiscountApplicationAllocationMethod {
+  """
+  The value is spread across all entitled lines.
+  """
+  ACROSS
+
+  """
+  The value is applied onto every entitled line.
+  """
+  EACH
+}
+
+"""
+The type of line on an order that the discount is applicable towards.
+"""
+enum DiscountApplicationTarget {
+  """
+  The discount applies onto line items.
+  """
+  LINE_ITEM
+
+  """
+  The discount applies onto shipping lines.
+  """
+  SHIPPING_LINE
+}
+
+"""
+The lines on the order to which the discount is applied, of the type defined by
+the discount application's `targetType`. For example, the value `ENTITLED`, combined with a `targetType` of
+`LINE_ITEM`, applies the discount on all line items that are entitled to the discount.
+The value `ALL`, combined with a `targetType` of `SHIPPING_LINE`, applies the discount on all shipping lines.
+"""
+enum DiscountApplicationTargetSelection {
+  """
+  The discount is allocated onto all the lines.
+  """
+  ALL
+
+  """
+  The discount is allocated onto only the lines that it's entitled for.
+  """
+  ENTITLED
+
+  """
+  The discount is allocated onto explicitly chosen lines.
+  """
+  EXPLICIT
+}
+
+"""
+The [discount class](https://help.shopify.com/manual/discounts/combining-discounts/discount-combinations)
+that's used to control how discounts can be combined.
+"""
+enum DiscountClass {
+  """
+  The discount is combined with an
+  [order discount](https://help.shopify.com/manual/discounts/combining-discounts/discount-combinations)
+  class.
+  """
+  ORDER
+
+  """
+  The discount is combined with a
+  [product discount](https://help.shopify.com/manual/discounts/combining-discounts/discount-combinations)
+  class.
+  """
+  PRODUCT
+
+  """
+  The discount is combined with a
+  [shipping discount](https://help.shopify.com/manual/discounts/combining-discounts/discount-combinations)
+  class.
+  """
+  SHIPPING
+}
+
+"""
+A discount code used by the buyer to add a discount to the cart.
+"""
+input DiscountCode {
+  """
+  The discount code.
+  """
+  code: String!
+}
+
+"""
+A discount code entered by the customer.
+"""
+type EnteredDiscountCode {
+  """
+  The discount code.
+  """
+  code: String!
+
+  """
+  Always check this value before you reject the code. If you reject a code that
+  isn't rejectable, the Function result is invalid.
+
+  This value is `false` when the Function is owned by a code discount. In a
+  delivery target, it's also `false` when the code already applied a product or
+  order discount.
+  """
+  rejectable: Boolean!
+}
+
+"""
+An operation that selects which entered discount codes to accept. Use this to validate discount codes from external systems.
+"""
+input EnteredDiscountCodesAcceptOperation {
+  """
+  The list of discount codes to accept.
+  """
+  codes: [DiscountCode!]!
+}
+
+"""
+An operation that rejects entered discount codes with a custom message. Use this
+to conditionally reject discount codes based on business logic. This operation
+can only be used if the function is backed by an automatic discount.
+"""
+input EnteredDiscountCodesRejectOperation {
+  """
+  The list of discount codes to reject.
+  """
+  codes: [RejectedDiscountCode!]!
+
+  """
+  The custom message to display to the customer when the discount codes are rejected.
+  """
+  message: String!
 }
 
 """
@@ -2640,38 +3472,195 @@ input FixedAmount {
 }
 
 """
-The result of the function.
+A function-scoped handle to a refer a resource.
+The Handle type appears in a JSON response as a String, but it is not intended to be human-readable.
+Example value: `"10079785100"`
 """
-input FunctionResult {
-  """
-  The strategy to apply the list of discounts.
-  """
-  discountApplicationStrategy: DiscountApplicationStrategy!
-
-  """
-  The list of discounts to be applied.
-  """
-  discounts: [Discount!]!
-}
+scalar Handle
 
 """
 Represents information about the metafields associated to the specified resource.
 """
 interface HasMetafields {
   """
-  Returns a metafield by namespace and key that belongs to the resource.
+  A [custom field](https://shopify.dev/docs/apps/build/custom-data) that stores additional information
+  about a Shopify resource, such as products, orders, and
+  [many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+  Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+  enables you to customize the checkout experience.
   """
   metafield(
     """
-    The key for the metafield.
+    The unique identifier for the metafield within its namespace. A metafield is composed of a
+    namespace and a key, in the format `namespace.key`.
     """
     key: String!
 
     """
-    The namespace for the metafield.
+    A category that organizes a group of metafields. Namespaces are used to prevent naming conflicts
+    between different apps or different parts of the same app. If omitted, then the
+    [app-reserved namespace](https://shopify.dev/docs/apps/build/custom-data/ownership)
+    is used.
     """
-    namespace: String!
+    namespace: String
   ): Metafield
+}
+
+"""
+Whether a Shopify resource, such as a product or customer, has a specified tag.
+"""
+type HasTagResponse {
+  """
+  Whether the Shopify resource has the tag.
+  """
+  hasTag: Boolean!
+
+  """
+  A searchable keyword that's associated with a Shopify resource, such as a product or customer. For example,
+  a merchant might apply the `sports` and `summer` tags to products that are associated with sportswear for
+  summer.
+  """
+  tag: String!
+}
+
+"""
+The attributes associated with an HTTP request.
+"""
+input HttpRequest {
+  """
+  The HTTP request body as a plain string.
+  Use this field when the body isn't in JSON format.
+  """
+  body: String
+
+  """
+  The HTTP headers.
+  """
+  headers: [HttpRequestHeader!]!
+
+  """
+  The HTTP request body as a JSON object.
+  Use this field when the body's in JSON format, to reduce function instruction consumption
+  and to ensure the body's formatted in logs.
+  Don't use this field together with the `body` field. If both are provided, then the `body` field
+  will take precedence.
+  If this field is specified and no `Content-Type` header is included, then the header will
+  automatically be set to `application/json`.
+  """
+  jsonBody: JSON
+
+  """
+  The HTTP method.
+  """
+  method: HttpRequestMethod!
+
+  """
+  Policy attached to the HTTP request.
+  """
+  policy: HttpRequestPolicy!
+
+  """
+  The HTTP url (eg.: https://example.com). The scheme needs to be HTTPS.
+  """
+  url: URL!
+}
+
+"""
+The attributes associated with an HTTP request header.
+"""
+input HttpRequestHeader {
+  """
+  Header name.
+  """
+  name: String!
+
+  """
+  Header value.
+  """
+  value: String!
+}
+
+"""
+The HTTP request available methods.
+"""
+enum HttpRequestMethod {
+  """
+  Http GET.
+  """
+  GET
+
+  """
+  Http POST.
+  """
+  POST
+}
+
+"""
+The attributes associated with an HTTP request policy.
+"""
+input HttpRequestPolicy {
+  """
+  Read timeout in milliseconds.
+  """
+  readTimeoutMs: Int!
+}
+
+"""
+The attributes associated with an HTTP response.
+"""
+type HttpResponse {
+  """
+  The HTTP response body as a plain string.
+  Use this field when the body is not in JSON format.
+  """
+  body: String
+
+  """
+  An HTTP header.
+  """
+  header(
+    """
+    A case-insensitive header name.
+    """
+    name: String!
+  ): HttpResponseHeader
+
+  """
+  The HTTP headers.
+  """
+  headers: [HttpResponseHeader!]! @deprecated(reason: "Use `header` instead.")
+
+  """
+  The HTTP response body parsed as JSON.
+  If the body is valid JSON, it will be parsed and returned as a JSON object.
+  If parsing fails, then raw body is returned as a string.
+  Use this field when you expect the response to be JSON, or when you're dealing
+  with mixed response types, meaning both JSON and non-JSON.
+  Using this field reduces function instruction consumption and ensures that the data is formatted in logs.
+  To prevent increasing the function target input size unnecessarily, avoid querying
+  both `body` and `jsonBody` simultaneously.
+  """
+  jsonBody: JSON
+
+  """
+  The HTTP status code.
+  """
+  status: Int!
+}
+
+"""
+The attributes associated with an HTTP response header.
+"""
+type HttpResponseHeader {
+  """
+  Header name.
+  """
+  name: String!
+
+  """
+  Header value.
+  """
+  value: String!
 }
 
 """
@@ -2683,32 +3672,90 @@ Example value: `"gid://shopify/Product/10079785100"`
 scalar ID
 
 """
-The input object for the function.
+The input object for the Function.
 """
 type Input {
   """
-  The cart to discount.
+  The cart where the Function is running. A cart contains the merchandise that a customer intends to purchase
+  and information about the customer, such as the customer's email address and phone number.
   """
   cart: Cart!
 
   """
-  The discount node executing the function.
+  The discount node that owns the [Shopify
+  Function](https://shopify.dev/docs/apps/build/functions). Discounts are a way
+  for merchants to promote sales and special offers, or as customer loyalty
+  rewards. A single discount can be automatic or code-based, and can be applied
+  to a cart lines, orders, and delivery.
   """
-  discountNode: DiscountNode!
+  discount: Discount!
 
   """
-  The localization of the function execution context.
+  Discount codes entered by the buyer at checkout, excluding gift cards. For
+  cart.lines.discounts.generate.run and cart.delivery-options.discounts.generate.run targets, these
+  discount codes are validated to ensure they are not deleted, maintain an active status, and are eligible
+  for the current cart. For fetch targets, all entered discount codes are included, excluding gift cards.
+  """
+  enteredDiscountCodes: [EnteredDiscountCode!]!
+
+  """
+  The result of the fetch target. Refer to [network access](https://shopify.dev/apps/build/functions/input-output/network-access/graphql)
+  for Shopify Functions. This input is only available in the
+  `cart.lines.discounts.generate.run` and
+  `cart.delivery-options.discounts.generate.run` extension targets.
+  """
+  fetchResult: HttpResponse @restrictTarget(only: ["cart.lines.discounts.generate.run", "cart.delivery-options.discounts.generate.run"])
+
+  """
+  The regional and language settings that determine how the Function
+  handles currency, numbers, dates, and other locale-specific values
+  during discount calculations. These settings are based on the store's configured
+  [localization practices](https://shopify.dev/docs/apps/build/functions/localization-practices-shopify-functions).
   """
   localization: Localization!
 
   """
-  The conversion rate between the shop's currency and the currency of the cart.
+  The exchange rate used to convert discounts between the shop's default
+  currency and the currency that displays to the customer during checkout.
+  For example, if a store operates in USD but a customer is viewing discounts in EUR,
+  then the presentment currency rate handles this conversion for accurate pricing.
   """
   presentmentCurrencyRate: Decimal!
+
+  """
+  Information about the shop where the Function is running, including the shop's timezone
+  setting and associated [metafields](https://shopify.dev/docs/apps/build/custom-data).
+  """
+  shop: Shop!
+
+  """
+  The discount code entered by a customer, which caused the [Discount Function](https://shopify.dev/docs/apps/build/discounts#build-with-shopify-functions) to run.
+  This input is only available in the `cart.lines.discounts.generate.run` and
+  `cart.delivery-options.discounts.generate.run` extension targets.
+  """
+  triggeringDiscountCode: String @restrictTarget(only: ["cart.lines.discounts.generate.run", "cart.delivery-options.discounts.generate.run"])
 }
 
 """
-A language.
+A [JSON](https://www.json.org/json-en.html) object.
+
+Example value:
+`{
+  "product": {
+    "id": "gid://shopify/Product/1346443542550",
+    "title": "White T-shirt",
+    "options": [{
+      "name": "Size",
+      "values": ["M", "L"]
+    }]
+  }
+}`
+"""
+scalar JSON
+
+"""
+The language for which the store is customized, ensuring content is tailored to local customers.
+This includes product descriptions and customer communications that resonate with the target audience.
 """
 type Language {
   """
@@ -2718,7 +3765,7 @@ type Language {
 }
 
 """
-ISO 639-1 language codes supported by Shopify.
+Language codes supported by Shopify.
 """
 enum LanguageCode {
   """
@@ -2795,6 +3842,11 @@ enum LanguageCode {
   Chechen.
   """
   CE
+
+  """
+  Central Kurdish.
+  """
+  CKB
 
   """
   Czech.
@@ -2875,6 +3927,11 @@ enum LanguageCode {
   Finnish.
   """
   FI
+
+  """
+  Filipino.
+  """
+  FIL
 
   """
   Faroese.
@@ -3227,6 +4284,16 @@ enum LanguageCode {
   RW
 
   """
+  Sanskrit.
+  """
+  SA
+
+  """
+  Sardinian.
+  """
+  SC
+
+  """
   Sindhi.
   """
   SD
@@ -3408,18 +4475,436 @@ enum LanguageCode {
 }
 
 """
-Information about the localized experiences configured for the shop.
+The current time based on the
+[store's timezone setting](https://help.shopify.com/manual/intro-to-shopify/initial-setup/setup-business-settings).
+"""
+type LocalTime {
+  """
+  The current date relative to the parent object.
+  """
+  date: Date!
+
+  """
+  Returns true if the current date and time is at or past the given date and time, and false otherwise.
+  """
+  dateTimeAfter(
+    """
+    The date and time to compare against, assumed to be in the timezone of the parent object.
+    """
+    dateTime: DateTimeWithoutTimezone!
+  ): Boolean!
+
+  """
+  Returns true if the current date and time is before the given date and time, and false otherwise.
+  """
+  dateTimeBefore(
+    """
+    The date and time to compare against, assumed to be in the timezone of the parent timezone.
+    """
+    dateTime: DateTimeWithoutTimezone!
+  ): Boolean!
+
+  """
+  Returns true if the current date and time is between the two given date and times, and false otherwise.
+  """
+  dateTimeBetween(
+    """
+    The upper bound time to compare against, assumed to be in the timezone of the parent timezone.
+    """
+    endDateTime: DateTimeWithoutTimezone!
+
+    """
+    The lower bound time to compare against, assumed to be in the timezone of the parent timezone.
+    """
+    startDateTime: DateTimeWithoutTimezone!
+  ): Boolean!
+
+  """
+  Returns true if the current time is at or past the given time, and false otherwise.
+  """
+  timeAfter(
+    """
+    The time to compare against, assumed to be in the timezone of the parent timezone.
+    """
+    time: TimeWithoutTimezone!
+  ): Boolean!
+
+  """
+  Returns true if the current time is at or past the given time, and false otherwise.
+  """
+  timeBefore(
+    """
+    The time to compare against, assumed to be in the timezone of the parent timezone.
+    """
+    time: TimeWithoutTimezone!
+  ): Boolean!
+
+  """
+  Returns true if the current time is between the two given times, and false otherwise.
+  """
+  timeBetween(
+    """
+    The upper bound time to compare against, assumed to be in the timezone of the parent timezone.
+    """
+    endTime: TimeWithoutTimezone!
+
+    """
+    The lower bound time to compare against, assumed to be in the timezone of the parent timezone.
+    """
+    startTime: TimeWithoutTimezone!
+  ): Boolean!
+}
+
+"""
+Details about the localized experience for the store in a specific region, including country and language
+settings. The localized experience is determined by the store's settings and the customer's location.
+Localization ensures that customers can access relevant content and options while browsing or purchasing
+products in a store.
 """
 type Localization {
   """
-  The country of the active localized experience.
+  The country for which the store is customized, reflecting local preferences and regulations.
+  Localization might influence the language, currency, and product offerings available in a store to enhance
+  the shopping experience for customers in that region.
   """
   country: Country!
 
   """
-  The language of the active localized experience.
+  The language for which the store is customized, ensuring content is tailored to local customers.
+  This includes product descriptions and customer communications that resonate with the target audience.
   """
   language: Language!
+
+  """
+  The market of the active localized experience.
+  """
+  market: Market! @deprecated(reason: "This `market` field will be removed in a future version of the API.")
+}
+
+"""
+Represents the value captured by a localized field. Localized fields are
+additional fields required by certain countries on international orders. For
+example, some countries require additional fields for customs information or tax
+identification numbers.
+"""
+type LocalizedField {
+  """
+  The key of the localized field.
+  """
+  key: LocalizedFieldKey!
+
+  """
+  The title of the localized field.
+  """
+  title: String!
+
+  """
+  The value of the localized field.
+  """
+  value: String
+}
+
+"""
+Unique key identifying localized fields.
+"""
+enum LocalizedFieldKey {
+  """
+  Localized field key 'shipping_credential_br' for country Brazil.
+  """
+  SHIPPING_CREDENTIAL_BR
+
+  """
+  Localized field key 'shipping_credential_cl' for country Chile.
+  """
+  SHIPPING_CREDENTIAL_CL
+
+  """
+  Localized field key 'shipping_credential_cn' for country China.
+  """
+  SHIPPING_CREDENTIAL_CN
+
+  """
+  Localized field key 'shipping_credential_co' for country Colombia.
+  """
+  SHIPPING_CREDENTIAL_CO
+
+  """
+  Localized field key 'shipping_credential_cr' for country Costa Rica.
+  """
+  SHIPPING_CREDENTIAL_CR
+
+  """
+  Localized field key 'shipping_credential_ec' for country Ecuador.
+  """
+  SHIPPING_CREDENTIAL_EC
+
+  """
+  Localized field key 'shipping_credential_es' for country Spain.
+  """
+  SHIPPING_CREDENTIAL_ES
+
+  """
+  Localized field key 'shipping_credential_gt' for country Guatemala.
+  """
+  SHIPPING_CREDENTIAL_GT
+
+  """
+  Localized field key 'shipping_credential_id' for country Indonesia.
+  """
+  SHIPPING_CREDENTIAL_ID
+
+  """
+  Localized field key 'shipping_credential_kr' for country South Korea.
+  """
+  SHIPPING_CREDENTIAL_KR
+
+  """
+  Localized field key 'shipping_credential_mx' for country Mexico.
+  """
+  SHIPPING_CREDENTIAL_MX
+
+  """
+  Localized field key 'shipping_credential_my' for country Malaysia.
+  """
+  SHIPPING_CREDENTIAL_MY
+
+  """
+  Localized field key 'shipping_credential_pe' for country Peru.
+  """
+  SHIPPING_CREDENTIAL_PE
+
+  """
+  Localized field key 'shipping_credential_pt' for country Portugal.
+  """
+  SHIPPING_CREDENTIAL_PT
+
+  """
+  Localized field key 'shipping_credential_py' for country Paraguay.
+  """
+  SHIPPING_CREDENTIAL_PY
+
+  """
+  Localized field key 'shipping_credential_tr' for country Turkey.
+  """
+  SHIPPING_CREDENTIAL_TR
+
+  """
+  Localized field key 'shipping_credential_tw' for country Taiwan.
+  """
+  SHIPPING_CREDENTIAL_TW
+
+  """
+  Localized field key 'shipping_credential_type_co' for country Colombia.
+  """
+  SHIPPING_CREDENTIAL_TYPE_CO
+
+  """
+  Localized field key 'tax_credential_br' for country Brazil.
+  """
+  TAX_CREDENTIAL_BR
+
+  """
+  Localized field key 'tax_credential_cl' for country Chile.
+  """
+  TAX_CREDENTIAL_CL
+
+  """
+  Localized field key 'tax_credential_co' for country Colombia.
+  """
+  TAX_CREDENTIAL_CO
+
+  """
+  Localized field key 'tax_credential_cr' for country Costa Rica.
+  """
+  TAX_CREDENTIAL_CR
+
+  """
+  Localized field key 'tax_credential_ec' for country Ecuador.
+  """
+  TAX_CREDENTIAL_EC
+
+  """
+  Localized field key 'tax_credential_es' for country Spain.
+  """
+  TAX_CREDENTIAL_ES
+
+  """
+  Localized field key 'tax_credential_gt' for country Guatemala.
+  """
+  TAX_CREDENTIAL_GT
+
+  """
+  Localized field key 'tax_credential_id' for country Indonesia.
+  """
+  TAX_CREDENTIAL_ID
+
+  """
+  Localized field key 'tax_credential_it' for country Italy.
+  """
+  TAX_CREDENTIAL_IT
+
+  """
+  Localized field key 'tax_credential_mx' for country Mexico.
+  """
+  TAX_CREDENTIAL_MX
+
+  """
+  Localized field key 'tax_credential_my' for country Malaysia.
+  """
+  TAX_CREDENTIAL_MY
+
+  """
+  Localized field key 'tax_credential_pe' for country Peru.
+  """
+  TAX_CREDENTIAL_PE
+
+  """
+  Localized field key 'tax_credential_pt' for country Portugal.
+  """
+  TAX_CREDENTIAL_PT
+
+  """
+  Localized field key 'tax_credential_py' for country Paraguay.
+  """
+  TAX_CREDENTIAL_PY
+
+  """
+  Localized field key 'tax_credential_tr' for country Turkey.
+  """
+  TAX_CREDENTIAL_TR
+
+  """
+  Localized field key 'tax_credential_type_co' for country Colombia.
+  """
+  TAX_CREDENTIAL_TYPE_CO
+
+  """
+  Localized field key 'tax_credential_type_mx' for country Mexico.
+  """
+  TAX_CREDENTIAL_TYPE_MX
+
+  """
+  Localized field key 'tax_credential_use_mx' for country Mexico.
+  """
+  TAX_CREDENTIAL_USE_MX
+
+  """
+  Localized field key 'tax_email_it' for country Italy.
+  """
+  TAX_EMAIL_IT
+}
+
+"""
+Represents the location where the inventory resides.
+"""
+type Location implements HasMetafields {
+  """
+  The address of this location.
+  """
+  address: LocationAddress!
+
+  """
+  The location handle.
+  """
+  handle: Handle!
+
+  """
+  The location id.
+  """
+  id: ID!
+
+  """
+  A [custom field](https://shopify.dev/docs/apps/build/custom-data) that stores additional information
+  about a Shopify resource, such as products, orders, and
+  [many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+  Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+  enables you to customize the checkout experience.
+  """
+  metafield(
+    """
+    The unique identifier for the metafield within its namespace. A metafield is composed of a
+    namespace and a key, in the format `namespace.key`.
+    """
+    key: String!
+
+    """
+    A category that organizes a group of metafields. Namespaces are used to prevent naming conflicts
+    between different apps or different parts of the same app. If omitted, then the
+    [app-reserved namespace](https://shopify.dev/docs/apps/build/custom-data/ownership)
+    is used.
+    """
+    namespace: String
+  ): Metafield
+
+  """
+  The name of the location.
+  """
+  name: String!
+}
+
+"""
+Represents the address of a location.
+"""
+type LocationAddress {
+  """
+  The first line of the address for the location.
+  """
+  address1: String
+
+  """
+  The second line of the address for the location.
+  """
+  address2: String
+
+  """
+  The city of the location.
+  """
+  city: String
+
+  """
+  The country of the location.
+  """
+  country: String
+
+  """
+  The country code of the location.
+  """
+  countryCode: String
+
+  """
+  A formatted version of the address for the location.
+  """
+  formatted: [String!]!
+
+  """
+  The approximate latitude coordinates of the location.
+  """
+  latitude: Float
+
+  """
+  The approximate longitude coordinates of the location.
+  """
+  longitude: Float
+
+  """
+  The phone number of the location.
+  """
+  phone: String
+
+  """
+  The province of the location.
+  """
+  province: String
+
+  """
+  The code for the province, state, or district of the address of the location.
+  """
+  provinceCode: String
+
+  """
+  The ZIP code of the location.
+  """
+  zip: String
 }
 
 """
@@ -3462,6 +4947,21 @@ type MailingAddress {
   lastName: String
 
   """
+  The approximate latitude of the address.
+  """
+  latitude: Float
+
+  """
+  The approximate longitude of the address.
+  """
+  longitude: Float
+
+  """
+  The market of the address.
+  """
+  market: Market @deprecated(reason: "This `market` field will be removed in a future version of the API.")
+
+  """
   The full name of the customer, based on firstName and lastName.
   """
   name: String
@@ -3472,7 +4972,7 @@ type MailingAddress {
   phone: String
 
   """
-  The two-letter code for the region. For example, ON.
+  The alphanumeric code for the region. For example, ON.
   """
   provinceCode: String
 
@@ -3483,42 +4983,200 @@ type MailingAddress {
 }
 
 """
-The merchandise to be purchased at checkout.
+A market is a group of one or more regions that you want to target for international sales.
+By creating a market, you can configure a distinct, localized shopping experience for
+customers from a specific area of the world. For example, you can
+[change currency](https://shopify.dev/api/admin-graphql/current/mutations/marketCurrencySettingsUpdate),
+[configure international pricing](https://shopify.dev/api/examples/product-price-lists),
+or [add market-specific domains or subfolders](https://shopify.dev/api/admin-graphql/current/objects/MarketWebPresence).
+"""
+type Market implements HasMetafields {
+  """
+  A human-readable unique string for the market automatically generated from its title.
+  """
+  handle: Handle!
+
+  """
+  A globally-unique identifier.
+  """
+  id: ID!
+
+  """
+  A [custom field](https://shopify.dev/docs/apps/build/custom-data) that stores additional information
+  about a Shopify resource, such as products, orders, and
+  [many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+  Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+  enables you to customize the checkout experience.
+  """
+  metafield(
+    """
+    The unique identifier for the metafield within its namespace. A metafield is composed of a
+    namespace and a key, in the format `namespace.key`.
+    """
+    key: String!
+
+    """
+    A category that organizes a group of metafields. Namespaces are used to prevent naming conflicts
+    between different apps or different parts of the same app. If omitted, then the
+    [app-reserved namespace](https://shopify.dev/docs/apps/build/custom-data/ownership)
+    is used.
+    """
+    namespace: String
+  ): Metafield
+
+  """
+  A geographic region which comprises a market.
+  """
+  regions: [MarketRegion!]!
+}
+
+"""
+Represents a region.
+"""
+interface MarketRegion {
+  """
+  The name of the region in the language of the current localization.
+  """
+  name: String
+}
+
+"""
+A country which comprises a market.
+"""
+type MarketRegionCountry implements MarketRegion {
+  """
+  The two-letter code for the country.
+  """
+  code: CountryCode!
+
+  """
+  The country name in the language of the current localization.
+  """
+  name: String!
+}
+
+"""
+The item that a customer intends to purchase. Merchandise can be a product variant or a custom
+product.
+
+A product variant is a specific version of a product that comes in more than one option, such as size or color.
+For example, if a merchant sells t-shirts with options for size and color, then a small, blue t-shirt would be
+one product variant and a large, blue t-shirt would be another.
+
+A custom product represents a product that doesn't map to Shopify's
+[standard product categories](https://help.shopify.com/manual/products/details/product-type).
+For example, you can use a custom product to manage gift cards, shipping requirements, localized product
+information, or weight measurements and conversions.
 """
 union Merchandise = CustomProduct | ProductVariant
 
 """
-[Metafields](https://shopify.dev/apps/metafields)
-enable you to attach additional information to a
-Shopify resource, such as a [Product](https://shopify.dev/api/admin-graphql/latest/objects/product)
-or a [Collection](https://shopify.dev/api/admin-graphql/latest/objects/collection).
-For more information about the Shopify resources that you can attach metafields to, refer to
-[HasMetafields](https://shopify.dev/api/admin/graphql/reference/common-objects/HasMetafields).
+[Custom fields](https://shopify.dev/docs/apps/build/custom-data) that store additional information
+about a Shopify resource, such as products, orders, and
+[many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+enables you to customize the checkout experience.
 """
 type Metafield {
   """
-  The type of data that the metafield stores in the `value` field.
-  Refer to the list of [supported types](https://shopify.dev/apps/metafields/types).
+  The data that's stored in the metafield, using JSON format.
+  """
+  jsonValue: JSON!
+
+  """
+  The [type of data](https://shopify.dev/apps/metafields/types) that the metafield stores in
+  the `value` field.
   """
   type: String!
 
   """
-  The data to store in the metafield. The data is always stored as a string, regardless of the metafield's type.
+  The data that's stored in the metafield. The data is always stored as a string,
+  regardless of the [metafield's type](https://shopify.dev/apps/metafields/types).
   """
   value: String!
 }
 
 """
-A monetary value with currency.
+An instance of custom structured data defined by a MetaobjectDefinition.
+"""
+type Metaobject {
+  """
+  The field for an object key, or null if the key has no field definition.
+  """
+  field(
+    """
+    The metaobject key to access.
+    """
+    key: String!
+  ): MetaobjectField
+
+  """
+  The unique handle of the metaobject, useful as a custom ID.
+  """
+  handle: String!
+
+  """
+  The type of the metaobject.
+  """
+  type: String!
+}
+
+"""
+Provides a field definition and the data value assigned to it.
+"""
+type MetaobjectField {
+  """
+  The assigned field value in JSON format.
+  """
+  jsonValue: JSON
+
+  """
+  The object key of this field.
+  """
+  key: String!
+
+  """
+  The type of the field.
+  """
+  type: String!
+
+  """
+  The assigned field value, always stored as a string regardless of the field type.
+  """
+  value: String
+}
+
+"""
+The input fields for retrieving a metaobject by handle.
+"""
+input MetaobjectHandleInput {
+  """
+  The handle of the metaobject to retrieve.
+  """
+  handle: String!
+
+  """
+  The type of the metaobject. Must match an existing metaobject definition type.
+  """
+  type: String!
+}
+
+"""
+A precise monetary value and its associated currency. Combines a decimal amount
+with a three-letter currency code to express prices, costs, and other financial
+values throughout the API. For example, 12.99 USD.
 """
 type MoneyV2 {
   """
-  Decimal money amount.
+  A monetary value in decimal format, allowing for precise representation of cents or fractional
+  currency. For example, 12.99.
   """
   amount: Decimal!
 
   """
-  Currency of the money.
+  The three-letter currency code that represents a world currency used in a store. Currency codes
+  include standard [standard ISO 4217 codes](https://en.wikipedia.org/wiki/ISO_4217), legacy codes,
+  and non-standard codes. For example, USD.
   """
   currencyCode: CurrencyCode!
 }
@@ -3528,14 +5186,136 @@ The root mutation for the API.
 """
 type MutationRoot {
   """
-  Handles the function result.
+  Handles the Function result for the cart.delivery-options.discounts.generate.fetch target.
   """
-  handleResult(
+  cartDeliveryOptionsDiscountsGenerateFetch(
     """
-    The result of the function.
+    The result of the Function.
     """
-    result: FunctionResult!
+    result: CartDeliveryOptionsDiscountsGenerateFetchResult!
   ): Void!
+
+  """
+  Handles the Function result for the cart.delivery-options.discounts.generate.run target.
+  """
+  cartDeliveryOptionsDiscountsGenerateRun(
+    """
+    The result of the Function.
+    """
+    result: CartDeliveryOptionsDiscountsGenerateRunResult!
+  ): Void!
+
+  """
+  Handles the Function result for the cart.lines.discounts.generate.fetch target.
+  """
+  cartLinesDiscountsGenerateFetch(
+    """
+    The result of the Function.
+    """
+    result: CartLinesDiscountsGenerateFetchResult!
+  ): Void!
+
+  """
+  Handles the Function result for the cart.lines.discounts.generate.run target.
+  """
+  cartLinesDiscountsGenerateRun(
+    """
+    The result of the Function.
+    """
+    result: CartLinesDiscountsGenerateRunResult!
+  ): Void!
+}
+
+"""
+A discount candidate to be applied to an eligible order.
+"""
+input OrderDiscountCandidate {
+  """
+  An optional discount code associated with this discount candidate, for use
+  with automatic discounts. If a code discount is the function trigger, the
+  associated discount code will be overwritten by the triggering discount code.
+  """
+  associatedDiscountCode: AssociatedDiscountCode
+
+  """
+  The conditions that must be satisfied for an order to be eligible for a discount candidate.
+  """
+  conditions: [Condition!]
+
+  """
+  A notification on the **Cart** page informs customers about available
+  discounts. If an automatic discount applies, the notification displays this
+  message, such as "Save 20% on all t-shirts." If a discount code is entered,
+  the notification displays the code instead.
+  """
+  message: String
+
+  """
+  The targets of the order discount candidate.
+  """
+  targets: [OrderDiscountCandidateTarget!]!
+
+  """
+  The value of the order discount candidate.
+  """
+  value: OrderDiscountCandidateValue!
+}
+
+"""
+A target of an order to be eligible for a discount candidate.
+"""
+input OrderDiscountCandidateTarget @oneOf {
+  """
+  A method for applying a discount to the entire order subtotal. The subtotal is the total amount of the
+  order before any taxes, shipping fees, or discounts are applied. For example, if a customer places an order
+  for a t-shirt and a pair of shoes, then the subtotal is the sum of the prices of those items.
+  """
+  orderSubtotal: OrderSubtotalTarget
+}
+
+"""
+The value of the order discount candidate.
+"""
+input OrderDiscountCandidateValue @oneOf {
+  """
+  A fixed amount value.
+  """
+  fixedAmount: FixedAmount
+
+  """
+  A percentage value.
+  """
+  percentage: Percentage
+}
+
+"""
+The strategy that's applied to the list of order discount candidates.
+"""
+enum OrderDiscountSelectionStrategy {
+  """
+  Only apply the first order discount candidate with conditions that are satisfied.
+  """
+  FIRST
+
+  """
+  Only apply the order discount candidate that offers the maximum reduction.
+  """
+  MAXIMUM
+}
+
+"""
+An operation that applies order discounts to a cart that share a selection strategy.
+"""
+input OrderDiscountsAddOperation {
+  """
+  The list of discounts that can be applied to an order.
+  """
+  candidates: [OrderDiscountCandidate!]!
+
+  """
+  The strategy that's applied to the list of discounts.
+  """
+  selectionStrategy: OrderDiscountSelectionStrategy!
 }
 
 """
@@ -3543,31 +5323,27 @@ The condition for checking the minimum subtotal amount of the order.
 """
 input OrderMinimumSubtotal {
   """
-  Variant IDs with a merchandise line price that's excluded to calculate the minimum subtotal amount of the order.
+  Cart line IDs with a merchandise line price that's excluded to calculate the minimum subtotal amount of the order.
   """
-  excludedVariantIds: [ID!]!
+  excludedCartLineIds: [ID!]!
 
   """
-  The minimum subtotal amount of the order.
+  The minimum subtotal amount of the order to be eligible for the discount in the shop's currency.
   """
   minimumAmount: Decimal!
-
-  """
-  The target type of the condition.
-
-   The value is validated against: = "ORDER_SUBTOTAL".
-  """
-  targetType: TargetType!
 }
 
 """
-The subtotal of the target order.
+A method for applying a discount to the entire order subtotal. The subtotal is the total amount of the
+order before any taxes, shipping fees, or discounts are applied. For example, if a customer places an order
+for a t-shirt and a pair of shoes, then the subtotal is the sum of the prices of those items.
 """
 input OrderSubtotalTarget {
   """
-  Variant IDs with a merchandise line price that's excluded for the minimum subtotal condition of the order.
+  The list of excluded cart line IDs. These cart lines are excluded from the order
+  subtotal calculation when calculating the maximum value of the discount.
   """
-  excludedVariantIds: [ID!]!
+  excludedCartLineIds: [ID!]!
 }
 
 """
@@ -3577,44 +5353,101 @@ input Percentage {
   """
   The percentage value.
 
-  The value is validated against: >= 0.
+  The value is validated against: >= 0 and <= 100.
   """
   value: Decimal!
 }
 
 """
-Represents a product.
+The percentage value of a discount.
+"""
+type PricingPercentageValue {
+  """
+  The percentage value of the discount.
+  """
+  value: Decimal!
+}
+
+"""
+The price value for a discount application.
+"""
+union PricingValue = MoneyV2 | PricingPercentageValue
+
+"""
+The goods and services that merchants offer to customers. Products can include details such as
+title, vendor, and custom data stored in [metafields](https://shopify.dev/docs/apps/build/custom-data).
+Products can be organized by grouping them into a collection.
+
+Learn more about [managing products in a merchant's store](https://help.shopify.com/manual/products).
 """
 type Product implements HasMetafields {
   """
-  A unique human-friendly string of the product's title.
+  A unique, human-readable string of the product's title. A handle can contain letters, hyphens (`-`), and
+  numbers, but not spaces. The handle is used in the online store URL for the product. For example, if a product
+  is titled "Black Sunglasses", then the handle is `black-sunglasses`.
   """
-  handle: String!
+  handle: Handle!
 
   """
-  Whether the product has any of the given tags.
+  Whether the product is associated with any of the specified tags. The product must have at least one tag
+  from the list to return `true`.
   """
   hasAnyTag(
     """
-    The tags to search for.
+    A comma-separated list of searchable keywords that are associated with the product. For example,
+    `"sports, summer"` returns products with either the `sports` or `summer` tag.
     """
     tags: [String!]! = []
   ): Boolean!
 
   """
-  A globally-unique identifier.
+  Whether the product is associated with the specified tags.
+  """
+  hasTags(
+    """
+    A comma-separated list of searchable keywords that are associated with the product. For example,
+    `"sports, summer"` returns products with both the `sports` and `summer` tags.
+    """
+    tags: [String!]! = []
+  ): [HasTagResponse!]!
+
+  """
+  A [globally-unique ID](https://shopify.dev/docs/api/usage/gids)
+  for the product.
   """
   id: ID!
 
   """
-  Whether the product has any of the given collection.
+  Whether the product is in any of the specified collections. The product must be in at least one collection
+  from the list to return `true`.
+
+  A collection is a group of products that can be displayed in online stores and other sales channels in
+  categories, which makes it easy for customers to find them. For example, an athletics store might create
+  different collections for running attire and accessories.
   """
   inAnyCollection(
     """
-    The collections to search for.
+    A comma-separated list of [globally-unique collection IDs](https://shopify.dev/docs/api/usage/gids)
+    that are associated with the product. For example, `gid://shopify/Collection/123`, `gid://shopify/Collection/456`.
     """
     ids: [ID!]! = []
   ): Boolean!
+
+  """
+  Whether the product is in the specified collections. The product must be in all of the collections in the
+  list to return `true`.
+
+  A collection is a group of products that can be displayed in online stores and other sales channels in
+  categories, which makes it easy for customers to find them. For example, an athletics store might create
+  different collections for running attire and accessories.
+  """
+  inCollections(
+    """
+    A comma-separated list of [globally-unique collection IDs](https://shopify.dev/docs/api/usage/gids)
+    that are associated with the product. For example, `gid://shopify/Collection/123`, `gid://shopify/Collection/456`.
+    """
+    ids: [ID!]! = []
+  ): [CollectionMembership!]!
 
   """
   Whether the product is a gift card.
@@ -3622,24 +5455,41 @@ type Product implements HasMetafields {
   isGiftCard: Boolean!
 
   """
-  Returns a metafield by namespace and key that belongs to the resource.
+  A [custom field](https://shopify.dev/docs/apps/build/custom-data) that stores additional information
+  about a Shopify resource, such as products, orders, and
+  [many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+  Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+  enables you to customize the checkout experience.
   """
   metafield(
     """
-    The key for the metafield.
+    The unique identifier for the metafield within its namespace. A metafield is composed of a
+    namespace and a key, in the format `namespace.key`.
     """
     key: String!
 
     """
-    The namespace for the metafield.
+    A category that organizes a group of metafields. Namespaces are used to prevent naming conflicts
+    between different apps or different parts of the same app. If omitted, then the
+    [app-reserved namespace](https://shopify.dev/docs/apps/build/custom-data/ownership)
+    is used.
     """
-    namespace: String!
+    namespace: String
   ): Metafield
 
   """
-  The product type specified by the merchant.
+  A custom category for a product. Product types allow merchants to define categories other than the
+  ones available in Shopify's
+  [standard product categories](https://help.shopify.com/manual/products/details/product-type).
   """
   productType: String
+
+  """
+  The localized name for the product that displays to customers. The title is used to construct the product's
+  handle, which is a unique, human-readable string of the product's title. For example, if a product is titled
+  "Black Sunglasses", then the handle is `black-sunglasses`.
+  """
+  title: String!
 
   """
   The name of the product's vendor.
@@ -3648,119 +5498,253 @@ type Product implements HasMetafields {
 }
 
 """
-The condition for checking the minimum quantity of a product.
+The target and value of the discount to be applied to a cart line.
 """
-input ProductMinimumQuantity {
+input ProductDiscountCandidate {
   """
-  Variant IDs with a merchandise line price that's included to calculate the minimum quantity of the product.
+  An optional discount code associated with this discount candidate, for use
+  with automatic discounts. If a code discount is the function trigger, the
+  associated discount code will be overwritten by the triggering discount code.
   """
-  ids: [ID!]!
+  associatedDiscountCode: AssociatedDiscountCode
 
   """
-  The minimum quantity of a product.
+  A notification on the **Cart** page informs customers about available
+  discounts. If an automatic discount applies, the notification displays this
+  message, such as "Save 20% on all t-shirts." If a discount code is entered,
+  the notification displays the code instead.
   """
-  minimumQuantity: Int!
+  message: String
 
   """
-  The target type of the condition.
-
-  The value is validated against: = "PRODUCT_VARIANT".
+  The items required for the discount candidate to be applicable.
   """
-  targetType: TargetType!
+  prerequisites: [ProductDiscountCandidatePrerequisite!]
+
+  """
+  The targets of the discount to be applied to a cart line.
+  """
+  targets: [ProductDiscountCandidateTarget!]!
+
+  """
+  The value of the discount to be applied to a cart line. For example, a fixed
+  amount of $5 off or percentage value of 20% off.
+  """
+  value: ProductDiscountCandidateValue!
 }
 
 """
-The condition for checking the minimum subtotal amount of the product.
+The [fixed-amount](https://help.shopify.com/manual/international/pricing/discounts)
+value of the discount to be applied to a cart line. For example, if the cart
+total is $100 and the discount is $10, then the fixed amount is $10.
 """
-input ProductMinimumSubtotal {
+input ProductDiscountCandidateFixedAmount {
   """
-  Variant IDs with a merchandise line price that's included to calculate the minimum subtotal amount of a product.
+  The [fixed-amount](https://help.shopify.com/manual/international/pricing/discounts) value of the discount to be applied to a cart line, in the currency of the
+  cart. The amount must be greater than or equal to 0.
   """
-  ids: [ID!]!
+  amount: Decimal!
 
   """
-  The minimum subtotal amount of the product.
-  """
-  minimumAmount: Decimal!
+  Whether to apply the value of each eligible discount to each eligible cart line.
 
+  The default value is `false`, which causes the value to be applied once across the entitled items.
+  When the value is `true`, the value will be applied to each of the entitled items.
   """
-  The target type of the condition.
-
-  The value is validated against: = "PRODUCT_VARIANT".
-  """
-  targetType: TargetType!
+  appliesToEachItem: Boolean = false
 }
 
 """
-Represents a product variant.
+The items required for the discount candidate to be applicable.
+"""
+input ProductDiscountCandidatePrerequisite @oneOf {
+  """
+  A cart line that is required for the discount candidate to be applicable. A cart line is an entry in the
+  customer's cart that represents a single unit of a product variant. For example, if a customer adds two
+  different sizes of the same t-shirt to their cart, then each size is represented as a separate cart line.
+  """
+  cartLine: CartLinePrerequisite
+}
+
+"""
+Defines discount candidates, which are cart lines that may be eligible for
+potential discounts. Use discount candidates to identify items in a customer's
+cart that could receive discounts based on conditions in the selection strategy.
+
+When multiple cart lines share the same type and ID, the system treats them as a
+single target and combines their quantities. The combined quantity becomes null
+if any individual target has a `null` quantity.
+"""
+input ProductDiscountCandidateTarget @oneOf {
+  """
+  A method for applying a discount to a specific line item in the cart. A cart line is an entry in the
+  customer's cart that represents a single unit of a product variant. For example, if a customer adds two
+  different sizes of the same t-shirt to their cart, then each size is represented as a separate cart line.
+  """
+  cartLine: CartLineTarget
+}
+
+"""
+The value of the discount candidate to be applied to a cart line.
+"""
+input ProductDiscountCandidateValue @oneOf {
+  """
+  The [fixed-amount](https://help.shopify.com/manual/international/pricing/discounts) value of the discount to be applied to a cart line. For example, if the cart
+  total is $100 and the discount is $10, then the fixed amount is $10.
+  """
+  fixedAmount: ProductDiscountCandidateFixedAmount
+
+  """
+  A percentage value.
+  """
+  percentage: Percentage
+}
+
+"""
+The selection strategy that's applied to the list of discounts that are eligible for cart lines.
+"""
+enum ProductDiscountSelectionStrategy {
+  """
+  Apply all the discount candidates to eligible cart lines. This doesn't override discount combination or stacking rules.
+  """
+  ALL
+
+  """
+  Apply the first discount candidate to cart lines that satisfies conditions.
+  """
+  FIRST
+
+  """
+  Apply the discount to the cart line that offers the maximum reduction.
+  """
+  MAXIMUM
+}
+
+"""
+An operation that applies product discounts to a cart that share a selection strategy.
+"""
+input ProductDiscountsAddOperation {
+  """
+  The list of products that are eligible for the discount.
+  """
+  candidates: [ProductDiscountCandidate!]!
+
+  """
+  The strategy that's applied to the list of products that are eligible for the cart line discount.
+  """
+  selectionStrategy: ProductDiscountSelectionStrategy!
+}
+
+"""
+A specific version of a product that comes in more than one option, such as size or color. For example,
+if a merchant sells t-shirts with options for size and color, then a small, blue t-shirt would be one
+product variant and a large, blue t-shirt would be another.
 """
 type ProductVariant implements HasMetafields {
   """
-  A globally-unique identifier.
+  A [globally-unique ID](https://shopify.dev/docs/api/usage/gids)
+  for the product variant.
   """
   id: ID!
 
   """
-  Returns a metafield by namespace and key that belongs to the resource.
+  Whether the product variant is in any of the specified collections. The variant must be in at least one
+  collection from the list to return `true`. A variant is considered to be in a collection when the variant
+  itself is a member of the collection, or when its product is a member of the collection.
+
+  A collection is a group of products that can be displayed in online stores and other sales channels in
+  categories, which makes it easy for customers to find them. For example, an athletics store might create
+  different collections for running attire and accessories.
+  """
+  inAnyCollection(
+    """
+    A list of [globally-unique collection IDs](https://shopify.dev/docs/api/usage/gids)
+    to check membership against. For example, `gid://shopify/Collection/123`, `gid://shopify/Collection/456`.
+    """
+    ids: [ID!]! = []
+  ): Boolean!
+
+  """
+  Whether the product variant is in each of the specified collections. A variant is considered to be in a
+  collection when the variant itself is a member of the collection, or when its product is a member of the
+  collection.
+
+  A collection is a group of products that can be displayed in online stores and other sales channels in
+  categories, which makes it easy for customers to find them. For example, an athletics store might create
+  different collections for running attire and accessories.
+  """
+  inCollections(
+    """
+    A list of [globally-unique collection IDs](https://shopify.dev/docs/api/usage/gids)
+    to check membership against. For example, `gid://shopify/Collection/123`, `gid://shopify/Collection/456`.
+    """
+    ids: [ID!]! = []
+  ): [CollectionMembership!]!
+
+  """
+  A [custom field](https://shopify.dev/docs/apps/build/custom-data) that stores additional information
+  about a Shopify resource, such as products, orders, and
+  [many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+  Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+  enables you to customize the checkout experience.
   """
   metafield(
     """
-    The key for the metafield.
+    The unique identifier for the metafield within its namespace. A metafield is composed of a
+    namespace and a key, in the format `namespace.key`.
     """
     key: String!
 
     """
-    The namespace for the metafield.
+    A category that organizes a group of metafields. Namespaces are used to prevent naming conflicts
+    between different apps or different parts of the same app. If omitted, then the
+    [app-reserved namespace](https://shopify.dev/docs/apps/build/custom-data/ownership)
+    is used.
     """
-    namespace: String!
+    namespace: String
   ): Metafield
 
   """
-  The product that this variant belongs to.
+  The product associated with the product variant. For example, if a
+  merchant sells t-shirts with options for size and color, then a small,
+  blue t-shirt would be one product variant and a large, blue t-shirt would be another.
+  The product associated with the product variant would be the t-shirt itself.
   """
   product: Product!
 
   """
-  Whether the merchandise requires shipping.
+  Whether the item needs to be shipped to the customer. For example, a
+  digital gift card doesn't need to be shipped, but a t-shirt does
+  need to be shipped.
   """
   requiresShipping: Boolean!
 
   """
-  An identifier for the product variant in the shop. Required in order to connect to a fulfillment service.
+  A case-sensitive identifier for the product variant in the merchant's store. For example, `"BBC-1"`.
+  A product variant must have a SKU to be connected to a
+  [fulfillment service](https://shopify.dev/docs/apps/build/orders-fulfillment/fulfillment-service-apps/build-for-fulfillment-services).
   """
   sku: String
 
   """
-  The weight of the product variant in the unit system specified with `weight_unit`.
+  The localized name for the product variant that displays to customers.
+  """
+  title: String
+
+  """
+  The product variant's weight, in the system of measurement set in the `weightUnit` field.
   """
   weight: Float
 
   """
-  Unit of measurement for weight.
+  The unit of measurement for weight.
   """
   weightUnit: WeightUnit!
 }
 
 """
-The target product variant.
-"""
-input ProductVariantTarget {
-  """
-  The ID of the target product variant.
-  """
-  id: ID!
-
-  """
-  The number of line items that are being discounted.
-  The default value is `null`, which represents the quantity of the matching line items.
-
-  The value is validated against: > 0.
-  """
-  quantity: Int
-}
-
-"""
-Represents information about the buyer that is interacting with the cart.
+The company of a B2B customer that's interacting with the cart.
+Used to manage and track purchases made by businesses rather than individual customers.
 """
 type PurchasingCompany {
   """
@@ -3780,49 +5764,200 @@ type PurchasingCompany {
 }
 
 """
-The target of the discount.
+A discount code to be rejected.
 """
-input Target @oneOf {
+input RejectedDiscountCode {
   """
-  The subtotal of the target order.
+  The discount code to reject.
   """
-  orderSubtotal: OrderSubtotalTarget
-
-  """
-  The target product variant.
-  """
-  productVariant: ProductVariantTarget
+  code: String!
 }
 
 """
-The target type of a condition.
+Represents how products and variants can be sold and purchased.
 """
-enum TargetType {
+type SellingPlan implements HasMetafields {
   """
-  The target is the subtotal of the order.
+  The description of the selling plan.
   """
-  ORDER_SUBTOTAL
+  description: String
 
   """
-  The target is a product variant.
+  A globally-unique identifier.
   """
-  PRODUCT_VARIANT
+  id: ID!
+
+  """
+  A [custom field](https://shopify.dev/docs/apps/build/custom-data) that stores additional information
+  about a Shopify resource, such as products, orders, and
+  [many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+  Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+  enables you to customize the checkout experience.
+  """
+  metafield(
+    """
+    The unique identifier for the metafield within its namespace. A metafield is composed of a
+    namespace and a key, in the format `namespace.key`.
+    """
+    key: String!
+
+    """
+    A category that organizes a group of metafields. Namespaces are used to prevent naming conflicts
+    between different apps or different parts of the same app. If omitted, then the
+    [app-reserved namespace](https://shopify.dev/docs/apps/build/custom-data/ownership)
+    is used.
+    """
+    namespace: String
+  ): Metafield
+
+  """
+  The name of the selling plan. For example, '6 weeks of prepaid granola, delivered weekly'.
+  """
+  name: String!
+
+  """
+  Whether purchasing the selling plan will result in multiple deliveries.
+  """
+  recurringDeliveries: Boolean!
 }
 
 """
-The discount value.
+Represents an association between a variant and a selling plan. Selling plan
+allocations describe the options offered for each variant, and the price of the
+variant when purchased with a selling plan.
 """
-input Value @oneOf {
+type SellingPlanAllocation {
   """
-  A fixed amount value.
+  A list of price adjustments, with a maximum of two. When there are two, the
+  first price adjustment goes into effect at the time of purchase, while the
+  second one starts after a certain number of orders. A price adjustment
+  represents how a selling plan affects pricing when a variant is purchased with
+  a selling plan. Prices display in the customer's currency if the shop is
+  configured for it.
   """
-  fixedAmount: FixedAmount
+  priceAdjustments: [SellingPlanAllocationPriceAdjustment!]!
 
   """
-  A percentage value.
+  A representation of how products and variants can be sold and purchased. For
+  example, an individual selling plan could be '6 weeks of prepaid granola,
+  delivered weekly'.
   """
-  percentage: Percentage
+  sellingPlan: SellingPlan!
 }
+
+"""
+The resulting prices for variants when they're purchased with a specific selling plan.
+"""
+type SellingPlanAllocationPriceAdjustment {
+  """
+  The effective price for a single delivery. For example, for a prepaid
+  subscription plan that includes 6 deliveries at the price of $48.00, the per
+  delivery price is $8.00.
+  """
+  perDeliveryPrice: MoneyV2!
+
+  """
+  The price of the variant when it's purchased with a selling plan For example,
+  for a prepaid subscription plan that includes 6 deliveries of $10.00 granola,
+  where the customer gets 20% off, the price is 6 x $10.00 x 0.80 = $48.00.
+  """
+  price: MoneyV2!
+}
+
+"""
+Information about the store, including the store's timezone setting
+and custom data stored in [metafields](https://shopify.dev/docs/apps/build/custom-data).
+"""
+type Shop implements HasMetafields {
+  """
+  The current time based on the
+  [store's timezone setting](https://help.shopify.com/manual/intro-to-shopify/initial-setup/setup-business-settings).
+  """
+  localTime: LocalTime!
+
+  """
+  A [custom field](https://shopify.dev/docs/apps/build/custom-data) that stores additional information
+  about a Shopify resource, such as products, orders, and
+  [many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+  Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+  enables you to customize the checkout experience.
+  """
+  metafield(
+    """
+    The unique identifier for the metafield within its namespace. A metafield is composed of a
+    namespace and a key, in the format `namespace.key`.
+    """
+    key: String!
+
+    """
+    A category that organizes a group of metafields. Namespaces are used to prevent naming conflicts
+    between different apps or different parts of the same app. If omitted, then the
+    [app-reserved namespace](https://shopify.dev/docs/apps/build/custom-data/ownership)
+    is used.
+    """
+    namespace: String
+  ): Metafield
+
+  """
+  Fetch a specific Metaobject by one of its unique identifiers. Only app-owned
+  metaobjects with the $app reserved prefix are accessible to functions.
+  """
+  metaobject(
+    """
+    The handle and type of the metaobject.
+    """
+    handle: MetaobjectHandleInput
+
+    """
+    The ID of the metaobject.
+    """
+    id: ID
+  ): Metaobject
+}
+
+"""
+Represents information about the buyer that is interacting with the cart.
+"""
+type ShopUser implements HasMetafields {
+  """
+  A [custom field](https://shopify.dev/docs/apps/build/custom-data) that stores additional information
+  about a Shopify resource, such as products, orders, and
+  [many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+  Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+  enables you to customize the checkout experience.
+  """
+  metafield(
+    """
+    The unique identifier for the metafield within its namespace. A metafield is composed of a
+    namespace and a key, in the format `namespace.key`.
+    """
+    key: String!
+
+    """
+    A category that organizes a group of metafields. Namespaces are used to prevent naming conflicts
+    between different apps or different parts of the same app. If omitted, then the
+    [app-reserved namespace](https://shopify.dev/docs/apps/build/custom-data/ownership)
+    is used.
+    """
+    namespace: String
+  ): Metafield
+}
+
+"""
+A subset of the [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format that
+includes the time but not the date or timezone which is determined from context.
+For example, "05:43:21".
+"""
+scalar TimeWithoutTimezone
+
+"""
+Represents an [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986) and
+[RFC 3987](https://datatracker.ietf.org/doc/html/rfc3987)-compliant URI string.
+
+For example, `"https://example.myshopify.com"` is a valid URL. It includes a scheme (`https`) and a host
+(`example.myshopify.com`).
+"""
+scalar URL
 
 """
 A void type that can be used to return a null value from a mutation.

@@ -3,7 +3,7 @@
 
 # The version of APIs your extension will receive. Learn more:
 # https://shopify.dev/docs/api/usage/versioning
-api_version = "unstable"
+api_version = "2026-07"
 
 [[extensions]]
 uid = "44079f59-e8c2-4cd7-4513-d4cc4e656ebf723a3cbf"
@@ -13,7 +13,7 @@ handle = "my-checkout-ui-ext"
 
 # Controls where in Shopify your extension will be injected,
 # and the file that contains your extension’s source code. Learn more:
-# https://shopify.dev/docs/api/checkout-ui-extensions/unstable/extension-targets-overview
+# https://shopify.dev/docs/api/checkout-ui-extensions/2026-07/extension-targets-overview
 
 [[extensions.targeting]]
 module = "./src/Upsell.jsx"

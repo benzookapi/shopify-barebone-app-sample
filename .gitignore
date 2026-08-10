@@ -3,12 +3,11 @@ package-lock.json
 pnpm-lock.yaml
 /.env*
 .DS_Store
-/public/assets
-/views/index.html
 /.my_env.sh
 /*.toml
 .shopify
 dist
+build
 .vscode
 
 # Claude Code

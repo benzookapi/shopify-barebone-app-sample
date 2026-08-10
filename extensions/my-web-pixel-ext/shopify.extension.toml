@@ -5,32 +5,35 @@ name = "my-web-pixel-ext"
 
 runtime_context = "strict"
 
+[customer_privacy]
+analytics = true
+marketing = true
+preferences = false
+sale_of_data = "enabled"
+
 [settings]
 type = "object"
 
 [settings.fields.ga4Id]
-name = "GA4 ID"
-description = "GA4 Measurement ID"
+name = "GA4 measurement ID"
+description = "The measurement ID for the GA4 data stream"
 type = "single_line_text_field"
-validations =  [
+validations = [
   { name = "min", value = "1" }
 ]
 
 [settings.fields.ga4Sec]
-name = "GA4 Secret"
-description = "GA4 API Secret"
+name = "GA4 API secret"
+description = "The Measurement Protocol API secret for the GA4 data stream"
 type = "single_line_text_field"
-validations =  [
+validations = [
   { name = "min", value = "1" }
 ]
 
-# Read https://shopify.dev/docs/apps/custom-data/metafields/definitions/validation
 [settings.fields.ga4Debug]
-name = "GA4 Debug"
-description = "GA4 debug on or off = true or false"
+name = "Validate GA4 events"
+description = "Send events to the GA4 validation endpoint"
 type = "single_line_text_field"
-validations =  [
+validations = [
   { name = "choices", value = "[\"true\", \"false\"]" }
 ]
-
-

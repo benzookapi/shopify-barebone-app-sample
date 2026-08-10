@@ -1,1249 +1,674 @@
 <!DOCTYPE html>
 <html>
 <!--
-    Barebone Storefront API sameple.
+  Barebone Storefront API sample.
 
-    Read these first.
-    https://shopify.dev/docs/api/usage/authentication#access-tokens-for-the-storefront-api
-    https://shopify.dev/docs/custom-storefronts/building-with-the-storefront-api/
-    https://shopify.dev/docs/api/storefront
-
-  -->
+  Read these first:
+  https://shopify.dev/docs/api/storefront
+  https://shopify.dev/docs/api/customer
+-->
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My barebone app storefront API sample</title>
+  <title>My barebone app Storefront API sample</title>
   <style>
-    div {
-      margin-left: 20%;
-      margin-right: 20%;
-      text-align: center;
+    body {
+      color: #202223;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
     }
 
-    pre {
-      text-align: left;
-      max-width: 500px;
+    main {
+      margin: 0 auto;
+      max-width: 960px;
+      padding: 32px 20px;
+    }
+
+    fieldset {
+      border: 1px solid #c9cccf;
+      margin: 24px 0;
+      padding: 16px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-top: 12px;
     }
 
     button {
-      font-size: x-large;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 8px 8px 8px 0;
+      padding: 8px 12px;
+    }
+
+    textarea,
+    select,
+    input[type="text"] {
+      box-sizing: border-box;
+      margin-top: 4px;
+      max-width: 100%;
+      padding: 8px;
+      width: 420px;
+    }
+
+    pre {
+      background: #f6f6f7;
+      border: 1px solid #d2d5d8;
+      overflow: auto;
+      padding: 12px;
+      white-space: pre-wrap;
+    }
+
+    .muted {
+      color: #6d7175;
+    }
+
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 
 <body>
-  <div>
+  <main>
     <h1>Plain Custom Storefront</h1>
+    <p>
+      <a href="https://shopify.dev/docs/api/storefront/latest" target="_blank">Storefront API</a>
+      |
+      <a href="https://shopify.dev/docs/api/customer/latest" target="_blank">Customer Account API</a>
+      |
+      <a href="https://github.com/benzookapi/shopify-barebone-app-sample/blob/main/views/storefront.html"
+        target="_blank">Get the code</a>
+    </p>
 
-    <h2><a href="https://shopify.dev/docs/api/usage/authentication#access-tokens-for-the-storefront-api"
-        target="_blank">Dev. doc(1)</a>
+    <fieldset>
+      <legend>Context</legend>
+      <p><b>Store:</b> <span id="shop"><%= shop %></span></p>
+      <p><b>Storefront API version:</b> <%= api_version %></p>
+      <p><b>Public token:</b> <span id="public_token"><%= public_token %></span></p>
+      <p><b>Customer Account API client ID:</b> <span id="customer_account_client_id"><%= customer_account_client_id %></span></p>
+      <p><b>Your IP address:</b> <span id="ip_address">Loading...</span></p>
+      <p class="muted">Tokenless access can query public catalog data and create/update carts without sending a Storefront access token. Public-token access is shown for comparison.</p>
+    </fieldset>
 
-      <a href="https://shopify.dev/docs/custom-storefronts/building-with-the-storefront-api/" target="_blank">Dev.
-        doc(2)</a>
-
-      <a href="https://shopify.dev/docs/api/storefront" target="_blank">Dev.
-        doc(3)</a>
-    </h2>
-
-    <h3><a href="https://github.com/benzookapi/shopify-barebone-app-sample/blob/main/views/storefront.html"
-        target="_blank">Get the code</a></h3>
-
-    <div><b>Store:</b></div>
-    <div>
-      <%= shop %>
-    </div>
-    <p></p>
-
-    <div><b>Public Token:</b></div>
-    <div>
-      <%= public_token %>
-    </div>
-    <p></p>
-
-    <div><b>Your IP Address:</b></div>
-    <div>
-      <span id="ip_address"></span>
-    </div>
-    <p></p>
-
-    <div><b>Leave your note:</b></div>
-    <div>
-      <textarea id="note">This is my custom storefront purchase...</textarea>
-    </div>
-    <p></p>
-
-    <div><b>Select your locale:</b></div>
-    <div>
+    <fieldset>
+      <legend>Inputs</legend>
+      <label for="locale">Locale</label>
       <select id="locale">
         <option value="EN-US">EN-US</option>
         <option value="JA-JP">JA-JP</option>
         <option value="FR-FR">FR-FR</option>
       </select>
-    </div>
-    <p></p>
 
-    <div><b>Select your checkout flow:</b></div>
-    <div>
-      <input type="radio" value="cart" name="flow" id="flow_cart" checked>Use Cart API</input>
-    </div>
-    <div> <input type="radio" value="checkout" name="flow" id="flow_checkout"><s>Use Checkout API (no longer available)</s></input>
-    </div>    
-    <p></p>
+      <label for="call_type">Storefront API call type</label>
+      <select id="call_type">
+        <option value="tokenless">Tokenless direct browser call</option>
+        <option value="public">Public token direct browser call</option>
+        <option value="private">Server-side private delegated token call</option>
+      </select>
+      <p class="muted">Tokenless direct browser calls can return "Online Store channel is locked" when the storefront is password protected. Use public token or private delegated token mode while the storefront password is enabled.</p>
 
-    <div><b>How do you call Storefront API?</b></div>
-    <div> <input type="radio" value="public" name="type" id="type_public" checked>Call on this page with the
-      given public
-      token <br /> (view the
-      page
-      source!)</input>
-    </div>
-    <div>
-      <input type="radio" value="private" id="type_private" name="type">Call on the server side with the
-      stored private
-      token mixed with
-      Admin
-      API <br /> (you need to install this app to the store first!)</input>
-    </div>
-    <p></p>
+      <label for="note">Cart note</label>
+      <textarea id="note" rows="3">This is my custom storefront cart...</textarea>
+
+      <label for="buyer_email">Buyer email for Cart buyerIdentity</label>
+      <input type="text" id="buyer_email" placeholder="customer@example.com" />
+    </fieldset>
 
     <fieldset>
-      <button id="show_product">1. Show products to checkout</button>
-      <p></p>
-      <div>
-        <pre id="products"></pre>
-        <p>
-          <a href="" target="_blank" id="products_doc" style="visibility: hidden;">The used API. doc</a>
-        </p>
-      </div>
+      <legend>Customer Account API</legend>
+      <p id="customer_status" class="muted">Checking session...</p>
+      <button id="login_customer_account">Login with Customer Account API</button>
+      <button id="logout_customer_account">Logout</button>
+      <pre id="customer_profile"></pre>
     </fieldset>
-    <p></p>
 
-    <fieldset class="default_hidden layer_2 flow_checkout" style="display: none;">
-      <button id="create_checkout">2. Create a checkout with the listed products</button>
-      <p></p>
-      <div>
-        <pre id="checkout" class="default_empty"></pre>
-        <p>
-          <a href="https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCreate" target="_blank">The used
-            API. doc</a>
-        </p>
-        <h2 style="display: none;" id="checkout_1" class="default_hidden">
-          <a href="" target="_blank" id="checkout_1_link">👉 Checkout through the link of 'webUrl'</a>
-          <br /><br />Or
-          <br />⬇️
-        </h2>
-      </div>
+    <fieldset>
+      <legend>1. Products</legend>
+      <button id="show_product">Show products</button>
+      <pre id="products"></pre>
     </fieldset>
-    <p></p>
 
-    <fieldset class="default_hidden layer_2 flow_cart" style="display: none;">
-      <button id="create_cart">2. Create a cart to add the listed products</button>
-      <p></p>
-      <div>
-        <pre id="cart" class="default_empty"></pre>
-        <p>
-          <a href="https://shopify.dev/docs/api/storefront/unstable/mutations/cartCreate" target="_blank">The used
-            API. doc</a>
-        </p>
-        <h2 style="display: none;" id="cart_1" class="default_hidden">
-          <a href="" target="_blank" id="cart_1_link">👉 Checkout through the link of 'checkoutUrl'</a>
-          <br /><br />Or
-          <br />⬇️
-        </h2>
-      </div>
-    </fieldset>
-    <p></p>
-
-
-    <fieldset class="default_hidden layer_3 flow_checkout flow_cart" style="display: none;">
-      <p>
-        <label for="email">Email: </label><input type="text" name="email" value="" id="email">
+    <fieldset class="hidden" id="cart_step">
+      <legend>2. Cart</legend>
+      <button id="create_cart">Create cart</button>
+      <pre id="cart"></pre>
+      <p id="cart_checkout" class="hidden">
+        <a href="" target="_blank" id="cart_checkout_link">Open checkoutUrl</a>
+        |
+        <a href="" target="_blank" id="cart_checkout_silent_link">Open checkoutUrl with sso=silent</a>
       </p>
-      <p>
-        <label for="password">Password: </label><input type="password" name="password" value="" id="password">
-      </p>
-      <button id="login_customer">3. Login as a customer (optional)</button>
-      <p></p>
-      <div>
-        <pre id="customer_token" class="default_empty"></pre>
-        <pre id="customer_associate" class="default_empty"></pre>
-        <p>
-          <a href="https://shopify.dev/docs/api/storefront/unstable/mutations/customerAccessTokenCreate"
-            target="_blank">The used API. doc</a>
-          <br />
-          <a href="https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCustomerAssociateV2"
-            target="_blank">The used API. doc</a>
-        </p>
-      </div>
     </fieldset>
-    <p></p>
 
-    <fieldset class="default_hidden layer_3 flow_checkout" style="display: none;">
-      <button id="apply_address">3. Appy the preset or customer's shipping address to the checktout</button>
-      <p></p>
-      <div>
-        <pre id="address" class="default_empty"></pre>
-        <p>
-          <a href="https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingAddressUpdateV2"
-            target="_blank">The used
-            API. doc</a>
-        </p>
-        <h2 style="display: none;" id="checkout_2" class="default_hidden">
-          <a href="" target="_blank" id="checkout_2_link">👉 Checkout through the link of 'webUrl'</a>
-          <br /><br />Or
-          <br />⬇️
-        </h2>
-      </div>
+    <fieldset class="hidden" id="buyer_step">
+      <legend>3. Buyer identity</legend>
+      <p class="muted">Updates the cart's buyerIdentity with the selected country and email address. This helps Shopify calculate buyer-specific context such as international pricing and prefills checkout contact fields.</p>
+      <button id="update_buyer">Update Cart buyerIdentity</button>
+      <pre id="buyer"></pre>
     </fieldset>
-    <p></p>
 
-    <fieldset class="default_hidden layer_3 flow_cart" style="display: none;">
-      <button id="update_buyer">3. Update the buyer indentity of the cart</button>
-      <p></p>
-      <div>
-        <pre id="buyer" class="default_empty"></pre>
-        <p>
-          <a href="https://shopify.dev/docs/api/storefront/unstable/mutations/cartBuyerIdentityUpdate"
-            target="_blank">The used
-            API. doc</a>
-        </p>
-        <h2 style="display: none;" id="cart_2" class="default_hidden">
-          <a href="" target="_blank" id="cart_2_link">👉 Checkout through the link of 'checkoutUrl'</a>
-          <br /><br />Or
-          <br />⬇️
-        </h2>
-      </div>
+    <fieldset class="hidden" id="address_step">
+      <legend>4. Delivery address</legend>
+      <p class="muted">Adds a selected delivery address to the cart. When a Customer Account API session exists, this sample uses the customer's default address; otherwise it uses the sample address for the selected locale.</p>
+      <button id="add_address">Add selected delivery address</button>
+      <pre id="address"></pre>
     </fieldset>
-    <p></p>
 
-    <fieldset class="default_hidden layer_4 flow_checkout" style="display: none;">
-      <button id="set_rate">4. Set the last shipping rate to the checkout</button>
-      <p></p>
-      <div>
-        <pre id="rate" class="default_empty"></pre>
-        <pre id="rate_selected" class="default_empty"></pre>
-        <p>
-          <a href="https://shopify.dev/docs/api/storefront/unstable/objects/Checkout" target="_blank">The used
-            API. doc</a>
-          <br />
-          <a href="https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingLineUpdate"
-            target="_blank">The used
-            API. doc</a>
-        </p>
-        <h2 style="display: none;" id="checkout_3" class="default_hidden">
-          <a href="" target="_blank" id="checkout_3_link">👉 Checkout through the link of 'webUrl'</a>
-        </h2>
-      </div>
+    <fieldset class="hidden" id="delivery_step">
+      <legend>5. Delivery option</legend>
+      <p class="muted">Selects the first available delivery option from the cart's delivery group. This simulates choosing a shipping method before opening checkout.</p>
+      <button id="set_option">Select first delivery option</button>
+      <pre id="option"></pre>
     </fieldset>
-    <p></p>
+  </main>
 
-    <fieldset class="default_hidden layer_4 flow_cart" style="display: none;">
-      <button id="set_option">4. Set the last delivery option to the cart</button>
-      <p></p>
-      <div>
-        <pre id="option" class="default_empty"></pre>
-        <p>
-          <a href="https://shopify.dev/docs/api/storefront/unstable/mutations/cartSelectedDeliveryOptionsUpdate"
-            target="_blank">The used
-            API. doc</a>
-        </p>
-        <h2 style="display: none;" id="cart_3" class="default_hidden">
-          <a href="" target="_blank" id="cart_3_link">👉 Checkout through the link of 'checkoutUrl'</a>
-        </h2>
-      </div>
-    </fieldset>
-    <p></p>
-
-  </div>
   <script>
-    // Call Shopify Storefront API directly over CORS with the public token.
-    const callStorefrontAPI = (query, variables, ip_address, callback) => {
-      const url = `https://<%= shop %>/api/<%= api_version %>/graphql.json`;
-      console.log(`callStorefrontAPI: calling... ${url} with query ${query} and variables ${JSON.stringify(variables, null, 4)} and ip_address ${ip_address}`);
-      fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Shopify-Storefront-Access-Token": "<%= public_token %>",
-          "Shopify-Storefront-Buyer-IP": ip_address
-        },
-        body: JSON.stringify({
-          "query": query.replace(/\n/g, ''),
-          "variables": variables
-        })
-      }).then((res) => {
-        res.json().then((data, errors) => {
-          console.log(`callStorefrontAPI response: ${JSON.stringify(data, null, 4)}`);
-          data.data.used_api = "Client side Storefront API";
-          callback(data);
-        });
-      });
-    };
+    const SHOP = "<%= shop %>";
+    const API_VERSION = "<%= api_version %>";
+    const PUBLIC_TOKEN = "<%= public_token %>";
+    const CUSTOMER_ACCOUNT_CLIENT_ID = "<%= customer_account_client_id %>";
+    const INITIAL_CUSTOMER_PROFILE = <%= customer_account_profile %>;
+    let customerProfile = INITIAL_CUSTOMER_PROFILE;
 
-    // Access to the app server to call Admin / Storefront APIs with the private (delegated) token in the shop metafield.
-    const accessAppServer = (action, variables, ip_address, callback) => {
-      const url = `/storefront?action=${action}`;
-      console.log(`accessAppServer: calling... ${url}`);
-      fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          "shop": "<%= shop %>",
-          "variables": variables,
-          "ip_address": ip_address
-        })
-      }).then((res) => {
-        res.json().then((data, errors) => {
-          console.log(`accessAppServer response: ${JSON.stringify(data, null, 4)}`);
-          callback(data);
-        });
-      });
-    };
-
-    // Get the IP address.
-    fetch('https://api.ipify.org?format=json', {
-      method: "GET"
-    }).then((res) => {
-      res.json().then((json) => {
-        document.getElementById('ip_address').innerHTML = json.ip;
-      });
-    });
-
-    const getLocale = () => {
-      const locale = document.getElementById('locale').options[document.getElementById('locale').selectedIndex].value;
-      const lang = locale.split('-')[0];
-      const country = locale.split('-')[1];
-      return {
-        "lang": lang,
-        "country": country
-      };
-    };
-
-    const getFlow = () => {
-      return document.getElementById('flow_checkout').checked == true ? "flow_checkout" : "flow_cart";
-    };
-
-    const getAddress = () => {
-      const locale = getLocale();
-      if (locale.country === 'US') {
-        return {
-          "address1": "4880 Haymond Rocks Road",
-          "address2": "barebone house",
-          "city": "Phoenix",
-          "company": "Barebone corp.",
-          "country": "US",
-          "firstName": "Bare",
-          "lastName": "Bone",
-          "phone": "+14844731366",
-          "province": "Oregon",
-          "zip": "97535"
-        };
-      }
-      if (locale.country === 'JP') {
-        return {
-          "address1": "Jingu Mae 2-22-16",
-          "address2": "barebone house",
-          "city": "Shibuya",
-          "company": "Barebone corp.",
-          "country": "JP",
-          "firstName": "Bare",
-          "lastName": "Bone",
-          "phone": "+819012345678",
-          "province": "Tokyo",
-          "zip": "1500001"
-        };
-      }
-      if (locale.country === 'FR') {
-        return {
-          "address1": "66 rue des six frères Ruellan",
-          "address2": "barebone house",
-          "city": "Sarcelles",
-          "company": "Barebone corp.",
-          "country": "FR",
-          "firstName": "Bare",
-          "lastName": "Bone",
-          "phone": "+819012345678",
-          "province": "Île-de-France",
-          "zip": "95200"
-        };
-      }
-      return {};
-    };
-
-    // 1. Show the products to checkout with APIs.
-    document.getElementById('show_product').onclick = () => {
-      const products = document.getElementById('products');
-      products.innerHTML = 'Loading...';
-
-      document.querySelectorAll('.default_hidden').forEach((e) => {
-        e.style = "display: none;";
-      });
-      document.querySelectorAll('.default_empty').forEach((e) => {
-        e.innerHTML = '';
-      });
-
-      const locale = getLocale();
-
-      const callback = (data) => {
-        products.innerHTML = JSON.stringify(data.data, null, 4);
-        document.querySelectorAll(`.layer_2.${getFlow()}`).forEach((e) => {
-          e.style = "visibility: visible;";
-        });
-        const doc = document.getElementById('products_doc');
-        doc.style = "visibility: visible;";
-        if (document.getElementById('type_public').checked) {
-          doc.href = "https://shopify.dev/docs/api/storefront/unstable/queries/products";
-        } else {
-          doc.href = "https://shopify.dev/docs/api/admin-graphql/unstable/queries/products";
-        }
-      };
-      if (document.getElementById('type_public').checked) {
-        // Use the public token.
-        // Read https://shopify.dev/docs/api/storefront/unstable/queries/products
-        callStorefrontAPI(`query products @inContext(country: ${locale.country}, language: ${locale.lang}) {
-                  products(first: 3) {
-                    edges {
-                      node {
-                        id
-                        title
-                        variants(first: 1) {
-                          edges {
-                            node {
-                              id
-                              title
-                              price {
-                                amount
-                                currencyCode
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }`, null, document.getElementById('ip_address').innerHTML, callback);
-      } else {
-        // Use the private token (IP address is not used for Admin API calls).
-        accessAppServer(`show_product`, null, null, callback);
-      }
-    };
-
-    // 2. Create a checkout.
-    document.getElementById('create_checkout').onclick = () => {
-      const checkout = document.getElementById('checkout');
-      checkout.innerHTML = 'Loading...';
-
-      const callback = (data) => {
-        checkout.innerHTML = JSON.stringify(data.data, null, 4);
-        document.getElementById('checkout_1').style = "visibility: visible;";
-        document.getElementById('checkout_1_link').href = data.data.checkoutCreate.checkout.webUrl;
-
-        document.querySelectorAll(`.layer_3.${getFlow()}`).forEach((e) => {
-          e.style = "visibility: visible;";
-        });
-      };
-
-      const listed_products = JSON.parse(document.getElementById('products').innerHTML);
-      const line_items = [];
-      listed_products.products.edges.map((e) => {
-        e.node.variants.edges.map((e2) => {
-          line_items.push({
-            "variantId": e2.node.id,
-            "quantity": 1,
-            "customAttributes": {
-              "key": "bareboneapp.storefront_product_id",
-              "value": e.node.id
-            }
-          });
-        });
-      });
-      const input = {
-        "customAttributes": [
-          {
-            "key": "bareboneapp.storefront_ip",
-            "value": document.getElementById('ip_address').innerHTML
-          }
-        ],
-        "lineItems": line_items,
-        "note": document.getElementById('note').value
-      };
-
-      const locale = getLocale();
-
-      if (document.getElementById('type_public').checked) {
-        // Use the public token.
-        // Read https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCreate
-        callStorefrontAPI(`mutation checkoutCreate($input: CheckoutCreateInput!) @inContext(country: ${locale.country}, language: ${locale.lang}) {
-                  checkoutCreate(input: $input) {
-                    checkout {
-                      id
-                      buyerIdentity {
-                        countryCode
-                      }
-                      orderStatusUrl
-                      ready
-                      requiresShipping
-                      lineItems(first: 10) {
-                        edges {
-                          node {
-                            id
-                            quantity
-                            title
-                          }
-                        }
-                      }
-                      webUrl
-                    }
-                    checkoutUserErrors {
-                      code
-                      field
-                      message
-                    }
-                    queueToken
-                  }
-                }`, {
-          "input": input
-        }, document.getElementById('ip_address').innerHTML, callback);
-      } else {
-        // Use the private token (passing the IP address to server side Storefront API).
-        accessAppServer(`create_checkout&locale=${JSON.stringify(locale)}`, input, document.getElementById('ip_address').innerHTML, callback);
-      }
-    };
-
-    // 2. Create a cart.
-    document.getElementById('create_cart').onclick = () => {
-      const cart = document.getElementById('cart');
-      cart.innerHTML = 'Loading...';
-
-      const callback = (data) => {
-        cart.innerHTML = JSON.stringify(data.data, null, 4);
-        document.getElementById('cart_1').style = "visibility: visible;";
-        document.getElementById('cart_1_link').href = data.data.cartCreate.cart.checkoutUrl;
-
-        document.querySelectorAll(`.layer_3.${getFlow()}`).forEach((e) => {
-          e.style = "visibility: visible;";
-        });
-      };
-
-      const listed_products = JSON.parse(document.getElementById('products').innerHTML);
-      const line_items = [];
-      listed_products.products.edges.map((e) => {
-        e.node.variants.edges.map((e2) => {
-          line_items.push({
-            "merchandiseId": e2.node.id,
-            "quantity": 1,
-            "attributes": {
-              "key": "bareboneapp.storefront_product_id",
-              "value": e.node.id
-            }
-          });
-        });
-      });
-
-      const input = {
-        "attributes": [
-          {
-            "key": "bareboneapp.storefront_ip",
-            "value": document.getElementById('ip_address').innerHTML
-          }
-        ],
-        "lines": line_items,
-        "metafields": [
-          {
-            "key": "bareboneapp.storefront_timestamp",
-            "type": "single_line_text_field",
-            "value": `${new Date().toISOString()}`
-          }
-        ],
-        "note": document.getElementById('note').value
-      };
-
-      const locale = getLocale();
-
-      if (document.getElementById('type_public').checked) {
-        // Use the public token.
-        // Read https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCreate
-        callStorefrontAPI(`mutation cartCreate($input: CartInput!) @inContext(country: ${locale.country}, language: ${locale.lang}){
-          cartCreate(input: $input) {
-             cart {
-               id
-               buyerIdentity {
-                  countryCode
-               }
-               totalQuantity
-               cost {
-                checkoutChargeAmount {
-                  amount
-                  currencyCode
-                }
-                subtotalAmount {
-                  amount
-                  currencyCode
-                }
-                totalAmount {
-                  amount
-                  currencyCode
-                }
-                totalDutyAmount {
-                  amount
-                  currencyCode
-                }
-                totalTaxAmount {
-                  amount
-                  currencyCode
-                }
-               }
-               lines(first: 10) {
-                edges {
-                  node {
-                    id
-                    quantity
-                    merchandise {
-                      ... on ProductVariant {
-                        id
-                        title
-                      }
-                    }
-                  }
-                }
-               }
-               metafield(namespace: "bareboneapp", key: "storefront_timestamp") {
-                namespace
-                key
-                value
-               }
-               checkoutUrl
-             }
-             userErrors {
-                field
-                message
+    const PRODUCT_QUERY = `query StorefrontProducts($country: CountryCode!, $language: LanguageCode!) @inContext(country: $country, language: $language) {
+      products(first: 3) {
+        nodes {
+          id
+          title
+          variants(first: 1) {
+            nodes {
+              id
+              title
+              price {
+                amount
+                currencyCode
               }
             }
-          }`, {
-          "input": input
-        }, document.getElementById('ip_address').innerHTML, callback);
-      } else {
-        // Use the private token (passing the IP address to server side Storefront API).
-        accessAppServer(`create_cart&locale=${JSON.stringify(locale)}`, input, document.getElementById('ip_address').innerHTML, callback);
-      }
-    };
-
-    // 3. Login as a customer (optional).
-    document.getElementById('login_customer').onclick = () => {
-      const customer_token = document.getElementById('customer_token');
-      customer_token.innerHTML = 'Loading...';
-
-      const callback = (data) => {
-        customer_token.innerHTML = JSON.stringify(data.data, null, 4);
-
-        if (getFlow() === 'flow_cart') return;
-
-        const customer_associate = document.getElementById('customer_associate');
-        customer_associate.innerHTML = 'Loading...';
-
-        const callback2 = (data) => {
-          customer_associate.innerHTML = JSON.stringify(data.data, null, 4);
-        };
-
-        const checkout = JSON.parse(document.getElementById('checkout').innerHTML);
-
-        const input = {
-          "checkoutId": checkout.checkoutCreate.checkout.id,
-          "customerAccessToken": data.data.customerAccessTokenCreate.customerAccessToken.accessToken
+          }
         }
-
-        if (document.getElementById('type_public').checked) {
-          // Use the public token.
-          // Read https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutCustomerAssociateV2
-          callStorefrontAPI(`mutation checkoutCustomerAssociateV2($checkoutId: ID!, $customerAccessToken: String!) {
-                    checkoutCustomerAssociateV2(checkoutId: $checkoutId, customerAccessToken: $customerAccessToken) {
-                      checkout {
-                        id
-                        buyerIdentity {
-                          countryCode
-                        }
-                        orderStatusUrl
-                        ready
-                        requiresShipping
-                        lineItems(first: 10) {
-                          edges {
-                            node {
-                              id
-                              quantity
-                              title
-                            }
-                          }
-                        }
-                        email
-                        shippingAddress {
-                          address1
-                          address2
-                          city
-                          company
-                          country
-                          countryCodeV2
-                          firstName
-                          lastName
-                          phone
-                          province
-                          provinceCode
-                          zip
-                        }
-                        webUrl
-                      }
-                      checkoutUserErrors {
-                        code
-                        field
-                        message
-                      }
-                      customer {
-                        id
-                        email
-                        addresses(first: 10) {
-                          edges {
-                            node {
-                              address1
-                              address2
-                              city
-                              company
-                              country
-                              countryCodeV2
-                              firstName
-                              lastName
-                              phone
-                              province
-                              provinceCode
-                              zip
-                            }
-                          }                          
-                        }
-                      }
-                    }
-                   }`, input, document.getElementById('ip_address').innerHTML, callback2);
-        } else {
-          // Use the private token (passing the IP address to server side Storefront API).
-          accessAppServer('customer_associate', input, document.getElementById('ip_address').innerHTML, callback2);
-        }
-      };
-
-      const input = {
-        "email": document.getElementById('email').value,
-        "password": document.getElementById('password').value
-      };
-      if (document.getElementById('type_public').checked) {
-        // Use the public token.
-        // Read https://shopify.dev/docs/api/storefront/unstable/mutations/customerAccessTokenCreate
-        callStorefrontAPI(`mutation customerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
-                  customerAccessTokenCreate(input: $input) {
-                    customerAccessToken {
-                      accessToken
-                      expiresAt
-                    }
-                    customerUserErrors {
-                      code
-                      field
-                      message
-                    }
-                  }
-                }`, {
-          "input": input
-        }, document.getElementById('ip_address').innerHTML, callback);
-      } else {
-        // Use the private token (passing the IP address to server side Storefront API).
-        accessAppServer('login_customer', input, document.getElementById('ip_address').innerHTML, callback);
       }
-    };
+    }`;
 
-    // 3. Apply the preset or customer's shipping address to the checkout
-    document.getElementById('apply_address').onclick = () => {
-      const address = document.getElementById('address');
-      address.innerHTML = 'Loading...';
-
-      const callback = (data) => {
-        address.innerHTML = JSON.stringify(data.data, null, 4);
-        document.getElementById('checkout_2').style = "visibility: visible;";
-        document.getElementById('checkout_2_link').href = data.data.checkoutShippingAddressUpdateV2.checkout.webUrl;
-
-        document.querySelectorAll(`.layer_4.${getFlow()}`).forEach((e) => {
-          e.style = "visibility: visible;";
-        });
-      };
-
-      const checkout = JSON.parse(document.getElementById('checkout').innerHTML);
-
-      const input = {
-        "checkoutId": checkout.checkoutCreate.checkout.id,
-        "shippingAddress": getAddress()
-      };
-
-      if (document.getElementById('customer_associate').innerHTML !== '') {
-        const customer_address = JSON.parse(document.getElementById('customer_associate').innerHTML);
-        input.shippingAddress = customer_address.checkoutCustomerAssociateV2.customer.addresses.edges[0].node;
-        delete input.shippingAddress.countryCodeV2;
-        delete input.shippingAddress.provinceCode;
-      }
-
-      if (document.getElementById('type_public').checked) {
-        // Use the public token.
-        // Read https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingAddressUpdateV2
-        callStorefrontAPI(`mutation checkoutShippingAddressUpdateV2($checkoutId: ID!, $shippingAddress: MailingAddressInput!) {
-                  checkoutShippingAddressUpdateV2(checkoutId: $checkoutId, shippingAddress: $shippingAddress) {
-                    checkout {
-                      id
-                      buyerIdentity {
-                        countryCode
-                      }
-                      orderStatusUrl
-                      ready
-                      requiresShipping
-                      lineItems(first: 10) {
-                        edges {
-                          node {
-                            id
-                            quantity
-                            title
-                          }
-                        }
-                      }
-                      email
-                      shippingAddress {
-                        address1
-                        address2
-                        city
-                        company
-                        country
-                        countryCodeV2
-                        firstName
-                        lastName
-                        phone
-                        province
-                        provinceCode
-                        zip
-                      }
-                      webUrl
-                    }
-                    checkoutUserErrors {
-                      code
-                      field
-                      message
-                    }
-                  }
-                }`, input, document.getElementById('ip_address').innerHTML, callback);
-      } else {
-        // Use the private token (passing the IP address to server side Storefront API).
-        accessAppServer('apply_address', input, document.getElementById('ip_address').innerHTML, callback);
-      }
-    };
-
-    // 3. Update the buyer identity of the cart.
-    document.getElementById('update_buyer').onclick = () => {
-      const buyer = document.getElementById('buyer');
-      buyer.innerHTML = 'Loading...';
-
-      const callback = (data) => {
-        buyer.innerHTML = JSON.stringify(data.data, null, 4);
-        document.getElementById('cart_2').style = "visibility: visible;";
-        document.getElementById('cart_2_link').href = data.data.cartBuyerIdentityUpdate.cart.checkoutUrl;
-
-        document.querySelectorAll(`.layer_4.${getFlow()}`).forEach((e) => {
-          e.style = "visibility: visible;";
-        });
-      };
-
-      const cart = JSON.parse(document.getElementById('cart').innerHTML);
-
-      const input = {
-        "buyerIdentity": {
-          //"email": "test@example.com",
-          "deliveryAddressPreferences": []
-        },
-        "cartId": cart.cartCreate.cart.id
-      };
-
-      if (document.getElementById('customer_token').innerHTML !== '') {
-        const customer_token = JSON.parse(document.getElementById('customer_token').innerHTML);
-        input.buyerIdentity.customerAccessToken = customer_token.customerAccessTokenCreate.customerAccessToken.accessToken;
-      } else {
-        // This code produces an error because this address needs to be from the loggined in customer.
-        /*input.buyerIdentity.deliveryAddressPreferences.push({
-          "deliveryAddress": getAddress()
-        });*/
-      }
-
-      if (document.getElementById('type_public').checked) {
-        // Use the public token.
-        // Read https://shopify.dev/docs/api/storefront/unstable/mutations/cartBuyerIdentityUpdate
-        callStorefrontAPI(`mutation cartBuyerIdentityUpdate($buyerIdentity: CartBuyerIdentityInput!, $cartId: ID!) {
-          cartBuyerIdentityUpdate(buyerIdentity: $buyerIdentity, cartId: $cartId) {
-            cart {
-               id
-               totalQuantity
-               cost {
-                checkoutChargeAmount {
-                  amount
-                  currencyCode
-                }
-                subtotalAmount {
-                  amount
-                  currencyCode
-                }
-                totalAmount {
-                  amount
-                  currencyCode
-                }
-                totalDutyAmount {
-                  amount
-                  currencyCode
-                }
-                totalTaxAmount {
-                  amount
-                  currencyCode
-                }
-               }
-               lines(first: 10) {
-                edges {
-                  node {
-                    id
-                    quantity
-                    merchandise {
-                      ... on ProductVariant {
-                        id
-                        title
-                      }
-                    }
-                  }
-                }
-               }
-               buyerIdentity {
-                countryCode
-                customer {
+    const CART_CREATE_MUTATION = `mutation StorefrontCartCreate($input: CartInput!, $country: CountryCode!, $language: LanguageCode!) @inContext(country: $country, language: $language) {
+      cartCreate(input: $input) {
+        cart {
+          id
+          totalQuantity
+          checkoutUrl
+          buyerIdentity {
+            countryCode
+            email
+            phone
+          }
+          cost {
+            subtotalAmount {
+              amount
+              currencyCode
+            }
+            totalAmount {
+              amount
+              currencyCode
+            }
+          }
+          lines(first: 10) {
+            nodes {
+              id
+              quantity
+              merchandise {
+                ... on ProductVariant {
                   id
-                  email
+                  title
+                  product {
+                    title
+                  }
+                }
+              }
+            }
+          }
+        }
+        userErrors {
+          field
+          message
+          code
+        }
+        warnings {
+          message
+          code
+          target
+        }
+      }
+    }`;
+
+    const BUYER_IDENTITY_MUTATION = `mutation StorefrontCartBuyerIdentityUpdate($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!, $country: CountryCode!, $language: LanguageCode!) @inContext(country: $country, language: $language) {
+      cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) {
+        cart {
+          id
+          checkoutUrl
+          buyerIdentity {
+            countryCode
+            email
+            phone
+            customer {
+              id
+              email
+              firstName
+              lastName
+            }
+          }
+        }
+        userErrors {
+          field
+          message
+          code
+        }
+        warnings {
+          message
+          code
+          target
+        }
+      }
+    }`;
+
+    const DELIVERY_ADDRESS_MUTATION = `mutation StorefrontCartDeliveryAddressesAdd($cartId: ID!, $addresses: [CartSelectableAddressInput!]!, $country: CountryCode!, $language: LanguageCode!) @inContext(country: $country, language: $language) {
+      cartDeliveryAddressesAdd(cartId: $cartId, addresses: $addresses) {
+        cart {
+          id
+          checkoutUrl
+          delivery {
+            addresses {
+              id
+              selected
+              oneTimeUse
+              address {
+                ... on CartDeliveryAddress {
                   firstName
                   lastName
-                  defaultAddress {
-                    id
-                    address1
-                    address2
-                    city
-                    company
-                    country
-                    firstName
-                    lastName
-                    province
-                    zip
-                  }
-                }
-                email
-                phone
-                deliveryAddressPreferences {
-                  ... on MailingAddress {
-                    id
-                    address1
-                    address2
-                    city
-                    company
-                    country
-                    firstName
-                    lastName
-                    province
-                    zip
-                  }
-                }
-               }
-               deliveryGroups(first: 10) {
-                edges {
-                  node {
-                    id
-                    deliveryOptions {
-                      code
-                      deliveryMethodType
-                      handle
-                      title
-                    }
-                    selectedDeliveryOption {
-                      code
-                      handle
-                      title
-                    }
-                  }
-                }
-               }
-               checkoutUrl
-            }
-            userErrors {
-              field
-              message
-            }
-            }
-          }`, input, document.getElementById('ip_address').innerHTML, callback);
-      } else {
-        // Use the private token (passing the IP address to server side Storefront API).
-        accessAppServer('update_buyer', input, document.getElementById('ip_address').innerHTML, callback);
-      }
-    };
-
-    // 4. Set the last shipping rate to the checkout.
-    document.getElementById('set_rate').onclick = () => {
-      const rate = document.getElementById('rate');
-      rate.innerHTML = 'Loading...';
-
-      const callback = (data) => {
-        rate.innerHTML = JSON.stringify(data.data, null, 4);
-
-        const rate_selected = document.getElementById('rate_selected');
-        rate_selected.innerHTML = 'Loading...';
-
-        const callback2 = (data) => {
-          rate_selected.innerHTML = JSON.stringify(data.data, null, 4);
-          document.getElementById('checkout_3').style = "visibility: visible;";
-          document.getElementById('checkout_3_link').href = data.data.checkoutShippingLineUpdate.checkout.webUrl;
-        };
-
-        const checkout = JSON.parse(document.getElementById('checkout').innerHTML);
-
-        const size = data.data.node.availableShippingRates.shippingRates.length;
-
-        const input = {
-          "checkoutId": checkout.checkoutCreate.checkout.id,
-          "shippingRateHandle": data.data.node.availableShippingRates.shippingRates[size - 1].handle
-        };
-
-        if (document.getElementById('type_public').checked) {
-          // Use the public token.
-          // Read https://shopify.dev/docs/api/storefront/unstable/mutations/checkoutShippingLineUpdate
-          callStorefrontAPI(`mutation checkoutShippingLineUpdate($checkoutId: ID!, $shippingRateHandle: String!) {
-            checkoutShippingLineUpdate(checkoutId: $checkoutId, shippingRateHandle: $shippingRateHandle) {
-              checkout {
-                id
-                buyerIdentity {
-                  countryCode
-                }
-                orderStatusUrl
-                ready
-                requiresShipping
-                lineItems(first: 10) {
-                  edges {
-                      node {
-                        id
-                        quantity
-                        title
-                      }
-                  }
-                }
-                email
-                shippingAddress {
+                  company
                   address1
                   address2
                   city
-                  company
-                  country
-                  countryCodeV2
-                  firstName
-                  lastName
-                  phone
-                  province
                   provinceCode
                   zip
+                  countryCode
                 }
-                shippingLine {
-                  handle
-                  title
-                  price {
-                    amount
-                    currencyCode
-                  }
-                }
-                webUrl            
               }
-              checkoutUserErrors {
+            }
+          }
+          deliveryGroups(first: 10) {
+            nodes {
+              id
+              deliveryOptions {
+                handle
+                title
                 code
-                field
-                message
+                deliveryMethodType
+                estimatedCost {
+                  amount
+                  currencyCode
+                }
               }
-             }
-          }`, input, document.getElementById('ip_address').innerHTML, callback2);
-        } else {
-          // Use the private token (passing the IP address to server side Storefront API).
-          accessAppServer('rate_selected', input, document.getElementById('ip_address').innerHTML, callback2);
+              selectedDeliveryOption {
+                handle
+                title
+              }
+            }
+          }
+        }
+        userErrors {
+          field
+          message
+          code
+        }
+        warnings {
+          message
+          code
+          target
+        }
+      }
+    }`;
+
+    const DELIVERY_OPTION_MUTATION = `mutation StorefrontCartSelectedDeliveryOptionsUpdate($cartId: ID!, $selectedDeliveryOptions: [CartSelectedDeliveryOptionInput!]!, $country: CountryCode!, $language: LanguageCode!) @inContext(country: $country, language: $language) {
+      cartSelectedDeliveryOptionsUpdate(cartId: $cartId, selectedDeliveryOptions: $selectedDeliveryOptions) {
+        cart {
+          id
+          checkoutUrl
+          deliveryGroups(first: 10) {
+            nodes {
+              id
+              deliveryOptions {
+                handle
+                title
+              }
+              selectedDeliveryOption {
+                handle
+                title
+                estimatedCost {
+                  amount
+                  currencyCode
+                }
+              }
+            }
+          }
+        }
+        userErrors {
+          field
+          message
+          code
+        }
+        warnings {
+          message
+          code
+          target
+        }
+      }
+    }`;
+
+    const setJson = (id, data) => {
+      document.getElementById(id).textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+    };
+
+    const getLocale = () => {
+      const locale = document.getElementById('locale').value;
+      const [lang, country] = locale.split('-');
+      return { language: lang, country };
+    };
+
+    const getApiMode = () => document.getElementById('call_type').value;
+
+    const getStorefrontHeaders = (mode, ipAddress) => {
+      const headers = {
+        "Content-Type": "application/json",
+        "Shopify-Storefront-Buyer-IP": ipAddress || ''
+      };
+      if (mode === 'public') {
+        headers["X-Shopify-Storefront-Access-Token"] = PUBLIC_TOKEN;
+      }
+      return headers;
+    };
+
+    const callStorefrontAPI = async (query, variables) => {
+      const mode = getApiMode();
+      const ipAddress = document.getElementById('ip_address').textContent;
+      if (mode === 'private') {
+        const action = variables.action;
+        const actionVariables = variables.variables;
+        const locale = getLocale();
+        const response = await fetch(`/storefront/plain?action=${action}&locale=${encodeURIComponent(JSON.stringify({ country: locale.country, lang: locale.language }))}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            shop: SHOP,
+            variables: actionVariables,
+            ip_address: ipAddress
+          })
+        });
+        return await response.json();
+      }
+
+      const response = await fetch(`https://${SHOP}/api/${API_VERSION}/graphql.json`, {
+        method: "POST",
+        headers: getStorefrontHeaders(mode, ipAddress),
+        body: JSON.stringify({ query, variables })
+      });
+      const json = await response.json();
+      if (json.data != null) json.data.used_api = mode === 'tokenless' ? "Tokenless Storefront API" : "Public token Storefront API";
+      return json;
+    };
+
+    const getAddress = () => {
+      const { country } = getLocale();
+      if (customerProfile?.defaultAddress != null) {
+        const address = customerProfile.defaultAddress;
+        return {
+          deliveryAddress: {
+            firstName: address.firstName,
+            lastName: address.lastName,
+            company: address.company,
+            address1: address.address1,
+            address2: address.address2,
+            city: address.city,
+            provinceCode: address.zoneCode,
+            zip: address.zip,
+            countryCode: address.territoryCode
+          }
+        };
+      }
+      if (country === 'JP') {
+        return {
+          deliveryAddress: {
+            address1: "Jingu Mae 2-22-16",
+            address2: "barebone house",
+            city: "Shibuya",
+            company: "Barebone corp.",
+            countryCode: "JP",
+            firstName: "Bare",
+            lastName: "Bone",
+            provinceCode: "Tokyo",
+            zip: "1500001"
+          }
+        };
+      }
+      if (country === 'FR') {
+        return {
+          deliveryAddress: {
+            address1: "66 rue des six freres Ruellan",
+            address2: "barebone house",
+            city: "Sarcelles",
+            company: "Barebone corp.",
+            countryCode: "FR",
+            firstName: "Bare",
+            lastName: "Bone",
+            provinceCode: "Ile-de-France",
+            zip: "95200"
+          }
+        };
+      }
+      return {
+        deliveryAddress: {
+          address1: "131 Greene Street",
+          city: "New York",
+          countryCode: "US",
+          firstName: "Bare",
+          lastName: "Bone",
+          provinceCode: "NY",
+          zip: "10012"
         }
       };
+    };
 
-      const checkout = JSON.parse(document.getElementById('checkout').innerHTML);
+    const getCartId = () => {
+      const cartData = JSON.parse(document.getElementById('cart').textContent);
+      return cartData.cartCreate.cart.id;
+    };
 
-      if (document.getElementById('type_public').checked) {
-        // Use the public token.
-        // Read https://shopify.dev/docs/api/storefront/unstable/objects/Checkout
-        callStorefrontAPI(`{
-          node(id: "${checkout.checkoutCreate.checkout.id}") {
-            id
-            ... on Checkout {
-              availableShippingRates { 
-                ready
-                shippingRates {
-                  handle
-                  title
-                  price {
-                    amount
-                    currencyCode
-                  }     
-                }           
-              }
-            }
-          }
-        }`, null, document.getElementById('ip_address').innerHTML, callback);
-      } else {
-        // Use the private token (passing the IP address to server side Storefront API).
-        accessAppServer(`set_rate&id=${checkout.checkoutCreate.checkout.id}`, null, document.getElementById('ip_address').innerHTML, callback);
+    const getCheckoutUrl = (url) => {
+      const checkoutUrl = new URL(url);
+      return checkoutUrl.toString();
+    };
+
+    const getSilentCheckoutUrl = (url) => {
+      const checkoutUrl = new URL(url);
+      checkoutUrl.searchParams.set('sso', 'silent');
+      return checkoutUrl.toString();
+    };
+
+    const updateCustomerUI = () => {
+      if (customerProfile == null) {
+        document.getElementById('customer_status').textContent = CUSTOMER_ACCOUNT_CLIENT_ID === ''
+          ? 'Customer Account API client ID is not configured.'
+          : 'No Customer Account API session.';
+        setJson('customer_profile', {});
+        return;
+      }
+      document.getElementById('customer_status').textContent = `Logged in as ${customerProfile.displayName || customerProfile.emailAddress?.emailAddress || customerProfile.id}`;
+      setJson('customer_profile', customerProfile);
+      if (customerProfile.emailAddress?.emailAddress) {
+        document.getElementById('buyer_email').value = customerProfile.emailAddress.emailAddress;
       }
     };
 
-    // 4. Set the last delivery option to the cart.
-    document.getElementById('set_option').onclick = () => {
-      const option = document.getElementById('option');
-      option.innerHTML = 'Loading...';
+    fetch('https://api.ipify.org?format=json')
+      .then((res) => res.json())
+      .then((json) => {
+        document.getElementById('ip_address').textContent = json.ip;
+      })
+      .catch(() => {
+        document.getElementById('ip_address').textContent = '';
+      });
 
-      const callback = (data) => {
-        option.innerHTML = JSON.stringify(data.data, null, 4);
+    fetch('/customer-account/session')
+      .then((res) => res.json())
+      .then((json) => {
+        customerProfile = json.profile;
+        updateCustomerUI();
+      })
+      .catch(updateCustomerUI);
 
-        document.getElementById('cart_3').style = "visibility: visible;";
-        document.getElementById('cart_3_link').href = data.data.cartSelectedDeliveryOptionsUpdate.cart.checkoutUrl;
-      };
+    document.getElementById('login_customer_account').onclick = () => {
+      const returnTo = `${window.location.pathname}${window.location.search}`;
+      window.location.href = `/customer-account/login?shop=${encodeURIComponent(SHOP)}&public_token=${encodeURIComponent(PUBLIC_TOKEN)}&return_to=${encodeURIComponent(returnTo)}`;
+    };
 
-      const cart = JSON.parse(document.getElementById('cart').innerHTML);
+    document.getElementById('logout_customer_account').onclick = async () => {
+      await fetch('/customer-account/logout', { method: 'POST' });
+      customerProfile = null;
+      updateCustomerUI();
+    };
 
-      const buyer = JSON.parse(document.getElementById('buyer').innerHTML);
+    document.getElementById('show_product').onclick = async () => {
+      setJson('products', 'Loading...');
+      const locale = getLocale();
+      const data = await callStorefrontAPI(PRODUCT_QUERY, {
+        country: locale.country,
+        language: locale.language
+      });
+      setJson('products', data.data || data);
+      document.getElementById('cart_step').classList.remove('hidden');
+    };
 
+    document.getElementById('create_cart').onclick = async () => {
+      setJson('cart', 'Loading...');
+      const locale = getLocale();
+      const listedProducts = JSON.parse(document.getElementById('products').textContent).products.nodes;
+      const lines = listedProducts.flatMap((product) => product.variants.nodes.map((variant) => ({
+        merchandiseId: variant.id,
+        quantity: 1,
+        attributes: [
+          {
+            key: "bareboneapp.storefront_product_id",
+            value: product.id
+          }
+        ]
+      })));
       const input = {
-        "cartId": cart.cartCreate.cart.id,
-        "selectedDeliveryOptions": []
-      };
-
-      const size = buyer.cartBuyerIdentityUpdate.cart.deliveryGroups.edges.length;
-      if (size > 0) {
-        const size2 = buyer.cartBuyerIdentityUpdate.cart.deliveryGroups.edges[size - 1].node.deliveryOptions.length;
-        input.selectedDeliveryOptions.push({
-          "deliveryGroupId": buyer.cartBuyerIdentityUpdate.cart.deliveryGroups.edges[size - 1].node.id,
-          "deliveryOptionHandle": buyer.cartBuyerIdentityUpdate.cart.deliveryGroups.edges[size - 1].node.deliveryOptions[size2 - 1].handle
-        });
-      }
-
-      if (document.getElementById('type_public').checked) {
-        // Use the public token.
-        // Read https://shopify.dev/docs/api/storefront/unstable/mutations/cartSelectedDeliveryOptionsUpdate
-        callStorefrontAPI(`mutation cartSelectedDeliveryOptionsUpdate($cartId: ID!, $selectedDeliveryOptions: [CartSelectedDeliveryOptionInput!]!) {
-          cartSelectedDeliveryOptionsUpdate(cartId: $cartId, selectedDeliveryOptions: $selectedDeliveryOptions) {
-            cart {
-               id
-               totalQuantity
-               cost {
-                checkoutChargeAmount {
-                  amount
-                  currencyCode
-                }
-                subtotalAmount {
-                  amount
-                  currencyCode
-                }
-                totalAmount {
-                  amount
-                  currencyCode
-                }
-                totalDutyAmount {
-                  amount
-                  currencyCode
-                }
-                totalTaxAmount {
-                  amount
-                  currencyCode
-                }
-               }
-               lines(first: 10) {
-                edges {
-                  node {
-                    id
-                    quantity
-                    merchandise {
-                      ... on ProductVariant {
-                        id
-                        title
-                      }
-                    }
-                  }
-                }
-               }
-               buyerIdentity {
-                countryCode
-                customer {
-                  id
-                  email
-                  firstName
-                  lastName
-                  defaultAddress {
-                    id
-                    address1
-                    address2
-                    city
-                    company
-                    country
-                    firstName
-                    lastName
-                    province
-                    zip
-                  }
-                }
-                email
-                phone
-                deliveryAddressPreferences {
-                  ... on MailingAddress {
-                    id
-                    address1
-                    address2
-                    city
-                    company
-                    country
-                    firstName
-                    lastName
-                    province
-                    zip
-                  }
-                }
-               }
-               deliveryGroups(first: 10) {
-                edges {
-                  node {
-                    id
-                    deliveryOptions {
-                      code
-                      deliveryMethodType
-                      handle
-                      title
-                    }
-                    selectedDeliveryOption {
-                      code
-                      handle
-                      title
-                    }
-                  }
-                }
-               }
-               checkoutUrl
-            }
-            userErrors {
-              field
-              message
-            }
+        attributes: [
+          {
+            key: "bareboneapp.storefront_ip",
+            value: document.getElementById('ip_address').textContent
           }
-        }`, input, document.getElementById('ip_address').innerHTML, callback);
-      } else {
-        // Use the private token (passing the IP address to server side Storefront API).
-        accessAppServer(`set_option`, input, document.getElementById('ip_address').innerHTML, callback);
+        ],
+        lines,
+        note: document.getElementById('note').value
+      };
+      const variables = {
+        input,
+        country: locale.country,
+        language: locale.language
+      };
+      const data = await callStorefrontAPI(CART_CREATE_MUTATION, {
+        action: 'create_cart',
+        variables: input,
+        ...variables
+      });
+      const result = data.data || data;
+      setJson('cart', result);
+      const checkoutUrl = result.cartCreate?.cart?.checkoutUrl;
+      if (checkoutUrl != null) {
+        document.getElementById('cart_checkout').classList.remove('hidden');
+        document.getElementById('cart_checkout_link').href = getCheckoutUrl(checkoutUrl);
+        document.getElementById('cart_checkout_silent_link').href = getSilentCheckoutUrl(checkoutUrl);
       }
+      document.getElementById('buyer_step').classList.remove('hidden');
+      document.getElementById('address_step').classList.remove('hidden');
     };
 
+    document.getElementById('update_buyer').onclick = async () => {
+      setJson('buyer', 'Loading...');
+      const locale = getLocale();
+      const buyerIdentity = {
+        countryCode: locale.country
+      };
+      const email = document.getElementById('buyer_email').value;
+      if (email !== '') buyerIdentity.email = email;
+      const variables = {
+        cartId: getCartId(),
+        buyerIdentity,
+        country: locale.country,
+        language: locale.language
+      };
+      const data = await callStorefrontAPI(BUYER_IDENTITY_MUTATION, {
+        action: 'update_buyer',
+        variables,
+        ...variables
+      });
+      setJson('buyer', data.data || data);
+    };
+
+    document.getElementById('add_address').onclick = async () => {
+      setJson('address', 'Loading...');
+      const locale = getLocale();
+      const variables = {
+        cartId: getCartId(),
+        addresses: [
+          {
+            selected: true,
+            address: getAddress()
+          }
+        ],
+        country: locale.country,
+        language: locale.language
+      };
+      const data = await callStorefrontAPI(DELIVERY_ADDRESS_MUTATION, {
+        action: 'add_address',
+        variables,
+        ...variables
+      });
+      setJson('address', data.data || data);
+      document.getElementById('delivery_step').classList.remove('hidden');
+    };
+
+    document.getElementById('set_option').onclick = async () => {
+      setJson('option', 'Loading...');
+      const locale = getLocale();
+      const addressData = JSON.parse(document.getElementById('address').textContent);
+      const deliveryGroup = addressData.cartDeliveryAddressesAdd.cart.deliveryGroups.nodes.find((group) => group.deliveryOptions.length > 0);
+      if (deliveryGroup == null) {
+        setJson('option', { error: "No delivery options are available yet. Try again after the cart finishes rating." });
+        return;
+      }
+      const variables = {
+        cartId: getCartId(),
+        selectedDeliveryOptions: [
+          {
+            deliveryGroupId: deliveryGroup.id,
+            deliveryOptionHandle: deliveryGroup.deliveryOptions[0].handle
+          }
+        ],
+        country: locale.country,
+        language: locale.language
+      };
+      const data = await callStorefrontAPI(DELIVERY_OPTION_MUTATION, {
+        action: 'set_option',
+        variables,
+        ...variables
+      });
+      setJson('option', data.data || data);
+    };
+
+    updateCustomerUI();
   </script>
 </body>
 

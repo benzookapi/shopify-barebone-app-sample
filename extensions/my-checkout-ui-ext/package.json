@@ -1,12 +1,8 @@
 {
-    "name": "my-checkout-ui-ext",
-    "dependencies": {
-      "react": "^18.2.0",
-      "@shopify/ui-extensions": "2024.4.1",
-      "@shopify/ui-extensions-react": "2024.4.1",
-      "@shopify/app": "*"
-    },
-    "devDependencies": {
-      "@types/react": "^18.2.0"
-    }
+  "name": "my-checkout-ui-ext",
+  "dependencies": {
+    "@preact/signals": "^2.3.0",
+    "@shopify/ui-extensions": "2026.7.x",
+    "preact": "^10.10.0"
   }
+}

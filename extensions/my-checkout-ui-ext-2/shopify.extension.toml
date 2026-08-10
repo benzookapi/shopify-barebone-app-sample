@@ -3,7 +3,7 @@
 
 # The version of APIs your extension will receive. Learn more:
 # https://shopify.dev/docs/api/usage/versioning
-api_version = "unstable"
+api_version = "2026-07"
 
 [[extensions]]
 name = "Barebone App UI extension 2"
@@ -13,18 +13,18 @@ type = "ui_extension"
 
 # Controls where in Shopify your extension will be injected,
 # and the file that contains your extension’s source code. Learn more:
-# https://shopify.dev/docs/api/checkout-ui-extensions/unstable/extension-targets-overview
+# https://shopify.dev/docs/api/checkout-ui-extensions/2026-07/extension-targets-overview
 
-# If you want to test Vanila JS code, use "./src/Checkout.js"
+# If you want to test Vanilla JS code, use "./src/Checkout.js" and "./src/CheckoutStatic.js".
 [[extensions.targeting]]
 module = "./src/Checkout.jsx"
 #module = "./src/Checkout.js"
 target = "purchase.checkout.block.render"
 
-# You can use the same source code (module) for dynamic and static targets both with different functions registered.
+# Current Checkout UI extension versions require one module entry point for each target.
 [[extensions.targeting]]
-module = "./src/Checkout.jsx"
-#module = "./src/Checkout.js"
+module = "./src/CheckoutStatic.jsx"
+#module = "./src/CheckoutStatic.js"
 target = "purchase.checkout.actions.render-before"
 
 [extensions.capabilities]

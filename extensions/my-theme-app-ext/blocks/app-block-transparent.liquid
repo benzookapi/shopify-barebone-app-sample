@@ -1,25 +1,23 @@
-<script>
+<span
+  hidden
+  data-barebone-custom-event
+  data-event-name="{{ block.settings.barebone_app_event | escape }}"
+  data-template-name="{{ template.name | escape }}"
+  {{ block.shopify_attributes }}
+></span>
 
-  console.log("blocks/app-block.liquid");
-
-// Read https://shopify.dev/api/pixels/customer-events#publishing-custom-events
-// THIS CUSTOM WEB PIXEL EVENT RUNNABLE IN APP-BLOCK ONLY, NOT IN APP-EMBED-BLOCK.
-  Shopify.analytics.publish("{{ block.settings.barebone_app_event }}", {
-    "template": "{{template}}",
-    "timestamp": new Date().toISOString()
-  });
-</script>
 {% schema %}
-  {
-    "name": "Barebone App Block TP",
-    "target": "section",
-    "settings": [
-      {
-        "type": "text",
-        "id": "barebone_app_event",
-        "label": "Input your custom Pixel event name",
-        "default": "barebone_app_custom_event"
-      }
-    ]
-  }
+{
+  "name": "t:barebone.app_block_transparent.name",
+  "target": "section",
+  "javascript": "barebone.js",
+  "settings": [
+    {
+      "type": "text",
+      "id": "barebone_app_event",
+      "label": "t:barebone.app_block_transparent.event_name",
+      "default": "barebone_app_custom_event"
+    }
+  ]
+}
 {% endschema %}

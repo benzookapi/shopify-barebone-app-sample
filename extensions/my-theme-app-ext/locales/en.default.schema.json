@@ -1,0 +1,22 @@
+{
+  "barebone": {
+    "app_block": {
+      "name": "Barebone App Block",
+      "color": "Color",
+      "product": "Product",
+      "text": "Text"
+    },
+    "app_block_transparent": {
+      "name": "Barebone App Block TP",
+      "event_name": "Input your custom Pixel event name"
+    },
+    "app_embed": {
+      "name": "Barebone App Embed",
+      "message": "Your message"
+    },
+    "app_embed_transparent": {
+      "name": "Barebone App Embed TP",
+      "tag": "Tag to insert into the header"
+    }
+  }
+}

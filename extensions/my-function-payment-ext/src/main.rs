@@ -1,68 +1,17 @@
 use shopify_function::prelude::*;
-use shopify_function::Result;
+use std::process;
 
-use serde::{Deserialize, Serialize};
+pub mod cart_payment_methods_transform_run;
 
-generate_types!(
-    query_path = "./input.graphql",
-    schema_path = "./schema.graphql"
-);
-
-#[derive(Serialize, Deserialize, Default, PartialEq)]
-#[serde(rename_all(deserialize = "camelCase"))]
-struct Configuration {
-    method: String,
-    rate: String
-}
-// Read https://shopify.dev/apps/checkout/payment-customizations/config
-
-impl Configuration {
-    fn from_str(value: &str) -> Self {
-        serde_json::from_str(value).expect("Unable to parse configuration value from metafield")
-    }
+#[typegen("schema.graphql")]
+pub mod schema {
+    #[query("src/cart_payment_methods_transform_run.graphql", custom_scalar_overrides = {
+        "Input.paymentCustomization.metafield.jsonValue" => super::cart_payment_methods_transform_run::Configuration,
+    })]
+    pub mod cart_payment_methods_transform_run {}
 }
 
-#[shopify_function]
-fn function(input: input::ResponseData) -> Result<output::FunctionResult> {
-    let no_changes = output::FunctionResult { operations: vec![] };
-
-    let _config = match input.payment_customization.metafield {
-        Some(input::InputPaymentCustomizationMetafield { value }) =>
-            Configuration::from_str(&value),
-        None => return Ok(no_changes),
-    };
-
-    // Read https://shopify.dev/apps/checkout/delivery-customizations/getting-started
-    let is_hide = input.cart.delivery_groups.iter().filter(|group| {
-        let selected_option = group.selected_delivery_option.as_ref();
-        match selected_option {
-            Some(option) => match &option.title {
-                Some(title) => title.eq(&_config.rate),
-                None => false
-            },
-            None => false
-        }
-    }).next().is_some();
-
-    // Read https://shopify.dev/apps/checkout/payment-customizations/getting-started
-    let hide_payment_method = input.payment_methods.iter()
-    .find(|&method| { // find = return the 1st one
-        if is_hide {
-            method.name.to_string().ne(&_config.method)
-        } else {
-            false
-        }        
-    })
-    .map(|method| output::HideOperation {
-        payment_method_id: method.id.to_string()
-    });  
-
-    Ok(output::FunctionResult { operations: vec![output::Operation {
-        hide: hide_payment_method,
-        move_: None,
-        rename: None
-    }]})
+fn main() {
+    log!("Please invoke a named export.");
+    process::abort();
 }
-
-#[cfg(test)]
-mod tests;

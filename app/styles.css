@@ -1,0 +1,20 @@
+body {
+  margin: 0;
+}
+
+pre {
+  background: #f6f6f7;
+  border: 1px solid #d2d5d8;
+  border-radius: 6px;
+  max-width: 100%;
+  overflow: auto;
+  padding: 12px;
+  white-space: pre-wrap;
+}
+
+input,
+select,
+textarea {
+  box-sizing: border-box;
+  max-width: 100%;
+}

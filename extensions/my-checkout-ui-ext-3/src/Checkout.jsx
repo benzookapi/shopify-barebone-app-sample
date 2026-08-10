@@ -2,14 +2,12 @@
 // No visible UI is needed to do that.
 
 import '@shopify/ui-extensions/preact';
-import {render} from "preact";
+import {render} from 'preact';
 
 export default async () => {
-  render(<Extension />, document.body)
+  render(<Extension />, document.body);
 };
 
-function Extension() {  
-  return (
-    <></>
-  );  
+function Extension() {
+  return <></>;
 }

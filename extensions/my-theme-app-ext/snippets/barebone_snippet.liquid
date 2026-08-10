@@ -1,19 +1,25 @@
-<script>
-  // NOTE THAT this script cannot call functions defined in `assets/***.js`.
-  console.log("snipets/barebone_snipet.liquid");
-</script>
+{% doc %}
+Renders the reusable content used by the barebone theme app block.
 
-<div class="_my_app_snippet">
+@example
+{% render 'barebone_snippet' %}
+{% enddoc %}
+
+<div class="barebone-app-snippet">
   <p>
-    Theme App Extension
-    <a href="https://shopify.dev/themes/architecture#snippets" target="_blank">Snippet</a>
-    rendered by
-    <b>the parent block</b>
+    {{ 'barebone.shared.theme_app_extension' | t }}
+    <a
+      href="https://shopify.dev/docs/apps/build/online-store/theme-app-extensions/configuration#theme-app-extension-resources"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {{- 'barebone.snippet.name' | t -}}
+    </a>
+    {{ 'barebone.snippet.rendered_by_parent' | t }}
   </p>
   <p>
-    in
-    <b>'snipets/barebone_snippet.liquid'</b>
-    with the background color defined by value of
-    <b>'assets/barebone.css'</b>.
+    {{ 'barebone.shared.in' | t }}
+    <code>snippets/barebone_snippet.liquid</code>
+    {{ 'barebone.snippet.background_description' | t }}
   </p>
 </div>

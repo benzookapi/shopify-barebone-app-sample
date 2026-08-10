@@ -1,0 +1,17 @@
+query Input($namespace: String!, $key: String!) {
+  cart {
+    attribute(key: $key) {
+      value
+    }
+    buyerIdentity {
+      customer {
+        metafield(namespace: $namespace, key: $key) {
+          value
+        }
+      }
+    }
+  }
+  discount {
+    discountClasses
+  }
+}

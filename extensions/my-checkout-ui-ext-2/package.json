@@ -4,12 +4,8 @@
   "version": "1.0.0",
   "license": "UNLICENSED",
   "dependencies": {
-    "react": "^18.0.0",
-    "@shopify/ui-extensions": "2024.7.x",
-    "@shopify/ui-extensions-react": "2024.7.x"
-  },
-  "devDependencies": {
-    "@types/react": "^18.0.0",
-    "react-reconciler": "0.29.0"
+    "@preact/signals": "^2.3.0",
+    "@shopify/ui-extensions": "2026.7.x",
+    "preact": "^10.10.0"
   }
 }

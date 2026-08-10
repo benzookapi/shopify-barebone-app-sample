@@ -3,7 +3,7 @@
 
 # The version of APIs your extension will receive. Learn more:
 # https://shopify.dev/docs/api/usage/versioning
-api_version = "unstable"
+api_version = "2026-07"
 
 [[extensions]]
 name = "Barebone App UI extension 3"
@@ -27,4 +27,3 @@ api_access = true
 # Gives your extension access to block checkout.
 # https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#block-progress
 block_progress = true
-

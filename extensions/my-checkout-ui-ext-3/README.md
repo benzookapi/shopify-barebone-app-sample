@@ -4,7 +4,7 @@ Checkout UI extensions let app developers build custom functionality that mercha
 
 ## Prerequisites
 
-Before you start building your extension, make sure that you’ve created a [development store](https://shopify.dev/docs/apps/tools/development-stores) with the [checkout extensibility developer preview](https://shopify.dev/docs/api/release-notes/developer-previews#previewing-new-features).
+Before you start building your extension, make sure that you have a [development store](https://shopify.dev/docs/apps/tools/development-stores) where Checkout UI extensions can be tested.
 
 ## Your new Extension
 
@@ -12,7 +12,7 @@ Your new extension contains the following files:
 
 - `README.md`, the file you are reading right now.
 - `shopify.extension.toml`, the configuration file for your extension. This file defines your extension’s name, where it will appear in the checkout, and other metadata.
-- `src/Checkout.jsx`, the source code for your extension.
+- `src/Checkout.jsx`, the Preact entry point for the extension. It intentionally renders no visible UI.
 - `locales/en.default.json` and `locales/fr.json`, which contain translations used to [localized your extension](https://shopify.dev/docs/apps/checkout/best-practices/localizing-ui-extensions).
 
 By default, your extension is configured to target the `purchase.checkout.block.render` [extension target](https://shopify.dev/docs/api/checkout-ui-extensions/extension-targets-overview). You will find the target in your `shopify.extension.toml`. The default target allows the merchant to configure where in the checkout *they* want your extension to appear. If you are building an extension that is tied to existing UI element in the checkout, such as the cart lines or shipping options, you can change the extension target so that your UI extension will render in the correct location. Check out the list of [all available extension targets](https://shopify.dev/docs/api/checkout-ui-extensions/extension-targets-overview) to get some inspiration for the kinds of content you can provide with checkout UI extensions.

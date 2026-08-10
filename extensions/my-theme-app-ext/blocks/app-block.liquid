@@ -1,381 +1,215 @@
-<!-- barebone app: app-block.liquid -->
+{%- liquid
+  assign cart_attribute = cart.attributes['barebone_cart_attribute'] | default: ''
+  assign cart_attribute_code = cart.attributes['barebone_cart_attribute_code'] | default: ''
+  assign block_dom_id = 'barebone-app-block-' | append: block.id
+-%}
 
-<!--
-  See the useful documents.
+<div
+  id="{{ block_dom_id }}"
+  class="barebone-app-block"
+  style="--barebone-text-color: {{ block.settings.color }};"
+  data-barebone-app-block
+  data-template-name="{{ template.name | escape }}"
+  data-product-id="{{ product.id }}"
+  data-selected-variant-id="{{ product.selected_variant.id }}"
+  {{ block.shopify_attributes }}
+>
+  <p>
+    {{ 'barebone.shared.theme_app_extension' | t }}
+    <a
+      href="https://shopify.dev/docs/apps/build/online-store/theme-app-extensions/configuration#app-blocks-for-themes"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {{- 'barebone.app_block.name' | t -}}
+    </a>
+    {{ 'barebone.shared.with' | t }}
+    <strong>"target": "section"</strong>
+  </p>
+  <p>
+    {{ 'barebone.shared.in' | t }}
+    <code>blocks/app-block.liquid</code>
+    {{ 'barebone.app_block.color_description' | t }}
+  </p>
 
-  https://shopify.dev/themes/architecture/sections/app-blocks
+  <p>
+    <strong>&#123;&#123; product.title &#125;&#125;:</strong>
+    {{ product.title | escape }}
+  </p>
 
-  https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework
+  {%- if request.design_mode -%}
+    <p class="barebone-app-block__editor-message">
+      {{ 'barebone.app_block.editor_message' | t }}
+    </p>
+  {%- endif -%}
 
-  https://shopify.dev/themes/architecture/settings/input-settings
+  <ul>
+    <li>
+      <code>block.settings.product</code>
+      {{ 'barebone.app_block.product_setting' | t }}:
+      <strong>{{ block.settings.product.id }}</strong>
+      (id) /
+      <strong>{{ block.settings.product.title | escape }}</strong>
+      (title) /
+      <strong>{{ block.settings.product.price }}</strong>
+      (price)
+    </li>
+    <li>
+      <code>block.settings.text</code>
+      {{ 'barebone.app_block.text_setting' | t }}:
+      <strong>{{ block.settings.text | escape }}</strong>
+    </li>
+  </ul>
 
-  https://github.com/Shopify/theme-extension-getting-started
--->
-<!--
-  NOTE THAT you cannot write liquid variables in 'assets/***.css' like "span { color: {{ block.settings.color }}; }
--->
-<span style="color: {{ block.settings.color }}">
-  <div class="_my_app_block">
-    <p>
-      Theme App Extension
-      <a
-        href="https://shopify.dev/apps/online-store/theme-app-extensions/extensions-framework#app-blocks"
-        target="_blank"
-      >
-        App Block
+  {% render 'barebone_snippet' %}
+
+  <p>
+    <strong>{{ 'barebone.app_block.proxy_responses' | t }}</strong>:
+    {{ 'barebone.app_block.proxy_description' | t }}
+  </p>
+  <ul>
+    <li>
+      <p>{{ 'barebone.app_block.proxy_post_response' | t }}</p>
+      <pre class="barebone-app-proxy-response" data-barebone-proxy-response aria-live="polite"></pre>
+    </li>
+    <li>
+      <a href="" target="_blank" rel="noopener noreferrer" data-barebone-proxy-json>
+        {{- 'barebone.app_block.proxy_get_response' | t -}}
       </a>
-      with
-      <b>"target": "section"</b>
-    </p>
-    <p>
-      in
-      <b>`blocks/app-block.liquid'</b>
-      with the color defined by value of
-      <b>'block.settings.color'</b>.
-    </p>
+    </li>
+    <li>
+      <a href="" data-barebone-proxy-liquid>{{ 'barebone.app_block.proxy_liquid_response' | t }}</a>
+    </li>
+  </ul>
 
-    <p>
-      <b>&#123;&#123;product.title&#125;&#125;:</b>
-      {{ product.title }}
-    </p>
+  <p>
+    <a
+      href="https://shopify.dev/docs/api/customer-privacy"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {{- 'barebone.app_block.shopify_dump' | t -}}
+    </a>
+  </p>
+  <pre data-barebone-shopify-dump></pre>
 
-    {% if request.design_mode %}
-      <!-- This will only render in the theme editor -->
-      <p class="_my_app_block_editor">"I think you are viewing this app block within theme editor, right? &#x1f609"</p>
-    {% endif %}
-
-    <!-- Read https://shopify.dev/api/liquid -->
-    <ul>
-      <li>
-        <b>'block.settings.product'</b>
-        in "Product":
-        <b>{{ block.settings.product.id }}</b>
-        (id) /
-        <b>{{ block.settings.product.title }}</b>
-        (title) /
-        <b>{{ block.settings.product.price }}</b>
-        (price)
-      </li>
-      <li>
-        <b>'block.settings.text'</b>
-        in "Text":
-        <b>{{ block.settings.text }}</b>
-      </li>
-    </ul>
-
-    <!-- Including snippets -->
-    {% render 'barebone_snippet' %}
-
-    <p><b>App proxy responses</b>: (You can check the difference of response data by login / logout)</p>
-    <ul>
-      <li>
-        <p>POST response of the app proxy</p>
-        <!--
-          Note that app embed is a section which can be some in the whole theme storefornt HTML in browsers, so you canot use 'id'.
-        -->
-        <pre class="barebone_app_proxy_response"></pre>
-      </li>
-      <li>
-        <a href="" target="_blank" class="barebone_app_proxy_json">GET response of the app proxy</a>
-      </li>
-      <li>
-        <a href="" class="barebone_app_proxy_liquid">Liquid response of the app proxy</a>
-      </li>
-    </ul>
-
-    <p><a href="https://shopify.dev/docs/api/consent-tracking" target="_blank">window.Shopify</a> dump</p>
-    <pre id="my_window_shopify_dump"></pre>
-
-    {% comment %}
-      The following code is for product pages only to check how line item properties work for line splitting for the same product.
-    {% endcomment %}
-    {%- if template.name == 'product' -%}
-      <fieldset>
-        <legend>Choose your line item property value</legend>
+  {%- if template.name == 'product' -%}
+    <fieldset>
+      <legend>{{ 'barebone.app_block.line_item_legend' | t }}</legend>
+      {%- for index in (1..3) -%}
+        {%- assign property_value = 'Value-' | append: index -%}
+        {%- assign property_id = block_dom_id | append: '-line-item-property-' | append: index -%}
         <div>
           <input
             type="radio"
-            id="barebone_line_item_property_1"
-            name="barebone_line_item_property"
-            value="Value-1"
-            onClick="radio_click(this);"
+            id="{{ property_id }}"
+            name="barebone_line_item_property_{{ block.id }}"
+            value="{{ property_value }}"
+            data-barebone-line-item-property
           >
-          <label for="barebone_line_item_property_1"> Value 1 </label>
+          <label for="{{ property_id }}">
+            {{- 'barebone.shared.value' | t }} {{ index -}}
+          </label>
         </div>
-        <div>
-          <input
-            type="radio"
-            id="barebone_line_item_property_2"
-            name="barebone_line_item_property"
-            value="Value-2"
-            onClick="radio_click(this);"
-          >
-          <label for="barebone_line_item_property_2"> Value 2 </label>
-        </div>
-        <div>
-          <input
-            type="radio"
-            id="barebone_line_item_property_3"
-            name="barebone_line_item_property"
-            value="Value-3"
-            onClick="radio_click(this);"
-          >
-          <label for="barebone_line_item_property_3"> Value 3 </label>
-        </div>
-        <strong
-          >See
-          <a href="https://shopify.dev/docs/themes/architecture/templates/product#line-item-properties" target="_blank">
-            Dev. Site</a
-          >
-          for Line Item Properties.</strong
+      {%- endfor -%}
+      <strong>
+        {{ 'barebone.shared.see' | t }}
+        <a
+          href="https://shopify.dev/docs/storefronts/themes/architecture/templates/product#line-item-properties"
+          target="_blank"
+          rel="noopener noreferrer"
         >
-      </fieldset>
-    {%- endif -%}
+          {{- 'barebone.shared.developer_site' | t -}}
+        </a>
+        {{ 'barebone.app_block.line_item_documentation' | t }}
+      </strong>
+    </fieldset>
+  {%- endif -%}
 
-    {% comment %}
-      The following code is for cart pages only to check how cart notes and attributes and note work.
-    {% endcomment %}
-    {%- if template.name == 'cart' -%}
-      <fieldset>
-        <legend>Set your cart note and attribute value</legend>
-        <div>
-          <textarea
-            id="barebone_cart_note"
-            name="barebone_cart_note"
-            value=""
-            onChange="text_change(this);"
-          ></textarea>
-        </div>
-        <div>
-          <input
-            type="radio"
-            id="barebone_cart_attribute_0"
-            name="barebone_cart_attribute"
-            value=""
-            onClick="radio_click(this);"
-          >
-          <label for="barebone_cart_attribute_0">(Empty)</label>
-        </div>
+  {%- if template.name == 'cart' -%}
+    <fieldset>
+      <legend>{{ 'barebone.app_block.cart_legend' | t }}</legend>
+      <div>
+        <textarea
+          id="{{ block_dom_id }}-cart-note"
+          name="barebone_cart_note"
+          data-barebone-cart-note
+        ></textarea>
+      </div>
+      {%- for index in (0..3) -%}
+        {%- if index == 0 -%}
+          {%- assign attribute_value = '' -%}
+        {%- else -%}
+          {%- assign attribute_value = 'Value-' | append: index -%}
+        {%- endif -%}
+        {%- assign attribute_id = block_dom_id | append: '-cart-attribute-' | append: index -%}
         <div>
           <input
             type="radio"
-            id="barebone_cart_attribute_1"
-            name="barebone_cart_attribute"
-            value="Value-1"
-            onClick="radio_click(this);"
+            id="{{ attribute_id }}"
+            name="barebone_cart_attribute_{{ block.id }}"
+            value="{{ attribute_value }}"
+            data-barebone-cart-attribute
+            {% if cart_attribute == attribute_value %}checked{% endif %}
           >
-          <label for="barebone_cart_attribute_1">Value 1</label>
+          <label for="{{ attribute_id }}">
+            {%- if index == 0 -%}
+              {{ 'barebone.shared.empty' | t }}
+            {%- else -%}
+              {{ 'barebone.shared.value' | t }} {{ index }}
+            {%- endif -%}
+          </label>
         </div>
-        <div>
-          <input
-            type="radio"
-            id="barebone_cart_attribute_2"
-            name="barebone_cart_attribute"
-            value="Value-2"
-            onClick="radio_click(this);"
-          >
-          <label for="barebone_cart_attribute_2">Value 2</label>
-        </div>
-        <div>
-          <input
-            type="radio"
-            id="barebone_cart_attribute_3"
-            name="barebone_cart_attribute"
-            value="Value-3"
-            onClick="radio_click(this);"
-          >
-          <label for="barebone_cart_attribute_3">Value 3</label>
-        </div>
-        <div>
-          <label for="barebone_cart_attribute_code">Paste your discount code: </label>
-          <input
-            type="text"
-            id="barebone_cart_attribute_code"
-            name="barebone_cart_attribute_code"
-            value=""
-            onChange="input_change(this);"
-          >          
-        </div>
-        <strong
-          >See
-          <a
-            href="https://shopify.dev/docs/themes/architecture/templates/cart#support-cart-notes-and-attributes"
-            target="_blank"
-          >
-            Dev. Site</a
-          >
-          for Cart Notes and Attributes.</strong
+      {%- endfor -%}
+      <div>
+        <label for="{{ block_dom_id }}-cart-attribute-code">
+          {{- 'barebone.app_block.discount_code_label' | t -}}
+        </label>
+        <input
+          type="text"
+          id="{{ block_dom_id }}-cart-attribute-code"
+          name="barebone_cart_attribute_code"
+          value="{{ cart_attribute_code | escape }}"
+          data-barebone-cart-attribute-code
         >
-      </fieldset>
-    {%- endif -%}
-  </div>
-</span>
-
-<!--
-  See the useful documents.
-
-  https://shopify.dev/themes/architecture/sections/app-blocks
-
-  https://shopify.dev/themes/architecture/settings#dynamic-sources
-
-  https://help.shopify.com/en/manual/data-extensions/metafields/displaying-metafields-on-your-online-store
-
-  NOTE THAT if you add this app block to the home page, the product picker shows a simpple product selector only
-  without a metafield dynamic source, but if in the product page, the picker shows simple selector and metafield ones both.
-  See the condtion in the document above.
-
-  "target": "section" in schema means this is an "App Block" as portable session anywhere in theme pages.
-
-  In this sample, "type": "product" and "type": "text" are supposed to be metafields in product data.
--->
-<script type="text/javascript">
-  // Note that you cannot call external functions defined in 'assets/***.js'. Also,imported script files by each block are global in theme storefront in browsers, which means any object are global scopes that cannot conflicts with others. For exmple, this script is possible to be inserted multiply if the merchant add multiple sections in the theme editor.console.log("blocks/app-block.liquid");
-  document.getElementById('my_window_shopify_dump').innerText = JSON.stringify(window.Shopify, null, 4);
-
-  console.log(
-    'template.name: {{ template.name }} product.id: {{ product.id }} product.selected_variant.id: {{ product.selected_variant.id }}'
-  );
-</script>
-
-{% comment %}
-  The following code is for product pages only to check how line item properties work for line splitting for the same product.
-{% endcomment %}
-{%- if template.name == 'product' -%}
-  <script type="text/javascript">
-    // Test the multiple line item properties for the single product to split line items.
-    // "radio_click" is called in "onClick" of each radio box defined above.
-    const radio_click = (obj) => {
-      const cart_add_forms = document.querySelectorAll('form[action$="/cart/add"]');
-      cart_add_forms.forEach((form) => {
-        console.log(`cart_add_forms: ${form.innerHTML}`);
-        // Adding an line item property to the existing form.
-        // Read https://shopify.dev/docs/themes/architecture/templates/product#line-item-properties
-        const line_item_property_input = document.createElement('input');
-        line_item_property_input.type = 'hidden';
-        line_item_property_input.name = 'properties[barebone_line_item_property]';
-        line_item_property_input.value = '';
-        form.appendChild(line_item_property_input);
-      });
-      const line_item_property_inputs = document.querySelectorAll(
-        'input[name="properties[barebone_line_item_property]"]'
-      );
-      line_item_property_inputs.forEach((input) => {
-        input.value = obj.value;
-      });
-    };
-  </script>
-{%- endif -%}
-
-{% comment %}
-  The following code is for product pages only to check how cart notes and attributes work.
-{% endcomment %}
-{%- if template.name == 'cart' -%}
-  <script
-    type="text/javascript"
-  >
-    // "text_change" is called in "onChange" of textarea defined above.
-    const text_change = (obj) => {
-      const cart_forms = document.querySelectorAll('form[action$="/cart"]');
-      cart_forms.forEach((form) => {
-        console.log(`cart_forms: ${form.innerHTML}`);
-        // Adding a cart note to the existing form.
-        // Read https://shopify.dev/docs/themes/architecture/templates/cart#cart-notes
-        const cart_note_input = document.createElement('input');
-        cart_note_input.type = 'hidden';
-        cart_note_input.name = 'note';
-        cart_note_input.setAttribute('form', 'cart');
-        cart_note_input.value = '';
-        form.appendChild(cart_note_input);
-      });
-      const cart_note_inputs = document.querySelectorAll('input[name="note"][form="cart"]');
-      cart_note_inputs.forEach((input) => {
-        input.value = obj.value;
-      });
-    };
-
-    // "radio_click" is called in "onClick" of each radio box defined above.
-    const radio_click = (obj) => {
-      const cart_forms = document.querySelectorAll('form[action$="/cart"]');
-      cart_forms.forEach((form) => {
-        console.log(`cart_forms: ${form.innerHTML}`);
-        // Adding a cart attribute to the existing form.
-        // Read https://shopify.dev/docs/themes/architecture/templates/cart#cart-attributes
-        const cart_attribute_input = document.createElement('input');
-        cart_attribute_input.type = 'hidden';
-        cart_attribute_input.name = 'attributes[barebone_cart_attribute]';
-        cart_attribute_input.value = '';
-        form.appendChild(cart_attribute_input);
-      });
-      const cart_attribute_inputs = document.querySelectorAll('input[name="attributes[barebone_cart_attribute]"]');
-      cart_attribute_inputs.forEach((input) => {
-        input.value = obj.value;
-      });
-    };
-    const init_attr_value = '{{ cart.attributes['barebone_cart_attribute'] }}';
-    console.log(`init_attr_value (Liquid value): ${init_attr_value}`);
-    switch (init_attr_value) {
-      case '':
-        document.getElementById('barebone_cart_attribute_0').checked = true;
-        break;
-      case 'Value-1':
-        document.getElementById('barebone_cart_attribute_1').checked = true;
-        break;
-      case 'Value-2':
-        document.getElementById('barebone_cart_attribute_2').checked = true;
-        break;
-      case 'Value-3':
-        document.getElementById('barebone_cart_attribute_3').checked = true;
-        break;
-      default:
-        break;
-    }
-
-    // "input_change" is called in "onChange" of text input defined above.
-    const input_change = (obj) => {
-      const cart_forms = document.querySelectorAll('form[action$="/cart"]');
-      cart_forms.forEach((form) => {
-        console.log(`cart_forms: ${form.innerHTML}`);
-        // Adding a cart attribute to the existing form.
-        // Read https://shopify.dev/docs/themes/architecture/templates/cart#cart-attributes
-        const cart_attribute_input = document.createElement('input');
-        cart_attribute_input.type = 'hidden';
-        cart_attribute_input.name = 'attributes[barebone_cart_attribute_code]';
-        cart_attribute_input.value = '';
-        form.appendChild(cart_attribute_input);
-      });
-      const cart_attribute_inputs = document.querySelectorAll('input[name="attributes[barebone_cart_attribute_code]"]');
-      cart_attribute_inputs.forEach((input) => {
-        input.value = obj.value;
-      });
-    };
-    const init_attr_value_code = '{{ cart.attributes['barebone_cart_attribute_code'] }}';
-    console.log(`init_attr_value_code (Liquid value): ${init_attr_value_code}`);
-    document.getElementById('barebone_cart_attribute_code').value = init_attr_value_code;
-  </script>
-{%- endif -%}
+      </div>
+      <strong>
+        {{ 'barebone.shared.see' | t }}
+        <a
+          href="https://shopify.dev/docs/storefronts/themes/architecture/templates/cart#support-cart-notes-and-attributes"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{- 'barebone.shared.developer_site' | t -}}
+        </a>
+        {{ 'barebone.app_block.cart_documentation' | t }}
+      </strong>
+    </fieldset>
+  {%- endif -%}
+</div>
 
 {% schema %}
 {
-  "name": "Barebone App Block",
+  "name": "t:barebone.app_block.name",
   "target": "section",
   "stylesheet": "barebone.css",
   "javascript": "barebone.js",
   "settings": [
     {
-      "label": "Color",
-      "id": "color",
       "type": "color",
+      "id": "color",
+      "label": "t:barebone.app_block.color",
       "default": "#000000"
     },
     {
       "type": "product",
       "id": "product",
-      "label": "Product"
+      "label": "t:barebone.app_block.product"
     },
     {
       "type": "text",
       "id": "text",
-      "label": "Text"
+      "label": "t:barebone.app_block.text"
     }
   ]
 }

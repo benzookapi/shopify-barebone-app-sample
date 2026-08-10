@@ -11,12 +11,11 @@ uid = "03df9c49-f86f-c486-6265-f474a316df349c676982"
 # For example, app:// or / will resolve to the application_url https://my-app-domain.com/home
 # All other paths will be resolved relative to the domain of the application_url
 # For example, app://path or /path with configured application_url https://my-app-domain.com/home will resolve to https://my-app-domain.com/path
-# url = "app://path"
-# For non-embedded apps URIs are an absolute path to your app
-# url = "https://yourappdomain.com/path"
 [[extensions.targeting]]
 target = "admin.order-details.action.link"
 url = "app://ordermanage"
+# To test the non-embedded Home demo, comment out the app:// URL above and uncomment the absolute URL below.
+# url = "https://shopify-barebone-app-sample-custom.onrender.com/"
 
 # Valid Extension Targets
 #
@@ -57,4 +56,3 @@ url = "app://ordermanage"
 #
 # Get Support Buttons
 #  - admin.app.support.link
-

@@ -1,21 +1,26 @@
+api_version = "2026-07"
+
+[[extensions]]
 name = "my-function-discount-ext"
+handle = "my-function-discount-ext"
 uid = "0eb42b0c-f71e-4956-bca2-485b6442ccad"
-type = "order_discounts"
-api_version = "unstable"
+type = "function"
 
-[build]
-# For old Rust 
-#command = "cargo wasi build --release"
-#path = "target/wasm32-wasi/release/my-function-discount-ext.wasm"
-command = "cargo build --target=wasm32-wasip1 --release"
-path = "target/wasm32-wasip1/release/my-function-discount-ext.wasm"
-watch = [ "src/**/*.rs" ]
+  [[extensions.targeting]]
+  target = "cart.lines.discounts.generate.run"
+  input_query = "src/cart_lines_discounts_generate_run.graphql"
+  export = "cart_lines_discounts_generate_run"
 
-[ui.paths]
-create = "/functiondiscount"
-details = "/functiondiscount"
+  [extensions.build]
+  command = "cargo build --target=wasm32-unknown-unknown --release"
+  path = "target/wasm32-unknown-unknown/release/my-function-discount-ext.wasm"
+  watch = [ "src/**/*.rs" ]
 
-# https://shopify.dev/api/functions/input-query-variables
-[input.variables]
-namespace = "barebone_app_function_discount"
-key = "customer_meta"
+  [extensions.ui.paths]
+  create = "/functiondiscount"
+  details = "/functiondiscount"
+
+  # Supplies $namespace and $key from the discount configuration metafield.
+  [extensions.input.variables]
+  namespace = "barebone_app_function_discount"
+  key = "customer_meta"

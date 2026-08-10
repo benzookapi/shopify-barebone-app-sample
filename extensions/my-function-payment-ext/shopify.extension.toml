@@ -1,16 +1,21 @@
+api_version = "2026-07"
+
+[[extensions]]
 name = "my-function-payment-ext"
+handle = "my-function-payment-ext"
 uid = "db1fde78-bf9a-42ea-afb6-89f0edbb4797"
-type = "payment_customization"
-api_version = "unstable"
+type = "function"
 
-[build]
-# For old Rust
-#command = "cargo wasi build --release"
-#path = "target/wasm32-wasi/release/my-function-payment-ext.wasm"
-command = "cargo build --target=wasm32-wasip1 --release"
-path = "target/wasm32-wasip1/release/my-function-payment-ext.wasm"
-watch = [ "src/**/*.rs" ]
+  [[extensions.targeting]]
+  target = "cart.payment-methods.transform.run"
+  input_query = "src/cart_payment_methods_transform_run.graphql"
+  export = "cart_payment_methods_transform_run"
 
-[ui.paths]
-create = "/functionpayment"
-details = "/functionpayment"
+  [extensions.build]
+  command = "cargo build --target=wasm32-unknown-unknown --release"
+  path = "target/wasm32-unknown-unknown/release/my-function-payment-ext.wasm"
+  watch = [ "src/**/*.rs" ]
+
+  [extensions.ui.paths]
+  create = "/functionpayment"
+  details = "/functionpayment"

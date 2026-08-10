@@ -1,29 +1,34 @@
-/*
-You cannot write code like "color: {{block.settings.color}};" with liquid here.
-*/
-
-._my_app_block {
-    border-style: solid;
-    padding: 10px;
-    margin: 10px;
+.barebone-app-block {
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid currentcolor;
+  color: var(--barebone-text-color);
 }
 
-._my_app_block_editor {
-    border-style: dotted;
+.barebone-app-block__editor-message {
+  border: 1px dotted currentcolor;
 }
 
-._my_app_snippet {
-    background-color: #ccffcc; 
-    padding: 10px;  
+.barebone-app-snippet {
+  padding: 10px;
+  background-color: #ccffcc;
 }
 
-._my_app_embed_block {
-    position: fixed; bottom: 0; right: 0;
-    background-color: #e4d2a8;    
+.barebone-app-embed {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  background-color: #e4d2a8;
 }
 
-._my_app_embed_block_child {
-    width:400px;  
-    padding: 10px;
+.barebone-app-embed__content {
+  box-sizing: border-box;
+  width: min(400px, 100vw);
+  padding: 10px;
 }
 
+.barebone-app-proxy-response,
+[data-barebone-shopify-dump] {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}

@@ -1,16 +1,21 @@
+api_version = "2026-07"
+
+[[extensions]]
 name = "my-function-shipping-ext"
+handle = "my-function-shipping-ext"
 uid = "4269092f-36ee-46e5-85bf-86bea1c8ff51"
-type = "delivery_customization"
-api_version = "unstable"
+type = "function"
 
-[build]
-# For old Rust
-#command = "cargo wasi build --release"
-#path = "target/wasm32-wasi/release/my-function-shipping-ext.wasm"
-command = "cargo build --target=wasm32-wasip1 --release"
-path = "target/wasm32-wasip1/release/my-function-shipping-ext.wasm"
-watch = [ "src/**/*.rs" ]
+  [[extensions.targeting]]
+  target = "cart.delivery-options.transform.run"
+  input_query = "src/cart_delivery_options_transform_run.graphql"
+  export = "cart_delivery_options_transform_run"
 
-[ui.paths]
-create = "/functionshipping"
-details = "/functionshipping"
+  [extensions.build]
+  command = "cargo build --target=wasm32-unknown-unknown --release"
+  path = "target/wasm32-unknown-unknown/release/my-function-shipping-ext.wasm"
+  watch = [ "src/**/*.rs" ]
+
+  [extensions.ui.paths]
+  create = "/functionshipping"
+  details = "/functionshipping"
