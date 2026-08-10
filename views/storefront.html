@@ -106,7 +106,7 @@
       <label for="call_type">Storefront API call type</label>
       <select id="call_type">
         <option value="tokenless">Tokenless direct browser call</option>
-        <option value="public">Public token direct browser call</option>
+        <option value="public" selected>Public token direct browser call</option>
         <option value="private">Server-side private delegated token call</option>
       </select>
       <p class="muted">Tokenless direct browser calls can return "Online Store channel is locked" when the storefront is password protected. Use public token or private delegated token mode while the storefront password is enabled.</p>
@@ -542,6 +542,8 @@
       setJson('products', 'Loading...');
       const locale = getLocale();
       const data = await callStorefrontAPI(PRODUCT_QUERY, {
+        action: 'show_product',
+        variables: {},
         country: locale.country,
         language: locale.language
       });
