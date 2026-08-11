@@ -1,5 +1,5 @@
 # Overview
-This is _unofficial_ sample code for scratch building a [Shopify app](https://shopify.dev/apps) _without_ [CLI automatic code generation](https://shopify.dev/apps/getting-started/create) for learning how it works with simple React Router, React, Polaris web components, App Bridge, and GraphQL knowledge.
+This is _unofficial_ sample code for scratch building a [Shopify app](https://shopify.dev/apps) _without_ [CLI automatic code generation](https://shopify.dev/apps/getting-started/create) for learning how it works with simple React Router, React, Preact, Polaris web components, App Bridge, and GraphQL knowledge.
 
 Making clear, simple, and fewest code is this purpose that's why it doesn't use the CLI generated code.
 
@@ -29,7 +29,9 @@ For quick start with automatically generated code, go to the [official CLI tutor
 | Function extensions | [extensions/my-function-discount-ext/](./extensions/my-function-discount-ext/), [extensions/my-function-shipping-ext/](./extensions/my-function-shipping-ext/), [extensions/my-function-payment-ext/](./extensions/my-function-payment-ext/) | Discount, Delivery Customization, and Payment Customization Functions written in Rust/Wasm. |
 | Theme, web pixel, POS, and post-purchase extensions | [extensions/my-theme-app-ext/](./extensions/my-theme-app-ext/), [extensions/my-web-pixel-ext/](./extensions/my-web-pixel-ext/), [extensions/my-pos-ui-ext/](./extensions/my-pos-ui-ext/), [extensions/my-post-purchase-ext/](./extensions/my-post-purchase-ext/) | Additional extension samples that use Shopify CLI extension structure. |
 
-[React Router](https://reactrouter.com/), [React](https://react.dev/) ([JSX](https://react.dev/learn/writing-markup-with-jsx), [Props](https://react.dev/learn/passing-props-to-a-component), [State](https://react.dev/learn/state-a-components-memory), [Hooks](https://react.dev/reference/react/hooks), etc.) and [GraphQL](https://graphql.org/) ([Query](https://graphql.org/learn/queries/), [Edges](https://graphql.org/learn/pagination/#pagination-and-edges), [Union](https://graphql.org/learn/schema/#union-types), etc.) are mandatory technologies for manipulating this sample.
+[React Router](https://reactrouter.com/), [React](https://react.dev/) ([JSX](https://react.dev/learn/writing-markup-with-jsx), [Props](https://react.dev/learn/passing-props-to-a-component), [State](https://react.dev/learn/state-a-components-memory), [Hooks](https://react.dev/reference/react/hooks), etc.), [Preact](https://preactjs.com/), and [GraphQL](https://graphql.org/) ([Query](https://graphql.org/learn/queries/), [Edges](https://graphql.org/learn/pagination/#pagination-and-edges), [Union](https://graphql.org/learn/schema/#union-types), etc.) are used across this sample.
+
+React powers the main React Router app UI and some React-based extension samples. Preact is a separate, lightweight React-compatible library; the Checkout UI Extensions use it for JSX rendering and hooks around Polaris web components, following Shopify's guidance for API version 2025-10 and later. See Shopify's [upgrade guide for Polaris web components and Preact](https://shopify.dev/docs/apps/build/checkout/migrate-to-web-components).
 
 
 For creating the embedded app UI, the following contents might help you.

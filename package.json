@@ -2,7 +2,7 @@
   "name": "my-shopify-barebone-app",
   "version": "1.0.0",
   "type": "module",
-  "description": "@shopify/cli must be installed by `npm install -g @shopify/cli`, and @shopify/app is used by `@shopify/ui-extensions-react` only.",
+  "description": "Unofficial barebone Shopify app sample using React Router, React and Preact, Polaris web components, App Bridge, direct Shopify APIs, and app extensions.",
   "main": "build/server/index.js",
   "engines": {
     "node": ">=20.19.0"
