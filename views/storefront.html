@@ -140,6 +140,10 @@
         <a href="" target="_blank" id="cart_checkout_link">Open checkoutUrl</a>
         |
         <a href="" target="_blank" id="cart_checkout_silent_link">Open checkoutUrl with sso=silent</a>
+        <br />
+        <span class="muted">
+          The <code>sso=silent</code> URL asks checkout to verify the buyer's active Customer Accounts browser session through OIDC. A valid session opens an authenticated checkout; otherwise, checkout continues as a guest. This session-based authorization is independent of the cart's buyerIdentity. Read <a href="https://shopify.dev/docs/storefronts/headless/building-with-the-customer-account-api/checkout-authentication" target="_blank">Authenticate buyers in checkout</a>.
+        </span>
       </p>
     </fieldset>
 
