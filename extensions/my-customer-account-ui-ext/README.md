@@ -10,12 +10,13 @@ Your new extension contains the following files:
 
 - `README.md`, the file you are reading right now.
 - `shopify.extension.toml`, the configuration file for your extension. This file defines your extension’s name.
-- `src/*.jsx`, the source code for your extension.
+- `src/*.jsx`, the Preact and Polaris web components source code for your extension.
 - `locales/en.default.json` and `locales/fr.json`, which contain translations used to [localized your extension](https://shopify.dev/docs/apps/checkout/best-practices/localizing-ui-extensions).
 
 ## Useful Links
 
 - [Customer account UI extension documentation](https://shopify.dev/docs/api/customer-account-ui-extensions)
-  - [Configuration](https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/configuration)
-  - [API Reference](https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/apis)
-  - [UI Components](https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/components)
+  - [Configuration](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/configuration)
+  - [Order status targets and APIs](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/targets/order-status)
+  - [Polaris web components](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/web-components)
+  - [Upgrade to Polaris web components](https://shopify.dev/docs/apps/build/customer-accounts/migrate-to-web-components)

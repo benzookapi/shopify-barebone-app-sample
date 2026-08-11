@@ -1,21 +1,14 @@
-import React from 'react'
+import '@shopify/ui-extensions/preact';
+import {render} from 'preact';
 
-import { Tile, reactExtension, useApi } from '@shopify/ui-extensions-react/point-of-sale'
+const TileComponent = () => (
+  <s-tile
+    heading="My app"
+    subheading="SmartGrid Preact Extension"
+    onClick={() => shopify.action.presentModal()}
+  />
+);
 
-const TileComponent = () => {
-  const api = useApi()
-  return (
-    <Tile
-      title="My app"
-      subtitle="SmartGrid react Extension"
-      onPress={() => {
-        api.action.presentModal()
-      }}
-      enabled
-    />
-  )
-}
-
-export default reactExtension('pos.home.tile.render', () => {
-  return <TileComponent />
-})
+export default async () => {
+  render(<TileComponent />, document.body);
+};

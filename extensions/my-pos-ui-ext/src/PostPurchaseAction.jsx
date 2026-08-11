@@ -1,9 +1,10 @@
-import React from 'react';
-import { reactExtension, ActionItem, useApi } from '@shopify/ui-extensions-react/point-of-sale';
+import '@shopify/ui-extensions/preact';
+import {render} from 'preact';
 
-const ActionItemComponent = () => {
-    const api = useApi();
-    return <ActionItem enabled onPress={() => api.action.presentModal()}/>
-}
+const ActionItemComponent = () => (
+  <s-button onClick={() => shopify.action.presentModal()} />
+);
 
-export default reactExtension('pos.purchase.post.action.menu-item.render', () => <ActionItemComponent />);
+export default async () => {
+  render(<ActionItemComponent />, document.body);
+};

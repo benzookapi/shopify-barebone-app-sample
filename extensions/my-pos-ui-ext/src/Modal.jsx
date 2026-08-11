@@ -1,64 +1,70 @@
-import React, { useEffect } from 'react';
-import {
-  CameraScanner,
-  Screen,
-  Text,
-  useScannerDataSubscription,
-  useApi,
-  reactExtension,
-} from '@shopify/ui-extensions-react/point-of-sale';
+import '@shopify/ui-extensions/preact';
+import {render} from 'preact';
+import {useEffect, useState} from 'preact/hooks';
 
 const SmartGridModal = () => {
-  const { data } = useScannerDataSubscription();
-
-  const api = useApi();
+  const [data, setData] = useState(
+    shopify.scanner.scannerData.current.value.data || '',
+  );
 
   useEffect(() => {
-    if (data) {
-      console.log(`Scanner data changed: ${data}`);
+    const unsubscribe = shopify.scanner.scannerData.current.subscribe((result) => {
+      const scannedData = result.data || '';
+      setData(scannedData);
+      if (!scannedData) return;
+
+      console.log(`Scanner data changed: ${scannedData}`);
 
       // Call app server side to use Admin API with session token.
-      // https://shopify.dev/docs/api/pos-ui-extensions/unstable/server-communication 
+      // https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/standard-apis/session-api
 
       // or add a customer to the current cart with customer id given by barcode or QR to check their online orders, etc.
-      // https://shopify.dev/docs/api/pos-ui-extensions/unstable/apis/cart-api#cartapi-propertydetail-setcustomer
-      api.cart.setCustomer({
-        id: Number(data)
+      // https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/platform-apis/cart-api
+      shopify.cart.setCustomer({
+        id: Number(scannedData),
       }).then(() => {
-        console.log(`api.cart.setCustomer successful with customer id: ${data}`);
-        api.toast.show(`api.cart.setCustomer successful with customer id: ${data}`);
-        api.navigation.dismiss();
+        console.log(`shopify.cart.setCustomer successful with customer id: ${scannedData}`);
+        shopify.toast.show(`shopify.cart.setCustomer successful with customer id: ${scannedData}`);
+        window.close();
       }).catch((e) => {
-        console.log(`api.cart.setCustomer error: ${JSON.stringify(e)}`);
-        api.toast.show(`api.cart.setCustomer error: ${JSON.stringify(e)}`);
+        console.log(`shopify.cart.setCustomer error: ${JSON.stringify(e)}`);
+        shopify.toast.show(`shopify.cart.setCustomer error: ${JSON.stringify(e)}`);
       });
 
       // or apply a discount code
-      // https://shopify.dev/docs/api/pos-ui-extensions/unstable/apis/cart-api#cartapi-propertydetail-applycartdiscount
-      /*api.cart.applyCartDiscount('Percentage', 'api.cart.applyCartDiscount()', `${data}`).then(() => {
-        console.log(`api.cart.applyCartDiscount successful with ${data}%`);
-        api.toast.show(`api.cart.applyCartDiscount successful with ${data}%`);
-        api.navigation.dismiss();
+      // https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/platform-apis/cart-api
+      /*shopify.cart.applyCartDiscount('Percentage', 'shopify.cart.applyCartDiscount()', scannedData).then(() => {
+        console.log(`shopify.cart.applyCartDiscount successful with ${scannedData}%`);
+        shopify.toast.show(`shopify.cart.applyCartDiscount successful with ${scannedData}%`);
+        window.close();
       }).catch((e) => {
-        console.log(`api.cart.applyCartDiscount error: ${JSON.stringify(e)}`);
-        api.toast.show(`api.cart.applyCartDiscount error: ${JSON.stringify(e)}`);
+        console.log(`shopify.cart.applyCartDiscount error: ${JSON.stringify(e)}`);
+        shopify.toast.show(`shopify.cart.applyCartDiscount error: ${JSON.stringify(e)}`);
       });*/
+    });
 
-    }
-  }, [data]);
+    shopify.scanner.showCameraScanner();
+
+    return () => {
+      unsubscribe();
+      shopify.scanner.hideCameraScanner();
+    };
+  }, []);
 
   return (
-    <Screen
-      name="CameraScanner"
-      title="Camera Scanner Title"
-    >
-      <CameraScanner />
-      <Text>{`Scanned data: ${data || ''}`}</Text>
-    </Screen>
+    <s-page heading="Camera Scanner Title">
+      <s-scroll-box padding="base">
+        <s-stack gap="base">
+          <s-button onClick={() => shopify.scanner.showCameraScanner()}>
+            Open camera scanner
+          </s-button>
+          <s-text>{`Scanned data: ${data}`}</s-text>
+        </s-stack>
+      </s-scroll-box>
+    </s-page>
   );
 };
 
-export default reactExtension(
-  'pos.home.modal.render',
-  () => <SmartGridModal />,
-);
+export default async () => {
+  render(<SmartGridModal />, document.body);
+};

@@ -1,9 +1,9 @@
 # Learn more about configuring your Customer account UI extension:
-# https://shopify.dev/api/customer-account-ui-extensions/unstable/configuration
+# https://shopify.dev/docs/api/customer-account-ui-extensions/latest/configuration
 
 # The version of APIs your extension will receive. Learn more:
 # https://shopify.dev/docs/api/usage/versioning
-api_version = "2025-07"
+api_version = "2026-07"
 
 [[extensions]]
 name = "my-customer-account-ui-ext"
@@ -14,7 +14,7 @@ type = "ui_extension"
 
 # Controls where in Shopify your extension will be injected,
 # and the file that contains your extension’s source code. Learn more:
-# https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/extension-targets-overview
+# https://shopify.dev/docs/api/customer-account-ui-extensions/latest/targets/order-status
 
 [[extensions.targeting]]
 module = "./src/OrderStatusBlock.jsx"
@@ -22,10 +22,10 @@ target = "customer-account.order-status.block.render"
 
 [extensions.capabilities]
 # Gives your extension access to directly query Shopify’s storefront API.
-# https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/configuration#api-access
+# https://shopify.dev/docs/api/customer-account-ui-extensions/latest/configuration#api-access
 api_access = true
 
 # Gives your extension access to make external network calls, using the
 # JavaScript `fetch()` API. Learn more:
-# https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/configuration#network-access
+# https://shopify.dev/docs/api/customer-account-ui-extensions/latest/configuration#network-access
 # network_access = true
