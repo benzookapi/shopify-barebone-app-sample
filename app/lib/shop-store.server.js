@@ -104,23 +104,31 @@ async function withPostgreSQL(callback) {
   }
 }
 
+function assertSafeIdentifier(name) {
+  if (!/^[a-zA-Z0-9_]+$/.test(name)) throw new Error(`Unsafe SQL identifier: ${name}`);
+  return name;
+}
+
 async function getPostgreSQL(key) {
+  const table = assertSafeIdentifier(POSTGRESQL_TABLE);
   return withPostgreSQL(async (client) => {
-    const result = await client.query(`SELECT data FROM ${POSTGRESQL_TABLE} WHERE _id = $1`, [key]);
+    const result = await client.query('SELECT data FROM ' + table + ' WHERE _id = $1', [key]);
     return result.rows.length === 0 ? null : result.rows[0].data;
   });
 }
 
 async function insertPostgreSQL(key, data) {
+  const table = assertSafeIdentifier(POSTGRESQL_TABLE);
   return withPostgreSQL((client) => client.query(
-    `INSERT INTO ${POSTGRESQL_TABLE} (_id, data, created_at, updated_at) VALUES ($1, $2, $3, $4)`,
+    'INSERT INTO ' + table + ' (_id, data, created_at, updated_at) VALUES ($1, $2, $3, $4)',
     [key, data, new Date(), new Date()],
   ));
 }
 
 async function setPostgreSQL(key, data) {
+  const table = assertSafeIdentifier(POSTGRESQL_TABLE);
   return withPostgreSQL((client) => client.query(
-    `UPDATE ${POSTGRESQL_TABLE} SET data = $1, updated_at = $2 WHERE _id = $3`,
+    'UPDATE ' + table + ' SET data = $1, updated_at = $2 WHERE _id = $3',
     [data, new Date(), key],
   ));
 }
@@ -145,17 +153,19 @@ function withMySQL(callback) {
 }
 
 async function getMySQL(key) {
+  const table = assertSafeIdentifier(MYSQL_TABLE);
   const rows = await withMySQL((connection, done) => {
-    connection.query(`SELECT data FROM ${MYSQL_TABLE} WHERE _id = ?`, [key], done);
+    connection.query('SELECT data FROM ' + table + ' WHERE _id = ?', [key], done);
   });
   if (rows.length === 0) return null;
   return typeof rows[0].data === 'string' ? JSON.parse(rows[0].data) : rows[0].data;
 }
 
 async function insertMySQL(key, data) {
+  const table = assertSafeIdentifier(MYSQL_TABLE);
   return withMySQL((connection, done) => {
     connection.query(
-      `INSERT INTO ${MYSQL_TABLE} (_id, data, created_at, updated_at) VALUES (?, ?, ?, ?)`,
+      'INSERT INTO ' + table + ' (_id, data, created_at, updated_at) VALUES (?, ?, ?, ?)',
       [key, JSON.stringify(data), mysqlDate(new Date()), mysqlDate(new Date())],
       done,
     );
@@ -163,9 +173,10 @@ async function insertMySQL(key, data) {
 }
 
 async function setMySQL(key, data) {
+  const table = assertSafeIdentifier(MYSQL_TABLE);
   return withMySQL((connection, done) => {
     connection.query(
-      `UPDATE ${MYSQL_TABLE} SET data = ?, updated_at = ? WHERE _id = ?`,
+      'UPDATE ' + table + ' SET data = ?, updated_at = ? WHERE _id = ?',
       [JSON.stringify(data), mysqlDate(new Date()), key],
       done,
     );
