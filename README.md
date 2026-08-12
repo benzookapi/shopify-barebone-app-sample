@@ -40,20 +40,6 @@ For creating the embedded app UI, the following contents might help you.
 
 For extensions like Theme App Extensions, Shopify Functions, and Checkout UI Extensions, refer to the [App extensions](https://shopify.dev/docs/apps/build/app-extensions) and [List of app extensions](https://shopify.dev/docs/apps/build/app-extensions/list-of-app-extensions).
 
-# Shopify app modernization skills
-This repository includes Codex and Claude Code versions of the `shopify-app-modernization` skill. The skills turn the modernization history of this sample into a reusable, behavior-preserving workflow for upgrading legacy Shopify applications.
-
-The workflow covers more than Polaris web component conversion. It inventories and migrates server frameworks such as Express, Koa, Remix, and React Router; captures OAuth, HMAC, Session Token, webhook, CSP, CORS, and public-route behavior; delegates supported surface migrations to the [Shopify AI Toolkit](https://shopify.dev/docs/apps/build/ai-toolkit); and applies regression checks learned from this sample's migration.
-
-| Agent | Skill source | Installation and usage |
-| --- | --- | --- |
-| Codex | [skills/codex/shopify-app-modernization/SKILL.md](./skills/codex/shopify-app-modernization/SKILL.md) | [Codex installation guide](./skills/codex/shopify-app-modernization/INSTALL.md) |
-| Claude Code | [skills/claude-code/shopify-app-modernization/SKILL.md](./skills/claude-code/shopify-app-modernization/SKILL.md) | [Claude Code installation guide](./skills/claude-code/shopify-app-modernization/INSTALL.md) |
-
-The skill supports audit, planning, implementation, and migration-review modes. When the user explicitly invokes the skill by name or invocation syntax and implementation requires file changes, it first works on a dedicated migration branch so the current source branch remains untouched. Audit and planning modes do not create a branch. Normal repository work continues to use the current branch unless the prompt explicitly requests a separate branch.
-
-The Shopify AI Toolkit remains the source for supported, surface-specific migrations such as the official [Admin UI extension upgrade to API version 2025-10](https://shopify.dev/docs/apps/build/admin/upgrading-to-2025-10). This repository's skill coordinates those tools with server-side migration decisions and application-wide regression testing.
-
 # Where to start reading
 If you are new to this sample, start from these files instead of reading the repository from top to bottom.
 
@@ -190,6 +176,20 @@ All sample are available at [Wiki](../../wiki).
     4. The new toml file gets generated for the new app with the current config values in partner dashboard.
     5. Remember to replace `[access_scopes].scopes` with the same value as the original TOML file if the generated configuration does not include the scopes used by this sample.
 - [Checkout UI Extension Integration Deep Dive](../../wiki/Checkout-UI-Extension-Integration-Deep-Dive) (Japanese version is [here](../../wiki/Checkout-UI-Extension-%E5%AE%9F%E8%A3%85%E8%A9%B3%E7%B4%B0)) help you to understand how the extension work deeply and avoid some pitfalls.
+
+# Shopify app modernization skills
+This repository includes Codex and Claude Code versions of the `shopify-app-modernization` skill. The skills turn the modernization history of this sample into a reusable, behavior-preserving workflow for upgrading legacy Shopify applications.
+
+The workflow covers more than Polaris web component conversion. It inventories and migrates server frameworks such as Express, Koa, Remix, and React Router; captures OAuth, HMAC, Session Token, webhook, CSP, CORS, and public-route behavior; delegates supported surface migrations to the [Shopify AI Toolkit](https://shopify.dev/docs/apps/build/ai-toolkit); and applies regression checks learned from this sample's migration.
+
+| Agent | Skill source | Installation and usage |
+| --- | --- | --- |
+| Codex | [skills/codex/shopify-app-modernization/SKILL.md](./skills/codex/shopify-app-modernization/SKILL.md) | [Codex installation guide](./skills/codex/shopify-app-modernization/INSTALL.md) |
+| Claude Code | [skills/claude-code/shopify-app-modernization/SKILL.md](./skills/claude-code/shopify-app-modernization/SKILL.md) | [Claude Code installation guide](./skills/claude-code/shopify-app-modernization/INSTALL.md) |
+
+The skill supports audit, planning, implementation, and migration-review modes. When the user explicitly invokes the skill by name or invocation syntax and implementation requires file changes, it first works on a dedicated migration branch so the current source branch remains untouched. Audit and planning modes do not create a branch. Normal repository work continues to use the current branch unless the prompt explicitly requests a separate branch.
+
+The Shopify AI Toolkit remains the source for supported, surface-specific migrations such as the official [Admin UI extension upgrade to API version 2025-10](https://shopify.dev/docs/apps/build/admin/upgrading-to-2025-10). This repository's skill coordinates those tools with server-side migration decisions and application-wide regression testing.
 
 # Disclaimer
 - This code is fully _unofficial_ and NOT guaranteed to pass [the public app review](https://shopify.dev/apps/store/review) for Shopify app store. The official requirements are described [here](https://shopify.dev/apps/store/requirements). 
