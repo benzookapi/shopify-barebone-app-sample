@@ -23,7 +23,7 @@ function EventSubscription() {
                 Example compliance topics: <s-badge>customers/data_request</s-badge>, <s-badge>customers/redact</s-badge>, and <s-badge>shop/redact</s-badge>. These compliance subscriptions are required for apps distributed through the Shopify App Store.
               </s-list-item>
               <s-list-item>
-                The common handler verifies the Shopify webhook HMAC and logs the request metadata and complete payload for this sample.
+                The common handler <s-link href="https://shopify.dev/docs/apps/build/webhooks/verify-deliveries" target="_blank">verifies the Shopify webhook HMAC</s-link> and logs the request metadata and complete payload for this sample.
               </s-list-item>
             </s-unordered-list>
             <s-link href="https://shopify.dev/docs/apps/build/webhooks/subscribe" target="_blank">Configure app-specific webhook subscriptions in shopify.app.toml</s-link>
