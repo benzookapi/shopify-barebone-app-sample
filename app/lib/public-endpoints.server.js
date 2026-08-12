@@ -120,7 +120,7 @@ export async function webhookAction(request) {
     triggeredAt: request.headers.get('x-shopify-triggered-at') || '',
     hmacValid: valid,
     payload,
-  }));
+  }, null, 2));
 
   return new Response(null, { status: valid ? 200 : 401 });
 }
