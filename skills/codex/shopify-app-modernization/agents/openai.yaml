@@ -1,0 +1,4 @@
+interface:
+  display_name: "Shopify App Modernization"
+  short_description: "Modernize legacy Shopify apps without losing behavior"
+  default_prompt: "Use $shopify-app-modernization to audit this legacy Shopify app and build a behavior-preserving migration plan."
