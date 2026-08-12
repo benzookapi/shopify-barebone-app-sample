@@ -225,6 +225,11 @@
       <pre id="customer_profile"></pre>
       <button id="apply_customer_identity" class="hidden">Apply logged-in customer to Cart buyerIdentity</button>
       <pre id="customer_buyer" class="hidden"></pre>
+      <p id="customer_checkout" class="hidden">
+        <a href="" target="_blank" id="customer_checkout_link">Open checkoutUrl</a>
+        |
+        <a href="" target="_blank" id="customer_checkout_silent_link">Open checkoutUrl with sso=silent</a>
+      </p>
     </fieldset>
   </main>
 
@@ -610,15 +615,15 @@
       return checkoutUrl.toString();
     };
 
-    const updateCheckoutLinks = (checkoutUrl) => {
-      const checkout = document.getElementById('cart_checkout');
+    const updateCheckoutLinks = (checkoutUrl, elementPrefix = 'cart_checkout') => {
+      const checkout = document.getElementById(elementPrefix);
       if (!checkoutUrl) {
         checkout.classList.add('hidden');
         return;
       }
       checkout.classList.remove('hidden');
-      document.getElementById('cart_checkout_link').href = getCheckoutUrl(checkoutUrl);
-      document.getElementById('cart_checkout_silent_link').href = getSilentCheckoutUrl(checkoutUrl);
+      document.getElementById(`${elementPrefix}_link`).href = getCheckoutUrl(checkoutUrl);
+      document.getElementById(`${elementPrefix}_silent_link`).href = getSilentCheckoutUrl(checkoutUrl);
     };
 
     const rememberCart = (cart) => {
@@ -769,6 +774,7 @@
     document.getElementById('apply_customer_identity').onclick = async () => {
       const output = document.getElementById('customer_buyer');
       output.classList.remove('hidden');
+      updateCheckoutLinks(null, 'customer_checkout');
       setJson('customer_buyer', 'Loading...');
       try {
         const data = await callServerStorefrontAction('apply_customer_identity', {
@@ -776,7 +782,9 @@
         });
         const result = data.data || data;
         setJson('customer_buyer', result);
-        rememberCart(result.cartBuyerIdentityUpdate?.cart);
+        const cart = result.cartBuyerIdentityUpdate?.cart;
+        rememberCart(cart);
+        updateCheckoutLinks(cart?.checkoutUrl, 'customer_checkout');
       } catch (error) {
         setJson('customer_buyer', { error: String(error) });
       }
