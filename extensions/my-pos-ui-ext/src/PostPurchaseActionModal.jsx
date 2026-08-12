@@ -9,13 +9,20 @@ const Modal = () => {
     setStatus('Loading the printable document...');
 
     try {
-      const path = '/mocklogin';
+      const token = await shopify.session.getSessionToken();
+      if (!token) {
+        setStatus('Unable to get a session token for printing.');
+        shopify.toast.show('Unable to get a session token for printing.');
+        return;
+      }
+
+      const path = `/mocklogin?sessiontoken=${encodeURIComponent(token)}`;
       await shopify.printing.print(path);
       setStatus('The system print dialog was requested.');
       shopify.toast.show(`Printing '${path}'...`);
 
-      // Relative app URLs receive a Shopify session token automatically.
-      /*fetch('/mocklogin').then((r) => {
+      // FYI you can fetch the app server directly with the session token.
+      /*fetch(`/mocklogin?sessiontoken=${encodeURIComponent(token)}`).then((r) => {
         // Do something.
       });*/
     } catch (error) {
