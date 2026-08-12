@@ -6,6 +6,7 @@ const SmartGridModal = () => {
   const [data, setData] = useState(
     shopify.scanner.scannerData.current.value.data || '',
   );
+  const [customerId, setCustomerId] = useState('');
 
   useEffect(() => {
     const unsubscribe = shopify.scanner.scannerData.current.subscribe((result) => {
@@ -25,7 +26,8 @@ const SmartGridModal = () => {
       }).then(() => {
         console.log(`shopify.cart.setCustomer successful with customer id: ${scannedData}`);
         shopify.toast.show(`shopify.cart.setCustomer successful with customer id: ${scannedData}`);
-        window.close();
+        shopify.scanner.hideCameraScanner();
+        setCustomerId(scannedData);
       }).catch((e) => {
         console.log(`shopify.cart.setCustomer error: ${JSON.stringify(e)}`);
         shopify.toast.show(`shopify.cart.setCustomer error: ${JSON.stringify(e)}`);
@@ -55,10 +57,21 @@ const SmartGridModal = () => {
     <s-page heading="Camera Scanner Title">
       <s-scroll-box padding="base">
         <s-stack gap="base">
-          <s-button onClick={() => shopify.scanner.showCameraScanner()}>
-            Open camera scanner
-          </s-button>
-          <s-text>{`Scanned data: ${data}`}</s-text>
+          {customerId ? (
+            <s-stack gap="base">
+              <s-text>{`Customer ${customerId} was added to the cart.`}</s-text>
+              <s-button variant="primary" onClick={() => window.close()}>
+                Return to cart
+              </s-button>
+            </s-stack>
+          ) : (
+            <>
+              <s-button onClick={() => shopify.scanner.showCameraScanner()}>
+                Open camera scanner
+              </s-button>
+              <s-text>{`Scanned data: ${data}`}</s-text>
+            </>
+          )}
         </s-stack>
       </s-scroll-box>
     </s-page>
