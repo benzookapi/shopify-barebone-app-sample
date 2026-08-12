@@ -10,7 +10,7 @@ function EventSubscription() {
         <s-section heading="Example app-specific webhook subscription">
           <s-stack direction="block" gap="base">
             <s-text>
-              The following block is one local app configuration example, not a repository default. Root <s-badge>shopify.app.toml</s-badge> files are intentionally excluded from source control because they are specific to the app and environment where they are deployed. A fork of this sample should define its own topics, required access scopes, and delivery URI. This example sends all listed topics to the shared <s-badge>/webhookcommon</s-badge> endpoint.
+              The following is an example of receiving webhooks configured in <s-badge>shopify.app.toml</s-badge>. All listed topics are delivered to the shared <s-badge>/webhookcommon</s-badge> endpoint.
             </s-text>
             <s-box padding="base" background="subdued" border="base" borderRadius="base">
               <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}><code>{webhookConfiguration}</code></pre>
