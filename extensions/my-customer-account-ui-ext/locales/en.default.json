@@ -1,3 +1,12 @@
 {
-  "earnPoints": "You've earned 1,000 points from this order. You've been upgraded to Platinum tier."
+  "heading": "Recommended for your next order",
+  "description": "Based on the products in this order, you might also like:",
+  "loading": "Loading recommendations",
+  "empty": "No recommendations are available for this order.",
+  "missingAppUrl": "Prepare the post-purchase sample in the app admin before loading recommendations.",
+  "loadError": "Recommendations could not be loaded.",
+  "createCheckout": "Create checkout link",
+  "checkoutCreated": "Checkout link created",
+  "cartError": "The checkout link could not be created.",
+  "openCheckout": "Open checkout with these products"
 }

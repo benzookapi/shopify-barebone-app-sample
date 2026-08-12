@@ -1,3 +1,12 @@
 {
-  "earnPoints": "Vous avez gagné 1,000 points avec cette commande. Vous avez été promu au niveau Platine."
+  "heading": "Recommandé pour votre prochaine commande",
+  "description": "D'après les produits de cette commande, vous pourriez aussi aimer :",
+  "loading": "Chargement des recommandations",
+  "empty": "Aucune recommandation n'est disponible pour cette commande.",
+  "missingAppUrl": "Préparez l'exemple d'après-achat dans l'administration de l'application avant de charger les recommandations.",
+  "loadError": "Impossible de charger les recommandations.",
+  "createCheckout": "Créer un lien de paiement",
+  "checkoutCreated": "Lien de paiement créé",
+  "cartError": "Impossible de créer le lien de paiement.",
+  "openCheckout": "Ouvrir le paiement avec ces produits"
 }

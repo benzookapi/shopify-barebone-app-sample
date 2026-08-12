@@ -11,12 +11,21 @@ Your new extension contains the following files:
 - `README.md`, the file you are reading right now.
 - `shopify.extension.toml`, the configuration file for your extension. This file defines your extension’s name.
 - `src/*.jsx`, the Preact and Polaris web components source code for your extension.
-- `locales/en.default.json` and `locales/fr.json`, which contain translations used to [localized your extension](https://shopify.dev/docs/apps/checkout/best-practices/localizing-ui-extensions).
+- `locales/en.default.json` and `locales/fr.json`, which contain translations used to [localize your extension](https://shopify.dev/docs/apps/checkout/best-practices/localizing-ui-extensions).
+
+## Order upsell flow
+
+The order status block reads `barebone_app_upsell.product_id` from products in the completed order. It authenticates a request to the app's existing `/postpurchase` endpoint with a Customer Account extension session token, then renders the returned products. When the customer selects **Create checkout link**, the extension calls the Storefront API `cartCreate` mutation and displays the returned checkout URL.
+
+Before testing, use the app admin's Post-purchase page to prepare `barebone_app.url`, and assign an upsell product ID to `barebone_app_upsell.product_id` on at least one product in the order.
 
 ## Useful Links
 
 - [Customer account UI extension documentation](https://shopify.dev/docs/api/customer-account-ui-extensions)
   - [Configuration](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/configuration)
   - [Order status targets and APIs](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/targets/order-status)
+  - [Metafields API](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/target-apis/order-apis/metafields-api)
+  - [Session Token API](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/target-apis/platform-apis/session-token-api)
+  - [Storefront API](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/target-apis/platform-apis/storefront-api)
   - [Polaris web components](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/web-components)
   - [Upgrade to Polaris web components](https://shopify.dev/docs/apps/build/customer-accounts/migrate-to-web-components)

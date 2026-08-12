@@ -28,4 +28,14 @@ api_access = true
 # Gives your extension access to make external network calls, using the
 # JavaScript `fetch()` API. Learn more:
 # https://shopify.dev/docs/api/customer-account-ui-extensions/latest/configuration#network-access
-# network_access = true
+network_access = true
+
+# Loads the app URL and upsell product ids from the shop and products in the order.
+# https://shopify.dev/docs/api/customer-account-ui-extensions/latest/target-apis/order-apis/metafields-api
+[[extensions.metafields]]
+namespace = "barebone_app_upsell"
+key = "product_id"
+
+[[extensions.metafields]]
+namespace = "barebone_app"
+key = "url"
