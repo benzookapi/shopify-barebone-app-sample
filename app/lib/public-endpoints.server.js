@@ -55,7 +55,7 @@ export async function mockLogin(request) {
         headers: mockLoginCorsHeaders,
       });
     }
-    target = `<p>You are connecting to: <h3>${context.shop}</h3></p>`;
+    target = `<p>You are connecting to:</p><h3>${context.shop}</h3>`;
     details = querySessionToken
       ? `<p><b>The following is the received session token with the shop data above which you can never falsify.</b></p>
         <pre>${sessionToken}</pre>
@@ -67,20 +67,32 @@ export async function mockLogin(request) {
   if (appToken) {
     const payload = decodeAppJwt(appToken);
     const shop = payload.shop;
-    target = `<p>You are connecting to: <h3>${shop}</h3></p>`;
+    target = `<p>You are connecting to:</p><h3>${shop}</h3>`;
     details = `<p><b>The following is your own JWT token with the shop.</b></p>
       <pre>${appToken}</pre>
       <p><a href="https://${getAdminFromShop(shop)}">Go back to Shopify admin</a></p>`;
   }
 
-  return new Response(`<h1>Welcome to my mock login for my dummy service</h1>
+  return new Response(`<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mock service login</title>
+  </head>
+  <body>
+    <h1>Welcome to my mock login for my dummy service</h1>
     ${target}
-    <p>Your email: <input /></p>
-    <p>Your password: <input /></p>
-    <p><button onClick="javascript:window.location.href='./mocklogin';">Login</button></p>
-    ${details}`, {
+    <p>Your email: <input type="email" /></p>
+    <p>Your password: <input type="password" /></p>
+    <p><button onclick="window.location.href='./mocklogin'">Login</button></p>
+    ${details}
+  </body>
+</html>`, {
     headers: {
       ...mockLoginCorsHeaders,
+      'Cache-Control': 'no-store',
+      'Content-Disposition': 'inline; filename="mocklogin.html"',
       'Content-Type': 'text/html; charset=utf-8',
     },
   });

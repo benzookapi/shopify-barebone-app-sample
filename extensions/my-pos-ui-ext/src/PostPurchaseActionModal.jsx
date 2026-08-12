@@ -1,11 +1,17 @@
 import '@shopify/ui-extensions/preact';
 import {render} from 'preact';
+import {useState} from 'preact/hooks';
 
 const Modal = () => {
+  const [status, setStatus] = useState('');
+
   const print = async () => {
+    setStatus('Loading the printable document...');
+
     try {
       const path = '/mocklogin';
       await shopify.printing.print(path);
+      setStatus('The system print dialog was requested.');
       shopify.toast.show(`Printing '${path}'...`);
 
       // Relative app URLs receive a Shopify session token automatically.
@@ -13,8 +19,10 @@ const Modal = () => {
         // Do something.
       });*/
     } catch (error) {
-      console.log(`Printing failed: ${error}`);
-      shopify.toast.show(`Printing failed: ${error}`);
+      const message = error instanceof Error ? error.message : String(error);
+      setStatus(`Printing failed: ${message}`);
+      console.log(`Printing failed: ${message}`);
+      shopify.toast.show(`Printing failed: ${message}`);
     }
   };
 
@@ -24,6 +32,7 @@ const Modal = () => {
         <s-stack gap="base">
           <s-text>Welcome to the extension!</s-text>
           <s-button onClick={print}>Print</s-button>
+          {status && <s-text>{status}</s-text>}
         </s-stack>
       </s-scroll-box>
     </s-page>
