@@ -31,9 +31,6 @@ For quick start with automatically generated code, go to the [official CLI tutor
 
 [React Router](https://reactrouter.com/), [React](https://react.dev/) ([JSX](https://react.dev/learn/writing-markup-with-jsx), [Props](https://react.dev/learn/passing-props-to-a-component), [State](https://react.dev/learn/state-a-components-memory), [Hooks](https://react.dev/reference/react/hooks), etc.), [Preact](https://preactjs.com/), and [GraphQL](https://graphql.org/) ([Query](https://graphql.org/learn/queries/), [Edges](https://graphql.org/learn/pagination/#pagination-and-edges), [Union](https://graphql.org/learn/schema/#union-types), etc.) are used across this sample.
 
-React powers the main React Router app UI and the post-purchase extension sample. Preact is a separate, lightweight React-compatible library; the Checkout UI, Customer Account UI, and POS UI Extensions use it for JSX rendering and hooks around Polaris web components, following Shopify's guidance for API version 2025-10 and later. See Shopify's upgrade guides for [Checkout UI Extensions](https://shopify.dev/docs/apps/build/checkout/migrate-to-web-components), [Customer Account UI Extensions](https://shopify.dev/docs/apps/build/customer-accounts/migrate-to-web-components), and [POS UI Extensions](https://shopify.dev/docs/apps/build/pos/upgrading-to-2025-10). For a concrete before-and-after example, see the Checkout UI Extension changes under `extensions/my-checkout-ui-ext*` in this repository's broader [modernization commit](https://github.com/shopify-apac-ts/shopify-barebone-app-sample/commit/34b07ddc5b150296b93dacb498e618108b8aa760).
-
-
 For creating the embedded app UI, the following contents might help you.
 - [App Bridge APIs](https://shopify.dev/docs/api/app-home)
 - [Polaris web components](https://shopify.dev/docs/api/app-home/web-components)
@@ -177,7 +174,9 @@ All sample are available at [Wiki](../../wiki).
     5. Remember to replace `[access_scopes].scopes` with the same value as the original TOML file if the generated configuration does not include the scopes used by this sample.
 - [Checkout UI Extension Integration Deep Dive](../../wiki/Checkout-UI-Extension-Integration-Deep-Dive) (Japanese version is [here](../../wiki/Checkout-UI-Extension-%E5%AE%9F%E8%A3%85%E8%A9%B3%E7%B4%B0)) help you to understand how the extension work deeply and avoid some pitfalls.
 
-# Shopify app modernization skills
+# Shopify app modernization
+React powers the main React Router app UI and the post-purchase extension sample. Preact is a separate, lightweight React-compatible library; the Checkout UI, Customer Account UI, and POS UI Extensions use it for JSX rendering and hooks around Polaris web components, following Shopify's guidance for API version 2025-10 and later. See Shopify's upgrade guides for [Checkout UI Extensions](https://shopify.dev/docs/apps/build/checkout/migrate-to-web-components), [Customer Account UI Extensions](https://shopify.dev/docs/apps/build/customer-accounts/migrate-to-web-components), and [POS UI Extensions](https://shopify.dev/docs/apps/build/pos/upgrading-to-2025-10). For a concrete before-and-after example, see the Checkout UI Extension changes under `extensions/my-checkout-ui-ext*` in this repository's broader [modernization commit](https://github.com/shopify-apac-ts/shopify-barebone-app-sample/commit/34b07ddc5b150296b93dacb498e618108b8aa760).
+
 This repository includes Codex and Claude Code versions of the `shopify-app-modernization` skill. The skills turn the modernization history of this sample into a reusable, behavior-preserving workflow for upgrading legacy Shopify applications.
 
 The workflow covers more than Polaris web component conversion. It inventories and migrates server frameworks such as Express, Koa, Remix, and React Router; captures OAuth, HMAC, Session Token, webhook, CSP, CORS, and public-route behavior; delegates supported surface migrations to the [Shopify AI Toolkit](https://shopify.dev/docs/apps/build/ai-toolkit); and applies regression checks learned from this sample's migration.
