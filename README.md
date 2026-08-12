@@ -74,7 +74,6 @@ If you are new to this sample, start from these files instead of reading the rep
     | `SHOPIFY_MYSQL_USER` | `SHOPIFY_DB_TYPE=MYSQL` | `YOUR_USER` | MySQL user. |
     | `SHOPIFY_MYSQL_PASSWORD` | `SHOPIFY_DB_TYPE=MYSQL` | `YOUR_PASSWORD` | MySQL password. |
     | `SHOPIFY_MYSQL_DATABASE` | `SHOPIFY_DB_TYPE=MYSQL` | `YOUR_DB_NAME` | MySQL database name. |
-    | `SHOPIFY_WEBHOOK_SECRET` | Manually created `webhookcommon` endpoint testing | `YOUR_TEST_STORE_WEBHOOK_SIGNATURE` | Webhook signature from the webhook creation settings. |
 
     Customer Account API note: `SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID` is the `client_id` shown in the Customer Account API settings for the application/storefront that uses this login flow. Do not invent a random value in this repository and do not reuse the app's Admin API `client_id` / `SHOPIFY_API_KEY`. Also register `YOUR_APP_URL/customer-account/callback` as an allowed redirect URI and `YOUR_APP_URL` as a JavaScript origin for that Customer Account API client before testing the plain storefront login. Read this setup guide for where to find the Client ID: [Getting started with the Customer Account API](https://shopify.dev/docs/storefronts/headless/building-with-the-customer-account-api/getting-started).
 
@@ -88,6 +87,8 @@ If you are new to this sample, start from these files instead of reading the rep
     ```
 
     `server.mjs` handles the CORS preflight and authenticated POST required when checkout and post-purchase extension Web Workers call `/postpurchase` with a Shopify-signed token. It also handles the `/mocklogin` preflight used by the POS Printing API. The POS sample explicitly adds its session token to the document URL to demonstrate backend authentication, while the Printing API also attaches a session token to the request automatically. All other requests are delegated to React Router.
+
+    The shared webhook handler logs the request path, Shopify webhook headers, HMAC result, and complete payload for `/webhookcommon`, `/webhookgdpr`, `/fulfillment_order_notification`, and `/flowaction`. Webhook payloads can contain protected customer and order data, so restrict access to logs and remove or redact full-payload logging before using this sample in production.
 
 4. If you run it locally, install a network tunneling tool like [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) and bind your localhost to their provided public URL. If you use cloud hosting, skip this step.
     ```

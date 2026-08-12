@@ -33,11 +33,11 @@ export function verifyAppProxySignature(params) {
   return safeEqual(computed, signature);
 }
 
-export async function verifyWebhookHmac(request) {
+export async function verifyWebhookHmac(request, rawBody) {
   if (!API_SECRET) return false;
   const received = request.headers.get('x-shopify-hmac-sha256');
   if (!received) return false;
-  const body = await request.text();
+  const body = rawBody ?? await request.text();
   const computed = createHmac('sha256', API_SECRET).update(body, 'utf8').digest('base64');
   return safeEqual(computed, received);
 }

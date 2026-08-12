@@ -99,7 +99,29 @@ export async function mockLogin(request) {
 }
 
 export async function webhookAction(request) {
-  const valid = await verifyWebhookHmac(request);
+  const rawBody = await request.text();
+  const valid = await verifyWebhookHmac(request, rawBody);
+  const url = new URL(request.url);
+  let payload;
+
+  try {
+    payload = JSON.parse(rawBody);
+  } catch {
+    payload = rawBody;
+  }
+
+  console.info('[webhook] received', JSON.stringify({
+    path: url.pathname,
+    topic: request.headers.get('x-shopify-topic') || '',
+    shop: request.headers.get('x-shopify-shop-domain') || '',
+    webhookId: request.headers.get('x-shopify-webhook-id') || '',
+    eventId: request.headers.get('x-shopify-event-id') || '',
+    apiVersion: request.headers.get('x-shopify-api-version') || '',
+    triggeredAt: request.headers.get('x-shopify-triggered-at') || '',
+    hmacValid: valid,
+    payload,
+  }));
+
   return new Response(null, { status: valid ? 200 : 401 });
 }
 
