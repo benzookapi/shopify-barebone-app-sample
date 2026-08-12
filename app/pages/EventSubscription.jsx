@@ -7,25 +7,26 @@ function EventSubscription() {
   return (
     <s-page heading="Event Subscription and webhooks">
       <s-stack direction="block" gap="large">
-        <s-section heading="Current webhook subscriptions">
+        <s-section heading="Example app-specific webhook subscription">
           <s-stack direction="block" gap="base">
             <s-text>
-              This sample currently uses classic app-configured webhooks. The following block in <s-badge>shopify.app.toml</s-badge> sends all listed topics to the shared <s-badge>/webhookcommon</s-badge> endpoint.
+              The following block is one local app configuration example, not a repository default. Root <s-badge>shopify.app.toml</s-badge> files are intentionally excluded from source control because they are specific to the app and environment where they are deployed. A fork of this sample should define its own topics, required access scopes, and delivery URI. This example sends all listed topics to the shared <s-badge>/webhookcommon</s-badge> endpoint.
             </s-text>
             <s-box padding="base" background="subdued" border="base" borderRadius="base">
               <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}><code>{webhookConfiguration}</code></pre>
             </s-box>
             <s-unordered-list>
               <s-list-item>
-                Operational topics: <s-badge>inventory_levels/update</s-badge>, <s-badge>carts/update</s-badge>, and <s-badge>carts/create</s-badge>.
+                Example operational topics: <s-badge>inventory_levels/update</s-badge>, <s-badge>carts/update</s-badge>, and <s-badge>carts/create</s-badge>.
               </s-list-item>
               <s-list-item>
-                Mandatory compliance topics: <s-badge>customers/data_request</s-badge>, <s-badge>customers/redact</s-badge>, and <s-badge>shop/redact</s-badge>.
+                Example compliance topics: <s-badge>customers/data_request</s-badge>, <s-badge>customers/redact</s-badge>, and <s-badge>shop/redact</s-badge>. These compliance subscriptions are required for apps distributed through the Shopify App Store.
               </s-list-item>
               <s-list-item>
                 The common handler verifies the Shopify webhook HMAC and logs the request metadata and complete payload for this sample.
               </s-list-item>
             </s-unordered-list>
+            <s-link href="https://shopify.dev/docs/apps/build/webhooks/subscribe" target="_blank">Configure app-specific webhook subscriptions in shopify.app.toml</s-link>
           </s-stack>
         </s-section>
 
@@ -41,12 +42,12 @@ function EventSubscription() {
                 <s-table-row>
                   <s-table-cell><s-badge>/webhookcommon</s-badge></s-table-cell>
                   <s-table-cell>Shared receiver for the operational and compliance topics listed above.</s-table-cell>
-                  <s-table-cell>Active through <s-badge>shopify.app.toml</s-badge>.</s-table-cell>
+                  <s-table-cell>Use as the <s-badge>uri</s-badge> in your own app-specific TOML subscription.</s-table-cell>
                 </s-table-row>
                 <s-table-row>
                   <s-table-cell><s-badge>/webhookgdpr</s-badge></s-table-cell>
                   <s-table-cell>Alternative compliance webhook route that delegates to the same shared handler.</s-table-cell>
-                  <s-table-cell>Implemented, but not referenced by the current TOML configuration.</s-table-cell>
+                  <s-table-cell>Available as an alternative route; configure it explicitly if your app uses it.</s-table-cell>
                 </s-table-row>
                 <s-table-row>
                   <s-table-cell><s-badge>/fulfillment_order_notification</s-badge></s-table-cell>

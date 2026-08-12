@@ -59,7 +59,7 @@ const samples = [
     {
         path: '/eventsubscription',
         name: 'Event Subscription',
-        location: 'Current webhook receivers and the planned migration to next-generation Events',
+        location: 'Webhook receiver examples and the planned migration to next-generation Events',
     },
     {
         path: '/ordermanage',
