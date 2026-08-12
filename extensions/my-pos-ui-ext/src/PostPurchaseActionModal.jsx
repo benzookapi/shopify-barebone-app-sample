@@ -8,18 +8,22 @@ const Modal = () => {
   const print = () => {
     setStatus('Loading the printable document...');
 
-    // The Printing API authenticates this same-origin request with a session token.
-    const path = '/mocklogin';
-    shopify.printing.print(path).then(() => {
-      setStatus('The system print dialog was opened.');
-      shopify.toast.show('The system print dialog was opened.');
+    shopify.session.getSessionToken().then((token) => {
+      if (!token) {
+        throw new Error('Unable to get a session token for printing.');
+      }
+
+      const path = `/mocklogin?sessiontoken=${encodeURIComponent(token)}`;
+      shopify.toast.show(`Printing '${path}'...`);
 
       // FYI you can fetch the app server directly with the session token.
-      /*shopify.session.getSessionToken().then((token) => {
-        return fetch(`/mocklogin?sessiontoken=${encodeURIComponent(token)}`);
-      }).then((r) => {
+      /*fetch(path).then((r) => {
         // Do something.
       });*/
+
+      return shopify.printing.print(path);
+    }).then(() => {
+      setStatus('The system print dialog was opened.');
     }).catch((error) => {
       const message = error instanceof Error ? error.message : String(error);
       setStatus(`Printing failed: ${message}`);
