@@ -5,19 +5,16 @@ import {useState} from 'preact/hooks';
 const Modal = () => {
   const [status, setStatus] = useState('');
 
-  const print = async () => {
+  const print = () => {
     setStatus('Loading the printable document...');
 
-    try {
-      const token = await shopify.session.getSessionToken();
+    shopify.session.getSessionToken().then((token) => {
       if (!token) {
-        setStatus('Unable to get a session token for printing.');
-        shopify.toast.show('Unable to get a session token for printing.');
-        return;
+        throw new Error('Unable to get a session token for printing.');
       }
 
       const path = `/mocklogin?sessiontoken=${encodeURIComponent(token)}`;
-      await shopify.printing.print(path);
+      shopify.print.print(path);
       setStatus('The system print dialog was requested.');
       shopify.toast.show(`Printing '${path}'...`);
 
@@ -25,12 +22,12 @@ const Modal = () => {
       /*fetch(`/mocklogin?sessiontoken=${encodeURIComponent(token)}`).then((r) => {
         // Do something.
       });*/
-    } catch (error) {
+    }).catch((error) => {
       const message = error instanceof Error ? error.message : String(error);
       setStatus(`Printing failed: ${message}`);
       console.log(`Printing failed: ${message}`);
       shopify.toast.show(`Printing failed: ${message}`);
-    }
+    });
   };
 
   return (
