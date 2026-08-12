@@ -83,7 +83,7 @@ const METAFIELDS_SET = `mutation MetafieldsSet($metafields: [MetafieldsSetInput!
 }`;
 
 const PRODUCT_QUERY = `query StorefrontProducts($country: CountryCode!, $language: LanguageCode!) @inContext(country: $country, language: $language) {
-  products(first: 3) {
+  products(first: 10) {
     nodes {
       id
       title
@@ -250,6 +250,10 @@ const DELIVERY_OPTION_MUTATION = `mutation StorefrontCartSelectedDeliveryOptions
           deliveryOptions {
             handle
             title
+            estimatedCost {
+              amount
+              currencyCode
+            }
           }
           selectedDeliveryOption {
             handle
@@ -375,7 +379,22 @@ export async function renderStorefrontPage(request, { shop, publicToken }) {
   });
 }
 
-export async function callPrivateStorefrontAction({ shop, action, locale, variables, buyerIp }) {
+export async function callPrivateStorefrontAction({
+  shop,
+  action,
+  locale,
+  variables,
+  buyerIp,
+  customerSession,
+}) {
+  if (
+    action === 'apply_customer_identity' &&
+    (customerSession == null || customerSession.shop !== shop)
+  ) {
+    throw new Response('A Customer Account API session for this shop is required.', {
+      status: 401,
+    });
+  }
   const token = await getPrivateStorefrontToken(shop);
   const context = parseLocale(locale);
   let result;
@@ -412,12 +431,24 @@ export async function callPrivateStorefrontAction({ shop, action, locale, variab
       country: context.country,
       language: context.language,
     }, token.accessToken, buyerIp);
+  } else if (action === 'apply_customer_identity') {
+    result = await callStorefrontGraphql(shop, BUYER_IDENTITY_MUTATION, {
+      cartId: variables.cartId,
+      buyerIdentity: {
+        countryCode: context.country,
+        customerAccessToken: customerSession.accessToken,
+      },
+      country: context.country,
+      language: context.language,
+    }, token.accessToken, buyerIp);
   } else {
     throw new Response('Unknown Storefront action', { status: 400 });
   }
 
   if (result.data) {
-    result.data.used_api = 'Server side Storefront API';
+    result.data.used_api = action === 'apply_customer_identity'
+      ? 'Server side Storefront API with Customer Account API identity'
+      : 'Server side Storefront API';
   }
   return result;
 }

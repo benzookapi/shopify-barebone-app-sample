@@ -3,6 +3,7 @@ import {
   callPrivateStorefrontAction,
   renderStorefrontPage,
 } from '../lib/storefront.server.js';
+import { getCustomerAccountSession } from '../lib/customer-account.server.js';
 
 export async function loader({ request }) {
   const url = new URL(request.url);
@@ -28,6 +29,7 @@ export async function action({ request }) {
     locale: url.searchParams.get('locale'),
     variables: body.variables,
     buyerIp: body.ip_address,
+    customerSession: getCustomerAccountSession(request),
   });
 
   return json(result);

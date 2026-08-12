@@ -28,6 +28,7 @@
     fieldset {
       border: 1px solid #c9cccf;
       margin: 24px 0;
+      min-width: 0;
       padding: 16px;
     }
 
@@ -46,12 +47,13 @@
 
     textarea,
     select,
-    input[type="text"] {
+    input[type="text"],
+    input[type="email"] {
       box-sizing: border-box;
       margin-top: 4px;
       max-width: 100%;
       padding: 8px;
-      width: 420px;
+      width: min(420px, 100%);
     }
 
     pre {
@@ -68,6 +70,22 @@
 
     .hidden {
       display: none;
+    }
+
+    .address-grid {
+      display: grid;
+      gap: 0 16px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .address-grid input {
+      width: 100%;
+    }
+
+    @media (max-width: 640px) {
+      .address-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -119,14 +137,6 @@
     </fieldset>
 
     <fieldset>
-      <legend>Customer Account API</legend>
-      <p id="customer_status" class="muted">Checking session...</p>
-      <button id="login_customer_account">Login with Customer Account API</button>
-      <button id="logout_customer_account">Logout</button>
-      <pre id="customer_profile"></pre>
-    </fieldset>
-
-    <fieldset>
       <legend>1. Products</legend>
       <button id="show_product">Show products</button>
       <pre id="products"></pre>
@@ -134,7 +144,12 @@
 
     <fieldset class="hidden" id="cart_step">
       <legend>2. Cart</legend>
-      <button id="create_cart">Create cart</button>
+      <label for="cart_product">Product to add</label>
+      <select id="cart_product" disabled>
+        <option value="">Show products first</option>
+      </select>
+      <br />
+      <button id="create_cart" disabled>Create cart</button>
       <pre id="cart"></pre>
       <p id="cart_checkout" class="hidden">
         <a href="" target="_blank" id="cart_checkout_link">Open checkoutUrl</a>
@@ -156,16 +171,60 @@
 
     <fieldset class="hidden" id="address_step">
       <legend>4. Delivery address</legend>
-      <p class="muted">Adds a selected delivery address to the cart. When a Customer Account API session exists, this sample uses the customer's default address; otherwise it uses the sample address for the selected locale.</p>
+      <p class="muted">Edit the delivery address before adding it to the cart. The fields start with the same sample address that this page previously submitted automatically.</p>
+      <div class="address-grid">
+        <label for="address_first_name">First name
+          <input type="text" id="address_first_name" />
+        </label>
+        <label for="address_last_name">Last name
+          <input type="text" id="address_last_name" />
+        </label>
+        <label for="address_company">Company
+          <input type="text" id="address_company" />
+        </label>
+        <label for="address_address1">Address 1
+          <input type="text" id="address_address1" />
+        </label>
+        <label for="address_address2">Address 2
+          <input type="text" id="address_address2" />
+        </label>
+        <label for="address_city">City
+          <input type="text" id="address_city" />
+        </label>
+        <label for="address_province_code">Province / state code
+          <input type="text" id="address_province_code" />
+        </label>
+        <label for="address_zip">Postal code
+          <input type="text" id="address_zip" />
+        </label>
+        <label for="address_country_code">Country code
+          <input type="text" id="address_country_code" />
+        </label>
+      </div>
       <button id="add_address">Add selected delivery address</button>
       <pre id="address"></pre>
     </fieldset>
 
     <fieldset class="hidden" id="delivery_step">
       <legend>5. Delivery option</legend>
-      <p class="muted">Selects the first available delivery option from the cart's delivery group. This simulates choosing a shipping method before opening checkout.</p>
-      <button id="set_option">Select first delivery option</button>
+      <p class="muted">Choose one of the delivery options currently returned for the cart.</p>
+      <label for="delivery_option">Available delivery options</label>
+      <select id="delivery_option" disabled>
+        <option value="">Add a delivery address first</option>
+      </select>
+      <br />
+      <button id="set_option" disabled>Update selected delivery option</button>
       <pre id="option"></pre>
+    </fieldset>
+
+    <fieldset>
+      <legend>6. Customer Account API</legend>
+      <p id="customer_status" class="muted">Checking session...</p>
+      <button id="login_customer_account">Login with Customer Account API</button>
+      <button id="logout_customer_account">Logout</button>
+      <pre id="customer_profile"></pre>
+      <button id="apply_customer_identity" class="hidden">Apply logged-in customer to Cart buyerIdentity</button>
+      <pre id="customer_buyer" class="hidden"></pre>
     </fieldset>
   </main>
 
@@ -175,10 +234,21 @@
     const PUBLIC_TOKEN = "<%= public_token %>";
     const CUSTOMER_ACCOUNT_CLIENT_ID = "<%= customer_account_client_id %>";
     const INITIAL_CUSTOMER_PROFILE = <%= customer_account_profile %>;
+    const CART_STORAGE_KEY = `barebone-storefront-cart:${SHOP}`;
     let customerProfile = INITIAL_CUSTOMER_PROFILE;
+    let productChoices = [];
+    let deliveryChoices = [];
+    let addressEdited = false;
+    let currentCart = null;
+
+    try {
+      currentCart = JSON.parse(sessionStorage.getItem(CART_STORAGE_KEY));
+    } catch {
+      currentCart = null;
+    }
 
     const PRODUCT_QUERY = `query StorefrontProducts($country: CountryCode!, $language: LanguageCode!) @inContext(country: $country, language: $language) {
-      products(first: 3) {
+      products(first: 10) {
         nodes {
           id
           title
@@ -345,6 +415,10 @@
               deliveryOptions {
                 handle
                 title
+                estimatedCost {
+                  amount
+                  currencyCode
+                }
               }
               selectedDeliveryOption {
                 handle
@@ -393,23 +467,36 @@
       return headers;
     };
 
+    const callServerStorefrontAction = async (action, variables) => {
+      const ipAddress = document.getElementById('ip_address').textContent;
+      const locale = getLocale();
+      const response = await fetch(`/storefront/plain?action=${action}&locale=${encodeURIComponent(JSON.stringify({ country: locale.country, lang: locale.language }))}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shop: SHOP,
+          variables,
+          ip_address: ipAddress
+        })
+      });
+      const responseText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        data = { errors: [{ message: responseText || `Request failed with status ${response.status}` }] };
+      }
+      if (!response.ok && data.errors == null) {
+        data.errors = [{ message: `Request failed with status ${response.status}` }];
+      }
+      return data;
+    };
+
     const callStorefrontAPI = async (query, variables) => {
       const mode = getApiMode();
       const ipAddress = document.getElementById('ip_address').textContent;
       if (mode === 'private') {
-        const action = variables.action;
-        const actionVariables = variables.variables;
-        const locale = getLocale();
-        const response = await fetch(`/storefront/plain?action=${action}&locale=${encodeURIComponent(JSON.stringify({ country: locale.country, lang: locale.language }))}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            shop: SHOP,
-            variables: actionVariables,
-            ip_address: ipAddress
-          })
-        });
-        return await response.json();
+        return callServerStorefrontAction(variables.action, variables.variables);
       }
 
       const response = await fetch(`https://${SHOP}/api/${API_VERSION}/graphql.json`, {
@@ -422,7 +509,7 @@
       return json;
     };
 
-    const getAddress = () => {
+    const getSuggestedAddress = () => {
       const { country } = getLocale();
       if (customerProfile?.defaultAddress != null) {
         const address = customerProfile.defaultAddress;
@@ -483,9 +570,33 @@
       };
     };
 
-    const getCartId = () => {
-      const cartData = JSON.parse(document.getElementById('cart').textContent);
-      return cartData.cartCreate.cart.id;
+    const ADDRESS_FIELDS = [
+      ['firstName', 'address_first_name'],
+      ['lastName', 'address_last_name'],
+      ['company', 'address_company'],
+      ['address1', 'address_address1'],
+      ['address2', 'address_address2'],
+      ['city', 'address_city'],
+      ['provinceCode', 'address_province_code'],
+      ['zip', 'address_zip'],
+      ['countryCode', 'address_country_code']
+    ];
+
+    const populateAddressInputs = (selectableAddress) => {
+      const address = selectableAddress.deliveryAddress;
+      ADDRESS_FIELDS.forEach(([field, elementId]) => {
+        document.getElementById(elementId).value = address[field] || '';
+      });
+      addressEdited = false;
+    };
+
+    const getAddress = () => {
+      const deliveryAddress = {};
+      ADDRESS_FIELDS.forEach(([field, elementId]) => {
+        const value = document.getElementById(elementId).value.trim();
+        if (value !== '') deliveryAddress[field] = value;
+      });
+      return { deliveryAddress };
     };
 
     const getCheckoutUrl = (url) => {
@@ -499,16 +610,128 @@
       return checkoutUrl.toString();
     };
 
+    const updateCheckoutLinks = (checkoutUrl) => {
+      const checkout = document.getElementById('cart_checkout');
+      if (!checkoutUrl) {
+        checkout.classList.add('hidden');
+        return;
+      }
+      checkout.classList.remove('hidden');
+      document.getElementById('cart_checkout_link').href = getCheckoutUrl(checkoutUrl);
+      document.getElementById('cart_checkout_silent_link').href = getSilentCheckoutUrl(checkoutUrl);
+    };
+
+    const rememberCart = (cart) => {
+      if (cart?.id == null) return;
+      currentCart = {
+        id: cart.id,
+        checkoutUrl: cart.checkoutUrl || currentCart?.checkoutUrl || ''
+      };
+      try {
+        sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(currentCart));
+      } catch {
+        // The current page can still use the in-memory cart when storage is unavailable.
+      }
+      updateCheckoutLinks(currentCart.checkoutUrl);
+      updateCustomerUI();
+    };
+
+    const getCartId = () => {
+      if (!currentCart?.id) throw new Error('Create a cart first.');
+      return currentCart.id;
+    };
+
+    const restoreCartUI = () => {
+      if (!currentCart?.id) return;
+      setJson('cart', { restoredCart: currentCart });
+      document.getElementById('cart_step').classList.remove('hidden');
+      document.getElementById('buyer_step').classList.remove('hidden');
+      document.getElementById('address_step').classList.remove('hidden');
+      updateCheckoutLinks(currentCart.checkoutUrl);
+    };
+
+    const updateProductChoices = (products) => {
+      const select = document.getElementById('cart_product');
+      const createButton = document.getElementById('create_cart');
+      productChoices = products.flatMap((product) => product.variants.nodes.slice(0, 1).map((variant) => ({
+        productId: product.id,
+        variantId: variant.id,
+        label: `${product.title} - ${variant.title} - ${variant.price.amount} ${variant.price.currencyCode}`
+      })));
+      select.replaceChildren();
+
+      if (productChoices.length === 0) {
+        const option = document.createElement('option');
+        option.textContent = 'No products with variants were returned';
+        select.append(option);
+        select.disabled = true;
+        createButton.disabled = true;
+        return;
+      }
+
+      productChoices.forEach((product, index) => {
+        const option = document.createElement('option');
+        option.value = String(index);
+        option.textContent = product.label;
+        select.append(option);
+      });
+      select.disabled = false;
+      createButton.disabled = false;
+    };
+
+    const updateDeliveryChoices = (deliveryGroups) => {
+      const select = document.getElementById('delivery_option');
+      const updateButton = document.getElementById('set_option');
+      deliveryChoices = [];
+      select.replaceChildren();
+
+      deliveryGroups.forEach((group) => {
+        group.deliveryOptions.forEach((deliveryOption) => {
+          const index = deliveryChoices.push({
+            deliveryGroupId: group.id,
+            deliveryOptionHandle: deliveryOption.handle
+          }) - 1;
+          const option = document.createElement('option');
+          const cost = deliveryOption.estimatedCost == null
+            ? ''
+            : ` - ${deliveryOption.estimatedCost.amount} ${deliveryOption.estimatedCost.currencyCode}`;
+          option.value = String(index);
+          option.textContent = `${deliveryOption.title}${cost}`;
+          option.selected = group.selectedDeliveryOption?.handle === deliveryOption.handle;
+          select.append(option);
+        });
+      });
+
+      if (deliveryChoices.length === 0) {
+        const option = document.createElement('option');
+        option.textContent = 'No delivery options are available yet';
+        select.append(option);
+        select.disabled = true;
+        updateButton.disabled = true;
+        return;
+      }
+
+      select.disabled = false;
+      updateButton.disabled = false;
+    };
+
     const updateCustomerUI = () => {
+      const applyButton = document.getElementById('apply_customer_identity');
+      document.getElementById('login_customer_account').disabled = customerProfile != null;
+      document.getElementById('logout_customer_account').disabled = customerProfile == null;
       if (customerProfile == null) {
         document.getElementById('customer_status').textContent = CUSTOMER_ACCOUNT_CLIENT_ID === ''
           ? 'Customer Account API client ID is not configured.'
           : 'No Customer Account API session.';
         setJson('customer_profile', {});
+        applyButton.classList.add('hidden');
+        document.getElementById('customer_buyer').classList.add('hidden');
         return;
       }
       document.getElementById('customer_status').textContent = `Logged in as ${customerProfile.displayName || customerProfile.emailAddress?.emailAddress || customerProfile.id}`;
       setJson('customer_profile', customerProfile);
+      applyButton.classList.remove('hidden');
+      applyButton.disabled = currentCart?.id == null;
       if (customerProfile.emailAddress?.emailAddress) {
         document.getElementById('buyer_email').value = customerProfile.emailAddress.emailAddress;
       }
@@ -527,6 +750,7 @@
       .then((res) => res.json())
       .then((json) => {
         customerProfile = json.profile;
+        if (!addressEdited) populateAddressInputs(getSuggestedAddress());
         updateCustomerUI();
       })
       .catch(updateCustomerUI);
@@ -542,6 +766,22 @@
       updateCustomerUI();
     };
 
+    document.getElementById('apply_customer_identity').onclick = async () => {
+      const output = document.getElementById('customer_buyer');
+      output.classList.remove('hidden');
+      setJson('customer_buyer', 'Loading...');
+      try {
+        const data = await callServerStorefrontAction('apply_customer_identity', {
+          cartId: getCartId()
+        });
+        const result = data.data || data;
+        setJson('customer_buyer', result);
+        rememberCart(result.cartBuyerIdentityUpdate?.cart);
+      } catch (error) {
+        setJson('customer_buyer', { error: String(error) });
+      }
+    };
+
     document.getElementById('show_product').onclick = async () => {
       setJson('products', 'Loading...');
       const locale = getLocale();
@@ -551,24 +791,30 @@
         country: locale.country,
         language: locale.language
       });
-      setJson('products', data.data || data);
+      const result = data.data || data;
+      setJson('products', result);
+      updateProductChoices(result.products?.nodes || []);
       document.getElementById('cart_step').classList.remove('hidden');
     };
 
     document.getElementById('create_cart').onclick = async () => {
       setJson('cart', 'Loading...');
       const locale = getLocale();
-      const listedProducts = JSON.parse(document.getElementById('products').textContent).products.nodes;
-      const lines = listedProducts.flatMap((product) => product.variants.nodes.map((variant) => ({
-        merchandiseId: variant.id,
+      const selectedProduct = productChoices[Number(document.getElementById('cart_product').value)];
+      if (selectedProduct == null) {
+        setJson('cart', { error: 'Select a product first.' });
+        return;
+      }
+      const lines = [{
+        merchandiseId: selectedProduct.variantId,
         quantity: 1,
         attributes: [
           {
             key: "bareboneapp.storefront_product_id",
-            value: product.id
+            value: selectedProduct.productId
           }
         ]
-      })));
+      }];
       const input = {
         attributes: [
           {
@@ -591,12 +837,7 @@
       });
       const result = data.data || data;
       setJson('cart', result);
-      const checkoutUrl = result.cartCreate?.cart?.checkoutUrl;
-      if (checkoutUrl != null) {
-        document.getElementById('cart_checkout').classList.remove('hidden');
-        document.getElementById('cart_checkout_link').href = getCheckoutUrl(checkoutUrl);
-        document.getElementById('cart_checkout_silent_link').href = getSilentCheckoutUrl(checkoutUrl);
-      }
+      rememberCart(result.cartCreate?.cart);
       document.getElementById('buyer_step').classList.remove('hidden');
       document.getElementById('address_step').classList.remove('hidden');
     };
@@ -620,7 +861,9 @@
         variables,
         ...variables
       });
-      setJson('buyer', data.data || data);
+      const result = data.data || data;
+      setJson('buyer', result);
+      rememberCart(result.cartBuyerIdentityUpdate?.cart);
     };
 
     document.getElementById('add_address').onclick = async () => {
@@ -642,27 +885,25 @@
         variables,
         ...variables
       });
-      setJson('address', data.data || data);
+      const result = data.data || data;
+      setJson('address', result);
+      const cart = result.cartDeliveryAddressesAdd?.cart;
+      rememberCart(cart);
+      updateDeliveryChoices(cart?.deliveryGroups?.nodes || []);
       document.getElementById('delivery_step').classList.remove('hidden');
     };
 
     document.getElementById('set_option').onclick = async () => {
       setJson('option', 'Loading...');
       const locale = getLocale();
-      const addressData = JSON.parse(document.getElementById('address').textContent);
-      const deliveryGroup = addressData.cartDeliveryAddressesAdd.cart.deliveryGroups.nodes.find((group) => group.deliveryOptions.length > 0);
-      if (deliveryGroup == null) {
-        setJson('option', { error: "No delivery options are available yet. Try again after the cart finishes rating." });
+      const selectedDeliveryOption = deliveryChoices[Number(document.getElementById('delivery_option').value)];
+      if (selectedDeliveryOption == null) {
+        setJson('option', { error: "Select a delivery option first." });
         return;
       }
       const variables = {
         cartId: getCartId(),
-        selectedDeliveryOptions: [
-          {
-            deliveryGroupId: deliveryGroup.id,
-            deliveryOptionHandle: deliveryGroup.deliveryOptions[0].handle
-          }
-        ],
+        selectedDeliveryOptions: [selectedDeliveryOption],
         country: locale.country,
         language: locale.language
       };
@@ -671,9 +912,24 @@
         variables,
         ...variables
       });
-      setJson('option', data.data || data);
+      const result = data.data || data;
+      setJson('option', result);
+      const cart = result.cartSelectedDeliveryOptionsUpdate?.cart;
+      rememberCart(cart);
+      updateDeliveryChoices(cart?.deliveryGroups?.nodes || []);
     };
 
+    ADDRESS_FIELDS.forEach(([, elementId]) => {
+      document.getElementById(elementId).addEventListener('input', () => {
+        addressEdited = true;
+      });
+    });
+    document.getElementById('locale').addEventListener('change', () => {
+      populateAddressInputs(getSuggestedAddress());
+    });
+
+    populateAddressInputs(getSuggestedAddress());
+    restoreCartUI();
     updateCustomerUI();
   </script>
 </body>

@@ -77,6 +77,8 @@ If you are new to this sample, start from these files instead of reading the rep
 
     Customer Account API note: `SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID` is the `client_id` shown in the Customer Account API settings for the application/storefront that uses this login flow. Do not invent a random value in this repository and do not reuse the app's Admin API `client_id` / `SHOPIFY_API_KEY`. Also register `YOUR_APP_URL/customer-account/callback` as an allowed redirect URI and `YOUR_APP_URL` as a JavaScript origin for that Customer Account API client before testing the plain storefront login. Read this setup guide for where to find the Client ID: [Getting started with the Customer Account API](https://shopify.dev/docs/storefronts/headless/building-with-the-customer-account-api/getting-started).
 
+    The plain storefront page keeps the Customer Account API section after the tokenless/public/private Storefront API cart examples. After login, its **Apply logged-in customer to Cart buyerIdentity** action sends the HttpOnly-session Customer Account access token from the server to `cartBuyerIdentityUpdate.customerAccessToken`; the token is never exposed to page JavaScript. The page keeps the active cart ID in `sessionStorage` so the login redirect can return to and update the same cart.
+
 3.  If you run it locally, run the following build command (`pnpm install && pnpm run build`). If you use cloud hosting (e.g. Render), use `pnpm install --prod=false` instead to ensure devDependencies (for example React Router's Vite build tooling) are installed even when `NODE_ENV=production`. You can see the details of command definition in `package.json`.
     Use Node.js 20.19.0 or later because the React Router and Vite toolchain require it.
     ```
