@@ -5,6 +5,7 @@ import { getShopFromLocation } from "../utils/shop";
 
 // Storefront API sample
 // Read https://shopify.dev/docs/api/storefront
+// Read https://shopify.dev/docs/api/storefront-web-components
 function Storefront() {
   const [shop, setShop] = useState('');
   const [result, setResult] = useState({});
@@ -17,12 +18,13 @@ function Storefront() {
   const storefrontPageUrl = buildStorefrontPageUrl(shop || result.shop, result.public_token?.accessToken);
 
   return (
-    <s-page heading="Storefront API sample with Cart API, tokenless access, and Customer Account API">
+    <s-page heading="Storefront API sample with Cart API, Storefront Web Components, and Customer Account API">
       <s-stack direction="block" gap="large">
         <s-section>
           <s-stack direction="block" gap="base">
             <s-box>
               <s-link href="https://shopify.dev/docs/api/storefront/latest" target="_blank">Storefront API</s-link><br />
+              <s-link href="https://shopify.dev/docs/api/storefront-web-components" target="_blank">Storefront Web Components</s-link><br />
               <s-link href="https://shopify.dev/docs/api/customer/latest" target="_blank">Customer Account API</s-link><br />
               <s-link href="https://shopify.dev/docs/api/storefront/latest/mutations/cartCreate" target="_blank">cartCreate</s-link>
             </s-box>
@@ -59,7 +61,7 @@ function Storefront() {
                 <s-list-item>
                   Open the {storefrontPageUrl
                     ? <s-link href={storefrontPageUrl} target="_blank">plain custom storefront page</s-link>
-                    : <s-text>plain custom storefront page</s-text>} using Cart API, tokenless access, and Customer Account API login.
+                    : <s-text>plain custom storefront page</s-text>} using Cart API, tokenless access, Storefront Web Components product tiles, and Customer Account API login.
                 </s-list-item>
               </s-ordered-list>
             </s-box>

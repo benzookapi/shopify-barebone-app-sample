@@ -74,7 +74,7 @@ const samples = [
     {
         path: '/storefront',
         name: 'Storefront API',
-        location: 'Storefront API sample with Cart API, tokenless access, and Customer Account API',
+        location: 'Storefront API sample with Cart API, Storefront Web Components, and Customer Account API',
     },
     {
         path: '/posui',

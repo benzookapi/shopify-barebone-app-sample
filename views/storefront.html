@@ -12,6 +12,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My barebone app Storefront API sample</title>
+  <script src="https://cdn.shopify.com/storefront/web-components.js"></script>
   <style>
     body {
       color: #202223;
@@ -82,8 +83,91 @@
       width: 100%;
     }
 
+    .product-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      margin-top: 16px;
+    }
+
+    .product-tile {
+      background: #fff;
+      border: 1px solid #c9cccf;
+      border-radius: 6px;
+      color: inherit;
+      margin: 0;
+      min-width: 0;
+      padding: 10px;
+      text-align: left;
+      width: 100%;
+    }
+
+    .product-tile:hover {
+      border-color: #8c9196;
+    }
+
+    .product-tile[aria-pressed="true"] {
+      border-color: #008060;
+      box-shadow: 0 0 0 2px #aee9d1;
+    }
+
+    .product-tile shopify-context {
+      display: grid;
+      gap: 8px;
+      grid-template-rows: auto 2.75rem auto;
+      min-width: 0;
+    }
+
+    .product-image {
+      align-items: center;
+      aspect-ratio: 1;
+      background: #f1f2f3;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .product-image shopify-media {
+      display: block;
+      width: 100%;
+    }
+
+    .product-title {
+      display: -webkit-box;
+      font-weight: 600;
+      line-height: 1.35;
+      overflow: hidden;
+      overflow-wrap: anywhere;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    .product-price,
+    .product-loading {
+      display: block;
+      font-size: 0.875rem;
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 800px) {
+      .product-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
     @media (max-width: 640px) {
       .address-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 360px) {
+      .product-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -91,10 +175,18 @@
 </head>
 
 <body>
+  <shopify-store
+    id="storefront_components_store"
+    store-domain="https://<%= shop %>"
+    country="US"
+    language="EN"
+  ></shopify-store>
   <main>
     <h1>Plain Custom Storefront</h1>
     <p>
       <a href="https://shopify.dev/docs/api/storefront/latest" target="_blank">Storefront API</a>
+      |
+      <a href="https://shopify.dev/docs/api/storefront-web-components" target="_blank">Storefront Web Components</a>
       |
       <a href="https://shopify.dev/docs/api/customer/latest" target="_blank">Customer Account API</a>
       |
@@ -140,15 +232,12 @@
       <legend>1. Products</legend>
       <button id="show_product">Show products</button>
       <pre id="products"></pre>
+      <div id="product_tiles" class="product-grid" aria-label="Products"></div>
     </fieldset>
 
     <fieldset class="hidden" id="cart_step">
       <legend>2. Cart</legend>
-      <label for="cart_product">Product to add</label>
-      <select id="cart_product" disabled>
-        <option value="">Show products first</option>
-      </select>
-      <br />
+      <p><b>Product to add:</b> <span id="selected_product">Show products first</span></p>
       <button id="create_cart" disabled>Create cart</button>
       <pre id="cart"></pre>
       <p id="cart_checkout" class="hidden">
@@ -242,6 +331,7 @@
     const CART_STORAGE_KEY = `barebone-storefront-cart:${SHOP}`;
     let customerProfile = INITIAL_CUSTOMER_PROFILE;
     let productChoices = [];
+    let selectedProductIndex = -1;
     let deliveryChoices = [];
     let addressEdited = false;
     let currentCart = null;
@@ -461,6 +551,13 @@
 
     const getApiMode = () => document.getElementById('call_type').value;
 
+    const updateStorefrontComponentsLocale = () => {
+      const { country, language } = getLocale();
+      const store = document.getElementById('storefront_components_store');
+      store.setAttribute('country', country);
+      store.setAttribute('language', language);
+    };
+
     const getStorefrontHeaders = (mode, ipAddress) => {
       const headers = {
         "Content-Type": "application/json",
@@ -655,32 +752,77 @@
       updateCheckoutLinks(currentCart.checkoutUrl);
     };
 
+    const selectProduct = (index) => {
+      selectedProductIndex = index;
+      const selectedProduct = productChoices[selectedProductIndex];
+      document.getElementById('selected_product').textContent = selectedProduct?.label || 'Show products first';
+      document.querySelectorAll('.product-tile').forEach((tile) => {
+        tile.setAttribute('aria-pressed', String(Number(tile.dataset.productIndex) === selectedProductIndex));
+      });
+    };
+
     const updateProductChoices = (products) => {
-      const select = document.getElementById('cart_product');
+      const productTiles = document.getElementById('product_tiles');
       const createButton = document.getElementById('create_cart');
       productChoices = products.flatMap((product) => product.variants.nodes.slice(0, 1).map((variant) => ({
         productId: product.id,
         variantId: variant.id,
         label: `${product.title} - ${variant.title} - ${variant.price.amount} ${variant.price.currencyCode}`
       })));
-      select.replaceChildren();
+      selectedProductIndex = -1;
+      productTiles.replaceChildren();
 
       if (productChoices.length === 0) {
-        const option = document.createElement('option');
-        option.textContent = 'No products with variants were returned';
-        select.append(option);
-        select.disabled = true;
+        document.getElementById('selected_product').textContent = 'No products with variants were returned';
         createButton.disabled = true;
         return;
       }
 
       productChoices.forEach((product, index) => {
-        const option = document.createElement('option');
-        option.value = String(index);
-        option.textContent = product.label;
-        select.append(option);
+        const tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'product-tile';
+        tile.dataset.productIndex = String(index);
+        tile.setAttribute('aria-label', `Select ${product.label}`);
+        tile.setAttribute('aria-pressed', 'false');
+        tile.addEventListener('click', () => selectProduct(index));
+
+        const context = document.createElement('shopify-context');
+        context.setAttribute('type', 'product');
+        context.setAttribute('gid', product.productId);
+
+        const template = document.createElement('template');
+        template.innerHTML = `
+          <span class="product-image">
+            <shopify-media
+              query="product.featuredImage"
+              width="320"
+              height="320"
+              layout="constrained"
+              sizes="(max-width: 640px) 50vw, 20vw"
+            ></shopify-media>
+          </span>
+          <span class="product-title">
+            <shopify-data query="product.title"></shopify-data>
+          </span>
+          <span class="product-price">
+            <shopify-money
+              query="product.selectedOrFirstAvailableVariant.price"
+              format="money_with_currency"
+            ></shopify-money>
+          </span>
+        `;
+
+        const loading = document.createElement('span');
+        loading.className = 'product-loading muted';
+        loading.setAttribute('shopify-loading-placeholder', '');
+        loading.textContent = 'Loading product...';
+
+        context.append(template, loading);
+        tile.append(context);
+        productTiles.append(tile);
       });
-      select.disabled = false;
+      selectProduct(0);
       createButton.disabled = false;
     };
 
@@ -792,6 +934,7 @@
 
     document.getElementById('show_product').onclick = async () => {
       setJson('products', 'Loading...');
+      updateStorefrontComponentsLocale();
       const locale = getLocale();
       const data = await callStorefrontAPI(PRODUCT_QUERY, {
         action: 'show_product',
@@ -808,7 +951,7 @@
     document.getElementById('create_cart').onclick = async () => {
       setJson('cart', 'Loading...');
       const locale = getLocale();
-      const selectedProduct = productChoices[Number(document.getElementById('cart_product').value)];
+      const selectedProduct = productChoices[selectedProductIndex];
       if (selectedProduct == null) {
         setJson('cart', { error: 'Select a product first.' });
         return;
@@ -933,9 +1076,14 @@
       });
     });
     document.getElementById('locale').addEventListener('change', () => {
+      updateStorefrontComponentsLocale();
       populateAddressInputs(getSuggestedAddress());
     });
 
+    if (PUBLIC_TOKEN !== '') {
+      document.getElementById('storefront_components_store').setAttribute('public-access-token', PUBLIC_TOKEN);
+    }
+    updateStorefrontComponentsLocale();
     populateAddressInputs(getSuggestedAddress());
     restoreCartUI();
     updateCustomerUI();
