@@ -57,6 +57,11 @@ const samples = [
         location: 'Customer Account UI sample for order status upsells and Storefront API cart creation',
     },
     {
+        path: '/eventsubscription',
+        name: 'Event Subscription',
+        location: 'Current webhook receivers and the planned migration to next-generation Events',
+    },
+    {
         path: '/ordermanage',
         name: 'Order Management',
         location: 'Order management sample for fulfillments, transactions, and fulfillment services with inventory management',

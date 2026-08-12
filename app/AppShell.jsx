@@ -12,6 +12,7 @@ const links = [
   ["Post-purchase", "/postpurchase"],
   ["Checkout UI", "/checkoutui"],
   ["Customer Account UI", "/customeraccountui"],
+  ["Event Subscription", "/eventsubscription"],
   ["Order management", "/ordermanage"],
   ["Bulk Operation", "/bulkoperation"],
   ["Storefront API", "/storefront"],

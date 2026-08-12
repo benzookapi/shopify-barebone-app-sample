@@ -15,6 +15,7 @@ export default [
     route('postpurchase', 'routes/postpurchase.jsx'),
     route('checkoutui', 'routes/checkoutui.jsx'),
     route('customeraccountui', 'routes/customeraccountui.jsx'),
+    route('eventsubscription', 'routes/eventsubscription.jsx'),
     route('ordermanage', 'routes/ordermanage.jsx'),
     route('bulkoperation', 'routes/bulkoperation.jsx'),
     route('storefront', 'routes/storefront.jsx'),
