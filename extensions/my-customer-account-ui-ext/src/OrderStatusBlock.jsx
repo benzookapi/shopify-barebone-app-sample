@@ -1,4 +1,5 @@
 import '@shopify/ui-extensions/preact';
+import {useAppMetafields, useCartLines} from '@shopify/ui-extensions/customer-account/preact';
 import {render} from 'preact';
 import {useEffect, useState} from 'preact/hooks';
 
@@ -15,6 +16,7 @@ import {useEffect, useState} from 'preact/hooks';
  */
 
 export default async () => {
+  console.info('[customer-account-upsell] extension loaded');
   render(<OrderUpsell />, document.body);
 };
 
@@ -29,10 +31,12 @@ function OrderUpsell() {
   const [loadError, setLoadError] = useState('');
   const [cartError, setCartError] = useState('');
 
+  // These hooks subscribe to delayed Order status data and re-render when it arrives.
+  const lines = useCartLines();
+  const appMetafields = useAppMetafields();
   const purchasedProductIds = new Set(
-    extensionApi.lines.value.map((line) => line.merchandise.product.id),
+    lines.map((line) => line.merchandise.product.id),
   );
-  const appMetafields = extensionApi.appMetafields.value;
   const appUrlMetafield = appMetafields.find(({target, metafield}) =>
     target.type === 'shop' &&
     metafield.namespace === 'barebone_app' &&
@@ -50,7 +54,24 @@ function OrderUpsell() {
       .map(({metafield}) => String(metafield.value).trim())
       .filter(Boolean),
   )).sort();
+  const purchasedProductIdsKey = JSON.stringify(Array.from(purchasedProductIds).sort());
   const upsellProductIdsKey = JSON.stringify(upsellProductIds);
+  const appMetafieldsKey = JSON.stringify(appMetafields.map(({target, metafield}) => ({
+    targetType: target.type,
+    targetId: target.id,
+    namespace: metafield.namespace,
+    key: metafield.key,
+    value: metafield.value,
+  })));
+
+  useEffect(() => {
+    console.info('[customer-account-upsell] order data', JSON.stringify({
+      purchasedProductIds: JSON.parse(purchasedProductIdsKey),
+      appMetafields: JSON.parse(appMetafieldsKey),
+      appUrl,
+      upsellProductIds,
+    }, null, 2));
+  }, [appMetafieldsKey, appUrl, purchasedProductIdsKey, upsellProductIdsKey]);
 
   useEffect(() => {
     setCheckoutUrl('');
@@ -83,11 +104,17 @@ function OrderUpsell() {
           method: 'POST',
           headers: {Authorization: `Bearer ${token}`},
         });
+        const responseText = await response.text();
+        console.info('[customer-account-upsell] server response', JSON.stringify({
+          status: response.status,
+          ok: response.ok,
+          body: responseText,
+        }, null, 2));
         const data = /** @type {{
          *   products?: {edges?: UpsellProduct[]},
          *   Error?: string,
          *   errors?: unknown,
-         * }} */ (await response.json());
+         * }} */ (JSON.parse(responseText));
 
         if (!response.ok || data.errors) {
           throw new Error(data.Error || `Request failed with status ${response.status}`);
@@ -95,7 +122,10 @@ function OrderUpsell() {
         if (cancelled) return;
 
         const products = data.products?.edges || [];
-        console.log(`Order upsell product data: ${JSON.stringify(products, null, 2)}`);
+        console.info('[customer-account-upsell] products loaded', JSON.stringify({
+          count: products.length,
+          products,
+        }, null, 2));
         setUpsellProducts(products.filter(({node}) => node.variants.edges.length > 0));
       } catch (error) {
         if (cancelled) return;

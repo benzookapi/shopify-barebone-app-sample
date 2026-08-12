@@ -17,7 +17,14 @@ Your new extension contains the following files:
 
 The order status block reads `barebone_app_upsell.product_id` from products in the completed order. It authenticates a request to the app's existing `/postpurchase` endpoint with a Customer Account extension session token, then renders the returned products. When the customer selects **Create checkout link**, the extension calls the Storefront API `cartCreate` mutation and displays the returned checkout URL.
 
-Before testing, use the app admin's Post-purchase page to prepare `barebone_app.url`, and assign an upsell product ID to `barebone_app_upsell.product_id` on at least one product in the order.
+Before testing:
+
+1. Run `shopify app deploy`. A Git push deploys the app server to Render, but it does not release a new Shopify extension version.
+2. Add this app block to the Order status page in the checkout and accounts editor, then save the page.
+3. Use the app admin's Post-purchase page to prepare `barebone_app.url`.
+4. Assign an upsell product ID to `barebone_app_upsell.product_id` on at least one product in the order.
+
+The extension subscribes to order lines and metafields because Order status data can arrive after the first render. Browser diagnostics use the `[customer-account-upsell]` prefix. The server logs the requested IDs and returned Admin API products with the `[postpurchase] upsell request` and `[postpurchase] upsell response` prefixes.
 
 ## Useful Links
 

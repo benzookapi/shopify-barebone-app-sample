@@ -87,10 +87,15 @@ export async function handlePostPurchaseAction(request) {
   let responseData = {};
   const upsellProductIds = url.searchParams.get('upsell_product_ids');
   if (upsellProductIds) {
-    const query = JSON.parse(upsellProductIds)
+    const requestedProductIds = JSON.parse(upsellProductIds)
       .filter((id) => id != null && String(id).trim() !== '')
-      .map((id) => `id:${id}`)
-      .join(' OR ');
+      .map((id) => String(id).trim());
+    const query = requestedProductIds.map((id) => `id:${id}`).join(' OR ');
+    console.info('[postpurchase] upsell request', JSON.stringify({
+      shop,
+      requestedProductIds,
+      query,
+    }));
     if (!query) return postPurchaseJson(responseData);
     const response = await callAdminGraphql(shop, `query UpsellProducts($query: String!) {
       products(first: 10, query: $query) {
@@ -120,6 +125,12 @@ export async function handlePostPurchaseAction(request) {
       }
     }`, { query });
     responseData = response.data;
+    console.info('[postpurchase] upsell response', JSON.stringify({
+      shop,
+      requestedProductIds,
+      productCount: responseData?.products?.edges?.length || 0,
+      response: responseData,
+    }));
   }
 
   const changes = url.searchParams.get('changes');
