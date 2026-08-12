@@ -20,7 +20,7 @@ const SmartGridModal = () => {
       // https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/standard-apis/session-api
 
       // or add a customer to the current cart with customer id given by barcode or QR to check their online orders, etc.
-      // https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/platform-apis/cart-api
+      // https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/contextual-apis/cart-api
       shopify.cart.setCustomer({
         id: Number(scannedData),
       }).then(() => {
@@ -34,7 +34,7 @@ const SmartGridModal = () => {
       });
 
       // or apply a discount code
-      // https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/platform-apis/cart-api
+      // https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/contextual-apis/cart-api
       /*shopify.cart.applyCartDiscount('Percentage', 'shopify.cart.applyCartDiscount()', scannedData).then(() => {
         console.log(`shopify.cart.applyCartDiscount successful with ${scannedData}%`);
         shopify.toast.show(`shopify.cart.applyCartDiscount successful with ${scannedData}%`);

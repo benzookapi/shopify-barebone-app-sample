@@ -10,9 +10,11 @@ const links = [
   ["Web Pixel", "/webpixel"],
   ["Post-purchase", "/postpurchase"],
   ["Checkout UI", "/checkoutui"],
+  ["Customer Account UI", "/customeraccountui"],
   ["Order management", "/ordermanage"],
   ["Bulk Operation", "/bulkoperation"],
   ["Storefront API", "/storefront"],
+  ["POS UI", "/posui"],
 ];
 
 export default function AppShell() {

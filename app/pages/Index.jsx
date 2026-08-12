@@ -47,6 +47,11 @@ const samples = [
         location: 'Checkout UI sample with upsell, shop reviews, and IP address blocking',
     },
     {
+        path: '/customeraccountui',
+        name: 'Customer Account UI',
+        location: 'Customer Account UI sample for order status upsells and Storefront API cart creation',
+    },
+    {
         path: '/ordermanage',
         name: 'Order Management',
         location: 'Order management sample for fulfillments, transactions, and fulfillment services with inventory management',
@@ -60,6 +65,11 @@ const samples = [
         path: '/storefront',
         name: 'Storefront API',
         location: 'Storefront API sample with Cart API, tokenless access, and Customer Account API',
+    },
+    {
+        path: '/posui',
+        name: 'POS UI',
+        location: 'POS UI sample for customer scanning and authenticated document printing',
     },
 ];
 
