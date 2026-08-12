@@ -20,6 +20,12 @@ export default async () => {
   render(<OrderUpsell />, document.body);
 };
 
+/** @param {string | number | null | undefined} value */
+function normalizeShopifyId(value) {
+  const id = String(value || '');
+  return id.slice(id.lastIndexOf('/') + 1);
+}
+
 function OrderUpsell() {
   const extensionApi = shopify;
   const [upsellProducts, setUpsellProducts] = useState(
@@ -35,7 +41,7 @@ function OrderUpsell() {
   const lines = useCartLines();
   const appMetafields = useAppMetafields();
   const purchasedProductIds = new Set(
-    lines.map((line) => line.merchandise.product.id),
+    lines.map((line) => normalizeShopifyId(line.merchandise.product.id)),
   );
   const appUrlMetafield = appMetafields.find(({target, metafield}) =>
     target.type === 'shop' &&
@@ -47,7 +53,7 @@ function OrderUpsell() {
     appMetafields
       .filter(({target, metafield}) =>
         target.type === 'product' &&
-        purchasedProductIds.has(target.id) &&
+        purchasedProductIds.has(normalizeShopifyId(target.id)) &&
         metafield.namespace === 'barebone_app_upsell' &&
         metafield.key === 'product_id',
       )
