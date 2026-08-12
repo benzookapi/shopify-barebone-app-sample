@@ -55,7 +55,7 @@ If you are new to this sample, start from these files instead of reading the rep
 # How to run
 0. Create your Shopify partner account from [here](https://www.shopify.com/partners) and create a Shopify app **manually** (not choosing Shopify CLI) in the app menu of [your dev. dashboard](https://dev.shopify.com/dashboard). Also, [create a development store](https://shopify.dev/docs/api/development-stores#create-a-development-store-to-test-your-app) to install this app too. If you want to customize this sample code, don't forget to clone (fork) this repository to make your own one.
 
-1. Decide if you run this app locally **or** in cloud hosting services like [Render](https://render.com/), [Fly.io](https://fly.io/), [Heroku](https://www.heroku.com/), and [AWS EC2](https://aws.amazon.com/), etc. If you run it locally, you need to use network tunneling tool like [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) because your app server URL (described as `YOUR_APP_URL` below) needs to be **public**, not localhost directly, so you need to bind your localhost to a public URL. If your company **blocks network tunneling**, you have to choose a cloud hosting service. This app has no limitation of hosting service choice, but [Render](https://render.com/) is recommended as they provide a free plan, and just connecting a [GitHub repository](../../../shopify-barebone-app-sample) enables you to create a web service. [Shopify CLI app hosting](https://render.com/docs/deploy-shopify-app) is supported natively with the Docker file.
+1. Decide if you run this app locally **or** in cloud hosting services like [Render](https://render.com/), [Fly.io](https://fly.io/), [Heroku](https://www.heroku.com/), and [AWS EC2](https://aws.amazon.com/), etc. If you run it locally, you need to use network tunneling tool like [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) because your app server URL (described as `YOUR_APP_URL` below) needs to be **public**, not localhost directly, so you need to bind your localhost to a public URL. If your company **blocks network tunneling**, you have to choose a cloud hosting service. This app has no limitation of hosting service choice, but [Render](https://render.com/) is recommended as they provide a free plan, and connecting a GitHub repository enables you to create a web service using the build and start commands below.
 
 2. Add the following environment variables locally (export in the terminal) where you develop this sample app. Add the same variables in the cloud hosting service if you chose one as the running place.
 
@@ -66,7 +66,7 @@ If you are new to this sample, start from these files instead of reading the rep
     | `SHOPIFY_API_VERSION` | Always | `2026-04` | Use the same version as your app configuration. |
     | `SHOPIFY_APP_URL` | Recommended for hosted environments | `https://YOUR_APP_URL` | Public HTTPS origin used by OAuth and Customer Account API callback URLs. |
     | `SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID` | Storefront API sample's Customer Account API login flow | `YOUR_CUSTOMER_ACCOUNT_API_CLIENT_ID` | Required only when you test the Customer Account API login flow from the custom storefront sample. This is the Customer Account API `client_id`, not the app's `SHOPIFY_API_KEY`. |
-    | `SHOPIFY_DB_TYPE` | Always | `MONGODB` / `POSTGRESQL` / `MYSQL` | Defaults to `MONGODB` when omitted. |
+    | `SHOPIFY_DB_TYPE` | Optional | `MONGODB` / `POSTGRESQL` / `MYSQL` | Defaults to `MONGODB` when omitted. |
     | `SHOPIFY_MONGO_DB_NAME` | `SHOPIFY_DB_TYPE=MONGODB` | `YOUR_DB_NAME` | Any database name is OK. |
     | `SHOPIFY_MONGO_URL` | `SHOPIFY_DB_TYPE=MONGODB` | `mongodb://YOUR_USER:YOUR_PASSWORD@YOUR_DOMAIN:YOUR_PORT/YOUR_DB_NAME` | MongoDB connection string. |
     | `SHOPIFY_POSTGRESQL_URL` | `SHOPIFY_DB_TYPE=POSTGRESQL` | `postgres://YOUR_USER:YOUR_PASSWORD@YOUR_DOMAIN(:YOUR_PORT)/YOUR_DB_NAME` | PostgreSQL connection string. |
@@ -79,7 +79,7 @@ If you are new to this sample, start from these files instead of reading the rep
 
     The plain storefront page keeps the Customer Account API section after the tokenless/public/private Storefront API cart examples. After login, its **Apply logged-in customer to Cart buyerIdentity** action sends the HttpOnly-session Customer Account access token from the server to `cartBuyerIdentityUpdate.customerAccessToken`; the token is never exposed to page JavaScript. The page keeps the active cart ID in `sessionStorage` so the login redirect can return to and update the same cart.
 
-3.  If you run it locally, run the following build command (`pnpm install && pnpm run build`). If you use cloud hosting (e.g. Render), use `pnpm install --prod=false` instead to ensure devDependencies (for example React Router's Vite build tooling) are installed even when `NODE_ENV=production`. You can see the details of command definition in `package.json`.
+3.  If you run it locally, run the following build command (`pnpm install && pnpm run build`). If you use cloud hosting (e.g. Render), use `pnpm install --prod=false` so all project dependencies required by the React Router and Vite build toolchain remain available even when `NODE_ENV=production`. You can see the details of command definition in `package.json`.
     Use Node.js 20.19.0 or later because the React Router and Vite toolchain require it.
     ```
     Build command (local)  = pnpm install && pnpm run build
@@ -88,7 +88,7 @@ If you are new to this sample, start from these files instead of reading the rep
     Start command = pnpm run start (= node server.mjs)
     ```
 
-    `server.mjs` handles the CORS preflight and authenticated POST required when checkout and post-purchase extension Web Workers call `/postpurchase` with a Shopify-signed token. It also handles the `/mocklogin` preflight used by the POS Printing API. The POS sample explicitly adds its session token to the document URL to demonstrate backend authentication, while the Printing API also attaches a session token to the request automatically. All other requests are delegated to React Router.
+    `server.mjs` handles the CORS preflight and authenticated POST required when the Checkout UI, Customer Account UI, and post-purchase extension Web Workers call `/postpurchase` with a Shopify-signed token. It also handles the `/mocklogin` preflight used by the POS Printing API. The POS sample explicitly gets a session token and adds it to the printable document URL so `/mocklogin` can authenticate the shop. All other requests are delegated to React Router.
 
     The shared webhook handler logs the request path, Shopify webhook headers, HMAC result, and complete payload for `/webhookcommon`, `/webhookgdpr`, `/fulfillment_order_notification`, and `/flowaction`. Webhook payloads can contain protected customer and order data, so restrict access to logs and remove or redact full-payload logging before using this sample in production.
 
@@ -120,7 +120,7 @@ If you are new to this sample, start from these files instead of reading the rep
     | `[access_scopes].scopes` | `write_app_proxy,write_products,write_discounts,write_orders,write_payment_customizations,write_delivery_customizations,read_cart_transforms,write_cart_transforms,write_pixels,read_customer_events,write_customers,write_assigned_fulfillment_orders,write_merchant_managed_fulfillment_orders,write_third_party_fulfillment_orders,write_fulfillments,write_inventory,unauthenticated_read_product_listings,unauthenticated_read_selling_plans,read_locations` | Admin and Storefront API scopes used by the samples. |
     | `[auth].redirect_urls` | `["YOUR_APP_URL/callback"]` | OAuth callback URL. |
     | `[webhooks].api_version` | `SHOPIFY_API_VERSION` | Same value as the environment variable. |
-    | `[[webhooks.subscriptions]].uri` | `/webhookgdpr` | Webhook endpoint for the sample. |
+    | `[[webhooks.subscriptions]].uri` | `/webhookcommon` | Shared webhook endpoint for the sample topics and compliance topics. |
     | `[app_proxy].url` | `YOUR_APP_URL/appproxy` | App proxy endpoint. |
     | `[app_proxy].subpath` | `bareboneproxy` | App proxy subpath. |
     | `[app_proxy].prefix` | `apps` | App proxy prefix. |
@@ -145,7 +145,7 @@ If you are new to this sample, start from these files instead of reading the rep
 
 9. Go to the app `Distribution` in your partner dashboard (not dev. dashboard) to select `Public` or `Custom` (if you selected the custom app, use your development store domain for the link). => This is required for [using protected shipping address data in Checkout UI Extensions](../../../shopify-barebone-app-sample/blob/main/extensions/my-checkout-ui-ext/src/Review.jsx).
 
-10. If you run it locally, execute the start command (`pnpm run start`). If you use cloud hosting, specify the start command in the appropriate settings or run it directly. Unsigned direct access to `YOUR_APP_URL` shows `Bad request` without loading App Bridge or Polaris and without rendering the app shell; this is expected. A valid signed non-embedded Shopify request instead redirects to the plain mock login page that displays the app-generated JWT. Make sure no other errors occur, such as 404 or 500 responses.
+10. If you run it locally, execute the start command (`pnpm run start`). If you use cloud hosting, specify the start command in the appropriate settings or run it directly. Unsigned direct access to `YOUR_APP_URL` returns HTTP 400 with `HMAC verification failed` without loading App Bridge or Polaris and without rendering the app shell; this is expected. A valid signed non-embedded Shopify request instead redirects to the plain mock login page that displays the app-generated JWT. Make sure no other errors occur, such as 404 or 500 responses.
 
 # How to install
 Access the following endpoint.
@@ -157,7 +157,7 @@ you can install to your development stores from the app home `Install app` butto
 
 # How to update
 - For app UI or server-side updates (`app/` or `views`), run the build command (`pnpm run build`) and start command (`pnpm run start`) again. Some cloud services like Render enable it with `git commit & git push`.
-- If you change the value of `SHOPIFY_API_KEY`, you need to build again because `app/root.jsx` writes it into the App Bridge meta tag. Some cloud services like Render enable it with `git commit & git push`.
+- If you change the value of `SHOPIFY_API_KEY`, restart the app server so `app/root.jsx` writes the new value into the App Bridge meta tag. A rebuild is not required solely for this environment-variable change, although cloud services may rebuild as part of their normal deployment process.
 - If you change `SHOPIFY_API_KEY` or switch the app connected to this source code, the OAuth access tokens already stored in the `shops` DB collection belong to the previous app client. Reload the embedded app so OAuth runs again and stores a fresh token for the current app. A Shopify Admin GraphQL 401 with `Invalid API key or access token` usually means the DB returned a stored token, but Shopify rejected that token; it is not the same symptom as a missing MongoDB connection.
 - For extension update (`extensions`), run `shopify app deploy` again. This needs to be done in your local (development) PC, not in the cloud hosting service.  If you change the value of `SHOPIFY_API_KEY`, you need to deploy again with the toml file updated as described below.
 - For adding a new extension under `extensions`, run `shopify app generate extension` to choose your preferred one with a template.
@@ -174,7 +174,7 @@ All sample are available at [Wiki](../../wiki).
     2. Execute `shopify app deploy --reset` and choose the target app (it is supposed to be created manually).
     3. Enter the new toml file name (use `YOUR_APP_HANDLE`) or leave blank for the app.
     4. The new toml file gets generated for the new app with the current config values in partner dashboard.
-    5. Remember to replace `scopes in [auth]` with the same value as the original toml file which must be blank by default.
+    5. Remember to replace `[access_scopes].scopes` with the same value as the original TOML file if the generated configuration does not include the scopes used by this sample.
 - [Checkout UI Extension Integration Deep Dive](../../wiki/Checkout-UI-Extension-Integration-Deep-Dive) (Japanese version is [here](../../wiki/Checkout-UI-Extension-%E5%AE%9F%E8%A3%85%E8%A9%B3%E7%B4%B0)) help you to understand how the extension work deeply and avoid some pitfalls.
 
 # Disclaimer
