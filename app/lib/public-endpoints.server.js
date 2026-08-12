@@ -1,6 +1,12 @@
 import { json } from './http.server.js';
 import { requireAuthenticatedShop } from './session-token.server.js';
-import { decodeAppJwt, getAdminFromShop, verifyAppProxySignature, verifyWebhookHmac } from './shopify-auth.server.js';
+import { decodeAppJwt, getAdminFromShop, getBearerToken, verifyAppProxySignature, verifyWebhookHmac } from './shopify-auth.server.js';
+
+export const mockLoginCorsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+};
 
 
 export async function appProxy(request, body) {
@@ -37,18 +43,24 @@ export async function mockLogin(request) {
   let target = '';
   let details = '';
 
-  const sessionToken = url.searchParams.get('sessiontoken');
+  const querySessionToken = url.searchParams.get('sessiontoken');
+  const sessionToken = querySessionToken || getBearerToken(request);
   if (sessionToken) {
-    const context = await requireAuthenticatedShop(new Request(request.url, {
-      headers: {
-        Authorization: `Bearer ${sessionToken}`,
-      },
-    }));
-    if (!context.ok) return new Response('Signature unmatched. Incorrect session token sent', { status: 400 });
+    const headers = new Headers(request.headers);
+    headers.set('Authorization', `Bearer ${sessionToken}`);
+    const context = await requireAuthenticatedShop(new Request(request.url, { headers }));
+    if (!context.ok) {
+      return new Response('Signature unmatched. Incorrect session token sent', {
+        status: 400,
+        headers: mockLoginCorsHeaders,
+      });
+    }
     target = `<p>You are connecting to: <h3>${context.shop}</h3></p>`;
-    details = `<p><b>The following is the received session token with the shop data above which you can never falsify.</b></p>
-      <pre>${sessionToken}</pre>
-      <p><a href="https://${getAdminFromShop(context.shop)}">Go back to Shopify admin</a></p>`;
+    details = querySessionToken
+      ? `<p><b>The following is the received session token with the shop data above which you can never falsify.</b></p>
+        <pre>${sessionToken}</pre>
+        <p><a href="https://${getAdminFromShop(context.shop)}">Go back to Shopify admin</a></p>`
+      : '<p><b>This request was authenticated with the Shopify session token in its Authorization header.</b></p>';
   }
 
   const appToken = url.searchParams.get('my_token');
@@ -67,7 +79,10 @@ export async function mockLogin(request) {
     <p>Your password: <input /></p>
     <p><button onClick="javascript:window.location.href='./mocklogin';">Login</button></p>
     ${details}`, {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    headers: {
+      ...mockLoginCorsHeaders,
+      'Content-Type': 'text/html; charset=utf-8',
+    },
   });
 }
 

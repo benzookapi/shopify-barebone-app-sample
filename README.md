@@ -11,7 +11,7 @@ For quick start with automatically generated code, go to the [official CLI tutor
 | Area | Source | Role |
 | --- | --- | --- |
 | App server root | [app/](./app/) | React Router route modules, embedded admin UI pages, and server helpers for OAuth, session token validation, Storefront API, Customer Account API, GraphQL calls, and DB access. No Shopify CLI generated app template is used. |
-| HTTP server entry | [server.mjs](./server.mjs) | Thin Express entry that handles the `/postpurchase` CORS preflight and authenticated extension POST before delegating all other requests to React Router. |
+| HTTP server entry | [server.mjs](./server.mjs) | Thin Express entry that handles the `/postpurchase` and POS `/mocklogin` CORS preflights, plus the authenticated post-purchase extension POST, before delegating all other requests to React Router. |
 | HTML shell | [app/root.jsx](./app/root.jsx) | React Router HTML shell that loads the sample stylesheet, App Bridge, and Polaris web components from Shopify CDN. |
 | Embedded app chrome | [app/AppShell.jsx](./app/AppShell.jsx) | React Router layout route that renders the App Bridge title bar and `<s-app-nav>` sidebar navigation. |
 | Route map | [app/routes.js](./app/routes.js) | Central React Router route definition. |
@@ -87,7 +87,7 @@ If you are new to this sample, start from these files instead of reading the rep
     Start command = pnpm run start (= node server.mjs)
     ```
 
-    `server.mjs` handles the CORS preflight and authenticated POST required when checkout and post-purchase extension Web Workers call `/postpurchase` with a Shopify-signed token, then delegates all other requests to React Router.
+    `server.mjs` handles the CORS preflight and authenticated POST required when checkout and post-purchase extension Web Workers call `/postpurchase` with a Shopify-signed token. It also handles the `/mocklogin` preflight used when the POS Printing API loads the sample document with an automatically attached session token, then delegates all other requests to React Router.
 
 4. If you run it locally, install a network tunneling tool like [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) and bind your localhost to their provided public URL. If you use cloud hosting, skip this step.
     ```

@@ -5,6 +5,7 @@ import {
   handlePostPurchaseAction,
   postPurchaseCorsHeaders,
 } from './app/lib/post-purchase.server.js';
+import { mockLoginCorsHeaders } from './app/lib/public-endpoints.server.js';
 
 const build = await import('./build/server/index.js');
 const app = express();
@@ -21,10 +22,14 @@ app.use((request, response, next) => {
   next();
 });
 
-// React Router rejects OPTIONS before route loaders run, so handle this
-// session-token endpoint before delegating the remaining routes.
+// React Router rejects OPTIONS before route loaders run, so handle extension
+// session-token endpoint preflights before delegating the remaining routes.
 app.options('/postpurchase', (_request, response) => {
   response.status(204).set(postPurchaseCorsHeaders).end();
+});
+
+app.options('/mocklogin', (_request, response) => {
+  response.status(204).set(mockLoginCorsHeaders).end();
 });
 
 app.post('/postpurchase', async (request, response) => {

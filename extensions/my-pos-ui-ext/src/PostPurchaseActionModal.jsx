@@ -4,18 +4,12 @@ import {render} from 'preact';
 const Modal = () => {
   const print = async () => {
     try {
-      const token = await shopify.session.getSessionToken();
-      if (!token) {
-        shopify.toast.show('Unable to get a session token for printing.');
-        return;
-      }
-
-      const path = `/mocklogin?sessiontoken=${encodeURIComponent(token)}`;
+      const path = '/mocklogin';
       await shopify.printing.print(path);
       shopify.toast.show(`Printing '${path}'...`);
 
-      // FYI you can fetch the app server directly with the session token.
-      /*fetch(`https://APP_URL/mocklogin?sessiontoken=${token}`).then((r) => {
+      // Relative app URLs receive a Shopify session token automatically.
+      /*fetch('/mocklogin').then((r) => {
         // Do something.
       });*/
     } catch (error) {
