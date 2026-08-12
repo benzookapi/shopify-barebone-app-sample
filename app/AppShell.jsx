@@ -7,6 +7,7 @@ const links = [
   ["Function Discount", "/functiondiscount"],
   ["Function Shipping", "/functionshipping"],
   ["Function Payment", "/functionpayment"],
+  ["Function Cart", "/functioncart"],
   ["Web Pixel", "/webpixel"],
   ["Post-purchase", "/postpurchase"],
   ["Checkout UI", "/checkoutui"],

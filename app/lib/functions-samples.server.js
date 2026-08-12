@@ -129,3 +129,31 @@ export async function createPaymentCustomization(request, context) {
   });
   return apiJson(response);
 }
+
+export async function createCartTransform(request, context) {
+  const url = new URL(request.url);
+  const meta = url.searchParams.get('meta') || '';
+  const [namespace, key] = meta.split('.');
+  const response = await callAdminGraphql(context.shop, `mutation CartTransformCreate($functionHandle: String!, $metafields: [MetafieldInput!]) {
+    cartTransformCreate(functionHandle: $functionHandle, metafields: $metafields) {
+      cartTransform {
+        id
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }`, {
+    functionHandle: 'my-function-cart-ext',
+    metafields: [
+      {
+        key: 'customer_meta',
+        namespace: 'barebone_app_function_cart',
+        type: 'json',
+        value: JSON.stringify({ namespace, key }),
+      },
+    ],
+  });
+  return apiJson(response);
+}

@@ -1,0 +1,24 @@
+query Input($namespace: String!, $key: String!) {
+  cart {
+    lines {
+      id
+      cost {
+        amountPerQuantity {
+          amount
+        }
+      }
+      sellingPlanAllocation {
+        sellingPlan {
+          id
+        }
+      }
+    }
+    buyerIdentity {
+      customer {
+        metafield(namespace: $namespace, key: $key) {
+          value
+        }
+      }
+    }
+  }
+}

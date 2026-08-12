@@ -32,6 +32,11 @@ const samples = [
         location: 'Function implementation for payment methods based on selected delivery options',
     },
     {
+        path: '/functioncart',
+        name: 'Function Cart',
+        location: 'Cart Transform Function for increasing product prices based on customer metafields',
+    },
+    {
         path: '/webpixel',
         name: 'Web Pixel',
         location: 'Web Pixel sample for GA4 integration',

@@ -1,0 +1,26 @@
+api_version = "2026-07"
+
+[[extensions]]
+name = "my-function-cart-ext"
+handle = "my-function-cart-ext"
+type = "function"
+uid = "5da83bef-b7d2-ce98-6fdc-c77a74211a209c17e821"
+
+  [[extensions.targeting]]
+  target = "cart.transform.run"
+  input_query = "src/cart_transform_run.graphql"
+  export = "cart_transform_run"
+
+  [extensions.build]
+  command = "cargo build --target=wasm32-unknown-unknown --release"
+  path = "target/wasm32-unknown-unknown/release/my-function-cart-ext.wasm"
+  watch = [ "src/**/*.rs" ]
+
+  [extensions.ui.paths]
+  create = "/functioncart"
+  details = "/functioncart"
+
+  # Supplies $namespace and $key from the cart transform configuration metafield.
+  [extensions.input.variables]
+  namespace = "barebone_app_function_cart"
+  key = "customer_meta"
