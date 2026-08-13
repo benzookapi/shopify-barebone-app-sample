@@ -9,7 +9,7 @@ This UI extension is distinct from the Customer Account API OAuth flow demonstra
 ## Runtime Locations
 
 - The information page runs in the embedded Admin app.
-- The extension runs at `customer-account.order-status.block.render`.
+- The extension runs at `customer-account.order-status.block.render` in an isolated Web Worker-based extension runtime.
 - Product lookup runs on the app server with a verified extension session token.
 - Cart creation runs through the Storefront API exposed by the extension runtime.
 

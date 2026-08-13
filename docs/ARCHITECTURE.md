@@ -12,10 +12,10 @@ This document explains where each part of the sample runs and how requests move 
 | `app/utils/` | Merchant browser unless otherwise noted | App Bridge access, session-token fetches, navigation, and browser helpers |
 | App Bridge and Polaris web components | Merchant browser inside Shopify Admin | Embed the app, provide Shopify context, navigation, and Admin UI components |
 | Theme app extension | Online Store theme runtime and storefront browser | Render Liquid blocks and run storefront JavaScript |
-| Checkout, Customer Account, and POS UI extensions | Shopify-hosted extension runtimes | Render surface-specific UI and use target APIs supplied by Shopify |
-| Web Pixel extension | Shopify's customer-events sandbox | Subscribe to permitted customer events and send analytics requests |
-| Shopify Functions | Shopify infrastructure | Run deterministic Wasm logic during cart and checkout processing |
-| Post-purchase extension | Shopify-hosted post-purchase runtime | Render an offer after checkout and request a signed order change |
+| Checkout, Customer Account, and POS UI extensions | Isolated Shopify-hosted extension sandboxes in the surface's browser or app | Execute bundled JavaScript in Web Worker-based runtimes, communicate through remote-dom, and use target APIs supplied by Shopify |
+| Web Pixel app extension | Strict Web Worker sandbox in the visitor's browser | Subscribe to permitted customer events and send analytics requests without direct DOM access |
+| Shopify Functions | Shopify infrastructure | Run deterministic WebAssembly (Wasm) modules during cart and checkout processing |
+| Post-purchase extension | Shopify-hosted Web Worker-based post-purchase runtime | Render remote UI after checkout and request a signed order change |
 
 React Router route modules can contain both server and browser code. A route's `loader` and `action` execute on the app server, while its default React component and imported page components can be included in the browser bundle. The `.server.js` suffix makes the server-only boundary explicit.
 
@@ -52,6 +52,43 @@ sequenceDiagram
 ```
 
 The OAuth access token belongs on the server. App Bridge session tokens are short-lived browser-to-app assertions and are not substitutes for the stored Admin API token.
+
+## Non-embedded Service Connector
+
+When the app configuration uses `embedded = false`, Shopify opens App Home as a top-level external page instead of inside the Admin iframe. App Bridge and its session-token API are unavailable in that page, so this sample verifies the signed Shopify entry request, completes OAuth if necessary, and then issues a separate short-lived JWT owned by the app. The JWT carries the verified shop identity to the dummy external service page.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Merchant
+    participant Admin as Shopify Admin
+    participant Browser as Top-level browser page
+    participant App as Remote app server
+    participant Store as Installation store
+    participant OAuth as Shopify OAuth
+    participant Service as External service page
+
+    Merchant->>Admin: Open a non-embedded app
+    Admin->>Browser: Open app URL outside an iframe with signed parameters
+    Browser->>App: GET app URL
+    App->>App: Verify Shopify query HMAC and shop
+    App->>Store: Check installation and stored Admin token
+    opt Installation is missing or stale
+        App-->>Browser: Redirect to Shopify OAuth
+        Browser->>OAuth: Authorize app
+        OAuth-->>App: Callback with code and HMAC
+        App->>OAuth: Exchange code and store Admin token
+        App-->>Browser: Redirect to Shopify Admin app URL
+        Browser->>App: GET signed non-embedded app URL again
+    end
+    App->>App: Create short-lived app-signed JWT containing shop
+    App-->>Browser: Redirect to /mocklogin with app JWT
+    Browser->>Service: Open plain external service page
+    Service->>Service: Verify app JWT and resolve shop
+    Service-->>Merchant: Render service login or dashboard
+```
+
+The sample hosts `/mocklogin` on the same server, but it represents a separate external system in this architecture. The app-owned JWT is not a Shopify session token and does not grant Admin API access. A production connector should use the verified shop to establish its own server-side session, keep the handoff token short-lived and single-purpose, and avoid retaining it in URLs or logs. This differs from the embedded Session Token page's connector demonstration, where App Bridge supplies a Shopify-signed session token before opening the external page.
 
 ## Normal Embedded Page and API Request
 
@@ -115,14 +152,14 @@ Do not import secrets or server-only modules into page components. Environment v
 
 ## Storefront and UI Extension Runtimes
 
-Theme, Web Pixel, Checkout UI, Customer Account UI, and POS UI extensions are delivered by Shopify and run on their target surfaces. They do not execute inside the Render process, although selected extensions can call the app server over HTTPS.
+Theme, Web Pixel, Checkout UI, Customer Account UI, and POS UI extensions are delivered by Shopify and run on their target surfaces. They do not execute inside the Render process, although selected extensions can call the app server over HTTPS. UI extensions execute in isolated Web Worker-based sandboxes and describe UI through remote-dom rather than directly controlling the host DOM. App Web Pixels run in a strict Web Worker sandbox with no direct DOM access.
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor User as Merchant or customer
     participant Surface as Shopify surface
-    participant Runtime as Shopify-hosted extension runtime
+    participant Runtime as Isolated Worker runtime
     participant App as Remote app server
     participant API as Shopify API
 
@@ -140,11 +177,11 @@ sequenceDiagram
     Runtime-->>Surface: Render web components or perform target action
 ```
 
-Capabilities such as network access, Storefront API access, metafield access, and buyer-journey blocking must be declared in each extension's configuration. Browser or worker requests can trigger an `OPTIONS` preflight, which the server must answer before routing the actual request.
+Capabilities such as network access, Storefront API access, metafield access, and buyer-journey blocking must be declared in each extension's configuration. Browser or Worker requests can trigger an `OPTIONS` preflight, which the server must answer before routing the actual request. Each placed extension block is an isolated runtime instance, so in-memory state and side effects must not assume one global singleton.
 
 ## Shopify Functions Runtime
 
-The management UI registers a Function and its configuration through the Admin API. Later, Shopify invokes the deployed Wasm module directly while evaluating a cart or checkout; the remote app server is not in that execution path.
+The management UI registers a Function and its configuration through the Admin API. The Rust source is compiled to a WebAssembly (Wasm) module when the extension is built and deployed. Later, Shopify invokes that module directly while evaluating a cart or checkout; the remote app server is not in that execution path.
 
 ```mermaid
 sequenceDiagram
@@ -169,7 +206,7 @@ sequenceDiagram
     Checkout->>Checkout: Apply allowed operations
 ```
 
-Functions must be deterministic and use only the input declared by their input query. Logging, arbitrary network calls, and reading the app database are not part of the runtime path.
+Functions must be deterministic and use only the input declared by their input query. They must comply with Shopify's Wasm ABI and resource limits. Logging, arbitrary network calls unless explicitly supported by that Function API, and reading the app database are not part of the normal runtime path.
 
 ## Infrastructure Independence
 
@@ -191,6 +228,7 @@ Render, Node.js, React Router, and MongoDB are this repository's concrete choice
 | Embedded navigation | [`app/AppShell.jsx`](../app/AppShell.jsx) |
 | Initial authentication and OAuth start | [`app/routes/auth.jsx`](../app/routes/auth.jsx) |
 | OAuth callback | [`app/routes/auth.callback.jsx`](../app/routes/auth.callback.jsx) |
+| Non-embedded JWT handoff | [`app/routes/auth.jsx`](../app/routes/auth.jsx) and [`app/lib/public-endpoints.server.js`](../app/lib/public-endpoints.server.js) |
 | Embedded and authenticated endpoint helpers | [`app/lib/embedded.server.js`](../app/lib/embedded.server.js) |
 | Session-token verification | [`app/lib/session-token.server.js`](../app/lib/session-token.server.js) |
 | Browser App Bridge helpers | [`app/utils/app-bridge.js`](../app/utils/app-bridge.js) |
@@ -202,5 +240,7 @@ Render, Node.js, React Router, and MongoDB are this repository's concrete choice
 - [OAuth authorization code grant](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/authorization-code-grant)
 - [Session tokens](https://shopify.dev/docs/apps/build/authentication-authorization/session-tokens)
 - [App Bridge](https://shopify.dev/docs/api/app-bridge-library)
+- [Using Polaris web components and the UI extension execution model](https://shopify.dev/docs/api/polaris/using-polaris-web-components)
+- [Web pixel strict sandbox](https://shopify.dev/docs/apps/build/marketing-analytics/pixels)
 - [Shopify Functions](https://shopify.dev/docs/api/functions/latest)
 - [Authenticate extension requests to an app server](https://shopify.dev/docs/apps/build/purchase-options/product-subscription-app-extensions/authenticate-extension-requests)

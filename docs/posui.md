@@ -7,7 +7,7 @@ The `/posui` page documents a Shopify POS UI extension with two demonstrations: 
 ## Runtime Locations
 
 - The information page runs in the embedded Admin app.
-- Extension modules run inside Shopify POS on the configured tile, modal, menu-item, and post-purchase action targets.
+- Extension modules run in isolated Web Worker-based runtimes inside Shopify POS on the configured tile, modal, menu-item, and post-purchase action targets.
 - The camera scanner, cart, toast, session, and printing APIs are provided by the POS extension runtime.
 - `/mocklogin` is rendered by the remote app server after verifying the POS session token.
 

@@ -7,7 +7,7 @@ The `/postpurchase` sample prepares metafields and server endpoints for an offer
 ## Runtime Locations
 
 - The preparation UI runs in the embedded Admin app.
-- The post-purchase extension runs in Shopify's dedicated post-purchase runtime.
+- The post-purchase extension runs in Shopify's dedicated Web Worker-based post-purchase runtime and renders Shopify-provided remote UI rather than the host DOM.
 - Product lookup, changeset signing, and customer metafield updates run on the remote app server.
 - Shopify applies the signed changeset to the completed purchase.
 

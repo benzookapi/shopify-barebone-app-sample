@@ -8,7 +8,7 @@ The `/webpixel` sample registers a custom Web Pixel and forwards selected standa
 
 - The management UI runs in the embedded Admin browser.
 - The app server registers pixel settings through Admin GraphQL.
-- The extension runs in Shopify's customer-events sandbox on buyer-facing pages.
+- The app Web Pixel extension runs in a strict Web Worker sandbox in the visitor's browser on buyer-facing pages.
 - Measurement requests go from the pixel runtime to Google's GA4 endpoint.
 
 ## Registration and Event Sequence
@@ -40,7 +40,7 @@ sequenceDiagram
 
 The Admin page sends settings to the server, which calls `webPixelCreate`. Shopify then supplies those settings to the deployed extension. The pixel subscribes to customer events, maps supported Shopify payloads into GA4 event parameters, and sends them with `fetch`, including `keepalive` where supported.
 
-The extension explicitly declares its customer privacy behavior. Event availability and field visibility depend on Shopify's pixel sandbox, consent state, and the surface that emitted the event.
+The extension explicitly declares its customer privacy behavior. An app Web Pixel's strict Web Worker sandbox exposes only a controlled set of globals and APIs; it cannot read or write the storefront DOM. Event availability and field visibility depend on consent state and the surface that emitted the event.
 
 ## Common Pitfalls
 
@@ -55,7 +55,7 @@ The extension explicitly declares its customer privacy behavior. Event availabil
 
 | Term | Meaning |
 | --- | --- |
-| Web Pixel | A Shopify-managed analytics extension running in the customer-events sandbox |
+| Web Pixel | A Shopify-managed analytics extension running in a strict Web Worker customer-events sandbox |
 | Customer event | A standardized event published by Shopify, such as checkout or cart activity |
 | Measurement Protocol | Google's HTTP interface for sending GA4 events |
 | Pixel settings | Merchant-configured values passed to the extension by Shopify |
