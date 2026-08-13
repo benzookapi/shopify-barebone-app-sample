@@ -1,0 +1,206 @@
+# Application Architecture
+
+This document explains where each part of the sample runs and how requests move between Shopify, the browser, the app server, and deployed extensions. The sample uses Node.js, React Router, and Render, but the security and protocol boundaries apply equally to apps written in other languages or hosted elsewhere.
+
+## Runtime Map
+
+| Area | Runs in | Responsibility |
+| --- | --- | --- |
+| React route `loader` and `action` functions | Remote app server | Verify requests, load installation data, call Shopify APIs, and return HTTP responses |
+| React route components and `app/pages/` | Merchant browser | Render the embedded App Home UI and initiate authenticated requests |
+| `app/lib/*.server.js` | Remote app server | OAuth, JWT/HMAC verification, token storage, GraphQL calls, webhook handling, and business logic |
+| `app/utils/` | Merchant browser unless otherwise noted | App Bridge access, session-token fetches, navigation, and browser helpers |
+| App Bridge and Polaris web components | Merchant browser inside Shopify Admin | Embed the app, provide Shopify context, navigation, and Admin UI components |
+| Theme app extension | Online Store theme runtime and storefront browser | Render Liquid blocks and run storefront JavaScript |
+| Checkout, Customer Account, and POS UI extensions | Shopify-hosted extension runtimes | Render surface-specific UI and use target APIs supplied by Shopify |
+| Web Pixel extension | Shopify's customer-events sandbox | Subscribe to permitted customer events and send analytics requests |
+| Shopify Functions | Shopify infrastructure | Run deterministic Wasm logic during cart and checkout processing |
+| Post-purchase extension | Shopify-hosted post-purchase runtime | Render an offer after checkout and request a signed order change |
+
+React Router route modules can contain both server and browser code. A route's `loader` and `action` execute on the app server, while its default React component and imported page components can be included in the browser bundle. The `.server.js` suffix makes the server-only boundary explicit.
+
+## First Embedded Access and OAuth
+
+The Admin initially opens the app with a Shopify-signed query. The app verifies that query before trusting `shop`, checks whether the installation belongs to the current app client, and starts OAuth when an Admin API access token is missing or stale.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Merchant
+    participant Admin as Shopify Admin
+    participant Browser as Merchant browser
+    participant App as Remote app server
+    participant Store as Installation store
+    participant OAuth as Shopify OAuth
+
+    Merchant->>Admin: Open the app
+    Admin->>Browser: Load app URL with shop, host, embedded, HMAC
+    Browser->>App: GET embedded app URL
+    App->>App: Verify query HMAC and shop domain
+    App->>Store: Read stored installation
+    Store-->>App: Missing or not owned by current client ID
+    App-->>Browser: Redirect to OAuth authorization URL
+    Browser->>OAuth: Merchant authorizes requested scopes
+    OAuth-->>Browser: Redirect to /auth/callback with code and HMAC
+    Browser->>App: GET /auth/callback
+    App->>App: Verify callback HMAC
+    App->>OAuth: Exchange authorization code
+    OAuth-->>App: Admin API access token and granted scopes
+    App->>Store: Store installation securely
+    App->>OAuth: Resolve the app handle
+    App-->>Browser: Redirect to Shopify Admin app URL
+```
+
+The OAuth access token belongs on the server. App Bridge session tokens are short-lived browser-to-app assertions and are not substitutes for the stored Admin API token.
+
+## Normal Embedded Page and API Request
+
+After installation, the signed initial page request establishes the embedded document. Browser-side code then obtains a fresh App Bridge token for each protected app-server request.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Admin as Shopify Admin
+    participant Browser as Embedded browser document
+    participant Loader as React Router loader
+    participant Bridge as App Bridge
+    participant Endpoint as App JSON endpoint
+    participant Store as Installation store
+    participant API as Shopify Admin GraphQL API
+
+    Admin->>Loader: GET page with signed embedded parameters
+    Loader->>Loader: Verify HMAC and installation
+    Loader-->>Browser: HTML and browser bundle
+    Browser->>Bridge: Request idToken()
+    Bridge-->>Browser: Short-lived session token
+    Browser->>Endpoint: Request with Authorization: Bearer token
+    Endpoint->>Endpoint: Verify JWT signature, audience, destination, and time
+    Endpoint->>Store: Load shop's Admin OAuth token
+    Endpoint->>API: GraphQL request with OAuth token
+    API-->>Endpoint: GraphQL response
+    Endpoint-->>Browser: JSON response
+```
+
+The initial HMAC and later JWT solve different problems:
+
+- The query HMAC protects the server-rendered entry request from forged Shopify parameters.
+- The session-token JWT authenticates a browser or extension request to the app server.
+- The offline Admin OAuth token authorizes the app server to call the Admin API for that shop.
+
+## Browser and Server Module Boundaries
+
+```mermaid
+sequenceDiagram
+    participant Browser as Browser runtime
+    participant RouteUI as Route component
+    participant Page as app/pages component
+    participant Bridge as App Bridge and Polaris
+    participant HTTP as HTTP boundary
+    participant RouteData as Route loader or action
+    participant Lib as app/lib server module
+    participant Shopify as Shopify API
+
+    Browser->>RouteUI: Hydrate route component
+    RouteUI->>Page: Render page UI
+    Page->>Bridge: Use navigation, ID token, and web components
+    Page->>HTTP: Fetch protected .json endpoint
+    HTTP->>RouteData: Dispatch request on remote server
+    RouteData->>Lib: Verify and execute server logic
+    Lib->>Shopify: Send authenticated API request
+    Shopify-->>Lib: Return data
+    Lib-->>Page: Return JSON across HTTP boundary
+```
+
+Do not import secrets or server-only modules into page components. Environment variables, OAuth tokens, database access, and Admin API credentials must remain behind the HTTP boundary.
+
+## Storefront and UI Extension Runtimes
+
+Theme, Web Pixel, Checkout UI, Customer Account UI, and POS UI extensions are delivered by Shopify and run on their target surfaces. They do not execute inside the Render process, although selected extensions can call the app server over HTTPS.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Merchant or customer
+    participant Surface as Shopify surface
+    participant Runtime as Shopify-hosted extension runtime
+    participant App as Remote app server
+    participant API as Shopify API
+
+    User->>Surface: Open storefront, checkout, account, or POS
+    Surface->>Runtime: Load extension for matching target
+    Runtime->>Runtime: Read target APIs, settings, and allowed metafields
+    opt Extension requires app-owned data
+        Runtime->>Runtime: Get a fresh extension session token
+        Runtime->>App: HTTPS request with Bearer token
+        App->>App: Verify token and CORS policy
+        App->>API: Call Shopify API with server credential
+        API-->>App: Return data
+        App-->>Runtime: Return CORS-enabled response
+    end
+    Runtime-->>Surface: Render web components or perform target action
+```
+
+Capabilities such as network access, Storefront API access, metafield access, and buyer-journey blocking must be declared in each extension's configuration. Browser or worker requests can trigger an `OPTIONS` preflight, which the server must answer before routing the actual request.
+
+## Shopify Functions Runtime
+
+The management UI registers a Function and its configuration through the Admin API. Later, Shopify invokes the deployed Wasm module directly while evaluating a cart or checkout; the remote app server is not in that execution path.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Merchant
+    participant UI as Embedded management UI
+    participant App as Remote app server
+    participant AdminAPI as Shopify Admin GraphQL API
+    participant Config as Function owner and metafield
+    participant Checkout as Shopify cart or checkout
+    participant Wasm as Deployed Function Wasm
+
+    Merchant->>UI: Register customization
+    UI->>App: Authenticated request with settings
+    App->>AdminAPI: Create discount or customization
+    AdminAPI->>Config: Persist function handle and metafield
+    AdminAPI-->>UI: Registration result
+    Note over App,Wasm: The app server is not called during Function execution
+    Checkout->>Wasm: Invoke with generated GraphQL input
+    Config-->>Wasm: Include configured metafield data
+    Wasm-->>Checkout: Return operations
+    Checkout->>Checkout: Apply allowed operations
+```
+
+Functions must be deterministic and use only the input declared by their input query. Logging, arbitrary network calls, and reading the app database are not part of the runtime path.
+
+## Infrastructure Independence
+
+Render, Node.js, React Router, and MongoDB are this repository's concrete choices. Another implementation can replace all of them if it preserves the same contracts:
+
+- Verify Shopify HMAC signatures before trusting signed query strings or webhook bodies.
+- Verify session-token JWTs and bind them to the expected app client and shop.
+- Keep Admin and private Storefront access tokens on a trusted server.
+- Implement the OAuth callback and persist installation state safely.
+- Return correct content types, CORS headers, status codes, and response shapes.
+- Treat extension configuration and deployed artifacts as part of the app version.
+
+## Source Map
+
+| Concern | Source |
+| --- | --- |
+| Route definitions | [`app/routes.js`](../app/routes.js) |
+| HTML shell and conditional App Bridge loading | [`app/root.jsx`](../app/root.jsx) |
+| Embedded navigation | [`app/AppShell.jsx`](../app/AppShell.jsx) |
+| Initial authentication and OAuth start | [`app/routes/auth.jsx`](../app/routes/auth.jsx) |
+| OAuth callback | [`app/routes/auth.callback.jsx`](../app/routes/auth.callback.jsx) |
+| Embedded and authenticated endpoint helpers | [`app/lib/embedded.server.js`](../app/lib/embedded.server.js) |
+| Session-token verification | [`app/lib/session-token.server.js`](../app/lib/session-token.server.js) |
+| Browser App Bridge helpers | [`app/utils/app-bridge.js`](../app/utils/app-bridge.js) |
+| Shopify GraphQL client | [`app/lib/shopify-graphql.server.js`](../app/lib/shopify-graphql.server.js) |
+
+## Official References
+
+- [App surfaces](https://shopify.dev/docs/apps/build/app-surfaces)
+- [OAuth authorization code grant](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/authorization-code-grant)
+- [Session tokens](https://shopify.dev/docs/apps/build/authentication-authorization/session-tokens)
+- [App Bridge](https://shopify.dev/docs/api/app-bridge-library)
+- [Shopify Functions](https://shopify.dev/docs/api/functions/latest)
+- [Authenticate extension requests to an app server](https://shopify.dev/docs/apps/build/purchase-options/product-subscription-app-extensions/authenticate-extension-requests)
