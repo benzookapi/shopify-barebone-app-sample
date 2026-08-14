@@ -1,10 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
-import { apiJson } from './embedded.server.js';
 import { json } from './http.server.js';
 import { requireAuthenticatedShop } from './session-token.server.js';
 import { createAppJwt, decodeSessionToken } from './shopify-auth.server.js';
 import { callAdminGraphql } from './shopify-graphql.server.js';
-import { getPublicOrigin } from './public-url.server.js';
 
 export const postPurchaseCorsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,54 +18,6 @@ function postPurchaseJson(data, init = {}) {
       ...(init.headers || {}),
     },
   });
-}
-
-export async function preparePostPurchase(request, context) {
-  const origin = getPublicOrigin(request);
-  const errors = {
-    errors: 0,
-    apis: [],
-  };
-
-  try {
-    let response = await callAdminGraphql(context.shop, `query ShopId {
-      shop {
-        id
-      }
-    }`);
-    const id = response.data.shop.id;
-    response = await callAdminGraphql(context.shop, `mutation MetafieldsSet($metafields: [MetafieldsSetInput!]!) {
-      metafieldsSet(metafields: $metafields) {
-        metafields {
-          id
-          value
-        }
-        userErrors {
-          field
-          message
-        }
-      }
-    }`, {
-      metafields: [
-        {
-          key: 'url',
-          namespace: 'barebone_app',
-          ownerId: id,
-          type: 'single_line_text_field',
-          value: origin,
-        },
-      ],
-    });
-    if (response.data.metafieldsSet.userErrors.length > 0) {
-      errors.errors += 1;
-      errors.apis.push(`shop ${JSON.stringify(response.data.metafieldsSet.userErrors[0])}`);
-    }
-  } catch (error) {
-    errors.errors += 1;
-    errors.apis.push(`shop ${error.message}`);
-  }
-
-  return apiJson(errors);
 }
 
 export async function handlePostPurchaseAction(request) {

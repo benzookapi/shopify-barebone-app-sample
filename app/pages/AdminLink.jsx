@@ -1,6 +1,35 @@
 import { useEffect, useState } from 'react';
-import { authenticatedJson, createRedirect, RedirectAction } from "../utils/app-bridge";
+import { createRedirect, RedirectAction } from "../utils/app-bridge";
+import { callDirectAdminGraphql } from "../utils/direct-admin-graphql";
 import { getAdminFromShop, getQueryParam, getShopFromLocation } from "../utils/shop";
+
+const ADMIN_LINKED_PRODUCT_QUERY = `query AdminLinkedProduct($id: ID!) {
+    product(id: $id) {
+        id
+        handle
+        title
+        onlineStoreUrl
+        priceRangeV2 {
+            maxVariantPrice {
+                amount
+                currencyCode
+            }
+            minVariantPrice {
+                amount
+                currencyCode
+            }
+        }
+        variants(first: 10) {
+            edges {
+                node {
+                    id
+                    title
+                    price
+                }
+            }
+        }
+    }
+}`;
 
 
 // Admin link extension sample
@@ -33,7 +62,15 @@ function AdminLink() {
         let cancelled = false;
         setRes('');
 
-        authenticatedJson(`/adminlink.json?id=${encodeURIComponent(id)}`).then((json) => {
+        callDirectAdminGraphql(ADMIN_LINKED_PRODUCT_QUERY, {
+            id: `gid://shopify/Product/${id}`,
+        }).then((response) => {
+            const json = {
+                result: {
+                    message: '',
+                    response,
+                },
+            };
             console.log(JSON.stringify(json, null, 4));
             if (!cancelled) setRes(JSON.stringify(json.result, null, 4));
         }).catch((error) => {

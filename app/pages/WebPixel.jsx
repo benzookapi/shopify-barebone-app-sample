@@ -1,6 +1,19 @@
 import { useState, useCallback } from 'react';
-import { authenticatedJson } from "../utils/app-bridge";
+import { callDirectAdminGraphql } from '../utils/direct-admin-graphql';
 import { getAdminFromShop, getShopFromLocation } from "../utils/shop";
+
+const CREATE_WEB_PIXEL = `mutation WebPixelCreate($webPixel: WebPixelInput!) {
+  webPixelCreate(webPixel: $webPixel) {
+    userErrors {
+      field
+      message
+    }
+    webPixel {
+      settings
+      id
+    }
+  }
+}`;
 
 
 // Web Pixel sample
@@ -51,10 +64,17 @@ function WebPixel() {
                   <s-button variant="primary" onClick={() => {
                     setAccessing(true);
                     // Read https://shopify.dev/api/admin-graphql/2023-04/mutations/webPixelCreate"
-                    authenticatedJson(`/webpixel.json?ga4Id=${encodeURIComponent(ga4Id)}&ga4Sec=${encodeURIComponent(ga4Sec)}&ga4Debug=${encodeURIComponent(ga4Debug)}`).then((json) => {
-                        console.log(JSON.stringify(json, null, 4));
+                    callDirectAdminGraphql(CREATE_WEB_PIXEL, {
+                      webPixel: {
+                        settings: JSON.stringify({ ga4Id, ga4Sec, ga4Debug: String(ga4Debug) }),
+                      },
+                    }).then((json) => {
+                        console.log(JSON.stringify({
+                          userErrors: json.data.webPixelCreate.userErrors,
+                          webPixelId: json.data.webPixelCreate.webPixel?.id,
+                        }, null, 4));
                         setAccessing(false);
-                        if (json.result.response.data.webPixelCreate.userErrors.length == 0) {
+                        if (json.data.webPixelCreate.userErrors.length == 0) {
                           setResult('Success!');
                         } else {
                           setResult('Error!');

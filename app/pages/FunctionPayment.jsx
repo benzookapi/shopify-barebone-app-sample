@@ -1,7 +1,30 @@
 import { useState, useCallback } from 'react';
 import { useLoaderData } from 'react-router';
-import { authenticatedJson } from "../utils/app-bridge";
+import { callDirectAdminGraphql } from '../utils/direct-admin-graphql';
 import { getAdminFromShop } from "../utils/shop";
+
+const CREATE_PAYMENT_CUSTOMIZATION = `mutation PaymentCustomizationCreate($paymentCustomization: PaymentCustomizationInput!) {
+  paymentCustomizationCreate(paymentCustomization: $paymentCustomization) {
+    paymentCustomization {
+      enabled
+      id
+      title
+      metafields(first: 10) {
+        edges {
+          node {
+            namespace
+            key
+            value
+          }
+        }
+      }
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}`;
 
 
 // Shopify Functions for payment method sample
@@ -48,10 +71,24 @@ function FunctionPayment() {
                 <s-list-item>
                   <s-button variant="primary" onClick={() => {
                     setAccessing(true);
-                    authenticatedJson(`/functionpayment.json?method=${encodeURIComponent(method)}&rate=${encodeURIComponent(rate)}`).then((json) => {
+                    callDirectAdminGraphql(CREATE_PAYMENT_CUSTOMIZATION, {
+                      paymentCustomization: {
+                        enabled: true,
+                        functionHandle: 'my-function-payment-ext',
+                        metafields: [
+                          {
+                            key: 'filter',
+                            namespace: 'barebone_app_function_payment',
+                            type: 'json',
+                            value: JSON.stringify({ method, rate }),
+                          },
+                        ],
+                        title: 'Barebone App Function Payment',
+                      },
+                    }).then((json) => {
                         console.log(JSON.stringify(json, null, 4));
                         setAccessing(false);
-                        if (json.result.response.data.paymentCustomizationCreate.userErrors.length == 0) {
+                        if (json.data.paymentCustomizationCreate.userErrors.length == 0) {
                           setResult('Success!');
                         } else {
                           setResult('Error!');

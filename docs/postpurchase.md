@@ -7,6 +7,7 @@ The `/postpurchase` sample prepares metafields and server endpoints for an offer
 ## Runtime Locations
 
 - The preparation UI runs in the embedded Admin app.
+- App Bridge Direct API access writes the shop-level setup metafield without an app-server setup route.
 - The post-purchase extension runs in Shopify's dedicated Web Worker-based post-purchase runtime and renders Shopify-provided remote UI rather than the host DOM.
 - Product lookup, changeset signing, and customer metafield updates run on the remote app server.
 - Shopify applies the signed changeset to the completed purchase.
@@ -18,14 +19,17 @@ sequenceDiagram
     autonumber
     actor Merchant
     participant UI as /postpurchase page
-    participant App as /postpurchase.json
+    participant Bridge as App Bridge Direct API access
     participant AdminAPI as Admin GraphQL API
     participant Product as Product metafields
 
     Merchant->>UI: Add app URL to the shop metafield
-    UI->>App: Authenticated request
-    App->>AdminAPI: metafieldsSet barebone_app.url
-    AdminAPI-->>UI: Preparation result
+    UI->>Bridge: Query shop ID with shopify:admin
+    Bridge->>AdminAPI: Authenticated shop query
+    AdminAPI-->>UI: Shop ID through App Bridge
+    UI->>Bridge: metafieldsSet barebone_app.url
+    Bridge->>AdminAPI: Authenticated setup mutation
+    AdminAPI-->>UI: Preparation result through App Bridge
     Merchant->>Product: Set barebone_app_upsell.product_id
     Merchant->>Merchant: Enable extension in checkout settings
 ```
@@ -69,6 +73,8 @@ When the buyer accepts, the extension builds `add_variant` changes. The app serv
 
 The app handles `OPTIONS /postpurchase` before React Router. Extension runtimes often trigger a CORS preflight, so the actual `POST` is never sent if the preflight fails.
 
+Only the merchant-facing setup action uses Direct API access. Product lookup, changeset signing, and customer review updates remain on the app server because they process verified post-purchase tokens and, for signing, require the app secret.
+
 ## Common Pitfalls
 
 - Post-purchase eligibility has payment-method and checkout limitations; the extension is not guaranteed to appear after every order.
@@ -78,6 +84,7 @@ The app handles `OPTIONS /postpurchase` before React Router. Extension runtimes 
 - CORS requires the preflight response, allowed headers, and actual response headers to agree.
 - Never let the browser sign its own changeset; signing requires the app secret.
 - `done()` must be called after both acceptance and rejection paths.
+- Direct API setup requires an embedded App Bridge context and the app's configured Direct API access and Admin scopes.
 
 ## Key Terms
 
@@ -91,8 +98,8 @@ The app handles `OPTIONS /postpurchase` before React Router. Extension runtimes 
 
 ## Source Map
 
-- [`app/pages/PostPurchase.jsx`](../app/pages/PostPurchase.jsx): setup UI
-- [`app/routes/postpurchase-json.jsx`](../app/routes/postpurchase-json.jsx): authenticated setup endpoint
+- [`app/pages/PostPurchase.jsx`](../app/pages/PostPurchase.jsx): setup UI, shop query, and `metafieldsSet` mutation
+- [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js): shared App Bridge Direct API client
 - [`app/routes/postpurchase.jsx`](../app/routes/postpurchase.jsx): extension-facing action route
 - [`app/lib/post-purchase.server.js`](../app/lib/post-purchase.server.js): product lookup, token signing, and review update
 - [`server.mjs`](../server.mjs): early CORS preflight handling
@@ -102,6 +109,7 @@ The app handles `OPTIONS /postpurchase` before React Router. Extension runtimes 
 ## Official Shopify References
 
 - [Post-purchase extensions](https://shopify.dev/docs/apps/build/checkout/product-offers)
+- [App Bridge Resource Fetching API](https://shopify.dev/docs/api/app-home/apis/authentication-and-data/resource-fetching-api)
 - [Post-purchase extension points](https://shopify.dev/docs/api/checkout-extensions/extension-points)
 - [Post-purchase JWT specification](https://shopify.dev/docs/api/checkout-extensions/post-purchase/jwt-specification)
 - [Post-purchase limitations and considerations](https://shopify.dev/docs/apps/checkout/post-purchase#limitations-and-considerations)

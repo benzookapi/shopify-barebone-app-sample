@@ -1,7 +1,22 @@
 import { useState, useCallback } from 'react';
 import { useLoaderData } from 'react-router';
-import { authenticatedJson } from "../utils/app-bridge";
+import { callDirectAdminGraphql } from '../utils/direct-admin-graphql';
 import { getAdminFromShop } from "../utils/shop";
+
+const CREATE_DISCOUNT = `mutation DiscountAutomaticAppCreate($automaticAppDiscount: DiscountAutomaticAppInput!) {
+  discountAutomaticAppCreate(automaticAppDiscount: $automaticAppDiscount) {
+    automaticAppDiscount {
+      discountClasses
+      discountId
+      title
+      startsAt
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}`;
 
 
 // Shopify Functions for discounts sample
@@ -47,10 +62,31 @@ function FunctionDiscount() {
                 <s-list-item>
                   <s-button variant="primary" onClick={() => {
                     setAccessing(true);
-                    authenticatedJson(`/functiondiscount.json?meta=${encodeURIComponent(meta)}`).then((json) => {
+                    const [namespace, key] = meta.split('.');
+                    callDirectAdminGraphql(CREATE_DISCOUNT, {
+                      automaticAppDiscount: {
+                        combinesWith: {
+                          orderDiscounts: true,
+                          productDiscounts: true,
+                          shippingDiscounts: true,
+                        },
+                        discountClasses: ['ORDER'],
+                        functionHandle: 'my-function-discount-ext',
+                        metafields: [
+                          {
+                            key: 'customer_meta',
+                            namespace: 'barebone_app_function_discount',
+                            type: 'json',
+                            value: JSON.stringify({ namespace, key }),
+                          },
+                        ],
+                        startsAt: new Date().toISOString(),
+                        title: `Barebone App Function Discount - ${new Date().toISOString()}`,
+                      },
+                    }).then((json) => {
                         console.log(JSON.stringify(json, null, 4));
                         setAccessing(false);
-                        if (json.result.response.data.discountAutomaticAppCreate.userErrors.length == 0) {
+                        if (json.data.discountAutomaticAppCreate.userErrors.length == 0) {
                           setResult('Success!');
                         } else {
                           setResult('Error!');

@@ -7,7 +7,7 @@ The `/functiondiscount` sample registers an automatic order-discount Function. A
 ## Runtime Locations
 
 - The registration form runs in the embedded browser.
-- The app server registers the Function owner and configuration through Admin GraphQL.
+- App Bridge Direct API access registers the Function owner and configuration through Admin GraphQL without an app-server API route.
 - The Rust Function is compiled to Wasm and runs on Shopify infrastructure.
 
 ## Registration and Execution
@@ -17,16 +17,16 @@ sequenceDiagram
     autonumber
     actor Merchant
     participant UI as /functiondiscount page
-    participant App as /functiondiscount.json
+    participant Bridge as App Bridge Direct API access
     participant AdminAPI as Admin GraphQL API
     participant Checkout as Shopify checkout
     participant Function as Discount Function Wasm
 
     Merchant->>UI: Enter customer metafield namespace and key
-    UI->>App: Authenticated registration request
-    App->>AdminAPI: discountAutomaticAppCreate
-    AdminAPI-->>UI: Discount registration result
-    Note over App,Function: No app-server request occurs during checkout execution
+    UI->>Bridge: fetch shopify:admin with discountAutomaticAppCreate
+    Bridge->>AdminAPI: Authenticated mutation and configuration metafield
+    AdminAPI-->>UI: Discount registration result through App Bridge
+    Note over UI,Function: No app-server request occurs during registration or checkout execution
     Checkout->>Function: Input cart attribute, buyer customer metafield, discount classes
     Function->>Function: Parse and validate percentage
     Function-->>Checkout: orderDiscountsAdd operation or no operations
@@ -42,6 +42,7 @@ At runtime, the Function checks that order discounts are supported, prefers the 
 ## Common Pitfalls
 
 - Registering the Function and executing it are separate phases. Checkout does not call this app server.
+- Direct API registration requires an embedded App Bridge context and the app's configured Direct API access and Admin scopes.
 - A customer metafield is available only when checkout has a matching authenticated customer and the Function input query requests it.
 - Namespace and key must match the metafield definition and stored customer value exactly.
 - Invalid, missing, zero, negative, or greater-than-100 values intentionally return no operations.
@@ -60,9 +61,8 @@ At runtime, the Function checks that order discounts are supported, prefers the 
 
 ## Source Map
 
-- [`app/pages/FunctionDiscount.jsx`](../app/pages/FunctionDiscount.jsx): registration UI
-- [`app/routes/functiondiscount-json.jsx`](../app/routes/functiondiscount-json.jsx): authenticated endpoint
-- [`app/lib/functions-samples.server.js`](../app/lib/functions-samples.server.js): `discountAutomaticAppCreate` mutation
+- [`app/pages/FunctionDiscount.jsx`](../app/pages/FunctionDiscount.jsx): registration UI and `discountAutomaticAppCreate` mutation
+- [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js): shared App Bridge Direct API client
 - [`extensions/my-function-discount-ext/src/cart_lines_discounts_generate_run.graphql`](../extensions/my-function-discount-ext/src/cart_lines_discounts_generate_run.graphql): runtime input query
 - [`extensions/my-function-discount-ext/src/cart_lines_discounts_generate_run.rs`](../extensions/my-function-discount-ext/src/cart_lines_discounts_generate_run.rs): Function logic and tests
 - [`extensions/my-function-discount-ext/shopify.extension.toml`](../extensions/my-function-discount-ext/shopify.extension.toml): extension configuration
@@ -71,5 +71,6 @@ At runtime, the Function checks that order discounts are supported, prefers the 
 
 - [Discount Function API](https://shopify.dev/docs/api/functions/latest/discount)
 - [Create an automatic app discount](https://shopify.dev/docs/api/admin-graphql/latest/mutations/discountAutomaticAppCreate)
+- [App Bridge Resource Fetching API](https://shopify.dev/docs/api/app-home/apis/authentication-and-data/resource-fetching-api)
 - [Shopify Functions](https://shopify.dev/docs/api/functions/latest)
 - [Metafields](https://shopify.dev/docs/apps/build/custom-data/metafields)

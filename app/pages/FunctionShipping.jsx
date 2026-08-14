@@ -1,7 +1,30 @@
 import { useState, useCallback } from 'react';
 import { useLoaderData } from 'react-router';
-import { authenticatedJson } from "../utils/app-bridge";
+import { callDirectAdminGraphql } from '../utils/direct-admin-graphql';
 import { getAdminFromShop } from "../utils/shop";
+
+const CREATE_DELIVERY_CUSTOMIZATION = `mutation DeliveryCustomizationCreate($deliveryCustomization: DeliveryCustomizationInput!) {
+  deliveryCustomizationCreate(deliveryCustomization: $deliveryCustomization) {
+    deliveryCustomization {
+      enabled
+      id
+      title
+      metafields(first: 10) {
+        edges {
+          node {
+            namespace
+            key
+            value
+          }
+        }
+      }
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}`;
 
 
 // Shopify Functions for shipping method sample
@@ -48,10 +71,24 @@ function FunctionShipping() {
                 <s-list-item>
                   <s-button variant="primary" onClick={() => {
                     setAccessing(true);
-                    authenticatedJson(`/functionshipping.json?rate=${encodeURIComponent(rate)}&zip=${encodeURIComponent(zip)}`).then((json) => {
+                    callDirectAdminGraphql(CREATE_DELIVERY_CUSTOMIZATION, {
+                      deliveryCustomization: {
+                        enabled: true,
+                        functionHandle: 'my-function-shipping-ext',
+                        metafields: [
+                          {
+                            key: 'filter',
+                            namespace: 'barebone_app_function_shipping',
+                            type: 'json',
+                            value: JSON.stringify({ rate, zip }),
+                          },
+                        ],
+                        title: 'Barebone App Function Shipping',
+                      },
+                    }).then((json) => {
                         console.log(JSON.stringify(json, null, 4));
                         setAccessing(false);
-                        if (json.result.response.data.deliveryCustomizationCreate.userErrors.length == 0) {
+                        if (json.data.deliveryCustomizationCreate.userErrors.length == 0) {
                           setResult('Success!');
                         } else {
                           setResult('Error!');

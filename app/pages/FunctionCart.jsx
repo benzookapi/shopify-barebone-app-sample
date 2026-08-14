@@ -1,7 +1,19 @@
 import { useCallback, useState } from 'react';
 import { useLoaderData } from 'react-router';
-import { authenticatedJson } from '../utils/app-bridge';
+import { callDirectAdminGraphql } from '../utils/direct-admin-graphql';
 import { getAdminFromShop } from '../utils/shop';
+
+const CREATE_CART_TRANSFORM = `mutation CartTransformCreate($functionHandle: String!, $metafields: [MetafieldInput!]) {
+  cartTransformCreate(functionHandle: $functionHandle, metafields: $metafields) {
+    cartTransform {
+      id
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}`;
 
 
 // Shopify Cart Transform Function sample
@@ -49,10 +61,21 @@ function FunctionCart() {
                 <s-list-item>
                   <s-button variant="primary" onClick={() => {
                     setAccessing(true);
-                    authenticatedJson(`/functioncart.json?meta=${encodeURIComponent(meta)}`).then((json) => {
+                    const [namespace, key] = meta.split('.');
+                    callDirectAdminGraphql(CREATE_CART_TRANSFORM, {
+                      functionHandle: 'my-function-cart-ext',
+                      metafields: [
+                        {
+                          key: 'customer_meta',
+                          namespace: 'barebone_app_function_cart',
+                          type: 'json',
+                          value: JSON.stringify({ namespace, key }),
+                        },
+                      ],
+                    }).then((json) => {
                       console.log(JSON.stringify(json, null, 4));
                       setAccessing(false);
-                      if (json.result.response.data.cartTransformCreate.userErrors.length == 0) {
+                      if (json.data.cartTransformCreate.userErrors.length == 0) {
                         setResult('Success!');
                       } else {
                         setResult('Error!');

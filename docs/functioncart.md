@@ -7,7 +7,7 @@ The `/functioncart` sample registers a Cart Transform Function that increases el
 ## Runtime Locations
 
 - The embedded UI chooses the customer metafield namespace and key.
-- The app server registers the Cart Transform through Admin GraphQL.
+- App Bridge Direct API access registers the Cart Transform through Admin GraphQL without an app-server API route.
 - Shopify executes the Rust/Wasm Function whenever it recalculates the cart.
 
 ## Registration and Execution
@@ -17,15 +17,15 @@ sequenceDiagram
     autonumber
     actor Merchant
     participant UI as /functioncart page
-    participant App as /functioncart.json
+    participant Bridge as App Bridge Direct API access
     participant AdminAPI as Admin GraphQL API
     participant Cart as Shopify cart calculation
     participant Function as Cart Transform Wasm
 
     Merchant->>UI: Enter customer metafield namespace and key
-    UI->>App: Authenticated registration request
-    App->>AdminAPI: cartTransformCreate with configuration metafield
-    AdminAPI-->>UI: Transform registration result
+    UI->>Bridge: fetch shopify:admin with cartTransformCreate
+    Bridge->>AdminAPI: Authenticated mutation with configuration metafield
+    AdminAPI-->>UI: Transform registration result through App Bridge
     Cart->>Function: Lines, prices, selling plans, buyer customer metafield
     Function->>Function: Parse positive percentage and calculate fixed unit prices
     loop Each eligible merchandise line
@@ -48,6 +48,7 @@ For a valid positive percentage, the Function calculates `price * (1 + percentag
 - Money rounding and currency behavior require deliberate production rules.
 - Shopify can invoke the Function during cart recalculation without the buyer first opening a cart page.
 - Selling-plan lines are intentionally excluded in this sample.
+- Direct API registration requires an embedded App Bridge context and the app's configured Direct API access and Admin scopes.
 
 ## Key Terms
 
@@ -60,9 +61,8 @@ For a valid positive percentage, the Function calculates `price * (1 + percentag
 
 ## Source Map
 
-- [`app/pages/FunctionCart.jsx`](../app/pages/FunctionCart.jsx): registration UI
-- [`app/routes/functioncart-json.jsx`](../app/routes/functioncart-json.jsx): authenticated endpoint
-- [`app/lib/functions-samples.server.js`](../app/lib/functions-samples.server.js): `cartTransformCreate` mutation
+- [`app/pages/FunctionCart.jsx`](../app/pages/FunctionCart.jsx): registration UI and `cartTransformCreate` mutation
+- [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js): shared App Bridge Direct API client
 - [`extensions/my-function-cart-ext/src/cart_transform_run.graphql`](../extensions/my-function-cart-ext/src/cart_transform_run.graphql): runtime input
 - [`extensions/my-function-cart-ext/src/cart_transform_run.rs`](../extensions/my-function-cart-ext/src/cart_transform_run.rs): pricing logic and tests
 - [`extensions/my-function-cart-ext/shopify.extension.toml`](../extensions/my-function-cart-ext/shopify.extension.toml): extension configuration
@@ -71,4 +71,5 @@ For a valid positive percentage, the Function calculates `price * (1 + percentag
 
 - [Cart Transform Function API](https://shopify.dev/docs/api/functions/latest/cart-transform)
 - [Create a cart transform](https://shopify.dev/docs/api/admin-graphql/latest/mutations/cartTransformCreate)
+- [App Bridge Resource Fetching API](https://shopify.dev/docs/api/app-home/apis/authentication-and-data/resource-fetching-api)
 - [Shopify Functions](https://shopify.dev/docs/api/functions/latest)

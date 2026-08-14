@@ -1,7 +1,27 @@
 import { useState } from 'react';
 import { useLoaderData } from 'react-router';
-import { authenticatedJson, createRedirect, RedirectAction } from "../utils/app-bridge";
+import { callDirectAdminGraphql } from '../utils/direct-admin-graphql';
+import { createRedirect, RedirectAction } from "../utils/app-bridge";
 import { getAdminFromShop, getCurrentHost } from "../utils/shop";
+
+const GET_SHOP_ID = `query ShopId {
+  shop {
+    id
+  }
+}`;
+
+const SET_SHOP_METAFIELD = `mutation MetafieldsSet($metafields: [MetafieldsSetInput!]!) {
+  metafieldsSet(metafields: $metafields) {
+    metafields {
+      id
+      value
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}`;
 
 
 // Post-purchase sample
@@ -47,18 +67,38 @@ function PostPurchase() {
                   </p>
                   <s-button variant="primary" onClick={() => {
                     setAccessing(true);
-                    authenticatedJson(`/postpurchase.json`).then((json) => {
-                        console.log(JSON.stringify(json, null, 4));
-                        setAccessing(false);
-                        if (json.result.response.errors == 0) {
-                          setResult('Success!');
-                        } else {
-                          setResult(`Error! ${JSON.stringify(json.result.response)}`);
-                        }
+                    const errors = { errors: 0, apis: [] };
+                    callDirectAdminGraphql(GET_SHOP_ID).then((shopResponse) => {
+                      return callDirectAdminGraphql(SET_SHOP_METAFIELD, {
+                        metafields: [
+                          {
+                            key: 'url',
+                            namespace: 'barebone_app',
+                            ownerId: shopResponse.data.shop.id,
+                            type: 'single_line_text_field',
+                            value: window.location.origin,
+                          },
+                        ],
+                      });
+                    }).then((response) => {
+                      const userErrors = response.data.metafieldsSet.userErrors;
+                      if (userErrors.length > 0) {
+                        errors.errors += 1;
+                        errors.apis.push(`shop ${JSON.stringify(userErrors[0])}`);
+                      }
+                      console.log(JSON.stringify(errors, null, 4));
+                      setAccessing(false);
+                      if (errors.errors == 0) {
+                        setResult('Success!');
+                      } else {
+                        setResult(`Error! ${JSON.stringify(errors)}`);
+                      }
                     }).catch((e) => {
                         console.log(`${e}`);
                         setAccessing(false);
-                        setResult('Error!');
+                        errors.errors += 1;
+                        errors.apis.push(`shop ${e.message}`);
+                        setResult(`Error! ${JSON.stringify(errors)}`);
                     });
                   }}>
                     Add the app URL to shop metafields
