@@ -81,4 +81,5 @@ The App Proxy gives the storefront a stable path under the shop domain. Shopify 
 - [App blocks for themes](https://shopify.dev/docs/apps/build/online-store/theme-app-extensions/configuration#app-blocks-for-themes)
 - [App embed blocks](https://shopify.dev/docs/apps/build/online-store/theme-app-extensions/configuration#app-embed-blocks)
 - [App proxies](https://shopify.dev/docs/apps/build/online-store/app-proxies)
-- [Cart API reference](https://shopify.dev/docs/api/ajax/reference/cart)
+- [Line item properties](https://shopify.dev/docs/storefronts/themes/architecture/templates/product/overview#line-item-properties)
+- [Cart notes and attributes](https://shopify.dev/docs/storefronts/themes/architecture/templates/cart#support-cart-notes-and-attributes)
