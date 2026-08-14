@@ -92,7 +92,7 @@ function AdminLink() {
     }
 
     // This query parameter is supposed to be given by Admin Link extensions.
-    // Supposed to be shown from the linked page like a order details.
+    // Supposed to be shown from the linked page like product details.
     if (id != null) {
         return (
             <s-page heading="You seem to have come through Admin Link!">
@@ -102,7 +102,7 @@ function AdminLink() {
                         <s-text>
                             <s-link href="#" onClick={(event) => {
                                 event.preventDefault();
-                                redirect.dispatch(RedirectAction.APP, '/adminlink');
+                                redirect.dispatch(RedirectAction.ADMIN_PATH, `/products/${id}`);
                             }}>
                                 Go back
                             </s-link>
