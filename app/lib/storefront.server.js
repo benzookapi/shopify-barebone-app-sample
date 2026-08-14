@@ -283,7 +283,7 @@ export async function prepareStorefrontAccess(shop, origin) {
   const response = {
     shop,
     public_token: '',
-    private_token: '',
+    private_token_stored: false,
     tokenless_url: `https://${shop}/api/${API_VERSION}/graphql.json`,
     customer_account_client_id: CUSTOMER_ACCOUNT_CLIENT_ID,
     customer_account_callback_url: `${origin}/customer-account/callback`,
@@ -331,7 +331,7 @@ export async function prepareStorefrontAccess(shop, origin) {
     response.error_messages.push(`delegateAccessTokenCreate: ${JSON.stringify(result.data.delegateAccessTokenCreate.userErrors[0])}`);
   } else {
     const shopId = result.data.delegateAccessTokenCreate.shop.id;
-    response.private_token = result.data.delegateAccessTokenCreate.delegateAccessToken;
+    const privateToken = result.data.delegateAccessTokenCreate.delegateAccessToken;
     const metafieldResult = await callAdminGraphql(shop, METAFIELDS_SET, {
       metafields: [
         {
@@ -339,13 +339,15 @@ export async function prepareStorefrontAccess(shop, origin) {
           namespace: 'barebone_app',
           ownerId: shopId,
           type: 'json',
-          value: JSON.stringify(response.private_token),
+          value: JSON.stringify(privateToken),
         },
       ],
     });
     if (metafieldResult.data.metafieldsSet.userErrors.length > 0) {
       response.error_count += 1;
       response.error_messages.push(`metafieldsSet: ${JSON.stringify(metafieldResult.data.metafieldsSet.userErrors[0])}`);
+    } else {
+      response.private_token_stored = true;
     }
   }
 
