@@ -222,7 +222,7 @@ function FileUploader({ onUploaded }) {
                     <br />
                     <s-drop-zone label="Product creation Result data JSONL file" name="productResultFile"></s-drop-zone>
                     <p>
-                        When the variant file uses <b>productHandle</b>, download the completed product creation operation's <b>Result data</b> in step 3 and upload it here. The app matches each returned product handle to its Shopify product ID without individual product lookup requests.
+                        When the variant file uses <b>productHandle</b>, download the completed product creation operation's <b>Result data</b> in step 3 and upload it here. The app matches each returned product handle to its Shopify product ID without individual product lookup requests. Alternatively, when every variant record already contains <b>productId</b>, the Result data file isn't required; upload only the variant JSONL file.
                     </p>
                 </>
             )}

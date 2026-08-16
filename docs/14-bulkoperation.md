@@ -94,6 +94,30 @@ The mutation selection used by this sample returns `product.id`, `product.handle
 
 The sample matches handles because both bundled files contain the same stable handles. Production import pipelines can retain the original input chunk and use `__lineNumber` as the authoritative correlation key, including when a line fails and has no returned product.
 
+### Product and variant file mapping
+
+```mermaid
+flowchart LR
+    ProductLine["sample.jsonl line N<br/>product.handle = example"]
+    ProductResult["productCreate Result data<br/>__lineNumber = N<br/>product.handle = example<br/>product.id = gid://shopify/Product/123"]
+    VariantLine["sample-variants.jsonl record<br/>productHandle = example"]
+    Match{"Exact handle match?"}
+    Normalized["Staged variant JSONL<br/>productId = gid://shopify/Product/123<br/>productHandle removed"]
+    Reject["Reject before staged upload"]
+    DirectId["Custom variant JSONL<br/>productId = gid://shopify/Product/123"]
+
+    ProductLine -->|productCreate| ProductResult
+    ProductResult --> Match
+    VariantLine --> Match
+    Match -->|Yes| Normalized
+    Match -->|No| Reject
+    DirectId -->|Result data not required| Normalized
+```
+
+`__lineNumber` maps a product creation response back to its original product input line. The sample then builds a `product.handle` to `product.id` map from successful results and performs an exact match against each variant record's `productHandle`. Variant file order doesn't need to match product file order. A missing or different handle is rejected before staged upload, so an unrelated product ID isn't assigned. The normalized file sent to `productVariantsBulkCreate` contains native `productId` values and no sample-specific `productHandle` fields.
+
+When a custom variant JSONL already contains `productId`, the app doesn't need product creation Result data and stages the variant records directly after validation.
+
 Product and variant creation cannot use one native Shopify JSONL file or one bulk mutation. `productVariantsBulkCreate` requires a product ID that does not exist until `productCreate` has completed, so the two operations must run sequentially.
 
 Starting `bulkOperationRunMutation` only queues work. The UI must query `currentBulkOperation(type: MUTATION)` until Shopify reports a terminal state. Completed operations can expose a result file; failed or partially successful operations can expose partial data. Cancellation is also asynchronous and should be followed by another status query.
