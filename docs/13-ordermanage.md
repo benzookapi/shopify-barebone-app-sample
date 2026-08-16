@@ -71,7 +71,7 @@ sequenceDiagram
 
 ## External ERP Inventory Synchronization
 
-When an external ERP, warehouse management system, or other core system is the inventory master, the integration must synchronize changes in both directions. A master quantity change should update the matching Shopify inventory item and location, while an order, fulfillment, Admin edit, or another app that changes Shopify inventory should notify the external system.
+When an external ERP, warehouse management system, or other core system is the inventory master, the integration must synchronize changes in both directions. A master quantity change should update the matching Shopify inventory item and location, while checkout activity, an Admin edit, or another app that changes Shopify's available quantity should notify the external system.
 
 ```mermaid
 sequenceDiagram
@@ -84,7 +84,7 @@ sequenceDiagram
         ERP->>App: Publish item, location, and quantity change
         Note over App,Shopify: Same inventory adjustment flow that starts at step 7 above
     else Inventory changes in Shopify
-        Note over Shopify: Order, fulfillment, Admin edit, or another app changes inventory
+        Note over Shopify: Checkout, Admin edit, or another app changes available inventory
         Shopify->>App: inventory_levels/update webhook to /webhookcommon
         App->>App: Verify HMAC and deduplicate delivery
         App->>Shopify: Query InventoryItem and InventoryLevel quantities
@@ -107,11 +107,11 @@ The normal lifecycle of a unit sold through Shopify is:
 - When the order is fulfilled, `committed` and `on_hand` decrease because the physical unit leaves the location. Shopify doesn't expose a separate `fulfilled` inventory state.
 - The Admin API can't directly adjust or move `committed`; Shopify changes it through order creation and fulfillment.
 
-Subscribe to the [`inventory_levels/update` webhook](https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-INVENTORY_LEVELS_UPDATE) and treat its payload as a change notification. After verifying the webhook HMAC, query the current [Inventory Item and Inventory Level quantity states](https://shopify.dev/docs/apps/build/orders-fulfillment/inventory-management-apps/manage-quantities-states), then send the latest relevant quantities and status to the external system.
+Subscribe to the [`inventory_levels/update` webhook](https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-INVENTORY_LEVELS_UPDATE) and treat its `available` payload value as a sellable-inventory change notification. After verifying the webhook HMAC, query the current [Inventory Item and Inventory Level quantity states](https://shopify.dev/docs/apps/build/orders-fulfillment/inventory-management-apps/manage-quantities-states), then send the latest relevant quantities and status to the external system. Do not use this topic as a detailed fulfillment or delivery-status signal: it might not be emitted when later `committed` or `on_hand` transitions leave `available` unchanged.
 
 ## Fulfillment Request and Delivery Sequence
 
-This sequence requires the app to register a [Fulfillment Service](https://shopify.dev/docs/apps/build/orders-fulfillment/fulfillment-service-apps) in Shopify and implement its notification handling and background fulfillment workflow on the remote app server. Fulfillment can also change inventory and cause Shopify to send an `inventory_levels/update` webhook. If the [External ERP Inventory Synchronization](#external-erp-inventory-synchronization) flow above is implemented, that webhook automatically enters the same synchronization flow. Design the integration to expect fulfillment-originated inventory updates, deduplicate deliveries, and prevent synchronization loops.
+This sequence requires the app to register a [Fulfillment Service](https://shopify.dev/docs/apps/build/orders-fulfillment/fulfillment-service-apps) in Shopify and implement its notification handling and background fulfillment workflow on the remote app server. In the tested flow, requesting fulfillment and moving through fulfilled and delivered states did not emit `inventory_levels/update` because the ordered quantity had already moved out of `available` when the order was created. To synchronize detailed shipment and delivery states, subscribe to separate topics such as [`fulfillments/create`](https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-FULFILLMENTS_CREATE), [`fulfillments/update`](https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-FULFILLMENTS_UPDATE), or [`fulfillment_events/create`](https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-FULFILLMENT_EVENTS_CREATE), depending on the lifecycle events required by the external system.
 
 The merchant starts this workflow with the same `Select fulfillment action` shown in the Order Action Sequence in Shopify. An optional fulfillment request message can still be included and is returned by the later merchant-request query. Shopify then sends the fulfillment-service notification to the remote app server; this sample doesn't call a separate request-submission API between the merchant action and that callback.
 
