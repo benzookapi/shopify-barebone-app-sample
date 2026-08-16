@@ -281,4 +281,3 @@ Render, Node.js, React Router, and MongoDB are this repository's concrete choice
 - [Using Polaris web components and the UI extension execution model](https://shopify.dev/docs/api/polaris/using-polaris-web-components)
 - [Web pixel strict sandbox](https://shopify.dev/docs/apps/build/marketing-analytics/pixels)
 - [Shopify Functions](https://shopify.dev/docs/api/functions/latest)
-- [Authenticate extension requests to an app server](https://shopify.dev/docs/apps/build/purchase-options/product-subscription-app-extensions/authenticate-extension-requests)
