@@ -63,18 +63,18 @@ sequenceDiagram
     opt Merchant requests fulfillment
         API->>Service: POST /fulfillment_order_notification
         Service-->>API: Immediate 200 acknowledgement
-        Service->>API: Query assigned FULFILLMENT_REQUESTED orders
-        API-->>Service: Fulfillment order IDs
+        Service->>API: Query assigned FULFILLMENT_REQUESTED orders and merchant requests
+        API-->>Service: Fulfillment order IDs, messages, options, and timestamps
         loop Each requested fulfillment order
             Service->>API: fulfillmentOrderAcceptFulfillmentRequest
             API-->>Service: Request accepted
         end
-        Service->>Service: Wait five seconds for the demo
+        Service->>Service: Wait two seconds for the demo
         loop Each accepted fulfillment order
             Service->>API: fulfillmentCreate with tracking information
             API-->>Service: Fulfillment created
         end
-        Service->>Service: Wait another five seconds for the demo
+        Service->>Service: Wait another two seconds for the demo
         loop Each created fulfillment
             Service->>API: fulfillmentEventCreate with DELIVERED status
             API-->>Service: Delivered event created
@@ -132,7 +132,7 @@ When an order ID is present, the server converts it to a Shopify order GID and q
 
 The fulfillment-service registration returns an app location. The sample stores the service ID in a shop metafield, lets the merchant associate product inventory with that location, and adjusts quantities using `inventoryAdjustQuantities`. Each adjustment includes a UUID idempotency key and explicitly uses `changeFromQuantity: null` to skip a compare-and-set check.
 
-When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies the raw-body HMAC and returns `200` without waiting for Admin API work. A per-shop background job retrieves requested fulfillment orders, accepts them, waits five seconds for a visible demonstration state, and calls `fulfillmentCreate`. It then waits another five seconds and calls `fulfillmentEventCreate` with `DELIVERED` for each successfully created fulfillment. The callback response only acknowledges the notification; the Admin API mutations perform the actual state transitions.
+When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies the raw-body HMAC and returns `200` without waiting for Admin API work. A per-shop background job retrieves requested fulfillment orders together with each `merchantRequests` connection, including the merchant's optional message, request options, and send time. It logs those details, accepts the requests, waits two seconds for a visible demonstration state, and calls `fulfillmentCreate`. It then waits another two seconds and calls `fulfillmentEventCreate` with `DELIVERED` for each successfully created fulfillment. The callback response only acknowledges the notification; the Admin API mutations perform the actual state transitions.
 
 ## Common Pitfalls
 
@@ -143,7 +143,7 @@ When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies t
 - Inventory adjustment name, reason, and ledger-document requirements depend on the chosen adjustment type.
 - Do not send an empty ledger URI; send `null` or omit it where permitted.
 - Fulfillment callbacks and webhook deliveries are server-to-server requests and must not depend on an embedded browser session.
-- The two five-second in-process fulfillment delays are suitable only for this demo. Use a durable queue and idempotent worker in production so acknowledged work survives restarts and duplicate notifications.
+- Both two-second in-process fulfillment delays are suitable only for this demo. Use a durable queue and idempotent worker in production so acknowledged work survives restarts and duplicate notifications.
 - An inventory webhook can be delivered more than once and can be caused by the integration's own write. Deduplicate events and prevent synchronization loops.
 - Map inventory by Shopify inventory item and location IDs. A SKU alone might not uniquely identify a location-specific inventory level.
 

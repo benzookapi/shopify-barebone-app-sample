@@ -258,7 +258,7 @@ function OrderManage() {
                             in your server log as accessing <s-badge>/fulfillment_order_notification</s-badge>.
                         </s-list-item>
                         <s-list-item>
-                            The callback (<s-badge>/fulfillment_order_notification</s-badge>) acknowledges Shopify immediately, accepts the requested fulfillments, waits five seconds before marking them fulfilled, and waits another five seconds before marking them delivered so that both status transitions are visible in the Admin.
+                            The callback (<s-badge>/fulfillment_order_notification</s-badge>) acknowledges Shopify immediately, queries and logs the merchant's fulfillment request message, accepts the requested fulfillments, waits two seconds before marking them fulfilled, and waits another two seconds before marking them delivered so that both status transitions are visible in the Admin.
                             The callback (<s-badge>/fetch_stock.json</s-badge>) returns the initial inventories per SKU when a product is set to use this app inventory management.
                             The callback (<s-badge>/fetch_tracking_numbers.json</s-badge>) returns the tracking numbers dynamically (this demo has fixed values and is not in this case).
                         </s-list-item>

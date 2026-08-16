@@ -73,7 +73,7 @@ function EventSubscription() {
               The app also exposes <s-badge>/fetch_tracking_numbers.json</s-badge> and <s-badge>/fetch_stock.json</s-badge> for the fulfillment service sample. They are service callbacks, not webhook or Event subscriptions.
             </s-text>
             <s-text>
-              For demonstration, a fulfillment request is accepted, marked fulfilled after a five-second background delay, and marked delivered after another five seconds. Production apps should use a durable job queue instead of in-process timers.
+              For demonstration, a fulfillment request and its merchant message are queried, the request is accepted, fulfillment is created after a two-second background delay, and a delivered event is created after another two seconds. Production apps should use a durable job queue instead of in-process timers.
             </s-text>
           </s-stack>
         </s-section>
