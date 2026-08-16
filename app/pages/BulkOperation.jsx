@@ -181,9 +181,9 @@ function FileUploader({ onUploaded }) {
             <p>
                 Upload a supported JSONL file to import products or variants.
             </p>
-            <s-button-group gap="base">
-                <s-button variant="tertiary" icon="download" type="button" onClick={() => downloadSample(sampleJsonl, 'sample.jsonl')}>Download sample.jsonl</s-button>
-                <s-button variant="tertiary" icon="download" type="button" onClick={() => downloadSample(sampleVariantsJsonl, 'sample-variants.jsonl')}>Download sample-variants.jsonl</s-button>
+            <s-button-group gap="base" accessibilityLabel="Download sample JSONL files">
+                <s-button slot="secondary-actions" variant="secondary" icon="download" type="button" onClick={() => downloadSample(sampleJsonl, 'sample.jsonl')}>Download sample.jsonl</s-button>
+                <s-button slot="secondary-actions" variant="secondary" icon="download" type="button" onClick={() => downloadSample(sampleVariantsJsonl, 'sample-variants.jsonl')}>Download sample-variants.jsonl</s-button>
             </s-button-group>
             <br />
             <s-select
