@@ -44,13 +44,6 @@ const BULK_MUTATIONS = {
   }`,
 };
 
-const PRODUCT_BY_HANDLE = `query ProductByHandle($identifier: ProductIdentifierInput!) {
-  productByIdentifier(identifier: $identifier) {
-    id
-    handle
-  }
-}`;
-
 const RUN_BULK_MUTATION = `mutation BulkOperationRunMutation(
   $mutation: String!,
   $stagedUploadPath: String!
@@ -71,21 +64,21 @@ const RUN_BULK_MUTATION = `mutation BulkOperationRunMutation(
   }
 }`;
 
-function parseJsonl(source) {
+function parseJsonl(source, label = 'The selected JSONL file') {
   const lines = source
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
 
   if (lines.length === 0) {
-    throw new Error('The selected JSONL file is empty.');
+    throw new Error(`${label} is empty.`);
   }
 
   return lines.map((line, index) => {
     try {
       return JSON.parse(line);
     } catch {
-      throw new Error(`Line ${index + 1} is not valid JSON.`);
+      throw new Error(`${label} line ${index + 1} is not valid JSON.`);
     }
   });
 }
@@ -102,37 +95,41 @@ function prepareProductCreateJsonl(records) {
   }).join('\n');
 }
 
-async function resolveProductHandles(shop, records) {
-  const handles = [...new Set(records
-    .filter((variables) => !variables.productId)
-    .map((variables) => `${variables.productHandle || ''}`.trim())
-    .filter(Boolean))];
+function productIdsFromCreateResults(records) {
+  const productIdsByHandle = new Map();
 
-  const resolved = await Promise.all(handles.map(async (handle) => {
-    const response = await callAdminGraphql(shop, PRODUCT_BY_HANDLE, {
-      identifier: { handle },
-    });
-    if (response.errors?.length) {
-      throw new Error(`Failed to resolve product handle "${handle}": ${response.errors[0].message}`);
-    }
-    const product = response.data?.productByIdentifier;
-    if (!product) {
-      throw new Error(`No product was found for handle "${handle}".`);
-    }
-    return [handle, product.id];
-  }));
+  records.forEach((result, index) => {
+    const product = result?.data?.productCreate?.product;
+    if (!product?.id || !product?.handle) return;
 
-  return new Map(resolved);
+    const existingId = productIdsByHandle.get(product.handle);
+    if (existingId && existingId !== product.id) {
+      throw new Error(`Product creation result line ${index + 1} contains a duplicate handle with a different product ID: "${product.handle}".`);
+    }
+    productIdsByHandle.set(product.handle, product.id);
+  });
+
+  if (productIdsByHandle.size === 0) {
+    throw new Error('The product creation result JSONL does not contain any successful productCreate results with product IDs and handles.');
+  }
+
+  return productIdsByHandle;
 }
 
-async function prepareVariantCreateJsonl(shop, records) {
-  const productIdsByHandle = await resolveProductHandles(shop, records);
+function prepareVariantCreateJsonl(records, productCreateResults) {
+  const requiresResultData = records.some((variables) => !variables.productId && variables.productHandle);
+  const productIdsByHandle = requiresResultData
+    ? productIdsFromCreateResults(productCreateResults)
+    : new Map();
 
   return records.map((variables, index) => {
     const productHandle = `${variables.productHandle || ''}`.trim();
     const productId = variables.productId || productIdsByHandle.get(productHandle);
     if (!productId) {
-      throw new Error(`Line ${index + 1} must contain productId or productHandle.`);
+      if (productHandle) {
+        throw new Error(`No successful productCreate result was found for productHandle "${productHandle}" on variant line ${index + 1}.`);
+      }
+      throw new Error(`Variant line ${index + 1} must contain productId or productHandle.`);
     }
 
     if (!Array.isArray(variables.variants) || variables.variants.length === 0) {
@@ -155,7 +152,7 @@ async function prepareVariantCreateJsonl(shop, records) {
   }).join('\n');
 }
 
-async function prepareJsonl(shop, source, operationType) {
+function prepareJsonl(source, operationType, productResultSource = '') {
   const records = parseJsonl(source);
   if (operationType === PRODUCT_CREATE) {
     return {
@@ -164,8 +161,15 @@ async function prepareJsonl(shop, source, operationType) {
     };
   }
   if (operationType === PRODUCT_VARIANTS_BULK_CREATE) {
+    const requiresResultData = records.some((variables) => !variables.productId && variables.productHandle);
+    if (requiresResultData && !productResultSource.trim()) {
+      throw new Error('Select the product creation Result data JSONL when variant records use productHandle.');
+    }
+    const productCreateResults = requiresResultData
+      ? parseJsonl(productResultSource, 'The product creation result JSONL')
+      : [];
     return {
-      jsonl: await prepareVariantCreateJsonl(shop, records),
+      jsonl: prepareVariantCreateJsonl(records, productCreateResults),
       recordCount: records.length,
     };
   }
@@ -208,7 +212,11 @@ export async function uploadBulkOperation(request) {
       }
 
       const operationType = `${submitted.get('operationType') || ''}`;
-      const prepared = await prepareJsonl(context.shop, await file.text(), operationType);
+      const productResultFile = submitted.get('productResultFile');
+      const productResultSource = productResultFile && typeof productResultFile.text === 'function'
+        ? await productResultFile.text()
+        : '';
+      const prepared = prepareJsonl(await file.text(), operationType, productResultSource);
       const filename = operationType === PRODUCT_CREATE
         ? 'sample.jsonl'
         : 'sample-variants.jsonl';

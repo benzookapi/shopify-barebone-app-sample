@@ -201,15 +201,26 @@ function FileUploader({ onUploaded }) {
             </s-select>
             <br />
             <br />
-            <s-drop-zone label="Product JSONL file" name="file" accept=".jsonl"></s-drop-zone>
+            <s-drop-zone
+                label={selectedOperation === PRODUCT_CREATE ? 'Product creation JSONL file' : 'Variant creation JSONL file'}
+                name="file"
+                accept=".jsonl"
+            ></s-drop-zone>
             {selectedOperation === PRODUCT_CREATE ? (
                 <p>
                     Product creation format: each line contains <b>product</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductCreateInput" target="_blank">ProductCreateInput</s-link>) and optional <b>media</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/CreateMediaInput" target="_blank">CreateMediaInput</s-link>). Put each public image URL in <b>media[].originalSource</b>.
                 </p>
             ) : (
-                <p>
-                    Variant creation format: each line contains <b>productId</b> or <b>productHandle</b>, plus one to three <b>variants</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput" target="_blank">ProductVariantsBulkInput</s-link>). Complete the product creation operation before using handles from <b>sample-variants.jsonl</b>.
-                </p>
+                <>
+                    <p>
+                        Variant creation format: each line contains <b>productId</b> or <b>productHandle</b>, plus one to three <b>variants</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput" target="_blank">ProductVariantsBulkInput</s-link>). Complete the product creation operation before using handles from <b>sample-variants.jsonl</b>.
+                    </p>
+                    <br />
+                    <s-drop-zone label="Product creation Result data JSONL file" name="productResultFile"></s-drop-zone>
+                    <p>
+                        When the variant file uses <b>productHandle</b>, download the completed product creation operation's <b>Result data</b> in step 3 and upload it here. The app matches each returned product handle to its Shopify product ID without individual product lookup requests.
+                    </p>
+                </>
             )}
             <p>
                 You can convert JSON to JSONL with tools such as <s-link href="https://tableconvert.com/json-to-jsonlines" target="_blank">this converter</s-link>.
