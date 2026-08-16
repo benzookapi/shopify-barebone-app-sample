@@ -10,7 +10,8 @@ import {
   verifyWebhookHmac,
 } from './shopify-auth.server.js';
 
-const FULFILLMENT_COMPLETION_DELAY_MS = 5000;
+const FULFILLMENT_CREATION_DELAY_MS = 5000;
+const DELIVERY_EVENT_DELAY_MS = 5000;
 const fulfillmentJobs = new Map();
 
 export const mockLoginCorsHeaders = {
@@ -291,10 +292,11 @@ async function processRequestedFulfillments(shop) {
   console.info('[fulfillment-service] waiting before creating fulfillments', JSON.stringify({
     shop,
     fulfillmentOrderIds: acceptedIds,
-    delayMs: FULFILLMENT_COMPLETION_DELAY_MS,
+    delayMs: FULFILLMENT_CREATION_DELAY_MS,
   }));
-  await delay(FULFILLMENT_COMPLETION_DELAY_MS);
+  await delay(FULFILLMENT_CREATION_DELAY_MS);
 
+  const createdFulfillments = [];
   for (const fulfillmentOrderId of acceptedIds) {
     const fulfillmentResponse = await callAdminGraphql(shop, `mutation CreateServiceFulfillment($fulfillment: FulfillmentInput!, $message: String) {
       fulfillmentCreate(fulfillment: $fulfillment, message: $message) {
@@ -332,10 +334,65 @@ async function processRequestedFulfillments(shop) {
       }));
       continue;
     }
+    const fulfillment = fulfillmentResponse.data?.fulfillmentCreate?.fulfillment;
+    if (!fulfillment?.id) {
+      console.error('[fulfillment-service] fulfillment response did not include an ID', JSON.stringify({
+        shop,
+        fulfillmentOrderId,
+      }));
+      continue;
+    }
+    createdFulfillments.push(fulfillment);
     console.info('[fulfillment-service] fulfillment created', JSON.stringify({
       shop,
       fulfillmentOrderId,
-      fulfillment: fulfillmentResponse.data.fulfillmentCreate.fulfillment,
+      fulfillment,
+    }));
+  }
+
+  if (createdFulfillments.length === 0) return;
+
+  console.info('[fulfillment-service] waiting before marking fulfillments as delivered', JSON.stringify({
+    shop,
+    fulfillmentIds: createdFulfillments.map((fulfillment) => fulfillment.id),
+    delayMs: DELIVERY_EVENT_DELAY_MS,
+  }));
+  await delay(DELIVERY_EVENT_DELAY_MS);
+
+  for (const fulfillment of createdFulfillments) {
+    const eventResponse = await callAdminGraphql(shop, `mutation CreateDeliveredEvent($fulfillmentEvent: FulfillmentEventInput!) {
+      fulfillmentEventCreate(fulfillmentEvent: $fulfillmentEvent) {
+        fulfillmentEvent {
+          status
+          happenedAt
+          message
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }`, {
+      fulfillmentEvent: {
+        fulfillmentId: fulfillment.id,
+        happenedAt: new Date().toISOString(),
+        message: 'Your order has been delivered by the fulfillment service app!',
+        status: 'DELIVERED',
+      },
+    });
+    const eventErrors = getGraphqlErrors(eventResponse, 'fulfillmentEventCreate');
+    if (eventErrors.length > 0) {
+      console.error('[fulfillment-service] delivered event could not be created', JSON.stringify({
+        shop,
+        fulfillmentId: fulfillment.id,
+        errors: eventErrors,
+      }));
+      continue;
+    }
+    console.info('[fulfillment-service] fulfillment marked as delivered', JSON.stringify({
+      shop,
+      fulfillmentId: fulfillment.id,
+      event: eventResponse.data.fulfillmentEventCreate.fulfillmentEvent,
     }));
   }
 }
