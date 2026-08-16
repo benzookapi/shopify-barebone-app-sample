@@ -19,7 +19,7 @@ For quick start with automatically generated code, go to the [official CLI tutor
 | Embedded UI pages | [app/pages/](./app/pages/) | Admin UI samples written directly with Polaris web components such as `<s-page>`, `<s-section>`, and `<s-button>`. |
 | Server helpers | [app/lib/](./app/lib/) | Server-side Shopify logic grouped by topic, including OAuth, iframe protection, token validation, Admin GraphQL, Storefront API, Customer Account API, and DB access. |
 | Browser helpers | [app/utils/](./app/utils/) | Browser-side App Bridge, Direct Admin API, and URL helpers used by the embedded UI pages. |
-| Static app assets | [app/assets/](./app/assets/) | Static source assets imported by route modules, such as the bulk operation sample JSONL file. |
+| Static app assets | [app/assets/](./app/assets/) | Static source assets imported by route modules, such as the bulk operation sample JSONL files. |
 | Global stylesheet | [app/styles.css](./app/styles.css) | Minimal shared stylesheet and a small example of using React Router stylesheet links. |
 | Plain storefront view | [views/storefront.html](./views/storefront.html) | Plain custom storefront sample rendered by [app/routes/storefront-plain.jsx](./app/routes/storefront-plain.jsx) using Storefront API Cart API, tokenless access, Storefront Web Components product tiles, and Customer Account API login. |
 | Build and runtime config | [package.json](./package.json), [vite.config.js](./vite.config.js), [react-router.config.js](./react-router.config.js) | pnpm scripts, React Router build tooling, Vite plugin setup, and server bundle configuration. |

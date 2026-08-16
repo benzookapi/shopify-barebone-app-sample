@@ -2,14 +2,10 @@ import { useState, useEffect } from 'react';
 import { authenticatedJson } from "../utils/app-bridge";
 import { getAdminFromShop, getShopFromLocation } from "../utils/shop";
 import sampleJsonl from '../assets/sample.jsonl?raw';
+import sampleVariantsJsonl from '../assets/sample-variants.jsonl?raw';
 
-const DEFAULT_IMAGE_URLS = [
-    'https://cdn.shopify.com/s/files/1/0064/0712/7062/files/9022a705161ff42b7879d88f1fd6d0e8_16f2e476-e91c-469f-b9d1-fe79e8021cb9.png?v=1783058998',
-    'https://cdn.shopify.com/s/files/1/0064/0712/7062/files/inkjet-printer.png?v=1782975048',
-    'https://cdn.shopify.com/s/files/1/0064/0712/7062/files/9022a705161ff42b7879d88f1fd6d0e8_dc62fc9a-3f8b-4f2a-81a0-ef45e6084ad8.png?v=1782955524',
-    'https://cdn.shopify.com/s/files/1/0064/0712/7062/files/white-bowl-surrounded-by-herbs-chilis-and-lime-slices.jpg?v=1694338542',
-    'https://cdn.shopify.com/s/files/1/0064/0712/7062/files/wood-wall-and-bamboo-bundle-reflection.jpg?v=1738053217',
-].join(',\n');
+const PRODUCT_CREATE = 'productCreate';
+const PRODUCT_VARIANTS_BULK_CREATE = 'productVariantsBulkCreate';
 
 // Bulk opearation sample for product impporting with a file uploader.
 // Read https://shopify.dev/docs/api/usage/bulk-operations/imports
@@ -25,6 +21,7 @@ function BulkOperation() {
     const [accessing, setAccessing] = useState(false);
 
     const [key, setKey] = useState('');
+    const [operationType, setOperationType] = useState('');
 
     const [res, setRes] = useState('');
 
@@ -61,17 +58,21 @@ function BulkOperation() {
                     <br /><br />
                     <s-ordered-list>
                         <s-list-item>
-                            <FileUploader onUploaded={setKey}></FileUploader>
+                            <FileUploader onUploaded={(upload) => {
+                                setKey(upload.key);
+                                setOperationType(upload.operationType);
+                                setResult('');
+                            }}></FileUploader>
                             <p>&nbsp;</p>
                         </s-list-item>
                         <s-list-item>
                             <p>
-                                Run the bulk operation for product creations from the uploaded file above with the key: <s-badge>{key || 'Upload required'}</s-badge>.
+                                Run the uploaded <s-badge>{operationType || 'operation type'}</s-badge> bulk operation with the key: <s-badge>{key || 'Upload required'}</s-badge>.
                             </p>
                             <p>&nbsp;</p>
                             <s-button variant="primary" disabled={!key || accessing} onClick={() => {
                                 setAccessing(true);
-                                authenticatedJson(`/bulkoperation.json?key=${encodeURIComponent(key)}`).then((json) => {
+                                authenticatedJson(`/bulkoperation.json?key=${encodeURIComponent(key)}&operationType=${encodeURIComponent(operationType)}`).then((json) => {
                                     console.log(JSON.stringify(json, null, 4));
                                     setAccessing(false);
                                     if (json.data.bulkOperationRunMutation.userErrors.length == 0) {
@@ -138,17 +139,17 @@ function BulkOperation() {
     );
 }
 
-function downloadSample() {
-    const url = URL.createObjectURL(new Blob([sampleJsonl], { type: 'text/jsonl' }));
+function downloadSample(contents, filename) {
+    const url = URL.createObjectURL(new Blob([contents], { type: 'text/jsonl' }));
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'sample.jsonl';
+    link.download = filename;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 function FileUploader({ onUploaded }) {
-    const [imageUrls, setImageUrls] = useState(DEFAULT_IMAGE_URLS);
+    const [selectedOperation, setSelectedOperation] = useState(PRODUCT_CREATE);
     const [uploading, setUploading] = useState(false);
     const [uploadResult, setUploadResult] = useState('');
 
@@ -156,17 +157,18 @@ function FileUploader({ onUploaded }) {
         event.preventDefault();
         setUploading(true);
         setUploadResult('');
-        onUploaded('');
+        onUploaded({ key: '', operationType: '' });
 
         const formData = new FormData(event.currentTarget);
+        formData.set('operationType', selectedOperation);
         authenticatedJson('/bulkoperation.json', {
             method: 'POST',
             body: formData,
         }).then((json) => {
             console.log(JSON.stringify(json, null, 4));
             setUploading(false);
-            setUploadResult(`Uploaded ${json.productCount} products.`);
-            onUploaded(json.key);
+            setUploadResult(`Uploaded ${json.recordCount} records for ${json.operationType}.`);
+            onUploaded({ key: json.key, operationType: json.operationType });
         }).catch((error) => {
             console.log(`${error}`);
             setUploading(false);
@@ -177,24 +179,40 @@ function FileUploader({ onUploaded }) {
     return (
         <form method="post" encType="multipart/form-data" onSubmit={uploadFile}>
             <p>
-                Upload your product JSONL file to import. <s-button variant="tertiary" icon="download" type="button" onClick={downloadSample}>Download sample.jsonl</s-button>
+                Upload a supported JSONL file to import products or variants.
             </p>
-            <p>
-                Each JSONL line must use <s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productSet" target="_blank">productSet mutation variables</s-link> format and contain no more than three variants. You can convert JSON to JSONL with
-                tools such as <s-link href="https://tableconvert.com/json-to-jsonlines" target="_blank">this converter</s-link>.
-            </p>
+            <s-button-group gap="base">
+                <s-button variant="tertiary" icon="download" type="button" onClick={() => downloadSample(sampleJsonl, 'sample.jsonl')}>Download sample.jsonl</s-button>
+                <s-button variant="tertiary" icon="download" type="button" onClick={() => downloadSample(sampleVariantsJsonl, 'sample-variants.jsonl')}>Download sample-variants.jsonl</s-button>
+            </s-button-group>
+            <br />
+            <s-select
+                label="JSONL operation"
+                name="operationType"
+                value={selectedOperation}
+                onChange={(event) => {
+                    setSelectedOperation(event.currentTarget.value);
+                    setUploadResult('');
+                    onUploaded({ key: '', operationType: '' });
+                }}
+            >
+                <s-option value={PRODUCT_CREATE}>Create products</s-option>
+                <s-option value={PRODUCT_VARIANTS_BULK_CREATE}>Create product variants</s-option>
+            </s-select>
+            <br />
             <br />
             <s-drop-zone label="Product JSONL file" name="file" accept=".jsonl"></s-drop-zone>
-            <br />
-            <s-text-area
-                label="Public product image URLs (comma-separated)"
-                name="imageUrls"
-                rows={8}
-                value={imageUrls}
-                onInput={(event) => setImageUrls(event.currentTarget.value)}
-            ></s-text-area>
+            {selectedOperation === PRODUCT_CREATE ? (
+                <p>
+                    Product creation format: each line contains <b>product</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductCreateInput" target="_blank">ProductCreateInput</s-link>) and optional <b>media</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/CreateMediaInput" target="_blank">CreateMediaInput</s-link>). Put each public image URL in <b>media[].originalSource</b>.
+                </p>
+            ) : (
+                <p>
+                    Variant creation format: each line contains <b>productId</b> or <b>productHandle</b>, plus one to three <b>variants</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput" target="_blank">ProductVariantsBulkInput</s-link>). Complete the product creation operation before using handles from <b>sample-variants.jsonl</b>.
+                </p>
+            )}
             <p>
-                URLs are assigned to products in JSONL line order and reused from the beginning when the file contains more products than URLs.
+                You can convert JSON to JSONL with tools such as <s-link href="https://tableconvert.com/json-to-jsonlines" target="_blank">this converter</s-link>.
             </p>
             <br />
             <s-button variant="primary" type="submit" loading={uploading} disabled={uploading}>Upload</s-button>

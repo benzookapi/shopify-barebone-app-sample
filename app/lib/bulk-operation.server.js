@@ -3,33 +3,75 @@ import { json } from './http.server.js';
 import { callAdminGraphql } from './shopify-graphql.server.js';
 
 const MAX_VARIANTS_PER_PRODUCT = 3;
+const PRODUCT_CREATE = 'productCreate';
+const PRODUCT_VARIANTS_BULK_CREATE = 'productVariantsBulkCreate';
 
-function parseImageUrls(value) {
-  const urls = `${value || ''}`
-    .split(',')
-    .map((url) => url.trim())
-    .filter(Boolean);
-
-  if (urls.length === 0) {
-    throw new Error('Enter at least one publicly accessible product image URL.');
-  }
-
-  for (const url of urls) {
-    let parsed;
-    try {
-      parsed = new URL(url);
-    } catch {
-      throw new Error(`Invalid product image URL: ${url}`);
+const BULK_MUTATIONS = {
+  [PRODUCT_CREATE]: `mutation call($product: ProductCreateInput!, $media: [CreateMediaInput!]) {
+    productCreate(product: $product, media: $media) {
+      product {
+        id
+        handle
+        title
+      }
+      userErrors {
+        field
+        message
+      }
     }
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      throw new Error(`Product image URL must use HTTP or HTTPS: ${url}`);
+  }`,
+  [PRODUCT_VARIANTS_BULK_CREATE]: `mutation call(
+    $productId: ID!,
+    $variants: [ProductVariantsBulkInput!]!,
+    $strategy: ProductVariantsBulkCreateStrategy,
+    $media: [CreateMediaInput!]
+  ) {
+    productVariantsBulkCreate(
+      productId: $productId,
+      variants: $variants,
+      strategy: $strategy,
+      media: $media
+    ) {
+      productVariants {
+        id
+        title
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }`,
+};
+
+const PRODUCT_BY_HANDLE = `query ProductByHandle($identifier: ProductIdentifierInput!) {
+  productByIdentifier(identifier: $identifier) {
+    id
+    handle
+  }
+}`;
+
+const RUN_BULK_MUTATION = `mutation BulkOperationRunMutation(
+  $mutation: String!,
+  $stagedUploadPath: String!
+) {
+  bulkOperationRunMutation(
+    mutation: $mutation,
+    stagedUploadPath: $stagedUploadPath
+  ) {
+    bulkOperation {
+      id
+      url
+      status
+    }
+    userErrors {
+      message
+      field
     }
   }
+}`;
 
-  return urls;
-}
-
-function enrichProductJsonl(source, imageUrls) {
+function parseJsonl(source) {
   const lines = source
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -40,44 +82,99 @@ function enrichProductJsonl(source, imageUrls) {
   }
 
   return lines.map((line, index) => {
-    let variables;
     try {
-      variables = JSON.parse(line);
+      return JSON.parse(line);
     } catch {
       throw new Error(`Line ${index + 1} is not valid JSON.`);
     }
+  });
+}
 
-    if (!variables.input || typeof variables.input !== 'object') {
-      throw new Error(`Line ${index + 1} must contain an input object.`);
+function prepareProductCreateJsonl(records) {
+  return records.map((variables, index) => {
+    if (!variables.product || typeof variables.product !== 'object') {
+      throw new Error(`Line ${index + 1} must contain a product object.`);
     }
-
-    const variants = variables.input.variants;
-    if (!Array.isArray(variants) || variants.length === 0) {
-      throw new Error(`Line ${index + 1} must contain at least one variant.`);
+    if (variables.media != null && !Array.isArray(variables.media)) {
+      throw new Error(`Line ${index + 1} media must be an array.`);
     }
-    if (variants.length > MAX_VARIANTS_PER_PRODUCT) {
-      throw new Error(`Line ${index + 1} contains more than ${MAX_VARIANTS_PER_PRODUCT} variants.`);
-    }
-
-    const imageUrl = imageUrls[index % imageUrls.length];
-    variables.input.files = [{
-      alt: `${variables.input.title || `Product ${index + 1}`} image`,
-      contentType: 'IMAGE',
-      originalSource: imageUrl,
-    }];
-
     return JSON.stringify(variables);
   }).join('\n');
 }
 
-async function createStagedUpload(shop) {
-  return callAdminGraphql(shop, `mutation StagedUploadsCreate {
-    stagedUploadsCreate(input: {
-      resource: BULK_MUTATION_VARIABLES,
-      filename: "sample.jsonl",
-      mimeType: "text/jsonl",
-      httpMethod: POST
-    }) {
+async function resolveProductHandles(shop, records) {
+  const handles = [...new Set(records
+    .filter((variables) => !variables.productId)
+    .map((variables) => `${variables.productHandle || ''}`.trim())
+    .filter(Boolean))];
+
+  const resolved = await Promise.all(handles.map(async (handle) => {
+    const response = await callAdminGraphql(shop, PRODUCT_BY_HANDLE, {
+      identifier: { handle },
+    });
+    if (response.errors?.length) {
+      throw new Error(`Failed to resolve product handle "${handle}": ${response.errors[0].message}`);
+    }
+    const product = response.data?.productByIdentifier;
+    if (!product) {
+      throw new Error(`No product was found for handle "${handle}".`);
+    }
+    return [handle, product.id];
+  }));
+
+  return new Map(resolved);
+}
+
+async function prepareVariantCreateJsonl(shop, records) {
+  const productIdsByHandle = await resolveProductHandles(shop, records);
+
+  return records.map((variables, index) => {
+    const productHandle = `${variables.productHandle || ''}`.trim();
+    const productId = variables.productId || productIdsByHandle.get(productHandle);
+    if (!productId) {
+      throw new Error(`Line ${index + 1} must contain productId or productHandle.`);
+    }
+
+    if (!Array.isArray(variables.variants) || variables.variants.length === 0) {
+      throw new Error(`Line ${index + 1} must contain at least one variant.`);
+    }
+    if (variables.variants.length > MAX_VARIANTS_PER_PRODUCT) {
+      throw new Error(`Line ${index + 1} contains more than ${MAX_VARIANTS_PER_PRODUCT} variants.`);
+    }
+    if (variables.media != null && !Array.isArray(variables.media)) {
+      throw new Error(`Line ${index + 1} media must be an array.`);
+    }
+
+    const normalized = {
+      productId,
+      variants: variables.variants,
+      strategy: variables.strategy || 'REMOVE_STANDALONE_VARIANT',
+    };
+    if (variables.media) normalized.media = variables.media;
+    return JSON.stringify(normalized);
+  }).join('\n');
+}
+
+async function prepareJsonl(shop, source, operationType) {
+  const records = parseJsonl(source);
+  if (operationType === PRODUCT_CREATE) {
+    return {
+      jsonl: prepareProductCreateJsonl(records),
+      recordCount: records.length,
+    };
+  }
+  if (operationType === PRODUCT_VARIANTS_BULK_CREATE) {
+    return {
+      jsonl: await prepareVariantCreateJsonl(shop, records),
+      recordCount: records.length,
+    };
+  }
+  throw new Error(`Unsupported operation type: ${operationType || '(empty)'}`);
+}
+
+async function createStagedUpload(shop, filename) {
+  return callAdminGraphql(shop, `mutation StagedUploadsCreate($input: [StagedUploadInput!]!) {
+    stagedUploadsCreate(input: $input) {
       userErrors {
         field
         message
@@ -91,7 +188,14 @@ async function createStagedUpload(shop) {
         }
       }
     }
-  }`);
+  }`, {
+    input: [{
+      resource: 'BULK_MUTATION_VARIABLES',
+      filename,
+      mimeType: 'text/jsonl',
+      httpMethod: 'POST',
+    }],
+  });
 }
 
 export async function uploadBulkOperation(request) {
@@ -103,9 +207,12 @@ export async function uploadBulkOperation(request) {
         return json({ error: 'Select a JSONL file to upload.' }, { status: 400 });
       }
 
-      const imageUrls = parseImageUrls(submitted.get('imageUrls'));
-      const jsonl = enrichProductJsonl(await file.text(), imageUrls);
-      const stagedUpload = await createStagedUpload(context.shop);
+      const operationType = `${submitted.get('operationType') || ''}`;
+      const prepared = await prepareJsonl(context.shop, await file.text(), operationType);
+      const filename = operationType === PRODUCT_CREATE
+        ? 'sample.jsonl'
+        : 'sample-variants.jsonl';
+      const stagedUpload = await createStagedUpload(context.shop, filename);
       const errors = stagedUpload.data?.stagedUploadsCreate?.userErrors || [];
       const target = stagedUpload.data?.stagedUploadsCreate?.stagedTargets?.[0];
 
@@ -124,7 +231,7 @@ export async function uploadBulkOperation(request) {
       for (const parameter of target.parameters) {
         upload.append(parameter.name, parameter.value);
       }
-      upload.append('file', new Blob([jsonl], { type: 'text/jsonl' }), 'sample.jsonl');
+      upload.append('file', new Blob([prepared.jsonl], { type: 'text/jsonl' }), filename);
 
       const response = await fetch(target.url, {
         method: 'POST',
@@ -136,7 +243,11 @@ export async function uploadBulkOperation(request) {
         }, { status: 502 });
       }
 
-      return json({ key, productCount: jsonl.split('\n').length });
+      return json({
+        key,
+        operationType,
+        recordCount: prepared.recordCount,
+      });
     } catch (error) {
       return json({ error: error instanceof Error ? error.message : `${error}` }, { status: 400 });
     }
@@ -146,29 +257,22 @@ export async function uploadBulkOperation(request) {
 export async function loadBulkOperation(request) {
   return authenticatedEndpoint(request, async (context) => {
     const url = new URL(request.url);
-    let response;
     const key = url.searchParams.get('key');
     if (key) {
-      response = await callAdminGraphql(context.shop, `mutation BulkOperationRunMutation {
-        bulkOperationRunMutation(
-          mutation: "mutation call($input: ProductSetInput!) { productSet(input: $input, synchronous: true) { product { id title variants(first: 3) { nodes { id title inventoryQuantity } } } userErrors { message field } } }",
-          stagedUploadPath: "${key}") {
-          bulkOperation {
-            id
-            url
-            status
-          }
-          userErrors {
-            message
-            field
-          }
-        }
-      }`);
+      const operationType = url.searchParams.get('operationType');
+      const mutation = BULK_MUTATIONS[operationType];
+      if (!mutation) {
+        return json({ error: 'Missing or unsupported operation type.' }, { status: 400 });
+      }
+      const response = await callAdminGraphql(context.shop, RUN_BULK_MUTATION, {
+        mutation,
+        stagedUploadPath: key,
+      });
       return json(response);
     }
 
     if (url.searchParams.get('check') === 'true') {
-      response = await callAdminGraphql(context.shop, `query CurrentBulkOperation {
+      const response = await callAdminGraphql(context.shop, `query CurrentBulkOperation {
         currentBulkOperation(type: MUTATION) {
           id
           status
@@ -186,8 +290,8 @@ export async function loadBulkOperation(request) {
 
     const id = url.searchParams.get('id');
     if (id) {
-      response = await callAdminGraphql(context.shop, `mutation BulkOperationCancel {
-        bulkOperationCancel(id: "${id}") {
+      const response = await callAdminGraphql(context.shop, `mutation BulkOperationCancel($id: ID!) {
+        bulkOperationCancel(id: $id) {
           bulkOperation {
             status
           }
@@ -196,11 +300,10 @@ export async function loadBulkOperation(request) {
             message
           }
         }
-      }`);
+      }`, { id });
       return json(response);
     }
 
-    response = await createStagedUpload(context.shop);
-    return json(response);
+    return json({ error: 'Missing bulk operation action.' }, { status: 400 });
   });
 }
