@@ -74,6 +74,11 @@ sequenceDiagram
             Service->>API: fulfillmentCreate with tracking information
             API-->>Service: Fulfillment created
         end
+        Service->>Service: Wait another five seconds for the demo
+        loop Each created fulfillment
+            Service->>API: fulfillmentEventCreate with DELIVERED status
+            API-->>Service: Delivered event created
+        end
     end
     opt Shopify requests stock or tracking
         API->>Service: GET stock or tracking callback
@@ -127,7 +132,7 @@ When an order ID is present, the server converts it to a Shopify order GID and q
 
 The fulfillment-service registration returns an app location. The sample stores the service ID in a shop metafield, lets the merchant associate product inventory with that location, and adjusts quantities using `inventoryAdjustQuantities`. Each adjustment includes a UUID idempotency key and explicitly uses `changeFromQuantity: null` to skip a compare-and-set check.
 
-When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies the raw-body HMAC and returns `200` without waiting for Admin API work. A per-shop background job retrieves requested fulfillment orders, accepts them, waits five seconds for a visible demonstration state, and calls `fulfillmentCreate`. The callback response only acknowledges delivery; the Admin API mutations perform the actual state transitions.
+When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies the raw-body HMAC and returns `200` without waiting for Admin API work. A per-shop background job retrieves requested fulfillment orders, accepts them, waits five seconds for a visible demonstration state, and calls `fulfillmentCreate`. It then waits another five seconds and calls `fulfillmentEventCreate` with `DELIVERED` for each successfully created fulfillment. The callback response only acknowledges the notification; the Admin API mutations perform the actual state transitions.
 
 ## Common Pitfalls
 
@@ -138,7 +143,7 @@ When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies t
 - Inventory adjustment name, reason, and ledger-document requirements depend on the chosen adjustment type.
 - Do not send an empty ledger URI; send `null` or omit it where permitted.
 - Fulfillment callbacks and webhook deliveries are server-to-server requests and must not depend on an embedded browser session.
-- The five-second in-process fulfillment delay is suitable only for this demo. Use a durable queue and idempotent worker in production so acknowledged work survives restarts and duplicate notifications.
+- The two five-second in-process fulfillment delays are suitable only for this demo. Use a durable queue and idempotent worker in production so acknowledged work survives restarts and duplicate notifications.
 - An inventory webhook can be delivered more than once and can be caused by the integration's own write. Deduplicate events and prevent synchronization loops.
 - Map inventory by Shopify inventory item and location IDs. A SKU alone might not uniquely identify a location-specific inventory level.
 
@@ -174,4 +179,5 @@ When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies t
 - [Manage inventory quantities and states](https://shopify.dev/docs/apps/build/orders-fulfillment/inventory-management-apps/manage-quantities-states)
 - [Inventory level update webhook topic](https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-INVENTORY_LEVELS_UPDATE)
 - [Create a fulfillment](https://shopify.dev/docs/api/admin-graphql/latest/mutations/fulfillmentCreate)
+- [Create a fulfillment event](https://shopify.dev/docs/api/admin-graphql/latest/mutations/fulfillmentEventCreate)
 - [Adjust inventory quantities](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/inventoryAdjustQuantities)
