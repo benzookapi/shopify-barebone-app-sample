@@ -92,8 +92,8 @@ function BulkOperation() {
                         </s-list-item>
                         <s-list-item>
                             <p>
-                                After the operation started, you can check the latest status with <s-link href={`https://shopify.dev/docs/api/admin-graphql/unstable/objects/queryroot#field-queryroot-currentbulkoperation`} target="_blank">
-                                    currentBulkOperation query</s-link> and seeing <s-link href={`https://${ getAdminFromShop(shop)}/products`} target="_blank">Products</s-link>.
+                                After the operation started, you can check the latest status with <s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/objects/queryroot#field-QueryRoot.fields.bulkOperation" target="_blank">
+                                    bulkOperation query</s-link> and seeing <s-link href={`https://${ getAdminFromShop(shop)}/products`} target="_blank">Products</s-link>.
                             </p>
                             <p>&nbsp;</p>
                             <s-button variant="primary" onClick={() => {
