@@ -90,6 +90,17 @@ sequenceDiagram
 
 The sample hosts `/mocklogin` on the same server, but it represents a separate external system in this architecture. The app-owned JWT is not a Shopify session token and does not grant Admin API access. A production connector should use the verified shop to establish its own server-side session, keep the handoff token short-lived and single-purpose, and avoid retaining it in URLs or logs. This differs from the embedded Session Token page's connector demonstration, where App Bridge supplies a Shopify-signed session token before opening the external page.
 
+### Linking a Shopify Shop to an External Service User
+
+For a public app whose external service requires its own user account, treat the connector as an installation and onboarding handoff rather than a recurring login dependency:
+
+1. After verifying the Shopify entry request and completing OAuth, send the external login page a short-lived app-signed JWT containing the canonical `*.myshopify.com` shop domain. Sign the JWT with a server-held secret or private key; do not merely encode the shop in an unsigned token. Before trusting it, verify its signature, expiry, intended issuer and audience, purpose, and one-time identifier.
+2. When the external service user signs in, or when an existing service session is already authenticated, store the association between the external user ID and the verified shop domain in the service database. Use a one-to-many or many-to-many relationship if one user can manage multiple shops.
+3. On later visits or logins, resolve the user's linked shops from that stored association. The user should not need to return to Shopify App Home merely to identify the shop again. Provide explicit reconnect and disconnect controls, and disable or remove the association when the app is uninstalled.
+4. Keep the initial account connection available from the Shopify installation or in-admin onboarding flow. Shopify expects self-service apps to support seamless sign-up with Shopify credentials. When a business-to-business service legitimately requires existing external credentials, the first in-admin onboarding step must let the merchant link the current shop to those credentials. Review Shopify's [seamless sign-up and external account guidance](https://shopify.dev/docs/apps/build/integrating-with-shopify#enable-seamless-sign-up-based-on-shopify-credentials) and [App Store installation and setup requirements](https://shopify.dev/docs/apps/launch/shopify-app-store/app-store-requirements#2-installation-and-setup).
+
+A fully non-embedded Admin app cannot meet the current Built for Shopify requirements for an embedded, App Bridge-integrated merchant experience. A public Service Connector can still be distributed through the Shopify App Store if it meets the applicable App Store requirements, but it should not be expected to receive Built for Shopify status while its primary Admin experience remains non-embedded. See the [Built for Shopify requirements](https://shopify.dev/docs/apps/launch/built-for-shopify/requirements).
+
 ## Normal Embedded Page and Server-backed API Request
 
 After installation, the signed initial page request establishes the embedded document. Browser-side code then obtains a fresh App Bridge token for each protected app-server request. This flow remains in use when a feature needs application secrets, stored installation data, external integrations, or server-side orchestration.
