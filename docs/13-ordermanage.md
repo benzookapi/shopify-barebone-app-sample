@@ -12,6 +12,8 @@ The `/ordermanage` sample combines several Admin API workflows: reading order st
 
 ## Order Action Sequence
 
+This sequence demonstrates the fulfillment and payment-capture operations that a custom order management system (OMS) can use to manage orders without relying on Shopify's order details page. The sample enters the workflow through an Admin order action, but an external OMS can replace that UI and use the same server-side Admin API operations.
+
 ```mermaid
 sequenceDiagram
     autonumber
@@ -107,7 +109,7 @@ Subscribe to the [`inventory_levels/update` webhook](https://shopify.dev/docs/ap
 
 ## Fulfillment Request and Delivery Sequence
 
-The merchant starts this workflow with the same `Select fulfillment action` shown in the Order Action Sequence and can optionally enter a message in Shopify. Shopify then sends the fulfillment-service notification to the remote app server; this sample doesn't call a separate request-submission API between the merchant action and that callback.
+The merchant starts this workflow with the same `Select fulfillment action` shown in the Order Action Sequence, using Shopify or an external OMS. An optional fulfillment request message can still be included and is returned by the later merchant-request query. Shopify then sends the fulfillment-service notification to the remote app server; this sample doesn't call a separate request-submission API between the merchant action and that callback.
 
 The fulfillment-service callback endpoints and background processing run on the same remote app server. They are shown as one participant below rather than as a separate fulfillment-service process.
 
@@ -115,32 +117,32 @@ The fulfillment-service callback endpoints and background processing run on the 
 sequenceDiagram
     autonumber
     actor Merchant
-    participant Shopify as Shopify
+    participant OMS as Shopify or external OMS
     participant App as Remote app server
     participant ERP as External ERP or WMS
 
-    Merchant->>Shopify: Select fulfillment action and enter an optional message
-    Shopify->>App: POST /fulfillment_order_notification
-    App-->>Shopify: Immediate 200 acknowledgement
-    App->>Shopify: Query assigned FULFILLMENT_REQUESTED orders and merchant requests
-    Shopify-->>App: Fulfillment order IDs, messages, options, and timestamps
+    Merchant->>OMS: Select fulfillment action
+    OMS->>App: POST /fulfillment_order_notification
+    App-->>OMS: Immediate 200 acknowledgement
+    App->>OMS: Query assigned FULFILLMENT_REQUESTED orders and merchant requests
+    OMS-->>App: Fulfillment order IDs, messages, options, and timestamps
     loop Each requested fulfillment order
-        App->>Shopify: fulfillmentOrderAcceptFulfillmentRequest
-        Shopify-->>App: Request accepted
+        App->>OMS: fulfillmentOrderAcceptFulfillmentRequest
+        OMS-->>App: Request accepted
     end
     App->>ERP: Instruct the external system to prepare and ship the fulfillment
     ERP-->>App: Shipment result and tracking information
     Note over App,ERP: The sample simulates this external processing time with a two-second delay
     loop Each accepted fulfillment order
-        App->>Shopify: fulfillmentCreate with tracking information
-        Shopify-->>App: Fulfillment created
+        App->>OMS: fulfillmentCreate with tracking information
+        OMS-->>App: Fulfillment created
     end
     App->>ERP: Continue the delivery workflow and wait for its status
     ERP-->>App: Delivery completed
     Note over App,ERP: The sample simulates this delivery wait with another two-second delay
     loop Each created fulfillment
-        App->>Shopify: fulfillmentEventCreate with DELIVERED status
-        Shopify-->>App: Delivered event created
+        App->>OMS: fulfillmentEventCreate with DELIVERED status
+        OMS-->>App: Delivered event created
     end
 ```
 
