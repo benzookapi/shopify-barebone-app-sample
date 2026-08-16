@@ -10,8 +10,8 @@ import {
   verifyWebhookHmac,
 } from './shopify-auth.server.js';
 
-const FULFILLMENT_CREATION_DELAY_MS = 5000;
-const DELIVERY_EVENT_DELAY_MS = 5000;
+const FULFILLMENT_CREATION_DELAY_MS = 2000;
+const DELIVERY_EVENT_DELAY_MS = 2000;
 const fulfillmentJobs = new Map();
 
 export const mockLoginCorsHeaders = {
@@ -237,6 +237,15 @@ async function processRequestedFulfillments(shop) {
       edges {
         node {
           id
+          merchantRequests(kind: FULFILLMENT_REQUEST) {
+            nodes {
+              id
+              kind
+              message
+              requestOptions
+              sentAt
+            }
+          }
         }
       }
       pageInfo {
@@ -248,7 +257,8 @@ async function processRequestedFulfillments(shop) {
   if (queryErrors.length > 0) throw new Error(queryErrors.join(', '));
 
   const connection = response.data?.assignedFulfillmentOrders;
-  const fulfillmentOrderIds = connection?.edges?.map((edge) => edge.node.id) || [];
+  const fulfillmentOrders = connection?.edges?.map((edge) => edge.node) || [];
+  const fulfillmentOrderIds = fulfillmentOrders.map((fulfillmentOrder) => fulfillmentOrder.id);
   if (connection?.pageInfo?.hasNextPage) {
     console.warn('[fulfillment-service] only the first 10 requested fulfillment orders will be processed', JSON.stringify({ shop }));
   }
@@ -256,6 +266,14 @@ async function processRequestedFulfillments(shop) {
     console.info('[fulfillment-service] no requested fulfillment orders found', JSON.stringify({ shop }));
     return;
   }
+
+  console.info('[fulfillment-service] assigned fulfillment requests found', JSON.stringify({
+    shop,
+    requests: fulfillmentOrders.map((fulfillmentOrder) => ({
+      fulfillmentOrderId: fulfillmentOrder.id,
+      merchantRequests: fulfillmentOrder.merchantRequests?.nodes || [],
+    })),
+  }, null, 2));
 
   const acceptedIds = [];
   for (const id of fulfillmentOrderIds) {
