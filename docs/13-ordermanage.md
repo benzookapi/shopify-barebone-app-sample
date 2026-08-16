@@ -78,36 +78,35 @@ When an external ERP, warehouse management system, or other core system is the i
 sequenceDiagram
     autonumber
     participant ERP as External ERP or WMS
-    participant App as Integration service
-    participant API as Admin GraphQL API
-    participant Shopify as Shopify inventory engine
-    participant Hook as /webhookcommon
+    participant App as Remote app server
+    participant Shopify as Shopify
 
     alt Master inventory changes in the external system
         ERP->>App: Publish item, location, and quantity change
-        App->>API: Query InventoryItem and InventoryLevel
-        API-->>App: Shopify IDs and current quantities
-        App->>API: Set authoritative quantity or apply an idempotent delta
-        API->>Shopify: Update inventory state
-        Shopify-->>API: Return updated inventory state
-        API-->>App: Return updated quantity or user errors
-        Shopify->>Hook: inventory_levels/update webhook
-        Hook->>Hook: Verify HMAC, deduplicate, and detect sync origin
-        Hook->>API: Re-query latest item and level quantities
-        API-->>Hook: Current quantity states
-        Hook-->>ERP: Confirm the normalized Shopify state
+        Note over App,Shopify: Same inventory adjustment flow that starts at step 6 above
+        App->>Shopify: Admin GraphQL query for location and inventory items
+        Shopify-->>App: Shopify IDs and current quantities
+        loop Each inventory level
+            App->>Shopify: inventoryAdjustQuantities with idempotency key
+            Shopify-->>App: Updated quantity or user errors
+        end
+        Shopify->>App: inventory_levels/update webhook to /webhookcommon
+        App->>App: Verify HMAC, deduplicate, and detect sync origin
+        App->>Shopify: Re-query latest item and level quantities
+        Shopify-->>App: Current quantity states
+        App-->>ERP: Confirm the normalized Shopify state
     else Inventory changes in Shopify
-        Shopify->>Shopify: Order, fulfillment, Admin edit, or app update
-        Shopify->>Hook: inventory_levels/update webhook
-        Hook->>Hook: Verify HMAC and deduplicate delivery
-        Hook->>API: Query InventoryItem and InventoryLevel quantities
-        API-->>Hook: Latest available, committed, and on-hand values
-        Hook->>ERP: Update the external inventory record
+        Note over Shopify: Order, fulfillment, Admin edit, or another app changes inventory
+        Shopify->>App: inventory_levels/update webhook to /webhookcommon
+        App->>App: Verify HMAC and deduplicate delivery
+        App->>Shopify: Query InventoryItem and InventoryLevel quantities
+        Shopify-->>App: Latest available, committed, and on-hand values
+        App->>ERP: Update the external inventory record
         ERP->>ERP: Store the new master or allocation state
     end
 ```
 
-For an authoritative ERP snapshot, use an absolute inventory-set operation with compare-and-set protection when practical. Use a delta adjustment only when the external event itself represents a reliable, idempotent quantity change. Shopify can emit `inventory_levels/update` for changes made by this integration as well as changes made elsewhere, so persist event IDs or synchronization metadata and prevent webhook-driven writes from creating an update loop.
+When the ERP reports a master quantity change, the remote app server runs the same inventory adjustment flow that starts at step 6 of the Fulfillment Service Sequence: it queries the Shopify location and inventory items, calculates the required change, and calls `inventoryAdjustQuantities` with an idempotency key for each inventory level. Shopify can emit `inventory_levels/update` for changes made by this app server as well as changes made elsewhere, so persist event IDs or synchronization metadata and prevent webhook-driven writes from creating an update loop.
 
 ### TIPS: Inventory Status Transformation
 
