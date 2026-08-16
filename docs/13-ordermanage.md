@@ -17,7 +17,7 @@ This sequence demonstrates the fulfillment and payment-capture operations that a
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Merchant
+    actor Merchant as Merchant (OMS)
     participant Admin as Shopify order details
     participant UI as /ordermanage page
     participant App as /ordermanage.json
@@ -45,7 +45,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Merchant
+    actor Merchant as Merchant (OMS)
     participant UI as Order management UI
     participant App as Remote app server
     participant Shopify as Shopify
@@ -80,7 +80,7 @@ sequenceDiagram
 
     alt Master inventory changes in the external system
         ERP->>App: Publish item, location, and quantity change
-        Note over App,Shopify: Same inventory adjustment flow that starts at step 6 above
+        Note over App,Shopify: Same inventory adjustment flow that starts at step 7 above
     else Inventory changes in Shopify
         Note over Shopify: Order, fulfillment, Admin edit, or another app changes inventory
         Shopify->>App: inventory_levels/update webhook to /webhookcommon
@@ -92,7 +92,7 @@ sequenceDiagram
     end
 ```
 
-When the ERP reports a master quantity change, the remote app server runs the same inventory adjustment flow that starts at step 6 of the Fulfillment Service Sequence: it queries the Shopify location and inventory items, calculates the required change, and calls `inventoryAdjustQuantities` with an idempotency key for each inventory level. Shopify can emit `inventory_levels/update` for changes made by this app server as well as changes made elsewhere, so persist event IDs or synchronization metadata and prevent webhook-driven writes from creating an update loop.
+When the ERP reports a master quantity change, the remote app server runs the same inventory adjustment flow that starts at step 7 of the Fulfillment Service Sequence: it queries the Shopify location and inventory items, calculates the required change, and calls `inventoryAdjustQuantities` with an idempotency key for each inventory level. Shopify can emit `inventory_levels/update` for changes made by this app server as well as changes made elsewhere, so persist event IDs or synchronization metadata and prevent webhook-driven writes from creating an update loop.
 
 ### TIPS: Inventory Status Transformation
 
@@ -116,7 +116,7 @@ The fulfillment-service callback endpoints and background processing run on the 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Merchant
+    actor Merchant as Merchant (OMS)
     participant Shopify as Shopify
     participant App as Remote app server
     participant ERP as External ERP or WMS
