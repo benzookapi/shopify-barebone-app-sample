@@ -107,7 +107,7 @@ Subscribe to the [`inventory_levels/update` webhook](https://shopify.dev/docs/ap
 
 ## Fulfillment Request and Delivery Sequence
 
-The merchant starts this workflow by requesting fulfillment and optionally entering a message in Shopify Admin. The corresponding Admin API operation is `fulfillmentOrderSubmitFulfillmentRequest`; `fulfillmentCreate` happens later, after the fulfillment service accepts the request and the external system reports that the shipment is ready.
+The merchant starts this workflow with the same `Select fulfillment action` shown in the Order Action Sequence and can optionally enter a message in Shopify. Shopify then sends the fulfillment-service notification to the remote app server; this sample doesn't call a separate request-submission API between the merchant action and that callback.
 
 The fulfillment-service callback endpoints and background processing run on the same remote app server. They are shown as one participant below rather than as a separate fulfillment-service process.
 
@@ -115,13 +115,11 @@ The fulfillment-service callback endpoints and background processing run on the 
 sequenceDiagram
     autonumber
     actor Merchant
-    participant Admin as Shopify Admin
     participant Shopify as Shopify
     participant App as Remote app server
     participant ERP as External ERP or WMS
 
-    Merchant->>Admin: Request fulfillment and enter an optional message
-    Admin->>Shopify: fulfillmentOrderSubmitFulfillmentRequest
+    Merchant->>Shopify: Select fulfillment action and enter an optional message
     Shopify->>App: POST /fulfillment_order_notification
     App-->>Shopify: Immediate 200 acknowledgement
     App->>Shopify: Query assigned FULFILLMENT_REQUESTED orders and merchant requests
@@ -198,7 +196,6 @@ When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies t
 - [Inventory management apps](https://shopify.dev/docs/apps/build/orders-fulfillment/inventory-management-apps)
 - [Manage inventory quantities and states](https://shopify.dev/docs/apps/build/orders-fulfillment/inventory-management-apps/manage-quantities-states)
 - [Inventory level update webhook topic](https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-INVENTORY_LEVELS_UPDATE)
-- [Submit a fulfillment request](https://shopify.dev/docs/api/admin-graphql/latest/mutations/fulfillmentOrderSubmitFulfillmentRequest)
 - [Create a fulfillment](https://shopify.dev/docs/api/admin-graphql/latest/mutations/fulfillmentCreate)
 - [Create a fulfillment event](https://shopify.dev/docs/api/admin-graphql/latest/mutations/fulfillmentEventCreate)
 - [Adjust inventory quantities](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/inventoryAdjustQuantities)
