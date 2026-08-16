@@ -38,6 +38,44 @@ sequenceDiagram
     Script-->>Customer: Update the storefront UI
 ```
 
+## Cart Data Persistence Sequence
+
+The extension uses standard Shopify theme forms rather than the Ajax Cart API. Its storefront JavaScript adds correctly named hidden inputs to the existing product and cart forms, and Shopify persists the submitted values through checkout into the order.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant Block as Theme app block
+    participant Script as barebone.js
+    participant ProductForm as Product form<br/>POST /cart/add
+    participant CartForm as Cart form<br/>POST /cart
+    participant Cart as Shopify cart
+    participant Checkout as Shopify checkout
+    participant Order as Shopify order
+
+    alt Add line-item property
+        Customer->>Block: Enter a line-item property value
+        Block->>Script: Dispatch input change
+        Script->>ProductForm: Add properties[barebone_line_item_property]
+        Customer->>ProductForm: Submit Add to cart
+        ProductForm->>Cart: Add merchandise and submitted property
+        Cart->>Cart: Store property on that cart line
+    else Add cart note and attributes
+        Customer->>Block: Enter note and attribute values
+        Block->>Script: Dispatch input changes
+        Script->>CartForm: Add note and attributes[...] fields
+        Customer->>CartForm: Submit cart form or proceed to checkout
+        CartForm->>Cart: Update cart note and attributes
+        Cart->>Cart: Store values at cart level
+    end
+
+    Customer->>Checkout: Continue with the populated cart
+    Checkout->>Order: Complete the purchase
+    Order->>Order: Keep properties on order line items
+    Order->>Order: Keep note and attributes as order-level data
+```
+
 ## How It Works
 
 Theme app extensions package blocks, snippets, JavaScript, CSS, and static assets. Merchants add app blocks or enable app embeds in the theme editor without editing theme source manually.
