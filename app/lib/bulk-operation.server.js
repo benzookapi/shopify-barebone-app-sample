@@ -2,7 +2,6 @@ import { authenticatedEndpoint } from './embedded.server.js';
 import { json } from './http.server.js';
 import { callAdminGraphql } from './shopify-graphql.server.js';
 
-const MAX_VARIANTS_PER_PRODUCT = 3;
 const PRODUCT_CREATE = 'productCreate';
 const PRODUCT_VARIANTS_BULK_CREATE = 'productVariantsBulkCreate';
 
@@ -142,9 +141,6 @@ function prepareVariantCreateJsonl(records, productCreateResults) {
 
     if (!Array.isArray(variables.variants) || variables.variants.length === 0) {
       throw new Error(`Line ${index + 1} must contain at least one variant.`);
-    }
-    if (variables.variants.length > MAX_VARIANTS_PER_PRODUCT) {
-      throw new Error(`Line ${index + 1} contains more than ${MAX_VARIANTS_PER_PRODUCT} variants.`);
     }
     if (variables.media != null && !Array.isArray(variables.media)) {
       throw new Error(`Line ${index + 1} media must be an array.`);

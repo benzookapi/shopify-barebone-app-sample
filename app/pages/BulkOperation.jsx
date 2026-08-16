@@ -217,7 +217,7 @@ function FileUploader({ onUploaded }) {
             ) : (
                 <>
                     <p>
-                        Variant creation format: each line contains one to three <b>variants</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput" target="_blank">ProductVariantsBulkInput</s-link>) for one product. Shopify requires <b>productId</b> for <b>productVariantsBulkCreate</b>. This sample also accepts <b>productHandle</b> and replaces it with the required Shopify product GID from the product creation Result data before staging. Complete the product creation operation before using handles from <b>sample-variants.jsonl</b>.
+                        Variant creation format: each line contains one or more <b>variants</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput" target="_blank">ProductVariantsBulkInput</s-link>) for one product. Each variant supplies one value for every option on that product, such as <b>Size: Small / Color: Red</b>. Shopify requires <b>productId</b> for <b>productVariantsBulkCreate</b>. This sample also accepts <b>productHandle</b> and replaces it with the required Shopify product GID from the product creation Result data before staging. Complete the product creation operation before using handles from <b>sample-variants.jsonl</b>.
                     </p>
                     <br />
                     <s-drop-zone label="Product creation Result data JSONL file" name="productResultFile"></s-drop-zone>
