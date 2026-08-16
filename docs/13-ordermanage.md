@@ -46,43 +46,22 @@ sequenceDiagram
     actor Merchant
     participant UI as Order management UI
     participant App as Remote app server
-    participant API as Admin GraphQL API
-    participant Service as Fulfillment service callbacks
+    participant Shopify as Shopify
 
     Merchant->>UI: Create fulfillment service
     UI->>App: Authenticated request
-    App->>API: fulfillmentServiceCreate
-    API-->>App: Service and app location
-    App->>API: Store service ID in shop metafield
+    App->>Shopify: fulfillmentServiceCreate
+    Shopify-->>App: Service and app location
+    App->>Shopify: Store service ID in shop metafield
     Merchant->>UI: Adjust inventory
     UI->>App: Quantity delta, name, reason, optional ledger URI
-    App->>API: Query location and inventory items
+    App->>Shopify: Query location and inventory items
     loop Each inventory level
-        App->>API: inventoryAdjustQuantities with idempotency key
-    end
-    opt Merchant requests fulfillment
-        API->>Service: POST /fulfillment_order_notification
-        Service-->>API: Immediate 200 acknowledgement
-        Service->>API: Query assigned FULFILLMENT_REQUESTED orders and merchant requests
-        API-->>Service: Fulfillment order IDs, messages, options, and timestamps
-        loop Each requested fulfillment order
-            Service->>API: fulfillmentOrderAcceptFulfillmentRequest
-            API-->>Service: Request accepted
-        end
-        Service->>Service: Wait two seconds for the demo
-        loop Each accepted fulfillment order
-            Service->>API: fulfillmentCreate with tracking information
-            API-->>Service: Fulfillment created
-        end
-        Service->>Service: Wait another two seconds for the demo
-        loop Each created fulfillment
-            Service->>API: fulfillmentEventCreate with DELIVERED status
-            API-->>Service: Delivered event created
-        end
+        App->>Shopify: inventoryAdjustQuantities with idempotency key
     end
     opt Shopify requests stock or tracking
-        API->>Service: GET stock or tracking callback
-        Service-->>API: JSON response
+        Shopify->>App: GET stock or tracking callback
+        App-->>Shopify: JSON response
     end
 ```
 
@@ -126,13 +105,54 @@ The normal lifecycle of a unit sold through Shopify is:
 
 Subscribe to the [`inventory_levels/update` webhook](https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-INVENTORY_LEVELS_UPDATE) and treat its payload as a change notification. After verifying the webhook HMAC, query the current [Inventory Item and Inventory Level quantity states](https://shopify.dev/docs/apps/build/orders-fulfillment/inventory-management-apps/manage-quantities-states), then send the latest relevant quantities and status to the external system.
 
+## Fulfillment Request and Delivery Sequence
+
+The merchant starts this workflow by requesting fulfillment and optionally entering a message in Shopify Admin. The corresponding Admin API operation is `fulfillmentOrderSubmitFulfillmentRequest`; `fulfillmentCreate` happens later, after the fulfillment service accepts the request and the external system reports that the shipment is ready.
+
+The fulfillment-service callback endpoints and background processing run on the same remote app server. They are shown as one participant below rather than as a separate fulfillment-service process.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Merchant
+    participant Admin as Shopify Admin
+    participant Shopify as Shopify
+    participant App as Remote app server
+    participant ERP as External ERP or WMS
+
+    Merchant->>Admin: Request fulfillment and enter an optional message
+    Admin->>Shopify: fulfillmentOrderSubmitFulfillmentRequest
+    Shopify->>App: POST /fulfillment_order_notification
+    App-->>Shopify: Immediate 200 acknowledgement
+    App->>Shopify: Query assigned FULFILLMENT_REQUESTED orders and merchant requests
+    Shopify-->>App: Fulfillment order IDs, messages, options, and timestamps
+    loop Each requested fulfillment order
+        App->>Shopify: fulfillmentOrderAcceptFulfillmentRequest
+        Shopify-->>App: Request accepted
+    end
+    App->>ERP: Instruct the external system to prepare and ship the fulfillment
+    ERP-->>App: Shipment result and tracking information
+    Note over App,ERP: The sample simulates this external processing time with a two-second delay
+    loop Each accepted fulfillment order
+        App->>Shopify: fulfillmentCreate with tracking information
+        Shopify-->>App: Fulfillment created
+    end
+    App->>ERP: Continue the delivery workflow and wait for its status
+    ERP-->>App: Delivery completed
+    Note over App,ERP: The sample simulates this delivery wait with another two-second delay
+    loop Each created fulfillment
+        App->>Shopify: fulfillmentEventCreate with DELIVERED status
+        Shopify-->>App: Delivered event created
+    end
+```
+
 ## How It Works
 
 When an order ID is present, the server converts it to a Shopify order GID and queries fulfillment, transaction, and fulfillment-order state. Fulfillment creation uses fulfillment order IDs rather than raw line-item IDs. Payment capture uses each authorization's parent transaction ID and amount.
 
 The fulfillment-service registration returns an app location. The sample stores the service ID in a shop metafield, lets the merchant associate product inventory with that location, and adjusts quantities using `inventoryAdjustQuantities`. Each adjustment includes a UUID idempotency key and explicitly uses `changeFromQuantity: null` to skip a compare-and-set check.
 
-When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies the raw-body HMAC and returns `200` without waiting for Admin API work. A per-shop background job retrieves requested fulfillment orders together with each `merchantRequests` connection, including the merchant's optional message, request options, and send time. It logs those details, accepts the requests, waits two seconds for a visible demonstration state, and calls `fulfillmentCreate`. It then waits another two seconds and calls `fulfillmentEventCreate` with `DELIVERED` for each successfully created fulfillment. The callback response only acknowledges the notification; the Admin API mutations perform the actual state transitions.
+When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies the raw-body HMAC and returns `200` without waiting for Admin API work. A per-shop background job retrieves requested fulfillment orders together with each `merchantRequests` connection, including the merchant's optional message, request options, and send time. It logs those details and accepts the requests. In a production integration, the app would then instruct an external ERP, WMS, fulfillment provider, or carrier and wait for its shipment and delivery results before calling `fulfillmentCreate` and `fulfillmentEventCreate`. This sample uses two short delays to simulate those external operations. The callback response only acknowledges the notification; the Admin API mutations perform the actual state transitions.
 
 ## Common Pitfalls
 
@@ -178,6 +198,7 @@ When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies t
 - [Inventory management apps](https://shopify.dev/docs/apps/build/orders-fulfillment/inventory-management-apps)
 - [Manage inventory quantities and states](https://shopify.dev/docs/apps/build/orders-fulfillment/inventory-management-apps/manage-quantities-states)
 - [Inventory level update webhook topic](https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-INVENTORY_LEVELS_UPDATE)
+- [Submit a fulfillment request](https://shopify.dev/docs/api/admin-graphql/latest/mutations/fulfillmentOrderSubmitFulfillmentRequest)
 - [Create a fulfillment](https://shopify.dev/docs/api/admin-graphql/latest/mutations/fulfillmentCreate)
 - [Create a fulfillment event](https://shopify.dev/docs/api/admin-graphql/latest/mutations/fulfillmentEventCreate)
 - [Adjust inventory quantities](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/inventoryAdjustQuantities)
