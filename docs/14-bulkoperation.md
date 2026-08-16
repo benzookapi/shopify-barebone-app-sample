@@ -98,7 +98,7 @@ The sample matches handles because both bundled files contain the same stable ha
 
 The product creation file is organized as one product per JSONL row:
 
-| JSONL row | Product | Handle | Contents of that single line |
+| JSONL row | Product | Handle | Contents of single line |
 | --- | --- | --- | --- |
 | Line 1 | Product A | `product.handle: product-a` | `product: {title, handle, options, ...}`, `media: [...]` |
 | Line 2 | Product B | `product.handle: product-b` | `product: {title, handle, options, ...}`, `media: [...]` |
@@ -114,11 +114,51 @@ The product creation Result data provides the handle check and generated ID hand
 
 The variant creation file is also organized as one product per JSONL row. Variants are array elements within that product's row, conceptually arranged like columns:
 
-| JSONL row | Product | Handle | GID (Required) | `variants[0]` | `variants[1]` | `variants[2]` |
-| --- | --- | --- | --- | --- | --- | --- |
-| Line 1 | Product A | `productHandle: product-a` | `productId: gid://shopify/Product/1000000000001` | Small | Medium | Large |
-| Line 2 | Product B | `productHandle: product-b` | `productId: gid://shopify/Product/1000000000002` | Red | Green | Blue |
-| Line 3 | Product C | `productHandle: product-c` | `productId: gid://shopify/Product/1000000000003` | Single variant | - | - |
+<table>
+  <thead>
+    <tr>
+      <th rowspan="2">JSONL row</th>
+      <th rowspan="2">Product</th>
+      <th rowspan="2">Handle</th>
+      <th rowspan="2">GID (Required)</th>
+      <th colspan="3">Contents of single line</th>
+    </tr>
+    <tr>
+      <th><code>variants[0]</code></th>
+      <th><code>variants[1]</code></th>
+      <th><code>variants[2]</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Line 1</td>
+      <td>Product A</td>
+      <td><code>productHandle: product-a</code></td>
+      <td><code>productId: gid://shopify/Product/1000000000001</code></td>
+      <td>Small</td>
+      <td>Medium</td>
+      <td>Large</td>
+    </tr>
+    <tr>
+      <td>Line 2</td>
+      <td>Product B</td>
+      <td><code>productHandle: product-b</code></td>
+      <td><code>productId: gid://shopify/Product/1000000000002</code></td>
+      <td>Red</td>
+      <td>Green</td>
+      <td>Blue</td>
+    </tr>
+    <tr>
+      <td>Line 3</td>
+      <td>Product C</td>
+      <td><code>productHandle: product-c</code></td>
+      <td><code>productId: gid://shopify/Product/1000000000003</code></td>
+      <td>Single variant</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+  </tbody>
+</table>
 
 All variants for Product A must therefore be inside the one `variants: [...]` array on Product A's line. Don't write Small, Medium, and Large as three separate JSONL lines. Each line invokes `productVariantsBulkCreate` once for one product, while the nested array creates that product's multiple variants. This sample permits one to three variants in each row.
 
