@@ -4,7 +4,7 @@
 
 The `/sessiontoken` sample demonstrates how an embedded browser proves its current Shopify identity to the app server. It also contrasts that short-lived proof with the long-lived Admin OAuth token stored by the server.
 
-For the shared embedded-app entry flow, see [Application Architecture](ARCHITECTURE.md).
+For the shared embedded-app entry flow, see [Application Architecture](00-ARCHITECTURE.md).
 
 ## Runtime Locations
 
