@@ -42,6 +42,8 @@ sequenceDiagram
 
 ## Fulfillment Service Sequence
 
+A [Fulfillment Service](https://shopify.dev/docs/apps/build/orders-fulfillment/fulfillment-service-apps) delegates inventory and fulfillment operations to an app-managed external system instead of relying on manual inventory management in Shopify. Creating a fulfillment service also registers an app location in Shopify. Products stocked at that location can then have inventory changes and fulfillment requests handled through the remote app server, allowing an external ERP, WMS, or OMS to remain the operational system of record. Routing these operations through the integration keeps Shopify inventory and shipment status synchronized with the external system and helps prevent data divergence caused by merchants entering the same changes manually in separate systems.
+
 ```mermaid
 sequenceDiagram
     autonumber
