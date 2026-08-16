@@ -69,27 +69,27 @@ The sample downloads are generated with `.jsonl` filenames so that they remain s
 Select **Create products** and upload `sample.jsonl`. Each JSONL line is one variables object for one `productCreate` invocation, so one line represents one product:
 
 ```json
-{"product":{"title":"Example","handle":"example","productOptions":[{"name":"Size","values":[{"name":"Small"},{"name":"Medium"},{"name":"Large"}]}]},"media":[{"mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/image.png"}]}
+{"product":{"title":"Product A","handle":"product-a","productOptions":[{"name":"Size","values":[{"name":"Small"},{"name":"Medium"},{"name":"Large"}]}]},"media":[{"mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-a.png"}]}
 ```
 
-`product` uses `ProductCreateInput`. Optional `media` entries use `CreateMediaInput`, so public image URLs belong in the JSONL file rather than in a separate UI field. The bundled sample contains ten products and reuses five image URLs twice.
+`product` uses `ProductCreateInput`. Its optional `handle` field can be specified before creation and reused as a stable matching key between the product input, Result data, and variant input. Optional `media` entries use `CreateMediaInput`, so public image URLs belong in the JSONL file rather than in a separate UI field. A product ID can't be preassigned in this file because `ProductCreateInput` has no product ID field; Shopify generates the product GID during creation and returns it in Result data. The bundled sample contains ten products and reuses five image URLs twice.
 
 ### Variant creation format
 
-After product creation completes, download its **Result data**, select **Create product variants**, and upload both `sample-variants.jsonl` and the downloaded Result data JSONL. Each variant line contains one to three `ProductVariantsBulkInput` records and identifies the product by `productId` or `productHandle`:
+After product creation completes, download its **Result data**, select **Create product variants**, and upload both `sample-variants.jsonl` and the downloaded Result data JSONL. The native `productVariantsBulkCreate` mutation requires `productId: ID!` for each product row. The sample upload format can supply that native `productId` directly or use the convenience `productHandle` field so the app can obtain the required GID from Result data. Each row contains one to three `ProductVariantsBulkInput` records:
 
 ```json
-{"productHandle":"example","strategy":"REMOVE_STANDALONE_VARIANT","variants":[{"optionValues":[{"optionName":"Size","name":"Small"}],"price":"10.00","inventoryItem":{"sku":"EXAMPLE-S"}},{"optionValues":[{"optionName":"Size","name":"Medium"}],"price":"12.00","inventoryItem":{"sku":"EXAMPLE-M"}},{"optionValues":[{"optionName":"Size","name":"Large"}],"price":"14.00","inventoryItem":{"sku":"EXAMPLE-L"}}]}
+{"productHandle":"product-a","strategy":"REMOVE_STANDALONE_VARIANT","variants":[{"optionValues":[{"optionName":"Size","name":"Small"}],"price":"10.00","inventoryItem":{"sku":"PRODUCT-A-S"}},{"optionValues":[{"optionName":"Size","name":"Medium"}],"price":"12.00","inventoryItem":{"sku":"PRODUCT-A-M"}},{"optionValues":[{"optionName":"Size","name":"Large"}],"price":"14.00","inventoryItem":{"sku":"PRODUCT-A-L"}}]}
 ```
 
-`productId` is the native `productVariantsBulkCreate` variable. `productHandle` is a sample convenience field: the app server finds the matching `product.handle` in the uploaded product creation Result data and writes its returned `product.id` to the staged variant JSONL. This avoids one synchronous Admin GraphQL lookup per product. A custom variant file that already contains native `productId` values doesn't require the Result data file. `REMOVE_STANDALONE_VARIANT` removes the single initial variant created by `productCreate` before the new variants are added.
+`productId` is required in the native variables sent to `productVariantsBulkCreate`. `productHandle` exists only in this sample's upload format: the app server finds the matching `product.handle` in the uploaded product creation Result data and writes its returned `product.id` to the staged variant JSONL. This avoids one synchronous Admin GraphQL lookup per product. A custom variant file that already contains native `productId` values doesn't require the Result data file. `REMOVE_STANDALONE_VARIANT` removes the single initial variant created by `productCreate` before the new variants are added.
 
 ### Product creation Result data
 
 The mutation selection used by this sample returns `product.id`, `product.handle`, and `product.title`. Shopify writes one response object for every input JSONL line. Each output object also includes `__lineNumber`, which identifies the corresponding zero-based line in the original product creation input. For example:
 
 ```json
-{"data":{"productCreate":{"product":{"id":"gid://shopify/Product/1234567890","handle":"example","title":"Example"},"userErrors":[]}},"__lineNumber":0}
+{"data":{"productCreate":{"product":{"id":"gid://shopify/Product/1000000000001","handle":"product-a","title":"Product A"},"userErrors":[]}},"__lineNumber":0}
 ```
 
 The sample matches handles because both bundled files contain the same stable handles. Production import pipelines can retain the original input chunk and use `__lineNumber` as the authoritative correlation key, including when a line fails and has no returned product. The sample builds a `product.handle` to `product.id` map from successful results and performs an exact match against each variant row's `productHandle`. A missing or different handle is rejected before staged upload.
@@ -98,19 +98,27 @@ The sample matches handles because both bundled files contain the same stable ha
 
 The product creation file is organized as one product per JSONL row:
 
-| JSONL row | Product | Contents of that single line |
-| --- | --- | --- |
-| Line 1 | Product A | `product: {title, handle, options, ...}`, `media: [...]` |
-| Line 2 | Product B | `product: {title, handle, options, ...}`, `media: [...]` |
-| Line 3 | Product C | `product: {title, handle, options, ...}`, `media: [...]` |
+| JSONL row | Product | Matching handle | Product ID before creation | Contents of that single line |
+| --- | --- | --- | --- | --- |
+| Line 1 | Product A | `product.handle: product-a` | Not available; Shopify generates it | `product: {title, handle, options, ...}`, `media: [...]` |
+| Line 2 | Product B | `product.handle: product-b` | Not available; Shopify generates it | `product: {title, handle, options, ...}`, `media: [...]` |
+| Line 3 | Product C | `product.handle: product-c` | Not available; Shopify generates it | `product: {title, handle, options, ...}`, `media: [...]` |
+
+The product creation Result data provides the handle check and generated ID handoff:
+
+| Result row | Product | Returned matching handle | Shopify-generated product GID |
+| --- | --- | --- | --- |
+| `__lineNumber: 0` | Product A | `product.handle: product-a` | `product.id: gid://shopify/Product/1000000000001` |
+| `__lineNumber: 1` | Product B | `product.handle: product-b` | `product.id: gid://shopify/Product/1000000000002` |
+| `__lineNumber: 2` | Product C | `product.handle: product-c` | `product.id: gid://shopify/Product/1000000000003` |
 
 The variant creation file is also organized as one product per JSONL row. Variants are array elements within that product's row, conceptually arranged like columns:
 
-| JSONL row (product) | Product key | `variants[0]` | `variants[1]` | `variants[2]` |
-| --- | --- | --- | --- | --- |
-| Line 1: Product A | `productHandle: product-a` | Small | Medium | Large |
-| Line 2: Product B | `productHandle: product-b` | Red | Green | Blue |
-| Line 3: Product C | `productHandle: product-c` | Single variant | - | - |
+| JSONL row (product) | Product | Sample matching key | Required native product ID after normalization | `variants[0]` | `variants[1]` | `variants[2]` |
+| --- | --- | --- | --- | --- | --- | --- |
+| Line 1 | Product A | `productHandle: product-a` | `productId: gid://shopify/Product/1000000000001` | Small | Medium | Large |
+| Line 2 | Product B | `productHandle: product-b` | `productId: gid://shopify/Product/1000000000002` | Red | Green | Blue |
+| Line 3 | Product C | `productHandle: product-c` | `productId: gid://shopify/Product/1000000000003` | Single variant | - | - |
 
 All variants for Product A must therefore be inside the one `variants: [...]` array on Product A's line. Don't write Small, Medium, and Large as three separate JSONL lines. Each line invokes `productVariantsBulkCreate` once for one product, while the nested array creates that product's multiple variants. This sample permits one to three variants in each row.
 
