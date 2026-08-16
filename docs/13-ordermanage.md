@@ -84,17 +84,6 @@ sequenceDiagram
     alt Master inventory changes in the external system
         ERP->>App: Publish item, location, and quantity change
         Note over App,Shopify: Same inventory adjustment flow that starts at step 6 above
-        App->>Shopify: Admin GraphQL query for location and inventory items
-        Shopify-->>App: Shopify IDs and current quantities
-        loop Each inventory level
-            App->>Shopify: inventoryAdjustQuantities with idempotency key
-            Shopify-->>App: Updated quantity or user errors
-        end
-        Shopify->>App: inventory_levels/update webhook to /webhookcommon
-        App->>App: Verify HMAC, deduplicate, and detect sync origin
-        App->>Shopify: Re-query latest item and level quantities
-        Shopify-->>App: Current quantity states
-        App-->>ERP: Confirm the normalized Shopify state
     else Inventory changes in Shopify
         Note over Shopify: Order, fulfillment, Admin edit, or another app changes inventory
         Shopify->>App: inventory_levels/update webhook to /webhookcommon
@@ -155,7 +144,7 @@ The fulfillment-service registration returns an app location. The sample stores 
 - [`app/pages/OrderManage.jsx`](../app/pages/OrderManage.jsx): browser workflows
 - [`app/routes/ordermanage.jsx`](../app/routes/ordermanage.jsx): page route and order-link entry
 - [`app/routes/ordermanage-json.jsx`](../app/routes/ordermanage-json.jsx): authenticated data route
-- [`app/lib/order-and-bulk.server.js`](../app/lib/order-and-bulk.server.js): order, fulfillment service, capture, and inventory GraphQL
+- [`app/lib/order-manage.server.js`](../app/lib/order-manage.server.js): order, fulfillment service, capture, and inventory GraphQL
 - [`app/routes/fulfillment-order-notification.jsx`](../app/routes/fulfillment-order-notification.jsx): fulfillment notification callback
 - [`app/routes/fetch-stock.jsx`](../app/routes/fetch-stock.jsx): stock callback
 - [`app/routes/fetch-tracking-numbers.jsx`](../app/routes/fetch-tracking-numbers.jsx): tracking callback

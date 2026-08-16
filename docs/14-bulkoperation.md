@@ -70,7 +70,7 @@ Starting `bulkOperationRunMutation` only queues work. The UI must query `current
 
 - [`app/pages/BulkOperation.jsx`](../app/pages/BulkOperation.jsx): file upload, start, poll, and cancel UI
 - [`app/routes/bulkoperation-json.jsx`](../app/routes/bulkoperation-json.jsx): authenticated route
-- [`app/lib/order-and-bulk.server.js`](../app/lib/order-and-bulk.server.js): staged upload and bulk GraphQL operations
+- [`app/lib/bulk-operation.server.js`](../app/lib/bulk-operation.server.js): staged upload and bulk GraphQL operations
 - [`app/assets/sample.jsonl`](../app/assets/sample.jsonl): example input
 
 ## Official Shopify References
