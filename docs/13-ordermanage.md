@@ -111,7 +111,7 @@ Subscribe to the [`inventory_levels/update` webhook](https://shopify.dev/docs/ap
 
 ## Fulfillment Request and Delivery Sequence
 
-This sequence requires the app to register a [Fulfillment Service](https://shopify.dev/docs/apps/build/orders-fulfillment/fulfillment-service-apps) in Shopify and implement its notification handling and background fulfillment workflow on the remote app server. Whenever an inventory quantity changes during this workflow, a production integration must also run the [External ERP Inventory Synchronization](#external-erp-inventory-synchronization) process above to keep Shopify and the external system consistent. This sample receives and logs the inventory webhook; a real integration must implement the subsequent external-system synchronization.
+This sequence requires the app to register a [Fulfillment Service](https://shopify.dev/docs/apps/build/orders-fulfillment/fulfillment-service-apps) in Shopify and implement its notification handling and background fulfillment workflow on the remote app server. Fulfillment can also change inventory and cause Shopify to send an `inventory_levels/update` webhook. If the [External ERP Inventory Synchronization](#external-erp-inventory-synchronization) flow above is implemented, that webhook automatically enters the same synchronization flow. Design the integration to expect fulfillment-originated inventory updates, deduplicate deliveries, and prevent synchronization loops.
 
 The merchant starts this workflow with the same `Select fulfillment action` shown in the Order Action Sequence in Shopify. An optional fulfillment request message can still be included and is returned by the later merchant-request query. Shopify then sends the fulfillment-service notification to the remote app server; this sample doesn't call a separate request-submission API between the merchant action and that callback.
 
@@ -140,13 +140,6 @@ sequenceDiagram
     loop Each accepted fulfillment order
         App->>Shopify: fulfillmentCreate with tracking information
         Shopify-->>App: Fulfillment created
-    end
-    opt Fulfillment changes inventory in a production integration
-        Shopify->>App: inventory_levels/update webhook
-        App->>Shopify: Query current InventoryLevel quantities
-        Shopify-->>App: Latest inventory state
-        App->>ERP: Synchronize the external inventory record
-        Note over Shopify,ERP: Same External ERP Inventory Synchronization process shown above
     end
     App->>ERP: Continue the delivery workflow and wait for its status
     ERP-->>App: Delivery completed
