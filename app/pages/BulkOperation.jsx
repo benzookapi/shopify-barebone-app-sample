@@ -72,6 +72,10 @@ function BulkOperation() {
                             <p>&nbsp;</p>
                             <s-button variant="primary" disabled={!key || accessing} onClick={() => {
                                 setAccessing(true);
+                                setId('');
+                                setUrl('');
+                                setPUrl('');
+                                setRes('');
                                 authenticatedJson(`/bulkoperation.json?key=${encodeURIComponent(key)}&operationType=${encodeURIComponent(operationType)}`).then((json) => {
                                     console.log(JSON.stringify(json, null, 4));
                                     setAccessing(false);
@@ -105,8 +109,8 @@ function BulkOperation() {
                             <p>&nbsp;</p>
                             <p>
                                 <b>The last operation:</b>
-                                &nbsp; {url != null ? <s-link href={url} target="_blank">Result data</s-link> : ''}
-                                &nbsp; {pUrl != null ? <s-link href={pUrl} target="_blank">Partial data</s-link> : ''}
+                                &nbsp; {url ? <s-link href={url} target="_blank">Result data</s-link> : ''}
+                                &nbsp; {pUrl ? <s-link href={pUrl} target="_blank">Partial data</s-link> : ''}
                             </p>
                             <APIResult res={res} />
                             <p>&nbsp;</p>
