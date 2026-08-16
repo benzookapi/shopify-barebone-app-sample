@@ -1,15 +1,21 @@
 import { useState, useEffect } from 'react';
 import { authenticatedJson } from "../utils/app-bridge";
 import { getAdminFromShop, getShopFromLocation } from "../utils/shop";
+import sampleJsonl from '../assets/sample.jsonl?raw';
 
+const DEFAULT_IMAGE_URLS = [
+    'https://cdn.shopify.com/s/files/1/0064/0712/7062/files/9022a705161ff42b7879d88f1fd6d0e8_16f2e476-e91c-469f-b9d1-fe79e8021cb9.png?v=1783058998',
+    'https://cdn.shopify.com/s/files/1/0064/0712/7062/files/inkjet-printer.png?v=1782975048',
+    'https://cdn.shopify.com/s/files/1/0064/0712/7062/files/9022a705161ff42b7879d88f1fd6d0e8_dc62fc9a-3f8b-4f2a-81a0-ef45e6084ad8.png?v=1782955524',
+    'https://cdn.shopify.com/s/files/1/0064/0712/7062/files/white-bowl-surrounded-by-herbs-chilis-and-lime-slices.jpg?v=1694338542',
+    'https://cdn.shopify.com/s/files/1/0064/0712/7062/files/wood-wall-and-bamboo-bundle-reflection.jpg?v=1738053217',
+].join(',\n');
 
 // Bulk opearation sample for product impporting with a file uploader.
 // Read https://shopify.dev/docs/api/usage/bulk-operations/imports
 function BulkOperation() {
 
     const shop = getShopFromLocation();
-
-    const [data, setData] = useState({});
 
     const [id, setId] = useState('');
     const [url, setUrl] = useState('');
@@ -30,9 +36,10 @@ function BulkOperation() {
         authenticatedJson(`/bulkoperation.json?check=true`).then((json) => {
             console.log(JSON.stringify(json, null, 4));
             setRes(JSON.stringify(json, null, 4));
-            setId(json.data.currentBulkOperation.id);
-            setUrl(json.data.currentBulkOperation.url);
-            setPUrl(json.data.currentBulkOperation.partialDataUrl);
+            const operation = json.data.currentBulkOperation;
+            setId(operation?.id || '');
+            setUrl(operation?.url || '');
+            setPUrl(operation?.partialDataUrl || '');
         }).catch((e) => {
             console.log(`${e}`);
             setRes(`${e}`);
@@ -43,16 +50,6 @@ function BulkOperation() {
     };
 
     useEffect(() => {
-        authenticatedJson(`/bulkoperation.json`).then((json) => {
-            console.log(JSON.stringify(json, null, 4));
-            setData(json);
-            json.data.stagedUploadsCreate.stagedTargets[0].parameters.map((param) => {
-                if (param.name === 'key') setKey(param.value);
-            });
-        }).catch((e) => {
-            console.log(`${e}`);
-            setData({});
-        });
         showStatus();
     }, ['']);
 
@@ -64,15 +61,15 @@ function BulkOperation() {
                     <br /><br />
                     <s-ordered-list>
                         <s-list-item>
-                            <FileUploader data={data}></FileUploader>
+                            <FileUploader onUploaded={setKey}></FileUploader>
                             <p>&nbsp;</p>
                         </s-list-item>
                         <s-list-item>
                             <p>
-                                Run the bulk operation for product creations from the uploaded file above with the key: <s-badge>{key}</s-badge> which is generated initially while loading this page.
+                                Run the bulk operation for product creations from the uploaded file above with the key: <s-badge>{key || 'Upload required'}</s-badge>.
                             </p>
                             <p>&nbsp;</p>
-                            <s-button variant="primary" onClick={() => {
+                            <s-button variant="primary" disabled={!key || accessing} onClick={() => {
                                 setAccessing(true);
                                 authenticatedJson(`/bulkoperation.json?key=${encodeURIComponent(key)}`).then((json) => {
                                     console.log(JSON.stringify(json, null, 4));
@@ -112,7 +109,7 @@ function BulkOperation() {
                             </p>
                             <APIResult res={res} />
                             <p>&nbsp;</p>
-                            <s-button variant="primary" onClick={() => {
+                            <s-button variant="primary" disabled={!id} onClick={() => {
                                 setRes(``);
                                 authenticatedJson(`/bulkoperation.json?id=${encodeURIComponent(id)}`).then((json) => {
                                     console.log(JSON.stringify(json, null, 4));
@@ -141,29 +138,67 @@ function BulkOperation() {
     );
 }
 
-function FileUploader(props) {
-    if (Object.keys(props.data).length === 0) {
-        return <s-spinner accessibilityLabel="Calling Order GraphQL"></s-spinner>;
-    }
-    const target = props.data.data.stagedUploadsCreate.stagedTargets[0];
+function downloadSample() {
+    const url = URL.createObjectURL(new Blob([sampleJsonl], { type: 'text/jsonl' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'sample.jsonl';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function FileUploader({ onUploaded }) {
+    const [imageUrls, setImageUrls] = useState(DEFAULT_IMAGE_URLS);
+    const [uploading, setUploading] = useState(false);
+    const [uploadResult, setUploadResult] = useState('');
+
+    const uploadFile = (event) => {
+        event.preventDefault();
+        setUploading(true);
+        setUploadResult('');
+        onUploaded('');
+
+        const formData = new FormData(event.currentTarget);
+        authenticatedJson('/bulkoperation.json', {
+            method: 'POST',
+            body: formData,
+        }).then((json) => {
+            console.log(JSON.stringify(json, null, 4));
+            setUploading(false);
+            setUploadResult(`Uploaded ${json.productCount} products.`);
+            onUploaded(json.key);
+        }).catch((error) => {
+            console.log(`${error}`);
+            setUploading(false);
+            setUploadResult(`${error}`);
+        });
+    };
+
     return (
-        <form action={`${target.url}`} method="post" encType="multipart/form-data" target="_blank">
-            {
-                target.parameters.map((param) => {
-                    return <input key={param.name} type="hidden" name={param.name} value={param.value} />
-                })
-            }
+        <form method="post" encType="multipart/form-data" onSubmit={uploadFile}>
             <p>
-                Upload your product JSONL file to import. (<s-link href={new URL('../assets/sample.jsonl', import.meta.url).href} target="_blank">Sample</s-link>)
+                Upload your product JSONL file to import. <s-button variant="tertiary" icon="download" type="button" onClick={downloadSample}>Download sample.jsonl</s-button>
             </p>
             <p>
-                Your JSONL file needs to have each line in <s-link href={`https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productcreate`} target="_blank">productCreate mutation variables</s-link> format and you can convert JSON to JSONL in
-                some useful sites like <s-link href={`https://tableconvert.com/json-to-jsonlines`} target="_blank">this</s-link>.
+                Each JSONL line must use <s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productSet" target="_blank">productSet mutation variables</s-link> format and contain no more than three variants. You can convert JSON to JSONL with
+                tools such as <s-link href="https://tableconvert.com/json-to-jsonlines" target="_blank">this converter</s-link>.
             </p>
             <br />
             <s-drop-zone label="Product JSONL file" name="file" accept=".jsonl"></s-drop-zone>
-            <br /><br />
-            <s-button variant="primary" type="submit">Upload</s-button>
+            <br />
+            <s-text-area
+                label="Public product image URLs (comma-separated)"
+                name="imageUrls"
+                rows={8}
+                value={imageUrls}
+                onInput={(event) => setImageUrls(event.currentTarget.value)}
+            ></s-text-area>
+            <p>
+                URLs are assigned to products in JSONL line order and reused from the beginning when the file contains more products than URLs.
+            </p>
+            <br />
+            <s-button variant="primary" type="submit" loading={uploading} disabled={uploading}>Upload</s-button>
+            &nbsp;<s-badge tone="info">Result: {uploadResult}</s-badge>
         </form>
     );
 }
