@@ -66,7 +66,7 @@ The sample downloads are generated with `.jsonl` filenames so that they remain s
 
 ### Product creation format
 
-Select **Create products** and upload `sample.jsonl`. Each line is the variables object for `productCreate`:
+Select **Create products** and upload `sample.jsonl`. Each JSONL line is one variables object for one `productCreate` invocation, so one line represents one product:
 
 ```json
 {"product":{"title":"Example","handle":"example","productOptions":[{"name":"Size","values":[{"name":"Small"},{"name":"Medium"},{"name":"Large"}]}]},"media":[{"mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/image.png"}]}
@@ -79,7 +79,7 @@ Select **Create products** and upload `sample.jsonl`. Each line is the variables
 After product creation completes, download its **Result data**, select **Create product variants**, and upload both `sample-variants.jsonl` and the downloaded Result data JSONL. Each variant line contains one to three `ProductVariantsBulkInput` records and identifies the product by `productId` or `productHandle`:
 
 ```json
-{"productHandle":"example","strategy":"REMOVE_STANDALONE_VARIANT","variants":[{"optionValues":[{"optionName":"Size","name":"Small"}],"price":"10.00","inventoryItem":{"sku":"EXAMPLE-S"}}]}
+{"productHandle":"example","strategy":"REMOVE_STANDALONE_VARIANT","variants":[{"optionValues":[{"optionName":"Size","name":"Small"}],"price":"10.00","inventoryItem":{"sku":"EXAMPLE-S"}},{"optionValues":[{"optionName":"Size","name":"Medium"}],"price":"12.00","inventoryItem":{"sku":"EXAMPLE-M"}},{"optionValues":[{"optionName":"Size","name":"Large"}],"price":"14.00","inventoryItem":{"sku":"EXAMPLE-L"}}]}
 ```
 
 `productId` is the native `productVariantsBulkCreate` variable. `productHandle` is a sample convenience field: the app server finds the matching `product.handle` in the uploaded product creation Result data and writes its returned `product.id` to the staged variant JSONL. This avoids one synchronous Admin GraphQL lookup per product. A custom variant file that already contains native `productId` values doesn't require the Result data file. `REMOVE_STANDALONE_VARIANT` removes the single initial variant created by `productCreate` before the new variants are added.
@@ -92,31 +92,29 @@ The mutation selection used by this sample returns `product.id`, `product.handle
 {"data":{"productCreate":{"product":{"id":"gid://shopify/Product/1234567890","handle":"example","title":"Example"},"userErrors":[]}},"__lineNumber":0}
 ```
 
-The sample matches handles because both bundled files contain the same stable handles. Production import pipelines can retain the original input chunk and use `__lineNumber` as the authoritative correlation key, including when a line fails and has no returned product.
+The sample matches handles because both bundled files contain the same stable handles. Production import pipelines can retain the original input chunk and use `__lineNumber` as the authoritative correlation key, including when a line fails and has no returned product. The sample builds a `product.handle` to `product.id` map from successful results and performs an exact match against each variant row's `productHandle`. A missing or different handle is rejected before staged upload.
 
-### Product and variant file mapping
+### JSONL row and array mapping
 
-```mermaid
-flowchart LR
-    ProductLine["sample.jsonl line N<br/>product.handle = example"]
-    ProductResult["productCreate Result data<br/>__lineNumber = N<br/>product.handle = example<br/>product.id = gid://shopify/Product/123"]
-    VariantLine["sample-variants.jsonl record<br/>productHandle = example"]
-    Match{"Exact handle match?"}
-    Normalized["Staged variant JSONL<br/>productId = gid://shopify/Product/123<br/>productHandle removed"]
-    Reject["Reject before staged upload"]
-    DirectId["Custom variant JSONL<br/>productId = gid://shopify/Product/123"]
+The product creation file is organized as one product per JSONL row:
 
-    ProductLine -->|productCreate| ProductResult
-    ProductResult --> Match
-    VariantLine --> Match
-    Match -->|Yes| Normalized
-    Match -->|No| Reject
-    DirectId -->|Result data not required| Normalized
-```
+| JSONL row | Product | Contents of that single line |
+| --- | --- | --- |
+| Line 1 | Product A | `product: {title, handle, options, ...}`, `media: [...]` |
+| Line 2 | Product B | `product: {title, handle, options, ...}`, `media: [...]` |
+| Line 3 | Product C | `product: {title, handle, options, ...}`, `media: [...]` |
 
-`__lineNumber` maps a product creation response back to its original product input line. The sample then builds a `product.handle` to `product.id` map from successful results and performs an exact match against each variant record's `productHandle`. Variant file order doesn't need to match product file order. A missing or different handle is rejected before staged upload, so an unrelated product ID isn't assigned. The normalized file sent to `productVariantsBulkCreate` contains native `productId` values and no sample-specific `productHandle` fields.
+The variant creation file is also organized as one product per JSONL row. Variants are array elements within that product's row, conceptually arranged like columns:
 
-When a custom variant JSONL already contains `productId`, the app doesn't need product creation Result data and stages the variant records directly after validation.
+| JSONL row (product) | Product key | `variants[0]` | `variants[1]` | `variants[2]` |
+| --- | --- | --- | --- | --- |
+| Line 1: Product A | `productHandle: product-a` | Small | Medium | Large |
+| Line 2: Product B | `productHandle: product-b` | Red | Green | Blue |
+| Line 3: Product C | `productHandle: product-c` | Single variant | - | - |
+
+All variants for Product A must therefore be inside the one `variants: [...]` array on Product A's line. Don't write Small, Medium, and Large as three separate JSONL lines. Each line invokes `productVariantsBulkCreate` once for one product, while the nested array creates that product's multiple variants. This sample permits one to three variants in each row.
+
+Product and variant file row numbers don't need to align because the sample matches them by handle. When a custom variant JSONL already contains `productId`, the app doesn't need product creation Result data and stages that product-oriented variant row directly after validation. The normalized file sent to Shopify contains native `productId` and `variants` values without the sample-specific `productHandle` field.
 
 Product and variant creation cannot use one native Shopify JSONL file or one bulk mutation. `productVariantsBulkCreate` requires a product ID that does not exist until `productCreate` has completed, so the two operations must run sequentially.
 
