@@ -237,7 +237,7 @@ async function processRequestedFulfillments(shop) {
       edges {
         node {
           id
-          merchantRequests(kind: FULFILLMENT_REQUEST) {
+          merchantRequests(first: 10, kind: FULFILLMENT_REQUEST) {
             nodes {
               id
               kind
