@@ -82,7 +82,7 @@ function OrderManage() {
             <s-page heading="Your oder details">
                 <s-stack direction="block" gap="base">
                     <s-box>
-                        <s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/fulfillmentCreateV2" target="_blank">Dev. doc (1)</s-link>&nbsp;&nbsp;
+                        <s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/fulfillmentCreate" target="_blank">Dev. doc (1)</s-link>&nbsp;&nbsp;
                         <s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/mutations/orderCapture" target="_blank">Dev. doc (2)</s-link>
                     </s-box>
                     <s-box>
@@ -90,7 +90,7 @@ function OrderManage() {
                         <s-text>
                             <s-link href="#" onClick={(event) => {
                                 event.preventDefault();
-                                redirect.dispatch(RedirectAction.APP, '/ordermanage');
+                                redirect.dispatch(RedirectAction.ADMIN_PATH, `/orders/${id}`);
                             }}>
                                 Go back
                             </s-link>

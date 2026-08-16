@@ -1,4 +1,4 @@
-import { loadOrderManage } from '../lib/order-and-bulk.server.js';
+import { loadOrderManage } from '../lib/order-manage.server.js';
 
 export async function loader({ request }) {
   return loadOrderManage(request);
