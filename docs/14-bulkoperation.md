@@ -116,6 +116,7 @@ The in-request parsing in this sample is intended for demonstration-sized files.
 - JSONL requires one valid JSON object per line, not a JSON array and not a multiline object.
 - Match the selected operation type to the uploaded file format.
 - Complete the product operation and download its Result data before uploading a handle-based variant file; missing or failed product results are rejected before staging.
+- Use Result data whose `data` object contains `productCreate`. Result data containing `productVariantsBulkCreate` comes from the second operation and can't resolve product handles to product IDs.
 - Variant records can use a native `productId` instead of the sample-specific `productHandle` field, in which case no product creation Result data is required.
 - The sample limits each `productVariantsBulkCreate` record to three variants.
 - Product image URLs must be reachable by Shopify over HTTP or HTTPS; local filesystem and `localhost` URLs cannot be imported.

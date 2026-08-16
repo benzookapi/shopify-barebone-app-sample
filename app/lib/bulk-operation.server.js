@@ -99,6 +99,14 @@ function productIdsFromCreateResults(records) {
   const productIdsByHandle = new Map();
 
   records.forEach((result, index) => {
+    const resultOperations = result?.data && typeof result.data === 'object'
+      ? Object.keys(result.data)
+      : [];
+    const unexpectedOperation = resultOperations.find((operation) => operation !== PRODUCT_CREATE);
+    if (unexpectedOperation) {
+      throw new Error(`The selected Result data line ${index + 1} is from ${unexpectedOperation}, not productCreate. Upload the Result data from the completed product creation operation.`);
+    }
+
     const product = result?.data?.productCreate?.product;
     if (!product?.id || !product?.handle) return;
 
