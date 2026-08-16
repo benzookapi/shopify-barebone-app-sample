@@ -98,15 +98,15 @@ The sample matches handles because both bundled files contain the same stable ha
 
 The product creation file is organized as one product per JSONL row:
 
-| JSONL row | Product | Matching handle | Product ID before creation | Contents of that single line |
-| --- | --- | --- | --- | --- |
-| Line 1 | Product A | `product.handle: product-a` | Not available; Shopify generates it | `product: {title, handle, options, ...}`, `media: [...]` |
-| Line 2 | Product B | `product.handle: product-b` | Not available; Shopify generates it | `product: {title, handle, options, ...}`, `media: [...]` |
-| Line 3 | Product C | `product.handle: product-c` | Not available; Shopify generates it | `product: {title, handle, options, ...}`, `media: [...]` |
+| JSONL row | Product | Handle | Contents of that single line |
+| --- | --- | --- | --- |
+| Line 1 | Product A | `product.handle: product-a` | `product: {title, handle, options, ...}`, `media: [...]` |
+| Line 2 | Product B | `product.handle: product-b` | `product: {title, handle, options, ...}`, `media: [...]` |
+| Line 3 | Product C | `product.handle: product-c` | `product: {title, handle, options, ...}`, `media: [...]` |
 
 The product creation Result data provides the handle check and generated ID handoff:
 
-| Result row | Product | Returned matching handle | Shopify-generated product GID |
+| Result row | Product | Returned handle | Shopify-generated GID |
 | --- | --- | --- | --- |
 | `__lineNumber: 0` | Product A | `product.handle: product-a` | `product.id: gid://shopify/Product/1000000000001` |
 | `__lineNumber: 1` | Product B | `product.handle: product-b` | `product.id: gid://shopify/Product/1000000000002` |
@@ -114,7 +114,7 @@ The product creation Result data provides the handle check and generated ID hand
 
 The variant creation file is also organized as one product per JSONL row. Variants are array elements within that product's row, conceptually arranged like columns:
 
-| JSONL row (product) | Product | Sample matching key | Required native product ID after normalization | `variants[0]` | `variants[1]` | `variants[2]` |
+| JSONL row | Product | Handle | GID (Required) | `variants[0]` | `variants[1]` | `variants[2]` |
 | --- | --- | --- | --- | --- | --- | --- |
 | Line 1 | Product A | `productHandle: product-a` | `productId: gid://shopify/Product/1000000000001` | Small | Medium | Large |
 | Line 2 | Product B | `productHandle: product-b` | `productId: gid://shopify/Product/1000000000002` | Red | Green | Blue |
