@@ -117,7 +117,7 @@ export async function webhookAction(request) {
 
 export async function fulfillmentOrderNotification(request) {
   const delivery = await readWebhookDelivery(request);
-  logWebhookDelivery(delivery);
+  logFulfillmentServiceNotification(delivery);
 
   if (!delivery.valid) return new Response(null, { status: 401 });
 
@@ -199,6 +199,15 @@ function logWebhookDelivery(delivery) {
     eventId: delivery.eventId,
     apiVersion: delivery.apiVersion,
     triggeredAt: delivery.triggeredAt,
+    hmacValid: delivery.valid,
+    payload: delivery.payload,
+  }, null, 2));
+}
+
+function logFulfillmentServiceNotification(delivery) {
+  console.info('[fulfillment-service] notification received', JSON.stringify({
+    path: delivery.path,
+    shop: delivery.shop,
     hmacValid: delivery.valid,
     payload: delivery.payload,
   }, null, 2));
