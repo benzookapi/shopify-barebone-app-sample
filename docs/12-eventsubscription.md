@@ -51,14 +51,16 @@ This is an example rather than a required subscription set. A real app should ch
 | --- | --- |
 | `/webhookcommon` | Shared receiver for configured operational and compliance webhook topics |
 | `/webhookgdpr` | Alternative compliance route delegating to the same handler |
-| `/fulfillment_order_notification` | Fulfillment-service callback delegated to the shared logging/verification handler |
+| `/fulfillment_order_notification` | Dedicated fulfillment-service callback that verifies and logs the request, acknowledges immediately, and processes fulfillment requests in the background |
 | `/flowaction` | Compatibility receiver for a Shopify Flow action request; no Flow extension is configured here |
 | `/fetch_tracking_numbers.json` | Fulfillment-service tracking callback, not a webhook subscription |
 | `/fetch_stock.json` | Fulfillment-service stock callback, not a webhook subscription |
 
 ## How It Works
 
-HMAC verification must use the exact raw bytes received. Parsing JSON and then serializing it again can change whitespace or key order and invalidate an otherwise genuine delivery. After verification, the sample parses JSON for readable two-space-indented logging and returns `200`; invalid signatures receive `401`.
+HMAC verification must use the exact raw bytes received. Parsing JSON and then serializing it again can change whitespace or key order and invalidate an otherwise genuine delivery. After verification, the shared webhook routes parse JSON for readable two-space-indented logging and return `200`; invalid signatures receive `401`.
+
+The fulfillment-service notification route also returns `200` immediately. It then uses a background job to query requested fulfillment orders, accept them, wait five seconds so the Admin status transition can be observed, and create fulfillments. The short in-process delay is for this hosted sample only; production apps should persist jobs in a durable queue before acknowledging work that must survive a process restart.
 
 The Events developer preview introduces more selective event definitions and payloads. Classic webhooks remain the working delivery mechanism in this sample, so do not infer an Events subscription from the menu name.
 

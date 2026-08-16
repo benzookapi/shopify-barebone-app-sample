@@ -51,7 +51,7 @@ function EventSubscription() {
                 </s-table-row>
                 <s-table-row>
                   <s-table-cell><s-badge>/fulfillment_order_notification</s-badge></s-table-cell>
-                  <s-table-cell>Receives fulfillment service notifications and delegates to the shared webhook handler.</s-table-cell>
+                  <s-table-cell>Verifies and logs fulfillment service notifications, acknowledges immediately, then processes fulfillment requests in the background.</s-table-cell>
                   <s-table-cell>Used by the fulfillment service callback flow, not by the TOML webhook subscription.</s-table-cell>
                 </s-table-row>
                 <s-table-row>
@@ -68,9 +68,14 @@ function EventSubscription() {
         </s-section>
 
         <s-section heading="Related fulfillment service callbacks">
-          <s-text>
-            The app also exposes <s-badge>/fetch_tracking_numbers.json</s-badge> and <s-badge>/fetch_stock.json</s-badge> for the fulfillment service sample. They are service callbacks, not webhook or Event subscriptions.
-          </s-text>
+          <s-stack direction="block" gap="base">
+            <s-text>
+              The app also exposes <s-badge>/fetch_tracking_numbers.json</s-badge> and <s-badge>/fetch_stock.json</s-badge> for the fulfillment service sample. They are service callbacks, not webhook or Event subscriptions.
+            </s-text>
+            <s-text>
+              For demonstration, a fulfillment request is accepted and then completed after a five-second background delay. Production apps should use a durable job queue instead of an in-process timer.
+            </s-text>
+          </s-stack>
         </s-section>
 
         <s-section heading="Next-generation Events">
