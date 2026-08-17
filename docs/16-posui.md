@@ -45,27 +45,42 @@ sequenceDiagram
     participant Session as POS Session API
     participant Print as POS Printing API
     participant App as /mocklogin
+    participant Printer as Hardware receipt printer
 
     Staff->>Menu: Select app action
     Menu->>Modal: Present modal
-    Staff->>Modal: Tap Print
+    Modal->>Print: getPrinters()
+    Print-->>Modal: Printer IDs, names, and connection states
+    Modal-->>Staff: Show available printers
+    Staff->>Modal: Select a connected printer or system dialog
     Modal->>Session: getSessionToken()
     Session-->>Modal: Signed short-lived token
     Modal-->>Staff: Toast with printable path
-    Modal->>Print: print /mocklogin?sessiontoken=...
+    alt Connected hardware printer
+        Modal->>Print: print(path, {printer})
+    else System print dialog
+        Modal->>Print: print(path)
+    end
     Print->>App: GET printable document
     App->>App: Verify session token and resolve shop
     App-->>Print: Printable HTML
-    Print-->>Staff: Open system print flow or report failure
+    alt Connected hardware printer
+        Print->>Printer: Send document directly
+        Printer-->>Staff: Print receipt
+    else System print dialog
+        Print-->>Staff: Open system print flow or report failure
+    end
 ```
 
 ## How It Works
 
 The Home tile calls `shopify.action.presentModal()`. The modal subscribes to scanner data, opens the camera, and passes a numeric scan to `shopify.cart.setCustomer()`. It unsubscribes and hides the scanner during cleanup.
 
-After purchase, the action menu item opens its companion modal. The Print button obtains a fresh POS session token, includes it in the `/mocklogin` URL, and calls `shopify.printing.print()`. The server verifies the token before producing the document, so the printed page can identify the shop without embedding an Admin token.
+After purchase, the action menu item opens its companion modal. The modal calls `shopify.printing.getPrinters()` and displays every discovered hardware printer with its connection state. Selecting a connected printer passes its reference to `shopify.printing.print(path, {printer})`, which sends the HTML directly to the receipt printer without opening a system dialog. The system-dialog button calls `shopify.printing.print(path)` without a printer option and remains available as a fallback.
 
-In testing for this sample, the print preview completed on iPad while iPhone remained at the loading/toast stage. Treat this as observed device behavior, not as a guaranteed platform rule unless the current Printing API documentation states one.
+Both print paths obtain a fresh POS session token and include it in the `/mocklogin` URL. The server verifies the token before producing the document, so the printed page can identify the shop without embedding an Admin token. The extension uses the current Printing API on API version `2026-07`; it doesn't use the deprecated `shopify.print` API.
+
+In testing for this sample, the system print preview completed on iPad while iPhone remained at the loading/toast stage. A connected compatible hardware receipt printer provides a path that bypasses that system dialog. When `getPrinters()` returns no connected printer, the sample still depends on the device's system print behavior, so this change can't guarantee an iPhone preview without compatible printer hardware.
 
 ## Common Pitfalls
 
@@ -74,6 +89,8 @@ In testing for this sample, the print preview completed on iPad while iPhone rem
 - Always unsubscribe from scanner data and hide the camera when the modal closes.
 - Get a fresh session token immediately before requesting the protected print document.
 - Query-string tokens can appear in logs. This sample keeps the original demonstrative pattern; production designs should minimize token exposure and retention.
+- `getPrinters()` lists hardware printers only. An empty array doesn't mean that the system print dialog is unavailable.
+- Direct hardware printing accepts HTML and image content, but not PDF content. The sample's `/mocklogin` response is HTML.
 - Printing depends on POS device capabilities, operating system behavior, and current API support. Handle rejected Promises and show a useful status.
 - The app server must allow the POS print fetch path and verify the token without requiring embedded query HMAC parameters.
 
@@ -86,6 +103,7 @@ In testing for this sample, the print preview completed on iPad while iPhone rem
 | Target API | POS-provided scanner, cart, session, printing, toast, or navigation capability |
 | Session token | Short-lived signed token used to authenticate POS extension requests to the app server |
 | Printable document | HTML URL loaded by the POS Printing API |
+| Hardware printer | Receipt printer returned by `getPrinters()` and passed to `print()` for dialog-free direct printing |
 
 ## Source Map
 
@@ -107,5 +125,6 @@ In testing for this sample, the print preview completed on iPad while iPhone rem
 - [Scanner API](https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/platform-apis/scanner-api)
 - [Cart API](https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/contextual-apis/cart-api)
 - [Session API](https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/standard-apis/session-api)
-- [Print API](https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/platform-apis/print-api)
+- [Printing API](https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/platform-apis/printing-api)
+- [Direct hardware receipt printer changelog](https://shopify.dev/changelog/pos-ui-extensions-can-now-print-directly-to-hardware-receipt-printers)
 - [Upgrade POS UI extensions to 2025-10](https://shopify.dev/docs/apps/build/pos/upgrading-to-2025-10)
