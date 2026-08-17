@@ -34,7 +34,6 @@ function PosUi() {
           <s-stack direction="block" gap="small">
             <s-link href="https://shopify.dev/docs/api/pos-ui-extensions/latest/targets/home-screen" target="_blank">POS Home screen targets</s-link>
             <s-link href="https://shopify.dev/docs/api/pos-ui-extensions/latest/targets/post-purchase" target="_blank">POS post-purchase targets</s-link>
-            <s-link href={posEditorUrl} target="_blank">Shopify POS smart-grid editor</s-link>
           </s-stack>
         </s-section>
 
@@ -56,7 +55,6 @@ function PosUi() {
             <s-link href="https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/contextual-apis/cart-api" target="_blank">Cart API</s-link>
             <s-link href="https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/standard-apis/session-api" target="_blank">Session API</s-link>
             <s-link href="https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/platform-apis/printing-api" target="_blank">Printing API</s-link>
-            <s-link href="https://shopify.dev/changelog/pos-ui-extensions-can-now-print-directly-to-hardware-receipt-printers" target="_blank">Direct hardware receipt printer changelog</s-link>
           </s-stack>
         </s-section>
       </s-stack>
