@@ -23,7 +23,7 @@ function PosUi() {
               Open the <b>My app</b> tile in Shopify POS and scan a barcode or QR code containing a numeric Shopify customer ID. The modal passes that ID to <s-badge>shopify.cart.setCustomer()</s-badge> and adds the customer to the current cart.
             </s-list-item>
             <s-list-item>
-              Complete a purchase and open the extension from the post-purchase action menu. Its <b>Print</b> button gets a POS session token and asks the Printing API to print the app's authenticated <s-badge>/mocklogin</s-badge> document.
+              Complete a purchase and open the extension from the post-purchase action menu. The modal uses <s-badge>shopify.printing.getPrinters()</s-badge> to show available hardware receipt printers. It can send the authenticated <s-badge>/mocklogin</s-badge> document directly to a connected compatible printer or use the system print dialog as a fallback.
             </s-list-item>
           </s-ordered-list>
         </s-section>
@@ -34,7 +34,8 @@ function PosUi() {
             <s-link href="https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/platform-apis/scanner-api" target="_blank">Scanner API</s-link>
             <s-link href="https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/contextual-apis/cart-api" target="_blank">Cart API</s-link>
             <s-link href="https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/standard-apis/session-api" target="_blank">Session API</s-link>
-            <s-link href="https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/platform-apis/print-api" target="_blank">Print API</s-link>
+            <s-link href="https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/platform-apis/printing-api" target="_blank">Printing API</s-link>
+            <s-link href="https://shopify.dev/changelog/pos-ui-extensions-can-now-print-directly-to-hardware-receipt-printers" target="_blank">Direct hardware receipt printer changelog</s-link>
           </s-stack>
         </s-section>
       </s-stack>
