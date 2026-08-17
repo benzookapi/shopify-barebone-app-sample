@@ -7,6 +7,15 @@ Reading [Shopify OAuth flow](https://shopify.dev/apps/auth/oauth/getting-started
 
 For quick start with automatically generated code, go to the [official CLI tutorial](https://shopify.dev/apps/getting-started/build-app-example).
 
+## CLI-generated template or scratch-built app server?
+
+| Approach | Pros | Cons |
+| --- | --- | --- |
+| Shopify CLI-generated app template | Beginners can run a working app quickly.<br>Uses an application structure designed and supported by Shopify.<br>Shopify libraries provide common handling for authentication, request and webhook verification, sessions, and database-backed persistence.<br>Official tutorials and examples can usually be followed without translating them to a different stack. | Production maintenance still requires understanding the generated code and the abstractions it uses.<br>The generated structure and recommended framework can change between Shopify CLI releases.<br>The developer remains responsible for upgrading the framework, dependencies, and Shopify API versions.<br>The available templates constrain the initial language, framework, runtime, and deployment model unless the generated project is adapted.<br>Application behavior depends partly on Shopify libraries whose internal implementation and release lifecycle are outside the application's control. |
+| Scratch-built app server, as demonstrated by this sample | The team can choose its preferred language, framework, architecture, database, and hosting environment.<br>Implementing the protocols directly provides a deeper understanding of Shopify authentication, embedded apps, APIs, webhooks, and extensions.<br>The server can evolve according to the team's own architecture and upgrade policy, with less dependence on changes to Shopify's generated server code or server libraries. | Beginners need more time before they have a working and secure app.<br>The team must implement, test, secure, and maintain common concerns such as request and webhook verification, sessions, token storage, database access, error handling, and upgrades.<br>Official tutorials often need to be translated from their template and library assumptions into the chosen stack. |
+
+This comparison applies to the app server. Even with a scratch-built server, this sample uses [Shopify CLI](https://shopify.dev/docs/api/shopify-cli) to generate, configure, develop, and deploy app extensions.
+
 # Code structure
 | Area | Source | Role |
 | --- | --- | --- |
