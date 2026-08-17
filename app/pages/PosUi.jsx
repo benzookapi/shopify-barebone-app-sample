@@ -1,7 +1,8 @@
-import { getAdminFromShop, getShopFromLocation } from "../utils/shop";
+import { useLoaderData } from "react-router";
+import { getAdminFromShop } from "../utils/shop";
 
 function PosUi() {
-  const shop = getShopFromLocation();
+  const { shop } = useLoaderData();
   const posEditorUrl = `https://${getAdminFromShop(shop)}/apps/point-of-sale-channel/editor?currentEditor=pointOfSale&mode=sections`;
 
   return (
