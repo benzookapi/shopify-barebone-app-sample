@@ -4,6 +4,14 @@
 
 The `/posui` page documents a Shopify POS UI extension with two demonstrations: scanning a numeric Shopify customer ID into the current cart and printing an app-hosted authenticated document after a sale.
 
+## Prerequisites
+
+1. Install the [Shopify POS sales channel](https://apps.shopify.com/shopify-pos) in the store where this sample app is installed.
+2. Install the Shopify POS mobile app for [iOS](https://apps.apple.com/us/app/shopify-point-of-sale-pos/id686830644) or [Android](https://play.google.com/store/apps/details?id=com.shopify.pos), then sign in to the same store with an authorized staff account.
+3. Deploy the POS UI extension and add its smart-grid tile either in the mobile POS app or from the Shopify admin POS smart-grid editor. The editor URL follows this store-specific pattern: `https://admin.shopify.com/store/{store-handle}/apps/point-of-sale-channel/editor?currentEditor=pointOfSale&mode=sections`.
+
+In the Shopify admin smart-grid editor, the tile is listed as **A Preact POS UI extension**, which comes from the extension description in `shopify.extension.toml`. The running tile itself is rendered by `Tile.jsx`, including its runtime heading and subheading.
+
 ## Runtime Locations
 
 - The information page runs in the embedded Admin app.
@@ -23,7 +31,7 @@ sequenceDiagram
     participant Scanner as POS Scanner API
     participant Cart as POS Cart API
 
-    Staff->>Tile: Tap My app
+    Staff->>Tile: Tap sample smart-grid tile
     Tile->>Modal: Present modal
     Modal->>Scanner: Show camera scanner and subscribe
     Staff->>Scanner: Scan numeric customer ID
@@ -99,6 +107,7 @@ In testing for this sample, the system print preview completed on iPad while iPh
 | Term | Meaning |
 | --- | --- |
 | Smart grid tile | Entry point rendered on the POS Home screen |
+| Smart-grid editor | Shopify POS channel editor used to add and arrange tiles outside the mobile POS app |
 | Action menu item | Entry point attached to a POS workflow such as a completed purchase |
 | Target API | POS-provided scanner, cart, session, printing, toast, or navigation capability |
 | Session token | Short-lived signed token used to authenticate POS extension requests to the app server |
