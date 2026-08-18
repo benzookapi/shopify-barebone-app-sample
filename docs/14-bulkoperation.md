@@ -77,11 +77,27 @@ Select **Create products** and upload `sample.jsonl`. Each JSONL line is one var
 
 ### Variant creation format
 
-After product creation completes, download its **Result data**, select **Create product variants**, and upload both `sample-variants.jsonl` and the downloaded Result data JSONL. The native [`productVariantsBulkCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productVariantsBulkCreate) mutation requires `productId: ID!` for each product row. The sample upload format can supply that native `productId` directly or use the convenience `productHandle` field so the app can obtain the required GID from Result data. Each row contains one or more [`ProductVariantsBulkInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput) records, and each variant provides one value for every option defined on that product. The bundled file also sets the sample-specific `assignMediaByPosition` flag:
+The bundled sample uses position-based media assignment. After product creation completes, download its **Result data**, select **Create product variants**, and upload both `sample-variants.jsonl` and the downloaded Result data JSONL. The native [`productVariantsBulkCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productVariantsBulkCreate) mutation requires `productId: ID!` for each product row. The sample upload format can supply that native `productId` directly or use the convenience `productHandle` field so the app can obtain the required GID from Result data. Each row contains one or more [`ProductVariantsBulkInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput) records, and each variant provides one value for every option defined on that product. The bundled file also sets the sample-specific `assignMediaByPosition` flag:
 
 ```json
 {"assignMediaByPosition":true,"productHandle":"bulk-sample-product-3","strategy":"REMOVE_STANDALONE_VARIANT","variants":[{"optionValues":[{"optionName":"Size","name":"Small"},{"optionName":"Color","name":"Red"}],"price":"30.00","inventoryItem":{"sku":"BULK-003-S-RED"}},{"optionValues":[{"optionName":"Size","name":"Small"},{"optionName":"Color","name":"Blue"}],"price":"31.00","inventoryItem":{"sku":"BULK-003-S-BLUE"}},{"optionValues":[{"optionName":"Size","name":"Medium"},{"optionName":"Color","name":"Red"}],"price":"32.00","inventoryItem":{"sku":"BULK-003-M-RED"}},{"optionValues":[{"optionName":"Size","name":"Medium"},{"optionName":"Color","name":"Blue"}],"price":"33.00","inventoryItem":{"sku":"BULK-003-M-BLUE"}}]}
 ```
+
+### Product and media ID mapping modes
+
+Shopify always requires a native `productId` when creating variants, while each variant's native [`mediaId`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput) is optional. This sample accepts either a convenience format that resolves generated GIDs from product creation Result data or a native format that supplies those GIDs explicitly:
+
+| File-format element | Position-based mapping used by `sample-variants.jsonl` | Explicit native-ID mapping |
+| --- | --- | --- |
+| Product selector in the variant JSONL | `productHandle: bulk-sample-product-3` | `productId: gid://shopify/Product/1000000000003` |
+| Media-assignment control | `assignMediaByPosition: true` | Omit `assignMediaByPosition` |
+| `variants[0]` media field | Omit `mediaId`; the app copies `product.media.nodes[0].id` | Set `mediaId: gid://shopify/MediaImage/2000000000001` explicitly |
+| `variants[1]` media field | Omit `mediaId`; the app copies `product.media.nodes[1].id` | Set `mediaId: gid://shopify/MediaImage/2000000000002` explicitly |
+| `variants[...]` media field | Continue matching variant and media array positions | Set each desired existing product media GID explicitly; omit `mediaId` for a variant that should have no associated media |
+| Product creation Result data JSONL | Required to resolve both `productId` and the ordered media GIDs | Not required when the variant JSONL already contains `productId` and every desired `mediaId` |
+| Variables staged for Shopify | The app adds native `productId` and `variants[].mediaId`, then removes `productHandle` and `assignMediaByPosition` | The supplied native `productId` and `variants[].mediaId` values are staged directly |
+
+Position-based assignment associates existing product media with variants; it doesn't upload or duplicate the media again. If `assignMediaByPosition` is enabled, every variant without an existing `mediaId` must have media at the same array position in the Result data. To leave selected variants without media, use the explicit native-ID format and omit `mediaId` from only those variants.
 
 `productId` is required in the native variables sent to [`productVariantsBulkCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productVariantsBulkCreate). `productHandle` exists only in this sample's upload format: the app server finds the matching `product.handle` in the uploaded product creation Result data and writes its returned `product.id` to the staged variant JSONL. When `assignMediaByPosition` is true, the app also writes `product.media.nodes[0].id` to `variants[0].mediaId`, the second media ID to the second variant, and so on. Both convenience fields are removed before staging. This avoids synchronous Admin GraphQL lookup requests for individual products or media. A custom variant file that already contains native `productId` and `mediaId` values doesn't require the Result data file. [`REMOVE_STANDALONE_VARIANT`](https://shopify.dev/docs/api/admin-graphql/unstable/enums/ProductVariantsBulkCreateStrategy) removes the single initial variant created by [`productCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productCreate) before the new variants are added.
 
@@ -113,7 +129,7 @@ The product creation Result data provides the handle check and generated ID hand
 | `__lineNumber: 1` | Bulk sample product 2 | `product.handle: bulk-sample-product-2` | `product.id: gid://shopify/Product/1000000000002` | `media.nodes[0..1].id` |
 | `__lineNumber: 2` | Bulk sample product 3 | `product.handle: bulk-sample-product-3` | `product.id: gid://shopify/Product/1000000000003` | `media.nodes[0..3].id` |
 
-The variant creation file is also organized as one product per JSONL row. Variants are array elements within that product's row, conceptually arranged like columns:
+The variant creation file is also organized as one product per JSONL row. Variants are array elements within that product's row, conceptually arranged like columns. The GID column below shows the required normalized `productId`; in the bundled position-based input, the app derives this value from `productHandle` and the Result data before staging:
 
 <table>
   <thead>
