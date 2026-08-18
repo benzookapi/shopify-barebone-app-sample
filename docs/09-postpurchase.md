@@ -67,9 +67,9 @@ sequenceDiagram
 
 ## How It Works
 
-`Checkout::PostPurchase::ShouldRender` receives purchase input, reads each purchased product's `barebone_app_upsell.product_id`, and fetches corresponding product data from the app server. The response is stored for `Checkout::PostPurchase::Render`.
+[`Checkout::PostPurchase::ShouldRender`](https://shopify.dev/docs/api/checkout-extensions/extension-points) receives purchase input, reads each purchased product's `barebone_app_upsell.product_id`, and fetches corresponding product data from the app server. The response is stored for [`Checkout::PostPurchase::Render`](https://shopify.dev/docs/api/checkout-extensions/extension-points).
 
-When the buyer accepts, the extension builds `add_variant` changes. The app server signs those changes with the app secret and purchase reference, and Shopify applies the resulting token. The review score is written to `barebone_app_review.score` after the server derives the customer from the verified token. Calling `done()` is what releases the buyer to the next checkout page.
+When the buyer accepts, the extension builds [`add_variant`](https://shopify.dev/docs/api/checkout-extensions/extension-points) changes. The app server signs those changes with the app secret and purchase reference, and Shopify applies the resulting token. The review score is written to `barebone_app_review.score` after the server derives the customer from the verified token. Calling [`done()`](https://shopify.dev/docs/api/checkout-extensions/extension-points) is what releases the buyer to the next checkout page.
 
 The app handles `OPTIONS /postpurchase` before React Router. Extension runtimes often trigger a CORS preflight, so the actual `POST` is never sent if the preflight fails.
 
@@ -79,26 +79,26 @@ Only the merchant-facing setup action uses Direct API access. Product lookup, ch
 
 - Post-purchase eligibility has payment-method and checkout limitations; the extension is not guaranteed to appear after every order.
 - Product metafield values can be missing, producing `null` entries. Filter them before building the Admin search query.
-- A `ShouldRender` result without usable stored product data can flash an empty page and immediately continue.
+- A [`ShouldRender`](https://shopify.dev/docs/api/checkout-extensions/extension-points) result without usable stored product data can flash an empty page and immediately continue.
 - The Bearer input token must be verified before deriving shop, purchase, or customer identity.
 - CORS requires the preflight response, allowed headers, and actual response headers to agree.
 - Never let the browser sign its own changeset; signing requires the app secret.
-- `done()` must be called after both acceptance and rejection paths.
+- [`done()`](https://shopify.dev/docs/api/checkout-extensions/extension-points) must be called after both acceptance and rejection paths.
 - Direct API setup requires an embedded App Bridge context and the app's configured Direct API access and Admin scopes.
 
 ## Key Terms
 
 | Term | Meaning |
 | --- | --- |
-| `ShouldRender` | Pre-render target that decides whether the post-purchase page should appear |
-| `Render` | Target that displays the post-purchase offer |
+| [`ShouldRender`](https://shopify.dev/docs/api/checkout-extensions/extension-points) | Pre-render target that decides whether the post-purchase page should appear |
+| [`Render`](https://shopify.dev/docs/api/checkout-extensions/extension-points) | Target that displays the post-purchase offer |
 | Changeset | A list of supported changes to the completed checkout |
 | Changeset token | App-signed JWT authorizing Shopify to apply those changes |
 | Input token | Shopify-signed token containing trusted post-purchase context |
 
 ## Source Map
 
-- [`app/pages/PostPurchase.jsx`](../app/pages/PostPurchase.jsx): setup UI, shop query, and `metafieldsSet` mutation
+- [`app/pages/PostPurchase.jsx`](../app/pages/PostPurchase.jsx): setup UI, shop query, and [`metafieldsSet`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/metafieldsSet) mutation
 - [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js): shared App Bridge Direct API client
 - [`app/routes/postpurchase.jsx`](../app/routes/postpurchase.jsx): extension-facing action route
 - [`app/lib/post-purchase.server.js`](../app/lib/post-purchase.server.js): product lookup, token signing, and review update

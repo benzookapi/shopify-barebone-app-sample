@@ -137,7 +137,7 @@ The initial HMAC and later JWT solve different problems:
 
 ## Direct Admin API Request
 
-The Admin Link product query and the merchant-triggered Function, Web Pixel, and post-purchase setup operations use the App Bridge Resource Fetching API and the `shopify:admin` URL scheme. Shopify authenticates these GraphQL requests without sending them through the app server. The deployed app configuration must enable Direct API access and declare the required Admin API scopes.
+The Admin Link product query and the merchant-triggered Function, Web Pixel, and post-purchase setup operations use the App Bridge Resource Fetching API and the [`shopify:admin`](https://shopify.dev/docs/api/app-home/apis/authentication-and-data/resource-fetching-api) URL scheme. Shopify authenticates these GraphQL requests without sending them through the app server. The deployed app configuration must enable Direct API access and declare the required Admin API scopes.
 
 ```mermaid
 sequenceDiagram
@@ -280,4 +280,4 @@ Render, Node.js, React Router, and MongoDB are this repository's concrete choice
 - [App Bridge Resource Fetching API](https://shopify.dev/docs/api/app-home/apis/authentication-and-data/resource-fetching-api)
 - [Using Polaris web components and the UI extension execution model](https://shopify.dev/docs/api/polaris/using-polaris-web-components)
 - [Web pixel strict sandbox](https://shopify.dev/docs/apps/build/marketing-analytics/pixels)
-- [Shopify Functions](https://shopify.dev/docs/api/functions/latest)
+- [Shopify Functions](https://shopify.dev/docs/api/functions/unstable)

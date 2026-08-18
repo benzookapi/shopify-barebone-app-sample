@@ -100,7 +100,7 @@ The plain page defaults to public-token mode because password-protected developm
 
 The Cart API flow lets the user select one of ten products, create a cart, update buyer identity, add an editable delivery address, and choose a returned delivery option. The response's `checkoutUrl` is rendered as a link. A second link appends `sso=silent`, which asks checkout to use an active Customer Accounts browser session when available; this is independent of the cart's stored buyer identity.
 
-Product tiles combine the explicit Storefront GraphQL response with Storefront Web Components. `shopify-context` establishes product context, `shopify-data` renders fields, `shopify-media` renders media, and `shopify-money` formats money. These components complement rather than replace the sample's hand-written Cart API mutations.
+Product tiles combine the explicit Storefront GraphQL response with Storefront Web Components. [`shopify-context`](https://shopify.dev/docs/api/storefront-web-components/components/shopify-context) establishes product context, [`shopify-data`](https://shopify.dev/docs/api/storefront-web-components/components/shopify-data) renders fields, [`shopify-media`](https://shopify.dev/docs/api/storefront-web-components/components/shopify-media) renders media, and [`shopify-money`](https://shopify.dev/docs/api/storefront-web-components/components/shopify-money) formats money. These components complement rather than replace the sample's hand-written Cart API mutations.
 
 The Customer Account API uses OpenID Connect discovery and authorization code flow with PKCE. Its client ID is created for the headless customer-account integration and is separate from the app's Shopify API key. The server stores the customer access token behind an HttpOnly session cookie, then uses it only when the user explicitly applies the logged-in identity to a cart.
 
@@ -111,7 +111,7 @@ The Customer Account API uses OpenID Connect discovery and authorization code fl
 - Never expose a private delegated token in HTML, JavaScript, query strings, or browser storage.
 - A Customer Account API authorization code has a different token prefix and purpose from its access token. Exchange the code before querying the profile.
 - Customer Account API authorization headers and token formats must follow that API's specification; do not reuse Admin OAuth conventions.
-- Login alone does not mutate an existing cart. Call `cartBuyerIdentityUpdate` with the customer access token.
+- Login alone does not mutate an existing cart. Call [`cartBuyerIdentityUpdate`](https://shopify.dev/docs/api/storefront/unstable/mutations/cartBuyerIdentityUpdate) with the customer access token.
 - Cart delivery options can change after identity or address updates. Render the latest options rather than assuming the first option.
 - Market context such as country and language affects catalog, price, and delivery results.
 
@@ -142,10 +142,10 @@ The Customer Account API uses OpenID Connect discovery and authorization code fl
 
 ## Official Shopify References
 
-- [Storefront API](https://shopify.dev/docs/api/storefront/latest)
+- [Storefront API](https://shopify.dev/docs/api/storefront/unstable)
 - [Storefront API access](https://shopify.dev/docs/api/usage/authentication#storefront-api-access-tokens)
 - [Storefront Cart API](https://shopify.dev/docs/storefronts/headless/building-with-the-storefront-api/cart)
 - [Storefront Web Components](https://shopify.dev/docs/api/storefront-web-components)
-- [Customer Account API](https://shopify.dev/docs/api/customer/latest)
+- [Customer Account API](https://shopify.dev/docs/api/customer/unstable)
 - [Get started with Customer Account API](https://shopify.dev/docs/storefronts/headless/building-with-the-customer-account-api/getting-started)
 - [Authenticate buyers in checkout](https://shopify.dev/docs/storefronts/headless/building-with-the-customer-account-api/checkout-authentication)

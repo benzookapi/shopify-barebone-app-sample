@@ -38,13 +38,13 @@ sequenceDiagram
 
 ## How It Works
 
-The Admin page calls `webPixelCreate` through App Bridge Direct API access. Shopify then supplies those settings to the deployed extension. The pixel subscribes to customer events, maps supported Shopify payloads into GA4 event parameters, and sends them with `fetch`, including `keepalive` where supported.
+The Admin page calls [`webPixelCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/webPixelCreate) through App Bridge Direct API access. Shopify then supplies those settings to the deployed extension. The pixel subscribes to customer events, maps supported Shopify payloads into GA4 event parameters, and sends them with `fetch`, including `keepalive` where supported.
 
 The extension explicitly declares its customer privacy behavior. An app Web Pixel's strict Web Worker sandbox exposes only a controlled set of globals and APIs; it cannot read or write the storefront DOM. Event availability and field visibility depend on consent state and the surface that emitted the event.
 
 ## Common Pitfalls
 
-- A successful `webPixelCreate` response proves registration, not that GA4 accepted a later event.
+- A successful [`webPixelCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/webPixelCreate) response proves registration, not that GA4 accepted a later event.
 - Pixel code runs in a sandbox, not as unrestricted theme JavaScript. DOM and browser APIs are limited.
 - Browser console output can be difficult to find because the extension runs in an isolated context.
 - Consent and regional privacy rules can prevent or delay events.
@@ -65,7 +65,7 @@ The extension explicitly declares its customer privacy behavior. An app Web Pixe
 
 ## Source Map
 
-- [`app/pages/WebPixel.jsx`](../app/pages/WebPixel.jsx): registration UI and `webPixelCreate` mutation
+- [`app/pages/WebPixel.jsx`](../app/pages/WebPixel.jsx): registration UI and [`webPixelCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/webPixelCreate) mutation
 - [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js): shared App Bridge Direct API client and secret-safe logging
 - [`extensions/my-web-pixel-ext/src/index.js`](../extensions/my-web-pixel-ext/src/index.js): event subscriptions
 - [`extensions/my-web-pixel-ext/src/ga4.js`](../extensions/my-web-pixel-ext/src/ga4.js): GA4 payload conversion and delivery

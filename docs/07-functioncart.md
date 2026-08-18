@@ -55,13 +55,13 @@ For a valid positive percentage, the Function calculates `price * (1 + percentag
 | Term | Meaning |
 | --- | --- |
 | Cart Transform | A Function API that can alter supported cart-line presentation and pricing properties |
-| `lineUpdate` | The operation this sample returns for an eligible cart line |
+| [`lineUpdate`](https://shopify.dev/docs/api/functions/unstable/cart-transform) | The operation this sample returns for an eligible cart line |
 | Fixed price per unit | A replacement unit price supplied by the transform operation |
 | Selling plan | A purchase option such as a subscription with its own pricing behavior |
 
 ## Source Map
 
-- [`app/pages/FunctionCart.jsx`](../app/pages/FunctionCart.jsx): registration UI and `cartTransformCreate` mutation
+- [`app/pages/FunctionCart.jsx`](../app/pages/FunctionCart.jsx): registration UI and [`cartTransformCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/cartTransformCreate) mutation
 - [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js): shared App Bridge Direct API client
 - [`extensions/my-function-cart-ext/src/cart_transform_run.graphql`](../extensions/my-function-cart-ext/src/cart_transform_run.graphql): runtime input
 - [`extensions/my-function-cart-ext/src/cart_transform_run.rs`](../extensions/my-function-cart-ext/src/cart_transform_run.rs): pricing logic and tests
@@ -69,7 +69,7 @@ For a valid positive percentage, the Function calculates `price * (1 + percentag
 
 ## Official Shopify References
 
-- [Cart Transform Function API](https://shopify.dev/docs/api/functions/latest/cart-transform)
-- [Create a cart transform](https://shopify.dev/docs/api/admin-graphql/latest/mutations/cartTransformCreate)
+- [Cart Transform Function API](https://shopify.dev/docs/api/functions/unstable/cart-transform)
+- [Create a cart transform](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/cartTransformCreate)
 - [App Bridge Resource Fetching API](https://shopify.dev/docs/api/app-home/apis/authentication-and-data/resource-fetching-api)
-- [Shopify Functions](https://shopify.dev/docs/api/functions/latest)
+- [Shopify Functions](https://shopify.dev/docs/api/functions/unstable)

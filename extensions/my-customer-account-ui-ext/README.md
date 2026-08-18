@@ -15,7 +15,7 @@ Your new extension contains the following files:
 
 ## Order upsell flow
 
-The order status block reads `barebone_app_upsell.product_id` from products in the completed order. It authenticates a request to the app's existing `/postpurchase` endpoint with a Customer Account extension session token, then renders the returned products. When the customer selects **Create checkout link**, the extension calls the Storefront API `cartCreate` mutation and displays the returned checkout URL.
+The order status block reads `barebone_app_upsell.product_id` from products in the completed order. It authenticates a request to the app's existing `/postpurchase` endpoint with a Customer Account extension session token, then renders the returned products. When the customer selects **Create checkout link**, the extension calls the Storefront API [`cartCreate`](https://shopify.dev/docs/api/storefront/unstable/mutations/cartCreate) mutation and displays the returned checkout URL.
 
 Before testing:
 
@@ -29,10 +29,10 @@ The extension subscribes to order lines and metafields because Order status data
 ## Useful Links
 
 - [Customer account UI extension documentation](https://shopify.dev/docs/api/customer-account-ui-extensions)
-  - [Configuration](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/configuration)
-  - [Order status targets and APIs](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/targets/order-status)
-  - [Metafields API](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/target-apis/order-apis/metafields-api)
-  - [Session Token API](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/target-apis/platform-apis/session-token-api)
-  - [Storefront API](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/target-apis/platform-apis/storefront-api)
-  - [Polaris web components](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/web-components)
+  - [Configuration](https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/configuration)
+  - [Order status targets and APIs](https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/targets/order-status)
+  - [Metafields API](https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/target-apis/order-apis/metafields-api)
+  - [Session Token API](https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/target-apis/platform-apis/session-token-api)
+  - [Storefront API](https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/target-apis/platform-apis/storefront-api)
+  - [Polaris web components](https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/web-components)
   - [Upgrade to Polaris web components](https://shopify.dev/docs/apps/build/customer-accounts/migrate-to-web-components)

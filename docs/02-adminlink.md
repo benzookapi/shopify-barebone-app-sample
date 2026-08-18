@@ -9,7 +9,7 @@ The `/adminlink` sample connects contextual actions on Shopify Admin product and
 - Shopify Admin renders the Admin Link action.
 - The link opens the embedded React Router page in the browser.
 - The embedded page converts the product ID to a GraphQL global ID.
-- App Bridge authenticates and forwards the browser's `shopify:admin` request to Admin GraphQL.
+- App Bridge authenticates and forwards the browser's [`shopify:admin`](https://shopify.dev/docs/api/app-home/apis/authentication-and-data/resource-fetching-api) request to Admin GraphQL.
 
 ## Request Sequence
 
@@ -35,7 +35,7 @@ sequenceDiagram
 
 ## How It Works
 
-The product extension targets `admin.product-details.action.link` and points to `app://adminlink`. Shopify resolves the app URL and appends context, including the selected resource ID. The order extension targets `admin.order-details.action.link` and routes to the order-management sample.
+The product extension targets [`admin.product-details.action.link`](https://shopify.dev/docs/api/admin-extensions/unstable/extension-targets) and points to `app://adminlink`. Shopify resolves the app URL and appends context, including the selected resource ID. The order extension targets [`admin.order-details.action.link`](https://shopify.dev/docs/api/admin-extensions/unstable/extension-targets) and routes to the order-management sample.
 
 The page calls the standard `fetch()` API with a `shopify:admin/api/{version}/graphql.json` URL. App Bridge intercepts this request and handles Shopify authentication. The page never receives an Admin access token, and the product query does not use the app server or its stored OAuth token.
 
@@ -69,9 +69,9 @@ Direct API access must be enabled in `shopify.app.toml` with `[access.admin].emb
 
 ## Official Shopify References
 
-- [Admin UI extensions](https://shopify.dev/docs/api/admin-extensions/latest)
-- [Admin extension targets](https://shopify.dev/docs/api/admin-extensions/latest/extension-targets)
+- [Admin UI extensions](https://shopify.dev/docs/api/admin-extensions/unstable)
+- [Admin extension targets](https://shopify.dev/docs/api/admin-extensions/unstable/extension-targets)
 - [App Bridge Resource Fetching API](https://shopify.dev/docs/api/app-home/apis/authentication-and-data/resource-fetching-api)
 - [App configuration](https://shopify.dev/docs/apps/build/cli-for-apps/app-configuration)
 - [GraphQL global IDs](https://shopify.dev/docs/api/usage/gids)
-- [Admin GraphQL API](https://shopify.dev/docs/api/admin-graphql/latest)
+- [Admin GraphQL API](https://shopify.dev/docs/api/admin-graphql/unstable)

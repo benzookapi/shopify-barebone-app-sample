@@ -94,7 +94,7 @@ sequenceDiagram
     end
 ```
 
-When the ERP reports a master quantity change, the remote app server runs the same inventory adjustment flow that starts at step 7 of the Fulfillment Service Sequence: it queries the Shopify location and inventory items, calculates the required change, and calls `inventoryAdjustQuantities` with an idempotency key for each inventory level. Shopify can emit `inventory_levels/update` for changes made by this app server as well as changes made elsewhere, so persist event IDs or synchronization metadata and prevent webhook-driven writes from creating an update loop.
+When the ERP reports a master quantity change, the remote app server runs the same inventory adjustment flow that starts at step 7 of the Fulfillment Service Sequence: it queries the Shopify location and inventory items, calculates the required change, and calls [`inventoryAdjustQuantities`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/inventoryAdjustQuantities) with an idempotency key for each inventory level. Shopify can emit `inventory_levels/update` for changes made by this app server as well as changes made elsewhere, so persist event IDs or synchronization metadata and prevent webhook-driven writes from creating an update loop.
 
 ### TIPS: Inventory Status Transformation
 
@@ -154,9 +154,9 @@ sequenceDiagram
 
 When an order ID is present, the server converts it to a Shopify order GID and queries fulfillment, transaction, and fulfillment-order state. Fulfillment creation uses fulfillment order IDs rather than raw line-item IDs. Payment capture uses each authorization's parent transaction ID and amount.
 
-The fulfillment-service registration returns an app location. The sample stores the service ID in a shop metafield, lets the merchant associate product inventory with that location, and adjusts quantities using `inventoryAdjustQuantities`. Each adjustment includes a UUID idempotency key and explicitly uses `changeFromQuantity: null` to skip a compare-and-set check.
+The fulfillment-service registration returns an app location. The sample stores the service ID in a shop metafield, lets the merchant associate product inventory with that location, and adjusts quantities using [`inventoryAdjustQuantities`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/inventoryAdjustQuantities). Each adjustment includes a UUID idempotency key and explicitly uses [`changeFromQuantity: null`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/InventoryChangeInput) to skip a compare-and-set check.
 
-When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies the raw-body HMAC and returns `200` without waiting for Admin API work. A per-shop background job retrieves requested fulfillment orders together with each `merchantRequests` connection, including the merchant's optional message, request options, and send time. It logs those details and accepts the requests. In a production integration, persist the fulfillment order ID with the corresponding external job, instruct the ERP, WMS, fulfillment provider, or carrier, and return the resulting shipment and delivery state while the app calls `fulfillmentCreate` and `fulfillmentEventCreate`. This sample uses two short delays to simulate those external operations. The callback response only acknowledges the notification; the Admin API mutations perform the actual state transitions.
+When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies the raw-body HMAC and returns `200` without waiting for Admin API work. A per-shop background job retrieves requested fulfillment orders together with each `merchantRequests` connection, including the merchant's optional message, request options, and send time. It logs those details and accepts the requests. In a production integration, persist the fulfillment order ID with the corresponding external job, instruct the ERP, WMS, fulfillment provider, or carrier, and return the resulting shipment and delivery state while the app calls [`fulfillmentCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/fulfillmentCreate) and [`fulfillmentEventCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/fulfillmentEventCreate). This sample uses two short delays to simulate those external operations. The callback response only acknowledges the notification; the Admin API mutations perform the actual state transitions.
 
 ## Common Pitfalls
 
@@ -180,7 +180,7 @@ When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies t
 | Authorization transaction | Payment authorization that can later be captured |
 | Inventory level | Quantity state for one inventory item at one location |
 | Idempotency key | Unique key preventing duplicate mutation effects across retries |
-| `changeFromQuantity` | Optional compare-and-set baseline for an inventory quantity change |
+| [`changeFromQuantity`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/InventoryChangeInput) | Optional compare-and-set baseline for an inventory quantity change |
 
 ## Source Map
 
@@ -202,6 +202,6 @@ When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies t
 - [Inventory management apps](https://shopify.dev/docs/apps/build/orders-fulfillment/inventory-management-apps)
 - [Manage inventory quantities and states](https://shopify.dev/docs/apps/build/orders-fulfillment/inventory-management-apps/manage-quantities-states)
 - [Inventory level update webhook topic](https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-INVENTORY_LEVELS_UPDATE)
-- [Create a fulfillment](https://shopify.dev/docs/api/admin-graphql/latest/mutations/fulfillmentCreate)
-- [Create a fulfillment event](https://shopify.dev/docs/api/admin-graphql/latest/mutations/fulfillmentEventCreate)
+- [Create a fulfillment](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/fulfillmentCreate)
+- [Create a fulfillment event](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/fulfillmentEventCreate)
 - [Adjust inventory quantities](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/inventoryAdjustQuantities)

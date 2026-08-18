@@ -9,7 +9,7 @@ This UI extension is distinct from the Customer Account API OAuth flow demonstra
 ## Runtime Locations
 
 - The information page runs in the embedded Admin app.
-- The extension runs at `customer-account.order-status.block.render` in an isolated Web Worker-based extension runtime.
+- The extension runs at [`customer-account.order-status.block.render`](https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/targets/order-status) in an isolated Web Worker-based extension runtime.
 - Product lookup runs on the app server with a verified extension session token.
 - Cart creation runs through the Storefront API exposed by the extension runtime.
 
@@ -49,7 +49,7 @@ sequenceDiagram
 
 The extension's TOML file declares the order status target, Storefront API and network capabilities, and the product/shop metafields it needs. Purchased line products are compared with `targetId` values on `barebone_app_upsell.product_id` metafields. The matching metafield values identify the products to offer, while `barebone_app.url` identifies the app server.
 
-The app server verifies the extension session token before querying Admin GraphQL. The extension never receives the stored Admin OAuth token. It uses its own target API to execute `cartCreate`, which returns the checkout link displayed to the customer.
+The app server verifies the extension session token before querying Admin GraphQL. The extension never receives the stored Admin OAuth token. It uses its own target API to execute [`cartCreate`](https://shopify.dev/docs/api/storefront/unstable/mutations/cartCreate), which returns the checkout link displayed to the customer.
 
 ## Common Pitfalls
 
@@ -81,9 +81,9 @@ The app server verifies the extension session token before querying Admin GraphQ
 
 ## Official Shopify References
 
-- [Customer Account UI extensions](https://shopify.dev/docs/api/customer-account-ui-extensions/latest)
-- [Order status targets](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/targets/order-status)
-- [Metafields API](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/target-apis/order-apis/metafields-api)
-- [Session Token API](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/target-apis/platform-apis/session-token-api)
-- [Storefront API target API](https://shopify.dev/docs/api/customer-account-ui-extensions/latest/target-apis/platform-apis/storefront-api)
+- [Customer Account UI extensions](https://shopify.dev/docs/api/customer-account-ui-extensions/unstable)
+- [Order status targets](https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/targets/order-status)
+- [Metafields API](https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/target-apis/order-apis/metafields-api)
+- [Session Token API](https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/target-apis/platform-apis/session-token-api)
+- [Storefront API target API](https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/target-apis/platform-apis/storefront-api)
 - [Migrate Customer Account UI extensions to web components](https://shopify.dev/docs/apps/build/customer-accounts/migrate-to-web-components)

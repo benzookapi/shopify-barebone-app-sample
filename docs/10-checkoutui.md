@@ -85,7 +85,7 @@ This repository's `Checkout.jsx`, `CheckoutStatic.jsx`, and TOML target declarat
 
 ## How It Works
 
-The primary upsell module reads `barebone_app.url` and `barebone_app_upsell.product_id` from the metafields declared in its TOML file. Because subscribed values can initially be empty and can update repeatedly, effects guard against missing values and must remain idempotent. Product data comes from the shared `/postpurchase` server endpoint. The module can then create a separate Storefront API cart link or add a selected variant to the active checkout.
+The primary upsell module reads `barebone_app.url` and `barebone_app_upsell.product_id` from the metafields declared in its TOML file. Because subscribed values can initially be empty and can update repeatedly, effects guard against missing values and must remain idempotent. Product data comes from the shared `/postpurchase` server endpoint. The module can then call [`cartCreate`](https://shopify.dev/docs/api/storefront/unstable/mutations/cartCreate) to create a separate Storefront API cart link or add a selected variant to the active checkout.
 
 The validation module uses checkout settings for an IP address, blocking message, and quantity threshold. Its buyer-journey interceptor returns `{behavior: 'block'}` only when a configured condition is active; otherwise it returns `{behavior: 'allow'}`. Address autocomplete is a target function that returns a bounded list of structured suggestions rather than rendering a normal block.
 
@@ -107,7 +107,7 @@ Most write APIs return Promises. A Preact component must stay synchronous; perfo
 - One placed block is not a global singleton. Multiple placements create isolated Worker instances and multiply subscriptions, renders, network requests, and side effects unless they are guarded.
 - Reading and unconditionally writing the same reactive value can create an infinite update loop. Compare values and cache completed synchronization when necessary.
 - Preact components cannot be `async`. Put `await` inside event handlers, effects, or helper functions, and sequence dependent writes explicitly.
-- `buyerJourney.intercept` takes a callback. Passing a result object directly causes a runtime type error.
+- [`buyerJourney.intercept`](https://shopify.dev/docs/api/checkout-ui-extensions/unstable/target-apis/checkout-apis/buyer-journey-api) takes a callback. Passing a result object directly causes a runtime type error.
 - A green informational message does not override a separately active blocker; derive UI text from the same state used by the interceptor.
 - External `fetch` requires declared network access and a successful CORS preflight.
 - Storefront API access in an extension is not an Admin API credential.
@@ -119,7 +119,7 @@ Most write APIs return Promises. A Preact component must stay synchronous; perfo
 | --- | --- |
 | Target | Named checkout location and lifecycle where a module executes |
 | Static target | Fixed checkout location selected by the target definition |
-| Dynamic block target | Merchant-placeable checkout block such as `purchase.checkout.block.render` |
+| Dynamic block target | Merchant-placeable checkout block such as [`purchase.checkout.block.render`](https://shopify.dev/docs/api/checkout-ui-extensions/unstable/targets/checkout/block) |
 | Capability | Explicit permission such as network access, Storefront API access, or block progress |
 | Target API | Shopify-provided state and actions exposed to one extension target |
 | Buyer journey interceptor | Callback that can allow or block progress when the capability permits it |
@@ -144,9 +144,9 @@ Most write APIs return Promises. A Preact component must stay synchronous; perfo
 
 ## Official Shopify References
 
-- [Checkout UI extensions](https://shopify.dev/docs/api/checkout-ui-extensions/latest)
+- [Checkout UI extensions](https://shopify.dev/docs/api/checkout-ui-extensions/unstable)
 - [Using Polaris web components and the UI extension execution model](https://shopify.dev/docs/api/polaris/using-polaris-web-components)
-- [Checkout block target](https://shopify.dev/docs/api/checkout-ui-extensions/latest/targets/checkout/block)
+- [Checkout block target](https://shopify.dev/docs/api/checkout-ui-extensions/unstable/targets/checkout/block)
 - [Checkout capabilities](https://shopify.dev/docs/apps/build/checkout/capabilities)
 - [Block checkout progress](https://shopify.dev/docs/apps/build/checkout/capabilities#block-progress)
 - [Storefront API access](https://shopify.dev/docs/apps/build/checkout/capabilities#storefront-api-access)

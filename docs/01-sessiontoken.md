@@ -40,7 +40,7 @@ sequenceDiagram
 
 ## How It Works
 
-`authenticatedFetch()` obtains a fresh token from `window.shopify.idToken()` and sends it as a Bearer token. `requireAuthenticatedShop()` verifies that token, derives the shop from its destination claim, and rejects installations that are missing or belong to a different app client. Only after those checks does server code use the stored Admin OAuth token.
+`authenticatedFetch()` obtains a fresh token from [`window.shopify.idToken()`](https://shopify.dev/docs/api/app-bridge-library/apis/id-token) and sends it as a Bearer token. `requireAuthenticatedShop()` verifies that token, derives the shop from its destination claim, and rejects installations that are missing or belong to a different app client. Only after those checks does server code use the stored Admin OAuth token.
 
 The sample also exposes `/mocklogin` to demonstrate a service-connector pattern. The embedded app can pass a session token to that endpoint, and the server can use the verified shop identity to issue its own service-specific login or JWT. In production, avoid putting reusable credentials in URLs because URLs can appear in history and logs.
 

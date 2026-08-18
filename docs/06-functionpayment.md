@@ -39,7 +39,7 @@ sequenceDiagram
 
 The app registers `my-function-payment-ext` and stores `{rate, method}` in `barebone_app_function_payment.filter`. The input query supplies selected delivery option titles, available payment method IDs and names, and that JSON configuration.
 
-When the configured delivery title is selected, the Function iterates through payment methods and returns `paymentMethodHide` operations for every method whose name does not match the configured method. Shopify operations require payment method IDs; the configured name is only used to find which IDs should remain visible.
+When the configured delivery title is selected, the Function iterates through payment methods and returns [`paymentMethodHide`](https://shopify.dev/docs/api/functions/unstable/payment-customization) operations for every method whose name does not match the configured method. Shopify operations require payment method IDs; the configured name is only used to find which IDs should remain visible.
 
 ## Common Pitfalls
 
@@ -61,7 +61,7 @@ When the configured delivery title is selected, the Function iterates through pa
 
 ## Source Map
 
-- [`app/pages/FunctionPayment.jsx`](../app/pages/FunctionPayment.jsx): settings UI and `paymentCustomizationCreate` mutation
+- [`app/pages/FunctionPayment.jsx`](../app/pages/FunctionPayment.jsx): settings UI and [`paymentCustomizationCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/paymentCustomizationCreate) mutation
 - [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js): shared App Bridge Direct API client
 - [`extensions/my-function-payment-ext/src/cart_payment_methods_transform_run.graphql`](../extensions/my-function-payment-ext/src/cart_payment_methods_transform_run.graphql): runtime input
 - [`extensions/my-function-payment-ext/src/cart_payment_methods_transform_run.rs`](../extensions/my-function-payment-ext/src/cart_payment_methods_transform_run.rs): filtering logic and tests
@@ -69,7 +69,7 @@ When the configured delivery title is selected, the Function iterates through pa
 
 ## Official Shopify References
 
-- [Payment Customization Function API](https://shopify.dev/docs/api/functions/latest/payment-customization)
-- [Create a payment customization](https://shopify.dev/docs/api/admin-graphql/latest/mutations/paymentCustomizationCreate)
+- [Payment Customization Function API](https://shopify.dev/docs/api/functions/unstable/payment-customization)
+- [Create a payment customization](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/paymentCustomizationCreate)
 - [App Bridge Resource Fetching API](https://shopify.dev/docs/api/app-home/apis/authentication-and-data/resource-fetching-api)
-- [Shopify Functions](https://shopify.dev/docs/api/functions/latest)
+- [Shopify Functions](https://shopify.dev/docs/api/functions/unstable)

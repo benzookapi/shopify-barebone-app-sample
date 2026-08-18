@@ -61,7 +61,7 @@ If any delivery group has the configured postal code, the Function creates hide 
 
 ## Source Map
 
-- [`app/pages/FunctionShipping.jsx`](../app/pages/FunctionShipping.jsx): configuration UI and `deliveryCustomizationCreate` mutation
+- [`app/pages/FunctionShipping.jsx`](../app/pages/FunctionShipping.jsx): configuration UI and [`deliveryCustomizationCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/deliveryCustomizationCreate) mutation
 - [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js): shared App Bridge Direct API client
 - [`extensions/my-function-shipping-ext/src/cart_delivery_options_transform_run.graphql`](../extensions/my-function-shipping-ext/src/cart_delivery_options_transform_run.graphql): runtime input
 - [`extensions/my-function-shipping-ext/src/cart_delivery_options_transform_run.rs`](../extensions/my-function-shipping-ext/src/cart_delivery_options_transform_run.rs): filtering logic and tests
@@ -69,7 +69,7 @@ If any delivery group has the configured postal code, the Function creates hide 
 
 ## Official Shopify References
 
-- [Delivery Customization Function API](https://shopify.dev/docs/api/functions/latest/delivery-customization)
-- [Create a delivery customization](https://shopify.dev/docs/api/admin-graphql/latest/mutations/deliveryCustomizationCreate)
+- [Delivery Customization Function API](https://shopify.dev/docs/api/functions/unstable/delivery-customization)
+- [Create a delivery customization](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/deliveryCustomizationCreate)
 - [App Bridge Resource Fetching API](https://shopify.dev/docs/api/app-home/apis/authentication-and-data/resource-fetching-api)
-- [Shopify Functions](https://shopify.dev/docs/api/functions/latest)
+- [Shopify Functions](https://shopify.dev/docs/api/functions/unstable)

@@ -61,7 +61,7 @@ At runtime, the Function checks that order discounts are supported, prefers the 
 
 ## Source Map
 
-- [`app/pages/FunctionDiscount.jsx`](../app/pages/FunctionDiscount.jsx): registration UI and `discountAutomaticAppCreate` mutation
+- [`app/pages/FunctionDiscount.jsx`](../app/pages/FunctionDiscount.jsx): registration UI and [`discountAutomaticAppCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/discountAutomaticAppCreate) mutation
 - [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js): shared App Bridge Direct API client
 - [`extensions/my-function-discount-ext/src/cart_lines_discounts_generate_run.graphql`](../extensions/my-function-discount-ext/src/cart_lines_discounts_generate_run.graphql): runtime input query
 - [`extensions/my-function-discount-ext/src/cart_lines_discounts_generate_run.rs`](../extensions/my-function-discount-ext/src/cart_lines_discounts_generate_run.rs): Function logic and tests
@@ -69,8 +69,8 @@ At runtime, the Function checks that order discounts are supported, prefers the 
 
 ## Official Shopify References
 
-- [Discount Function API](https://shopify.dev/docs/api/functions/latest/discount)
-- [Create an automatic app discount](https://shopify.dev/docs/api/admin-graphql/latest/mutations/discountAutomaticAppCreate)
+- [Discount Function API](https://shopify.dev/docs/api/functions/unstable/discount)
+- [Create an automatic app discount](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/discountAutomaticAppCreate)
 - [App Bridge Resource Fetching API](https://shopify.dev/docs/api/app-home/apis/authentication-and-data/resource-fetching-api)
-- [Shopify Functions](https://shopify.dev/docs/api/functions/latest)
+- [Shopify Functions](https://shopify.dev/docs/api/functions/unstable)
 - [Metafields](https://shopify.dev/docs/apps/build/custom-data/metafields)
