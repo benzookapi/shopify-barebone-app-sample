@@ -154,6 +154,8 @@ function downloadSample(contents, filename) {
 
 function FileUploader({ onUploaded }) {
     const [selectedOperation, setSelectedOperation] = useState(PRODUCT_CREATE);
+    const [selectedFileName, setSelectedFileName] = useState('');
+    const [selectedResultFileName, setSelectedResultFileName] = useState('');
     const [uploading, setUploading] = useState(false);
     const [uploadResult, setUploadResult] = useState('');
 
@@ -196,6 +198,8 @@ function FileUploader({ onUploaded }) {
                 value={selectedOperation}
                 onChange={(event) => {
                     setSelectedOperation(event.currentTarget.value);
+                    setSelectedFileName('');
+                    setSelectedResultFileName('');
                     setUploadResult('');
                     onUploaded({ key: '', operationType: '' });
                 }}
@@ -206,10 +210,13 @@ function FileUploader({ onUploaded }) {
             <br />
             <br />
             <s-drop-zone
+                key={selectedOperation}
                 label={selectedOperation === PRODUCT_CREATE ? 'Product creation JSONL file' : 'Variant creation JSONL file'}
                 name="file"
                 accept=".jsonl"
+                onChange={(event) => setSelectedFileName(event.currentTarget.files[0]?.name || '')}
             ></s-drop-zone>
+            {selectedFileName && <s-paragraph>Selected file: {selectedFileName}</s-paragraph>}
             {selectedOperation === PRODUCT_CREATE ? (
                 <p>
                     Product creation format: each line is a native GraphQL variables object containing <b>product</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductCreateInput" target="_blank">ProductCreateInput</s-link>) and optional <b>media</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/CreateMediaInput" target="_blank">CreateMediaInput</s-link>). Put each public image URL in <b>media[].originalSource</b>. The bundled sample provides one ordered media entry for every variant in the same JSONL row. You can't preassign <b>product.id</b> or a media GID; Shopify generates and returns them after creation.
@@ -220,7 +227,13 @@ function FileUploader({ onUploaded }) {
                         Variant creation format: each line is a native <b>productVariantsBulkCreate</b> variables object with <b>productId</b> and one or more <b>variants</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput" target="_blank">ProductVariantsBulkInput</s-link>). Each variant supplies one value for every product option and can specify its existing product media with <b>mediaId</b>. The bundled sample makes both ID fields visible with <b>gid://shopify/Product/0</b> and <b>gid://shopify/MediaImage/0</b> placeholders.
                     </p>
                     <br />
-                    <s-drop-zone label="Product creation Result data JSONL file" name="productResultFile"></s-drop-zone>
+                    <s-drop-zone
+                        label="Product creation Result data JSONL file"
+                        name="productResultFile"
+                        accept=".jsonl"
+                        onChange={(event) => setSelectedResultFileName(event.currentTarget.files[0]?.name || '')}
+                    ></s-drop-zone>
+                    {selectedResultFileName && <s-paragraph>Selected file: {selectedResultFileName}</s-paragraph>}
                     <p>
                         For the bundled sample, download the completed product creation operation's <b>Result data</b> in step 3 and upload it here. Before staging, this sample uses each result's <b>__lineNumber</b> to overwrite the same variant row's product and media placeholders with Shopify-generated GIDs. This replacement is sample preprocessing, not <b>productVariantsBulkCreate</b> behavior. A custom file that already contains real <b>productId</b> and <b>mediaId</b> values doesn't require the Result data file.
                     </p>
