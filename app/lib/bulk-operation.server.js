@@ -4,6 +4,8 @@ import { callAdminGraphql } from './shopify-graphql.server.js';
 
 const PRODUCT_CREATE = 'productCreate';
 const PRODUCT_VARIANTS_BULK_CREATE = 'productVariantsBulkCreate';
+const PRODUCT_ID_PLACEHOLDER = 'gid://shopify/Product/0';
+const MEDIA_ID_PLACEHOLDER = 'gid://shopify/MediaImage/0';
 
 const BULK_MUTATIONS = {
   [PRODUCT_CREATE]: `mutation call($product: ProductCreateInput!, $media: [CreateMediaInput!]) {
@@ -100,10 +102,17 @@ function prepareProductCreateJsonl(records) {
 }
 
 function productDataFromCreateResults(records) {
-  const productsByHandle = new Map();
-  const productsById = new Map();
+  const productsByLineNumber = new Map();
 
   records.forEach((result, index) => {
+    const lineNumber = result?.__lineNumber;
+    if (!Number.isInteger(lineNumber) || lineNumber < 0) {
+      throw new Error(`The selected Result data line ${index + 1} does not contain a valid __lineNumber.`);
+    }
+    if (productsByLineNumber.has(lineNumber)) {
+      throw new Error(`The selected Result data contains duplicate __lineNumber ${lineNumber}.`);
+    }
+
     const resultOperations = result?.data && typeof result.data === 'object'
       ? Object.keys(result.data)
       : [];
@@ -112,93 +121,73 @@ function productDataFromCreateResults(records) {
       throw new Error(`The selected Result data line ${index + 1} is from ${unexpectedOperation}, not productCreate. Upload the Result data from the completed product creation operation.`);
     }
 
-    const product = result?.data?.productCreate?.product;
-    if (!product?.id || !product?.handle) return;
-
-    const existingProduct = productsByHandle.get(product.handle);
-    if (existingProduct && existingProduct.id !== product.id) {
-      throw new Error(`Product creation result line ${index + 1} contains a duplicate handle with a different product ID: "${product.handle}".`);
-    }
-
-    const productData = {
-      id: product.id,
-      handle: product.handle,
-      mediaIds: (product.media?.nodes || []).map((media) => media?.id).filter(Boolean),
-    };
-    productsByHandle.set(product.handle, productData);
-    productsById.set(product.id, productData);
+    const mutationResult = result?.data?.productCreate;
+    const product = mutationResult?.product;
+    const userErrors = mutationResult?.userErrors || [];
+    productsByLineNumber.set(lineNumber, {
+      id: product?.id || '',
+      mediaIds: (product?.media?.nodes || []).map((media) => media?.id).filter(Boolean),
+      error: userErrors.map((error) => error?.message).filter(Boolean).join('; '),
+    });
   });
 
-  if (productsByHandle.size === 0) {
-    throw new Error('The product creation result JSONL does not contain any successful productCreate results with product IDs and handles.');
-  }
-
-  return { productsByHandle, productsById };
+  return productsByLineNumber;
 }
 
 function requiresProductCreateResults(variables) {
-  return (!variables.productId && variables.productHandle)
-    || variables.assignMediaByPosition === true;
+  return variables?.productId === PRODUCT_ID_PLACEHOLDER
+    || (Array.isArray(variables?.variants)
+      && variables.variants.some((variant) => variant?.mediaId === MEDIA_ID_PLACEHOLDER));
 }
 
 function prepareVariantCreateJsonl(records, productCreateResults) {
   const requiresResultData = records.some(requiresProductCreateResults);
-  const productData = requiresResultData
+  const productsByLineNumber = requiresResultData
     ? productDataFromCreateResults(productCreateResults)
-    : { productsByHandle: new Map(), productsById: new Map() };
+    : new Map();
 
   return records.map((variables, index) => {
-    const productHandle = `${variables.productHandle || ''}`.trim();
-    const resultProduct = productHandle
-      ? productData.productsByHandle.get(productHandle)
-      : productData.productsById.get(variables.productId);
-    if (variables.productId && resultProduct && variables.productId !== resultProduct.id) {
-      throw new Error(`Variant line ${index + 1} productId does not match the productCreate result for "${productHandle}".`);
+    if (!variables || typeof variables !== 'object' || Array.isArray(variables)) {
+      throw new Error(`Line ${index + 1} must contain a GraphQL variables object.`);
     }
-    const productId = variables.productId || resultProduct?.id;
-    if (!productId) {
-      if (productHandle) {
-        throw new Error(`No successful productCreate result was found for productHandle "${productHandle}" on variant line ${index + 1}.`);
-      }
-      throw new Error(`Variant line ${index + 1} must contain productId or productHandle.`);
+    if (typeof variables.productId !== 'string' || !variables.productId.trim()) {
+      throw new Error(`Variant line ${index + 1} must contain the native productId variable.`);
     }
-
     if (!Array.isArray(variables.variants) || variables.variants.length === 0) {
       throw new Error(`Line ${index + 1} must contain at least one variant.`);
-    }
-    if (variables.assignMediaByPosition != null && typeof variables.assignMediaByPosition !== 'boolean') {
-      throw new Error(`Line ${index + 1} assignMediaByPosition must be a boolean.`);
     }
     if (variables.media != null && !Array.isArray(variables.media)) {
       throw new Error(`Line ${index + 1} media must be an array.`);
     }
 
-    let variants = variables.variants;
-    if (variables.assignMediaByPosition) {
-      if (!resultProduct) {
-        throw new Error(`No successful productCreate result was found to resolve media for variant line ${index + 1}.`);
-      }
-      variants = variables.variants.map((variant, variantIndex) => {
-        if (!variant || typeof variant !== 'object' || Array.isArray(variant)) {
-          throw new Error(`Line ${index + 1} variant ${variantIndex + 1} must be an object.`);
-        }
-        if (variant.mediaId) return variant;
-
-        const mediaId = resultProduct.mediaIds[variantIndex];
-        if (!mediaId) {
-          throw new Error(`Product creation Result data for "${resultProduct.handle}" does not contain media ${variantIndex + 1} required by variant line ${index + 1}.`);
-        }
-        return { ...variant, mediaId };
-      });
+    const needsResultData = requiresProductCreateResults(variables);
+    const resultProduct = needsResultData ? productsByLineNumber.get(index) : null;
+    if (needsResultData && !resultProduct?.id) {
+      const detail = resultProduct?.error ? `: ${resultProduct.error}` : '';
+      throw new Error(`Product creation Result data does not contain a successful productCreate result for __lineNumber ${index}${detail}`);
     }
 
-    const normalized = {
-      productId,
-      variants,
-      strategy: variables.strategy || 'REMOVE_STANDALONE_VARIANT',
-    };
-    if (variables.media) normalized.media = variables.media;
-    return JSON.stringify(normalized);
+    const productId = variables.productId === PRODUCT_ID_PLACEHOLDER
+      ? resultProduct.id
+      : variables.productId;
+    if (resultProduct && variables.productId !== PRODUCT_ID_PLACEHOLDER && variables.productId !== resultProduct.id) {
+      throw new Error(`Variant line ${index + 1} productId does not match the productCreate result for __lineNumber ${index}.`);
+    }
+
+    const variants = variables.variants.map((variant, variantIndex) => {
+      if (!variant || typeof variant !== 'object' || Array.isArray(variant)) {
+        throw new Error(`Line ${index + 1} variant ${variantIndex + 1} must be an object.`);
+      }
+      if (variant.mediaId !== MEDIA_ID_PLACEHOLDER) return variant;
+
+      const mediaId = resultProduct?.mediaIds[variantIndex];
+      if (!mediaId) {
+        throw new Error(`Product creation Result data for __lineNumber ${index} does not contain media ${variantIndex + 1} required by variant line ${index + 1}.`);
+      }
+      return { ...variant, mediaId };
+    });
+
+    return JSON.stringify({ ...variables, productId, variants });
   }).join('\n');
 }
 
@@ -213,7 +202,7 @@ function prepareJsonl(source, operationType, productResultSource = '') {
   if (operationType === PRODUCT_VARIANTS_BULK_CREATE) {
     const requiresResultData = records.some(requiresProductCreateResults);
     if (requiresResultData && !productResultSource.trim()) {
-      throw new Error('Select the product creation Result data JSONL when variant records use productHandle or assignMediaByPosition.');
+      throw new Error(`Select the product creation Result data JSONL to replace ${PRODUCT_ID_PLACEHOLDER} and ${MEDIA_ID_PLACEHOLDER} placeholders.`);
     }
     const productCreateResults = requiresResultData
       ? parseJsonl(productResultSource, 'The product creation result JSONL')
