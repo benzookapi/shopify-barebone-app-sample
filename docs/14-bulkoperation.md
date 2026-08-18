@@ -2,12 +2,12 @@
 
 ## Purpose
 
-The `/bulkoperation` sample imports products, product images, and different numbers of options and variants per product from JSON Lines files. It demonstrates two dependent Admin GraphQL bulk mutations: `productCreate` creates products with options and media, then `productVariantsBulkCreate` replaces each initial variant with the variants from a second file. It also demonstrates status polling, result URLs, partial-data URLs, and cancellation.
+The `/bulkoperation` sample imports products, product images, and different numbers of options and variants per product from JSON Lines files. It demonstrates two dependent Admin GraphQL bulk mutations: `productCreate` creates products with options and media, then `productVariantsBulkCreate` replaces each initial variant and associates every new variant with one of the created media items. It also demonstrates status polling, result URLs, partial-data URLs, and cancellation.
 
 ## Runtime Locations
 
 - The embedded browser submits a JSONL file and the selected operation type to the authenticated app endpoint. A handle-based variant import also submits the Result data JSONL downloaded from the completed product creation operation.
-- The app server validates product creation records. For variant records, it matches each `productHandle` to the product ID returned in the product creation Result data before creating the staged file.
+- The app server validates product creation records. For variant records, it matches each `productHandle` to the product ID and ordered media IDs returned in the product creation Result data before creating the staged file.
 - The app server uploads the prepared file to Shopify's staged storage and starts, polls, or cancels the selected bulk operation through Admin GraphQL.
 - Shopify processes the JSONL file asynchronously.
 
@@ -45,7 +45,8 @@ sequenceDiagram
     Merchant->>UI: Select productVariantsBulkCreate and sample-variants.jsonl
     UI->>App: Upload variant JSONL and product Result data
     App->>App: Read successful productCreate results
-    App->>App: Match productHandle to returned product.id
+    App->>App: Match productHandle to product.id and media IDs
+    App->>App: Set each variant.mediaId by array position
     App->>API: stagedUploadsCreate
     App->>Storage: Upload normalized variant JSONL
     Merchant->>UI: Run variant creation
@@ -69,30 +70,30 @@ The sample downloads are generated with `.jsonl` filenames so that they remain s
 Select **Create products** and upload `sample.jsonl`. Each JSONL line is one variables object for one `productCreate` invocation, so one line represents one product:
 
 ```json
-{"product":{"title":"Bulk sample product 3","handle":"bulk-sample-product-3","productOptions":[{"name":"Size","values":[{"name":"Small"},{"name":"Medium"}]},{"name":"Color","values":[{"name":"Red"},{"name":"Blue"}]}]},"media":[{"mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3.png"}]}
+{"product":{"title":"Bulk sample product 3","handle":"bulk-sample-product-3","productOptions":[{"name":"Size","values":[{"name":"Small"},{"name":"Medium"}]},{"name":"Color","values":[{"name":"Red"},{"name":"Blue"}]}]},"media":[{"mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-1.png"},{"mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-2.png"},{"mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-3.png"},{"mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-4.png"}]}
 ```
 
-`product` uses `ProductCreateInput`. Its optional `handle` field can be specified before creation and reused as a stable matching key between the product input, Result data, and variant input. Optional `media` entries use `CreateMediaInput`, so public image URLs belong in the JSONL file rather than in a separate UI field. A product ID can't be preassigned in this file because `ProductCreateInput` has no product ID field; Shopify generates the product GID during creation and returns it in Result data. The bundled sample contains ten products with one, two, or three options and differing variant counts, and it reuses five image URLs twice.
+`product` uses `ProductCreateInput`. Its optional `handle` field can be specified before creation and reused as a stable matching key between the product input, Result data, and variant input. Optional `media` entries use `CreateMediaInput`, so public image URLs belong in the JSONL file rather than in a separate UI field. Product and media GIDs can't be preassigned in this file; Shopify generates them during creation and returns them in Result data. The bundled sample contains ten products with one, two, or three options and differing variant counts. Each product row has the same number of ordered media entries as its matching variant row, cycling through the five bundled source URLs when necessary.
 
 ### Variant creation format
 
-After product creation completes, download its **Result data**, select **Create product variants**, and upload both `sample-variants.jsonl` and the downloaded Result data JSONL. The native `productVariantsBulkCreate` mutation requires `productId: ID!` for each product row. The sample upload format can supply that native `productId` directly or use the convenience `productHandle` field so the app can obtain the required GID from Result data. Each row contains one or more `ProductVariantsBulkInput` records, and each variant provides one value for every option defined on that product:
+After product creation completes, download its **Result data**, select **Create product variants**, and upload both `sample-variants.jsonl` and the downloaded Result data JSONL. The native `productVariantsBulkCreate` mutation requires `productId: ID!` for each product row. The sample upload format can supply that native `productId` directly or use the convenience `productHandle` field so the app can obtain the required GID from Result data. Each row contains one or more `ProductVariantsBulkInput` records, and each variant provides one value for every option defined on that product. The bundled file also sets the sample-specific `assignMediaByPosition` flag:
 
 ```json
-{"productHandle":"bulk-sample-product-3","strategy":"REMOVE_STANDALONE_VARIANT","variants":[{"optionValues":[{"optionName":"Size","name":"Small"},{"optionName":"Color","name":"Red"}],"price":"30.00","inventoryItem":{"sku":"BULK-003-S-RED"}},{"optionValues":[{"optionName":"Size","name":"Small"},{"optionName":"Color","name":"Blue"}],"price":"31.00","inventoryItem":{"sku":"BULK-003-S-BLUE"}},{"optionValues":[{"optionName":"Size","name":"Medium"},{"optionName":"Color","name":"Red"}],"price":"32.00","inventoryItem":{"sku":"BULK-003-M-RED"}},{"optionValues":[{"optionName":"Size","name":"Medium"},{"optionName":"Color","name":"Blue"}],"price":"33.00","inventoryItem":{"sku":"BULK-003-M-BLUE"}}]}
+{"assignMediaByPosition":true,"productHandle":"bulk-sample-product-3","strategy":"REMOVE_STANDALONE_VARIANT","variants":[{"optionValues":[{"optionName":"Size","name":"Small"},{"optionName":"Color","name":"Red"}],"price":"30.00","inventoryItem":{"sku":"BULK-003-S-RED"}},{"optionValues":[{"optionName":"Size","name":"Small"},{"optionName":"Color","name":"Blue"}],"price":"31.00","inventoryItem":{"sku":"BULK-003-S-BLUE"}},{"optionValues":[{"optionName":"Size","name":"Medium"},{"optionName":"Color","name":"Red"}],"price":"32.00","inventoryItem":{"sku":"BULK-003-M-RED"}},{"optionValues":[{"optionName":"Size","name":"Medium"},{"optionName":"Color","name":"Blue"}],"price":"33.00","inventoryItem":{"sku":"BULK-003-M-BLUE"}}]}
 ```
 
-`productId` is required in the native variables sent to `productVariantsBulkCreate`. `productHandle` exists only in this sample's upload format: the app server finds the matching `product.handle` in the uploaded product creation Result data and writes its returned `product.id` to the staged variant JSONL. This avoids one synchronous Admin GraphQL lookup per product. A custom variant file that already contains native `productId` values doesn't require the Result data file. `REMOVE_STANDALONE_VARIANT` removes the single initial variant created by `productCreate` before the new variants are added.
+`productId` is required in the native variables sent to `productVariantsBulkCreate`. `productHandle` exists only in this sample's upload format: the app server finds the matching `product.handle` in the uploaded product creation Result data and writes its returned `product.id` to the staged variant JSONL. When `assignMediaByPosition` is true, the app also writes `product.media.nodes[0].id` to `variants[0].mediaId`, the second media ID to the second variant, and so on. Both convenience fields are removed before staging. This avoids synchronous Admin GraphQL lookup requests for individual products or media. A custom variant file that already contains native `productId` and `mediaId` values doesn't require the Result data file. `REMOVE_STANDALONE_VARIANT` removes the single initial variant created by `productCreate` before the new variants are added.
 
 ### Product creation Result data
 
-The mutation selection used by this sample returns `product.id`, `product.handle`, and `product.title`. Shopify writes one response object for every input JSONL line. Each output object also includes `__lineNumber`, which identifies the corresponding zero-based line in the original product creation input. For example:
+The mutation selection used by this sample returns `product.id`, `product.handle`, `product.title`, and up to 250 `product.media.nodes[].id` values ordered by `POSITION`. Shopify writes one response object for every input JSONL line. Each output object also includes `__lineNumber`, which identifies the corresponding zero-based line in the original product creation input. For example:
 
 ```json
-{"data":{"productCreate":{"product":{"id":"gid://shopify/Product/1000000000003","handle":"bulk-sample-product-3","title":"Bulk sample product 3"},"userErrors":[]}},"__lineNumber":2}
+{"data":{"productCreate":{"product":{"id":"gid://shopify/Product/1000000000003","handle":"bulk-sample-product-3","title":"Bulk sample product 3","media":{"nodes":[{"id":"gid://shopify/MediaImage/2000000000001"},{"id":"gid://shopify/MediaImage/2000000000002"},{"id":"gid://shopify/MediaImage/2000000000003"},{"id":"gid://shopify/MediaImage/2000000000004"}]}},"userErrors":[]}},"__lineNumber":2}
 ```
 
-The sample matches handles because both bundled files contain the same stable handles. Production import pipelines can retain the original input chunk and use `__lineNumber` as the authoritative correlation key, including when a line fails and has no returned product. The sample builds a `product.handle` to `product.id` map from successful results and performs an exact match against each variant row's `productHandle`. A missing or different handle is rejected before staged upload.
+The sample matches handles because both bundled files contain the same stable handles. Production import pipelines can retain the original input chunk and use `__lineNumber` as the authoritative correlation key, including when a line fails and has no returned product. The sample builds a product-data map containing the returned product ID and ordered media IDs, then performs an exact match against each variant row's `productHandle`. A missing or different handle, or too few returned media IDs for positional assignment, is rejected before staged upload.
 
 ### JSONL row and array mapping
 
@@ -100,17 +101,17 @@ The product creation file is organized as one product per JSONL row:
 
 | JSONL row | Product | Handle | Contents of single line |
 | --- | --- | --- | --- |
-| Line 1 | Bulk sample product 1 | `product.handle: bulk-sample-product-1` | `Size: Small, Medium, Large`, `media: [...]` |
-| Line 2 | Bulk sample product 2 | `product.handle: bulk-sample-product-2` | `Color: Black, White`, `media: [...]` |
-| Line 3 | Bulk sample product 3 | `product.handle: bulk-sample-product-3` | `Size: Small, Medium`; `Color: Red, Blue`; `media: [...]` |
+| Line 1 | Bulk sample product 1 | `product.handle: bulk-sample-product-1` | `Size: Small, Medium, Large`; 3 ordered media entries |
+| Line 2 | Bulk sample product 2 | `product.handle: bulk-sample-product-2` | `Color: Black, White`; 2 ordered media entries |
+| Line 3 | Bulk sample product 3 | `product.handle: bulk-sample-product-3` | `Size: Small, Medium`; `Color: Red, Blue`; 4 ordered media entries |
 
 The product creation Result data provides the handle check and generated ID handoff:
 
-| Result row | Product | Returned handle | Shopify-generated GID |
-| --- | --- | --- | --- |
-| `__lineNumber: 0` | Bulk sample product 1 | `product.handle: bulk-sample-product-1` | `product.id: gid://shopify/Product/1000000000001` |
-| `__lineNumber: 1` | Bulk sample product 2 | `product.handle: bulk-sample-product-2` | `product.id: gid://shopify/Product/1000000000002` |
-| `__lineNumber: 2` | Bulk sample product 3 | `product.handle: bulk-sample-product-3` | `product.id: gid://shopify/Product/1000000000003` |
+| Result row | Product | Returned handle | Shopify-generated GID | Ordered media GIDs |
+| --- | --- | --- | --- | --- |
+| `__lineNumber: 0` | Bulk sample product 1 | `product.handle: bulk-sample-product-1` | `product.id: gid://shopify/Product/1000000000001` | `media.nodes[0..2].id` |
+| `__lineNumber: 1` | Bulk sample product 2 | `product.handle: bulk-sample-product-2` | `product.id: gid://shopify/Product/1000000000002` | `media.nodes[0..1].id` |
+| `__lineNumber: 2` | Bulk sample product 3 | `product.handle: bulk-sample-product-3` | `product.id: gid://shopify/Product/1000000000003` | `media.nodes[0..3].id` |
 
 The variant creation file is also organized as one product per JSONL row. Variants are array elements within that product's row, conceptually arranged like columns:
 
@@ -164,9 +165,9 @@ The variant creation file is also organized as one product per JSONL row. Varian
   </tbody>
 </table>
 
-All four variants for Bulk sample product 3 must therefore be inside the one `variants: [...]` array on that product's line. Each variant combines one Size value and one Color value; a Variant is not the list of values belonging to a single Option. Don't write those four variants as four separate JSONL lines. Each line invokes `productVariantsBulkCreate` once for one product, while the nested array creates that product's multiple variants. The columns can continue as `variants[3]`, `variants[4]`, and so on, and every product row can contain a different number of variants. The sample app doesn't impose an app-specific variant-count cap; Shopify's current mutation and product limits still apply.
+All four variants for Bulk sample product 3 must therefore be inside the one `variants: [...]` array on that product's line. Each variant combines one Size value and one Color value; a Variant is not the list of values belonging to a single Option. Don't write those four variants as four separate JSONL lines. Each line invokes `productVariantsBulkCreate` once for one product, while the nested array creates that product's multiple variants. With `assignMediaByPosition: true`, the four variant columns also receive media IDs 0 through 3 from the matching Result row. The columns can continue as `variants[3]`, `variants[4]`, and so on, and every product row can contain a different number of variants. The sample app doesn't impose an app-specific variant-count cap; Shopify's current mutation and product limits still apply.
 
-Product and variant file row numbers don't need to align because the sample matches them by handle. When a custom variant JSONL already contains `productId`, the app doesn't need product creation Result data and stages that product-oriented variant row directly after validation. The normalized file sent to Shopify contains native `productId` and `variants` values without the sample-specific `productHandle` field.
+Product and variant file row numbers don't need to align because the sample matches them by handle. When a custom variant JSONL already contains `productId` and any required `mediaId` values, the app doesn't need product creation Result data and stages that product-oriented variant row directly after validation. The normalized file sent to Shopify contains native `productId` and `variants[].mediaId` values without the sample-specific `productHandle` or `assignMediaByPosition` fields.
 
 Product and variant creation cannot use one native Shopify JSONL file or one bulk mutation. `productVariantsBulkCreate` requires a product ID that does not exist until `productCreate` has completed, so the two operations must run sequentially.
 
@@ -180,7 +181,7 @@ The in-request parsing in this sample is intended for demonstration-sized files.
 - Store each input chunk, operation ID, stage, and retry state in durable storage instead of browser or server memory.
 - Stream input and Result data files rather than loading complete files into memory.
 - Detect completion with ID-specific status polling or the `bulk_operations/finish` webhook, then download and retain the temporary Result data before its URL expires.
-- Build each variant chunk from the corresponding product creation Result data, using `__lineNumber` or another stable source key to correlate records.
+- Build each variant chunk from the corresponding product creation Result data, using `__lineNumber` or another stable source key to correlate product and media IDs.
 - Retry only failed result lines and make retries idempotent so a restarted worker doesn't create duplicate products or variants.
 - Schedule within the API-version concurrency limit. API version 2026-01 and later allows up to five concurrent bulk mutation operations per app and shop.
 
@@ -189,9 +190,10 @@ The in-request parsing in this sample is intended for demonstration-sized files.
 - Upload success and bulk-operation success are separate events.
 - JSONL requires one valid JSON object per line, not a JSON array and not a multiline object.
 - Match the selected operation type to the uploaded file format.
-- Complete the product operation and download its Result data before uploading a handle-based variant file; missing or failed product results are rejected before staging.
-- Use Result data whose `data` object contains `productCreate`. Result data containing `productVariantsBulkCreate` comes from the second operation and can't resolve product handles to product IDs.
-- Variant records can use a native `productId` instead of the sample-specific `productHandle` field, in which case no product creation Result data is required.
+- Complete the product operation and download its Result data before uploading a handle-based or positionally media-assigned variant file; missing or failed product results are rejected before staging.
+- Use Result data whose `data` object contains `productCreate`. Result data containing `productVariantsBulkCreate` comes from the second operation and can't resolve product handles, product IDs, or media IDs.
+- `assignMediaByPosition` requires a same-position returned media ID for every variant that doesn't already have `mediaId`; otherwise staging is rejected.
+- Variant records can use native `productId` and `mediaId` values instead of the sample-specific mapping fields, in which case no product creation Result data is required.
 - Every variant must provide one value for every option defined on its product. For example, a product with Size and Color options needs both a Size value and a Color value in each variant's `optionValues`.
 - Variant arrays can continue beyond three records, but Shopify's current mutation and per-product limits still apply.
 - Product image URLs must be reachable by Shopify over HTTP or HTTPS; local filesystem and `localhost` URLs cannot be imported.
@@ -214,6 +216,8 @@ The in-request parsing in this sample is intended for demonstration-sized files.
 | `productCreate` | First-stage mutation that creates each product, its options, initial variant, and media |
 | `productVariantsBulkCreate` | Second-stage mutation that creates multiple variants for an existing product |
 | `productHandle` | Sample convenience field matched to the product ID in product creation Result data before the variant file is staged |
+| `assignMediaByPosition` | Sample convenience flag that maps ordered product creation Result media IDs to same-position variants before staging |
+| `mediaId` | Native `ProductVariantsBulkInput` field that associates an existing product media item with a variant |
 | `__lineNumber` | Zero-based input line number included in each bulk mutation Result data record for correlation and error handling |
 | Bulk operation | Asynchronous Shopify job processing a large set of API records |
 | Partial data URL | Output generated before or alongside a failed or incomplete operation |
@@ -223,8 +227,8 @@ The in-request parsing in this sample is intended for demonstration-sized files.
 - [`app/pages/BulkOperation.jsx`](../app/pages/BulkOperation.jsx): file upload, start, poll, and cancel UI
 - [`app/routes/bulkoperation-json.jsx`](../app/routes/bulkoperation-json.jsx): authenticated route
 - [`app/lib/bulk-operation.server.js`](../app/lib/bulk-operation.server.js): staged upload and bulk GraphQL operations
-- [`app/assets/sample.jsonl`](../app/assets/sample.jsonl): product creation input with media URLs
-- [`app/assets/sample-variants.jsonl`](../app/assets/sample-variants.jsonl): variant creation input using product handles
+- [`app/assets/sample.jsonl`](../app/assets/sample.jsonl): product creation input with one ordered media URL per sample variant
+- [`app/assets/sample-variants.jsonl`](../app/assets/sample-variants.jsonl): variant creation input using product handles and positional media assignment
 
 ## Official Shopify References
 
