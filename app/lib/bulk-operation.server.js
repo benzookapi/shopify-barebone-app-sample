@@ -12,6 +12,11 @@ const BULK_MUTATIONS = {
         id
         handle
         title
+        media(first: 250, sortKey: POSITION) {
+          nodes {
+            id
+          }
+        }
       }
       userErrors {
         field
@@ -94,8 +99,9 @@ function prepareProductCreateJsonl(records) {
   }).join('\n');
 }
 
-function productIdsFromCreateResults(records) {
-  const productIdsByHandle = new Map();
+function productDataFromCreateResults(records) {
+  const productsByHandle = new Map();
+  const productsById = new Map();
 
   records.forEach((result, index) => {
     const resultOperations = result?.data && typeof result.data === 'object'
@@ -109,29 +115,47 @@ function productIdsFromCreateResults(records) {
     const product = result?.data?.productCreate?.product;
     if (!product?.id || !product?.handle) return;
 
-    const existingId = productIdsByHandle.get(product.handle);
-    if (existingId && existingId !== product.id) {
+    const existingProduct = productsByHandle.get(product.handle);
+    if (existingProduct && existingProduct.id !== product.id) {
       throw new Error(`Product creation result line ${index + 1} contains a duplicate handle with a different product ID: "${product.handle}".`);
     }
-    productIdsByHandle.set(product.handle, product.id);
+
+    const productData = {
+      id: product.id,
+      handle: product.handle,
+      mediaIds: (product.media?.nodes || []).map((media) => media?.id).filter(Boolean),
+    };
+    productsByHandle.set(product.handle, productData);
+    productsById.set(product.id, productData);
   });
 
-  if (productIdsByHandle.size === 0) {
+  if (productsByHandle.size === 0) {
     throw new Error('The product creation result JSONL does not contain any successful productCreate results with product IDs and handles.');
   }
 
-  return productIdsByHandle;
+  return { productsByHandle, productsById };
+}
+
+function requiresProductCreateResults(variables) {
+  return (!variables.productId && variables.productHandle)
+    || variables.assignMediaByPosition === true;
 }
 
 function prepareVariantCreateJsonl(records, productCreateResults) {
-  const requiresResultData = records.some((variables) => !variables.productId && variables.productHandle);
-  const productIdsByHandle = requiresResultData
-    ? productIdsFromCreateResults(productCreateResults)
-    : new Map();
+  const requiresResultData = records.some(requiresProductCreateResults);
+  const productData = requiresResultData
+    ? productDataFromCreateResults(productCreateResults)
+    : { productsByHandle: new Map(), productsById: new Map() };
 
   return records.map((variables, index) => {
     const productHandle = `${variables.productHandle || ''}`.trim();
-    const productId = variables.productId || productIdsByHandle.get(productHandle);
+    const resultProduct = productHandle
+      ? productData.productsByHandle.get(productHandle)
+      : productData.productsById.get(variables.productId);
+    if (variables.productId && resultProduct && variables.productId !== resultProduct.id) {
+      throw new Error(`Variant line ${index + 1} productId does not match the productCreate result for "${productHandle}".`);
+    }
+    const productId = variables.productId || resultProduct?.id;
     if (!productId) {
       if (productHandle) {
         throw new Error(`No successful productCreate result was found for productHandle "${productHandle}" on variant line ${index + 1}.`);
@@ -142,13 +166,35 @@ function prepareVariantCreateJsonl(records, productCreateResults) {
     if (!Array.isArray(variables.variants) || variables.variants.length === 0) {
       throw new Error(`Line ${index + 1} must contain at least one variant.`);
     }
+    if (variables.assignMediaByPosition != null && typeof variables.assignMediaByPosition !== 'boolean') {
+      throw new Error(`Line ${index + 1} assignMediaByPosition must be a boolean.`);
+    }
     if (variables.media != null && !Array.isArray(variables.media)) {
       throw new Error(`Line ${index + 1} media must be an array.`);
     }
 
+    let variants = variables.variants;
+    if (variables.assignMediaByPosition) {
+      if (!resultProduct) {
+        throw new Error(`No successful productCreate result was found to resolve media for variant line ${index + 1}.`);
+      }
+      variants = variables.variants.map((variant, variantIndex) => {
+        if (!variant || typeof variant !== 'object' || Array.isArray(variant)) {
+          throw new Error(`Line ${index + 1} variant ${variantIndex + 1} must be an object.`);
+        }
+        if (variant.mediaId) return variant;
+
+        const mediaId = resultProduct.mediaIds[variantIndex];
+        if (!mediaId) {
+          throw new Error(`Product creation Result data for "${resultProduct.handle}" does not contain media ${variantIndex + 1} required by variant line ${index + 1}.`);
+        }
+        return { ...variant, mediaId };
+      });
+    }
+
     const normalized = {
       productId,
-      variants: variables.variants,
+      variants,
       strategy: variables.strategy || 'REMOVE_STANDALONE_VARIANT',
     };
     if (variables.media) normalized.media = variables.media;
@@ -165,9 +211,9 @@ function prepareJsonl(source, operationType, productResultSource = '') {
     };
   }
   if (operationType === PRODUCT_VARIANTS_BULK_CREATE) {
-    const requiresResultData = records.some((variables) => !variables.productId && variables.productHandle);
+    const requiresResultData = records.some(requiresProductCreateResults);
     if (requiresResultData && !productResultSource.trim()) {
-      throw new Error('Select the product creation Result data JSONL when variant records use productHandle.');
+      throw new Error('Select the product creation Result data JSONL when variant records use productHandle or assignMediaByPosition.');
     }
     const productCreateResults = requiresResultData
       ? parseJsonl(productResultSource, 'The product creation result JSONL')
