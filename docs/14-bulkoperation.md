@@ -4,16 +4,16 @@
 
 The `/bulkoperation` sample imports products, product images, and different numbers of options and variants per product from JSON Lines files. It demonstrates two dependent Admin GraphQL bulk mutations: [`productCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productCreate) creates products with options and media, then [`productVariantsBulkCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productVariantsBulkCreate) replaces each initial variant and associates every new variant with existing product media. It also demonstrates status polling, result URLs, partial-data URLs, and cancellation.
 
-Both bundled JSONL files use the native GraphQL variable names and structures accepted by their mutation templates. Because Shopify generates product and media GIDs during the first operation, `sample-variants.jsonl` contains visible dummy GIDs. This sample replaces only those dummy values from the first operation's Result data before staging the second operation.
+Both bundled JSONL files use the native GraphQL variable names and structures accepted by their mutation templates. Because Shopify generates the product GID during the first operation, `sample-variants.jsonl` contains a visible dummy `productId`. Each variant associates media through its native `mediaSrc` field, using the same URL as the corresponding `media[].originalSource` value in `sample.jsonl`.
 
 ## Runtime Locations
 
 - The embedded browser submits a JSONL file and the selected operation type to the authenticated app endpoint.
-- The app server validates each native variables object. For the bundled variant sample, it correlates Result data by `__lineNumber` and replaces dummy `productId` and `variants[].mediaId` values with Shopify-generated GIDs.
+- The app server validates each native variables object. For the bundled variant sample, it correlates Result data by `__lineNumber` and replaces only the dummy `productId` with the Shopify-generated GID.
 - The app server uploads the resulting native JSONL to Shopify's staged storage and starts, polls, or cancels the selected bulk operation through Admin GraphQL.
 - Shopify processes the staged JSONL asynchronously.
 
-The dummy-GID replacement is preprocessing implemented by this sample. Shopify's [`productVariantsBulkCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productVariantsBulkCreate) API doesn't assign media by array position and doesn't recognize sample-specific control fields.
+The dummy product-GID replacement is preprocessing implemented by this sample. The media association itself uses Shopify's native `mediaSrc` field: the app doesn't look up media GIDs, assign media by array position, or add sample-specific control fields.
 
 ## Import Sequence
 
@@ -49,9 +49,9 @@ sequenceDiagram
     Merchant->>UI: Select productVariantsBulkCreate and sample-variants.jsonl
     UI->>App: Upload native variant variables and product Result data
     App->>App: Correlate product result by __lineNumber
-    App->>App: Replace dummy productId and mediaId values
+    App->>App: Replace dummy productId
     App->>API: stagedUploadsCreate
-    App->>Storage: Upload native variant variables with real GIDs
+    App->>Storage: Upload native variant variables with real product GIDs
     Merchant->>UI: Run variant creation
     UI->>App: Send key and productVariantsBulkCreate type
     App->>API: bulkOperationRunMutation with productVariantsBulkCreate
@@ -76,35 +76,37 @@ Select **Create products** and upload `sample.jsonl`. Each JSONL line is one nat
 {"product":{"title":"Bulk sample product 3","handle":"bulk-sample-product-3","productOptions":[{"name":"Size","values":[{"name":"Small"},{"name":"Medium"}]},{"name":"Color","values":[{"name":"Red"},{"name":"Blue"}]}]},"media":[{"mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-1.png"},{"mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-2.png"},{"mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-3.png"},{"mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-4.png"}]}
 ```
 
-`product` uses [`ProductCreateInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductCreateInput). Its `handle` is a native optional product field, not an application mapping field. Optional `media` entries use [`CreateMediaInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/CreateMediaInput), so public image URLs belong in the JSONL file. Product and media GIDs can't be preassigned in this operation; Shopify generates them and returns them in Result data.
+`product` uses [`ProductCreateInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductCreateInput). Its `handle` is a native optional product field, not an application mapping field. Optional `media` entries use [`CreateMediaInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/CreateMediaInput), so public image URLs belong in the JSONL file. The product GID can't be preassigned in this operation; Shopify generates it and returns it in Result data.
 
-The bundled sample contains ten products with one, two, or three options and different variant counts. Each product row has the same number of ordered media entries as its same-numbered variant row, cycling through five source URLs when necessary.
+The bundled sample contains ten products with one, two, or three options and different variant counts. Each product row has one media entry for every planned variant in its same-numbered variant row, cycling through five source URLs when necessary.
 
 ### Variant creation format
 
 After product creation completes, download its **Result data**, select **Create product variants**, and upload both `sample-variants.jsonl` and the downloaded Result data JSONL. Each variant JSONL line is a variables object for one [`productVariantsBulkCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productVariantsBulkCreate) invocation:
 
 ```json
-{"productId":"gid://shopify/Product/0","strategy":"REMOVE_STANDALONE_VARIANT","variants":[{"mediaId":"gid://shopify/MediaImage/0","optionValues":[{"optionName":"Size","name":"Small"},{"optionName":"Color","name":"Red"}],"price":"30.00","inventoryItem":{"sku":"BULK-003-S-RED"}},{"mediaId":"gid://shopify/MediaImage/0","optionValues":[{"optionName":"Size","name":"Small"},{"optionName":"Color","name":"Blue"}],"price":"31.00","inventoryItem":{"sku":"BULK-003-S-BLUE"}}]}
+{"productId":"gid://shopify/Product/0","strategy":"REMOVE_STANDALONE_VARIANT","variants":[{"mediaSrc":["https://cdn.example.com/product-3-1.png"],"optionValues":[{"optionName":"Size","name":"Small"},{"optionName":"Color","name":"Red"}],"price":"30.00","inventoryItem":{"sku":"BULK-003-S-RED"}},{"mediaSrc":["https://cdn.example.com/product-3-2.png"],"optionValues":[{"optionName":"Size","name":"Small"},{"optionName":"Color","name":"Blue"}],"price":"31.00","inventoryItem":{"sku":"BULK-003-S-BLUE"}}]}
 ```
 
-`productId`, `strategy`, and `variants` are native mutation variables. Every array element uses [`ProductVariantsBulkInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput), including its optional `mediaId` field. `gid://shopify/Product/0` and `gid://shopify/MediaImage/0` are deliberately invalid resource placeholders that make the required file structure visible. They must be replaced before the variables are sent to Shopify.
+`productId`, `strategy`, and `variants` are native mutation variables. Every array element uses [`ProductVariantsBulkInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput), including its optional `mediaSrc` field. `gid://shopify/Product/0` is a deliberately invalid resource placeholder that makes the required product ID visible. It must be replaced before the variables are sent to Shopify.
 
-The app performs that replacement only when the placeholders are present. It doesn't add custom fields to the JSONL schema. A custom variant file containing real `productId` values and real `mediaId` values for variants that need media can be staged without a product Result data file. A variant that should have no associated media can omit `mediaId`, as allowed by [`ProductVariantsBulkInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput).
+Each variant specifies its SKU and associated product media URL in the same `variants[]` element. Its `mediaSrc` value must exactly match the corresponding `media[].originalSource` value in the product creation JSONL. The app replaces only the `productId` placeholder from the product creation Result data; it leaves `mediaSrc` unchanged and performs no media ID lookup or positional media mapping.
+
+A custom variant file containing a real `productId` can be staged without a product Result data file. A variant that should have no associated media can omit `mediaSrc`, as allowed by [`ProductVariantsBulkInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput). Shopify also supports `mediaId` when a real product media GID is already known, but this bundled sample doesn't retrieve or generate media GIDs.
 
 [`REMOVE_STANDALONE_VARIANT`](https://shopify.dev/docs/api/admin-graphql/unstable/enums/ProductVariantsBulkCreateStrategy) removes the single initial variant created by [`productCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productCreate) before the new variants are added.
 
 ### Product creation Result data
 
-The mutation selection used by this sample returns `product.id`, `product.handle`, `product.title`, and up to 250 `product.media.nodes[].id` values ordered by [`POSITION`](https://shopify.dev/docs/api/admin-graphql/unstable/enums/ProductMediaSortKeys). Shopify includes `__lineNumber` in each output object to identify the corresponding zero-based line in the original product creation JSONL:
+The mutation selection used by this sample returns `product.id`, `product.handle`, and `product.title`. Shopify includes `__lineNumber` in each output object to identify the corresponding zero-based line in the original product creation JSONL:
 
 ```json
-{"data":{"productCreate":{"product":{"id":"gid://shopify/Product/1000000000003","handle":"bulk-sample-product-3","title":"Bulk sample product 3","media":{"nodes":[{"id":"gid://shopify/MediaImage/2000000000001"},{"id":"gid://shopify/MediaImage/2000000000002"},{"id":"gid://shopify/MediaImage/2000000000003"},{"id":"gid://shopify/MediaImage/2000000000004"}]}},"userErrors":[]}},"__lineNumber":2}
+{"data":{"productCreate":{"product":{"id":"gid://shopify/Product/1000000000003","handle":"bulk-sample-product-3","title":"Bulk sample product 3"},"userErrors":[]}},"__lineNumber":2}
 ```
 
-The bundled product and variant files deliberately use the same row order. For variant row index `n`, the app reads the successful product result whose `__lineNumber` is `n`, overwrites that row's dummy `productId`, and overwrites each dummy `variants[i].mediaId` with `product.media.nodes[i].id`. Missing, duplicate, or unsuccessful Result rows and insufficient returned media IDs are rejected before staged upload.
+The bundled product and variant files deliberately use the same row order. For variant row index `n`, the app reads the successful product result whose `__lineNumber` is `n` and overwrites that row's dummy `productId`. Missing, duplicate, or unsuccessful Result rows are rejected before staged upload.
 
-This same-index media choice is a transformation performed by this sample before the bulk mutation starts. Shopify receives explicit real `mediaId` values and doesn't infer the association from array order.
+The media relationship doesn't depend on Result-data order or media array position. Shopify receives each explicit native `mediaSrc` URL, which matches media already added to that product through `media[].originalSource`.
 
 ### JSONL row and array mapping
 
@@ -112,17 +114,17 @@ The product creation file is organized as one product per JSONL row:
 
 | JSONL row | Product | Native handle | Contents of single line |
 | --- | --- | --- | --- |
-| Line 1 | Bulk sample product 1 | `product.handle: bulk-sample-product-1` | `Size: Small, Medium, Large`; 3 ordered media entries |
-| Line 2 | Bulk sample product 2 | `product.handle: bulk-sample-product-2` | `Color: Black, White`; 2 ordered media entries |
-| Line 3 | Bulk sample product 3 | `product.handle: bulk-sample-product-3` | `Size: Small, Medium`; `Color: Red, Blue`; 4 ordered media entries |
+| Line 1 | Bulk sample product 1 | `product.handle: bulk-sample-product-1` | `Size: Small, Medium, Large`; media URLs A, B, and C |
+| Line 2 | Bulk sample product 2 | `product.handle: bulk-sample-product-2` | `Color: Black, White`; media URLs D and E |
+| Line 3 | Bulk sample product 3 | `product.handle: bulk-sample-product-3` | `Size: Small, Medium`; `Color: Red, Blue`; media URLs F, G, H, and I |
 
 The Result data carries generated IDs into the same-numbered variant row:
 
-| Result correlation | Product | Returned product GID | Returned ordered media GIDs |
-| --- | --- | --- | --- |
-| `__lineNumber: 0` -> variant Line 1 | Bulk sample product 1 | `product.id: gid://shopify/Product/1000000000001` | `media.nodes[0..2].id` |
-| `__lineNumber: 1` -> variant Line 2 | Bulk sample product 2 | `product.id: gid://shopify/Product/1000000000002` | `media.nodes[0..1].id` |
-| `__lineNumber: 2` -> variant Line 3 | Bulk sample product 3 | `product.id: gid://shopify/Product/1000000000003` | `media.nodes[0..3].id` |
+| Result correlation | Product | Returned product GID |
+| --- | --- | --- |
+| `__lineNumber: 0` -> variant Line 1 | Bulk sample product 1 | `product.id: gid://shopify/Product/1000000000001` |
+| `__lineNumber: 1` -> variant Line 2 | Bulk sample product 2 | `product.id: gid://shopify/Product/1000000000002` |
+| `__lineNumber: 2` -> variant Line 3 | Bulk sample product 3 | `product.id: gid://shopify/Product/1000000000003` |
 
 The variant creation file is also one product per JSONL row. Variants are array elements within that row, conceptually arranged like columns:
 
@@ -148,9 +150,9 @@ The variant creation file is also one product per JSONL row. Variants are array 
       <td>Bulk sample product 1</td>
       <td><code>gid://shopify/Product/0</code></td>
       <td><code>gid://shopify/Product/1000000000001</code></td>
-      <td>Size: Small<br><code>mediaId: .../0 -> media.nodes[0].id</code></td>
-      <td>Size: Medium<br><code>mediaId: .../0 -> media.nodes[1].id</code></td>
-      <td>Size: Large<br><code>mediaId: .../0 -> media.nodes[2].id</code></td>
+      <td>Size: Small<br><code>mediaSrc: [URL A]</code></td>
+      <td>Size: Medium<br><code>mediaSrc: [URL B]</code></td>
+      <td>Size: Large<br><code>mediaSrc: [URL C]</code></td>
       <td>-</td>
     </tr>
     <tr>
@@ -158,8 +160,8 @@ The variant creation file is also one product per JSONL row. Variants are array 
       <td>Bulk sample product 2</td>
       <td><code>gid://shopify/Product/0</code></td>
       <td><code>gid://shopify/Product/1000000000002</code></td>
-      <td>Color: Black<br><code>mediaId: .../0 -> media.nodes[0].id</code></td>
-      <td>Color: White<br><code>mediaId: .../0 -> media.nodes[1].id</code></td>
+      <td>Color: Black<br><code>mediaSrc: [URL D]</code></td>
+      <td>Color: White<br><code>mediaSrc: [URL E]</code></td>
       <td>-</td>
       <td>-</td>
     </tr>
@@ -168,13 +170,15 @@ The variant creation file is also one product per JSONL row. Variants are array 
       <td>Bulk sample product 3</td>
       <td><code>gid://shopify/Product/0</code></td>
       <td><code>gid://shopify/Product/1000000000003</code></td>
-      <td>Size: Small / Color: Red<br><code>mediaId: .../0 -> media.nodes[0].id</code></td>
-      <td>Size: Small / Color: Blue<br><code>mediaId: .../0 -> media.nodes[1].id</code></td>
-      <td>Size: Medium / Color: Red<br><code>mediaId: .../0 -> media.nodes[2].id</code></td>
-      <td>Size: Medium / Color: Blue<br><code>mediaId: .../0 -> media.nodes[3].id</code></td>
+      <td>Size: Small / Color: Red<br><code>mediaSrc: [URL F]</code></td>
+      <td>Size: Small / Color: Blue<br><code>mediaSrc: [URL G]</code></td>
+      <td>Size: Medium / Color: Red<br><code>mediaSrc: [URL H]</code></td>
+      <td>Size: Medium / Color: Blue<br><code>mediaSrc: [URL I]</code></td>
     </tr>
   </tbody>
 </table>
+
+URLs A through I represent complete source URLs. The same label in these tables means that `variants[].mediaSrc` contains exactly the URL used by the corresponding product row's `media[].originalSource`; it doesn't mean that the app derives the relationship from array position.
 
 All four variants for Bulk sample product 3 must be inside the one `variants: [...]` array on that product's line. Each variant combines one Size value and one Color value; a Variant is not the list of values belonging to a single Option. Don't write those four variants as four separate JSONL lines. The array can continue with `variants[3]`, `variants[4]`, and so on, and each product row can contain a different number of variants. The sample doesn't impose an application-specific variant-count cap; Shopify's current mutation and product limits still apply.
 
@@ -190,7 +194,7 @@ The in-request parsing in this sample is intended for demonstration-sized files.
 - Store each input chunk, operation ID, stage, and retry state in durable storage instead of browser or server memory.
 - Stream input and Result data files rather than loading complete files into memory.
 - Detect completion with ID-specific status polling or the [`bulk_operations/finish` webhook](https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-BULK_OPERATIONS_FINISH), then download and retain the temporary Result data before its URL expires.
-- Build each variant chunk from the corresponding product creation Result data, using `__lineNumber` or another durable source mapping to correlate product and media IDs.
+- Build each variant chunk from the corresponding product creation Result data, using `__lineNumber` or another durable source mapping to correlate product IDs. Preserve the explicit SKU-to-source-URL relationship from the input data when generating each native `mediaSrc` value.
 - Retry only failed result lines and make retries idempotent so a restarted worker doesn't create duplicate products or variants.
 - Schedule within the API-version concurrency limit. API version 2026-01 and later allows up to five concurrent bulk mutation operations per app and shop.
 
@@ -199,10 +203,10 @@ The in-request parsing in this sample is intended for demonstration-sized files.
 - Upload success and bulk-operation success are separate events.
 - JSONL requires one valid JSON object per line, not a JSON array and not a multiline object.
 - Match the selected operation type to the uploaded file format.
-- Complete the product operation and download its Result data before uploading the bundled variant sample; dummy GIDs aren't Shopify resources and can't be sent unchanged.
-- Use Result data whose `data` object contains [`productCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productCreate). Result data containing [`productVariantsBulkCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productVariantsBulkCreate) comes from the second operation and can't provide the required product or media GIDs.
+- Complete the product operation and download its Result data before uploading the bundled variant sample; the dummy product GID isn't a Shopify resource and can't be sent unchanged.
+- Use Result data whose `data` object contains [`productCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productCreate). Result data containing [`productVariantsBulkCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productVariantsBulkCreate) comes from the second operation and can't provide the required product GID.
 - Keep the bundled product and variant rows aligned. `__lineNumber: 0` supplies IDs for variant row 1, `__lineNumber: 1` supplies row 2, and so on.
-- Shopify doesn't automatically assign a product's media to variants by array position. The staged native variables must contain each desired media GID in `variants[].mediaId`.
+- Shopify doesn't automatically assign a product's media to variants by array position. In this sample, every staged variant explicitly identifies existing product media by using the same source URL in `variants[].mediaSrc` and `media[].originalSource`.
 - Every variant must provide one value for every option defined on its product.
 - Product image URLs must be reachable by Shopify over HTTP or HTTPS; local filesystem and `localhost` URLs can't be imported.
 - The bundled product handles are fixed. Delete previously imported sample products before rerunning the product sample, or change the handles.
@@ -223,9 +227,9 @@ The in-request parsing in this sample is intended for demonstration-sized files.
 | [`productCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productCreate) | First-stage mutation creating each product, its options, initial variant, and media |
 | [`productVariantsBulkCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productVariantsBulkCreate) | Second-stage mutation creating multiple variants for an existing product |
 | `productId` | Native required mutation variable identifying the product that receives variants |
-| `mediaId` | Native optional [`ProductVariantsBulkInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput) field associating existing product media with a variant |
+| `mediaSrc` | Native optional [`ProductVariantsBulkInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput) field associating existing product media with a variant by source URL |
 | `__lineNumber` | Zero-based input line number included in each bulk mutation Result data record for correlation and error handling |
-| Dummy GID | Visible sample value ending in `/0`; the app replaces it with a real Shopify-generated GID before staging |
+| Dummy GID | Visible sample `productId` ending in `/0`; the app replaces it with a real Shopify-generated product GID before staging |
 | Bulk operation | Asynchronous Shopify job processing a large set of API records |
 | Partial data URL | Output generated before or alongside a failed or incomplete operation |
 
@@ -233,9 +237,9 @@ The in-request parsing in this sample is intended for demonstration-sized files.
 
 - [`app/pages/BulkOperation.jsx`](../app/pages/BulkOperation.jsx): file upload, start, poll, and cancel UI
 - [`app/routes/bulkoperation-json.jsx`](../app/routes/bulkoperation-json.jsx): authenticated route
-- [`app/lib/bulk-operation.server.js`](../app/lib/bulk-operation.server.js): placeholder replacement, staged upload, and bulk GraphQL operations
+- [`app/lib/bulk-operation.server.js`](../app/lib/bulk-operation.server.js): product ID placeholder replacement, staged upload, and bulk GraphQL operations
 - [`app/assets/sample.jsonl`](../app/assets/sample.jsonl): native product creation variables with one media URL per planned sample variant
-- [`app/assets/sample-variants.jsonl`](../app/assets/sample-variants.jsonl): native variant creation variables with visible product and media GID placeholders
+- [`app/assets/sample-variants.jsonl`](../app/assets/sample-variants.jsonl): native variant creation variables with a visible product GID placeholder and explicit `mediaSrc` URLs
 
 ## Official Shopify References
 
@@ -249,3 +253,4 @@ The in-request parsing in this sample is intended for demonstration-sized files.
 - [`ProductVariant` reference](https://shopify.dev/docs/api/admin-graphql/unstable/objects/ProductVariant)
 - [Create product variants with `productVariantsBulkCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productVariantsBulkCreate)
 - [`ProductVariantsBulkInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput)
+- [Manage media for products and variants](https://shopify.dev/docs/apps/build/product-merchandising/products-and-collections/manage-media)
