@@ -74,10 +74,10 @@ The sample downloads use `.jsonl` filenames so that they remain selectable by th
 Select **Create products** and upload `sample.jsonl`. Each JSONL line is one native variables object for one [`productCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productCreate) invocation, so one line represents one product:
 
 ```json
-{"product":{"title":"Bulk sample product 3","handle":"bulk-sample-product-3","productOptions":[{"name":"Size","values":[{"name":"Small"},{"name":"Medium"}]},{"name":"Color","values":[{"name":"Red"},{"name":"Blue"}]}]},"media":[{"alt":"BULK-003-S-RED","mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-1.png"},{"alt":"BULK-003-S-BLUE","mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-2.png"},{"alt":"BULK-003-M-RED","mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-3.png"},{"alt":"BULK-003-M-BLUE","mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-4.png"}]}
+{"product":{"title":"Bulk sample product 3","productOptions":[{"name":"Size","values":[{"name":"Small"},{"name":"Medium"}]},{"name":"Color","values":[{"name":"Red"},{"name":"Blue"}]}]},"media":[{"alt":"BULK-003-S-RED","mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-1.png"},{"alt":"BULK-003-S-BLUE","mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-2.png"},{"alt":"BULK-003-M-RED","mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-3.png"},{"alt":"BULK-003-M-BLUE","mediaContentType":"IMAGE","originalSource":"https://cdn.example.com/product-3-4.png"}]}
 ```
 
-`product` uses [`ProductCreateInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductCreateInput). Its `handle` is a native optional product field, not an application mapping field. Optional `media` entries use [`CreateMediaInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/CreateMediaInput), so public image URLs belong in the JSONL file. The bundled sample stores the planned variant SKU in each media item's native `alt` field. Product and media GIDs can't be preassigned in this operation; Shopify generates them and returns them in Result data.
+`product` uses [`ProductCreateInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductCreateInput). Optional `media` entries use [`CreateMediaInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/CreateMediaInput), so public image URLs belong in the JSONL file. The bundled sample omits the optional product `handle`; Shopify constructs it from the title, adding a suffix when needed for uniqueness. The handle isn't used for Result-data correlation. The sample stores the planned variant SKU in each media item's native `alt` field. Product and media GIDs can't be preassigned in this operation; Shopify generates them and returns them in Result data.
 
 The bundled sample contains ten products with one, two, or three options and different variant counts. Each product row has one media entry for every planned variant in its same-numbered variant row. Every media `alt` is unique within its product and exactly matches one `variants[].inventoryItem.sku` value in the variant file.
 
@@ -99,10 +99,10 @@ A custom variant file containing real `productId` and `mediaId` values can be st
 
 ### Product creation Result data
 
-The mutation selection used by this sample returns `product.id`, `product.handle`, `product.title`, and `product.media.nodes { id alt }`. Shopify includes `__lineNumber` in each output object to identify the corresponding zero-based line in the original product creation JSONL:
+The mutation selection used by this sample returns `product.id`, `product.title`, and `product.media.nodes { id alt }`. Shopify includes `__lineNumber` in each output object to identify the corresponding zero-based line in the original product creation JSONL:
 
 ```json
-{"data":{"productCreate":{"product":{"id":"gid://shopify/Product/1000000000003","handle":"bulk-sample-product-3","title":"Bulk sample product 3","media":{"nodes":[{"id":"gid://shopify/MediaImage/2000000000001","alt":"BULK-003-S-RED"},{"id":"gid://shopify/MediaImage/2000000000002","alt":"BULK-003-S-BLUE"}]}},"userErrors":[]}},"__lineNumber":2}
+{"data":{"productCreate":{"product":{"id":"gid://shopify/Product/1000000000003","title":"Bulk sample product 3","media":{"nodes":[{"id":"gid://shopify/MediaImage/2000000000001","alt":"BULK-003-S-RED"},{"id":"gid://shopify/MediaImage/2000000000002","alt":"BULK-003-S-BLUE"}]}},"userErrors":[]}},"__lineNumber":2}
 ```
 
 The bundled product and variant files deliberately use the same row order. For variant row index `n`, the app reads the successful product result whose `__lineNumber` is `n` and overwrites that row's dummy `productId`. Within the matched product, it builds an `alt`-to-media-GID map and replaces each dummy `mediaId` using the variant SKU. Missing, duplicate, or unsuccessful Result rows, duplicate media alt values, and missing SKU-to-alt matches are rejected before staged upload.
@@ -113,11 +113,11 @@ The media relationship doesn't depend on Result-data order or media array positi
 
 The product creation file is organized as one product per JSONL row:
 
-| JSONL row | Product | Native handle | Contents of single line |
-| --- | --- | --- | --- |
-| Line 1 | Bulk sample product 1 | `product.handle: bulk-sample-product-1` | `Size: Small, Medium, Large`; media alt values `BULK-001-S`, `BULK-001-M`, and `BULK-001-L` |
-| Line 2 | Bulk sample product 2 | `product.handle: bulk-sample-product-2` | `Color: Black, White`; media alt values `BULK-002-BLACK` and `BULK-002-WHITE` |
-| Line 3 | Bulk sample product 3 | `product.handle: bulk-sample-product-3` | `Size: Small, Medium`; `Color: Red, Blue`; four media alt values matching its four variant SKUs |
+| JSONL row | Product | Contents of single line |
+| --- | --- | --- |
+| Line 1 | Bulk sample product 1 | `Size: Small, Medium, Large`; media alt values `BULK-001-S`, `BULK-001-M`, and `BULK-001-L` |
+| Line 2 | Bulk sample product 2 | `Color: Black, White`; media alt values `BULK-002-BLACK` and `BULK-002-WHITE` |
+| Line 3 | Bulk sample product 3 | `Size: Small, Medium`; `Color: Red, Blue`; four media alt values matching its four variant SKUs |
 
 The Result data carries generated IDs into the same-numbered variant row:
 
@@ -212,7 +212,6 @@ The in-request parsing in this sample is intended for demonstration-sized files.
 - Keep each media alt value unique within its product and equal to the intended variant SKU. Duplicate alt values or missing matches are rejected by this sample.
 - Every variant must provide one value for every option defined on its product.
 - Product image URLs must be reachable by Shopify over HTTP or HTTPS; local filesystem and `localhost` URLs can't be imported.
-- The bundled product handles are fixed. Delete previously imported sample products before rerunning the product sample, or change the handles.
 - Bulk operations return top-level user errors immediately and per-record errors in output data; inspect both.
 - Poll with backoff instead of a tight loop.
 - Staged targets and result URLs are temporary.

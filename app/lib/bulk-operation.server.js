@@ -12,7 +12,6 @@ const BULK_MUTATIONS = {
     productCreate(product: $product, media: $media) {
       product {
         id
-        handle
         title
         media(first: 250) {
           nodes {
