@@ -69,6 +69,12 @@ sequenceDiagram
 
 The sample downloads use `.jsonl` filenames so that they remain selectable by the uploader's file filter.
 
+### Staged JSONL security
+
+This sample calls [`stagedUploadsCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/stagedUploadsCreate) with `resource: BULK_MUTATION_VARIABLES`. Shopify returns a storage endpoint and signed multipart form parameters, and the app must POST those parameters together with the JSONL file. For this resource type, the staged object uses `acl: private`, and both `url` and `resourceUrl` can be the storage bucket root rather than an object download URL. The returned `key` is the private object's path, which the app passes as `stagedUploadPath` to the authenticated [`bulkOperationRunMutation`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/bulkOperationRunMutation). Neither the bucket-root `resourceUrl` nor the `key` is a public download URL, and a direct unauthenticated GET doesn't retrieve the JSONL object.
+
+The signed POST parameters, including `policy` and `x-goog-signature`, temporarily authorize an upload to the specified private path and should not be logged in production. Bulk-operation output is different: `BulkOperation.url` and `partialDataUrl` are temporary downloadable URLs. Treat an output URL as a bearer URL, meaning anyone who obtains the valid URL can retrieve its file without additional app authentication. Download sensitive output server-side, don't expose its URL unnecessarily, and apply appropriate access controls and retention policies when the JSONL contains protected customer or order data.
+
 ### Product creation format
 
 Select **Create products** and upload `sample.jsonl`. Each JSONL line is one native variables object for one [`productCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productCreate) invocation, so one line represents one product:
@@ -81,7 +87,7 @@ Select **Create products** and upload `sample.jsonl`. Each JSONL line is one nat
 
 The bundled sample contains ten products with one, two, or three options and different variant counts. Each product row has one media entry for every planned variant in its same-numbered variant row. Every media `alt` is unique within its product and exactly matches one `variants[].inventoryItem.sku` value in the variant file.
 
-> **Product media exposure:** After Shopify registers a file, it is served from a CDN URL that anyone who obtains the URL can access, regardless of whether the store or product is published, draft, or assigned to a sales channel. Product visibility controls discovery through Shopify surfaces, but they don't make the CDN URL private. The same caution applies when uploading a local file directly to Shopify with [`stagedUploadsCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/stagedUploadsCreate): the upload target and its authentication parameters are temporary, but the returned `resourceUrl` should be treated as a bearer URL that anyone who obtains it can access while it remains valid. After the staged resource is registered as product media, Shopify serves it from its CDN. Don't upload files that must remain confidential. To align image availability more closely with a product launch, create the product without media and add the images later through [`productUpdate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productUpdate), shortly before publishing the product. The final segment of a Shopify CDN URL is based on the uploaded filename, so use non-descriptive, difficult-to-guess filenames instead of product names, SKUs, launch dates, or other predictable values. A difficult-to-guess filename reduces accidental discovery but isn't an access-control mechanism.
+> **Product media exposure:** After Shopify registers a file as product media, it is served from a CDN URL that anyone who obtains the URL can access, regardless of whether the store or product is published, draft, or assigned to a sales channel. Product visibility controls discovery through Shopify surfaces, but they don't make the CDN URL private. Don't upload files that must remain confidential. To align image availability more closely with a product launch, create the product without media and add the images later through [`productUpdate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productUpdate), shortly before publishing the product. The final segment of a Shopify CDN URL is based on the uploaded filename, so use non-descriptive, difficult-to-guess filenames instead of product names, SKUs, launch dates, or other predictable values. A difficult-to-guess filename reduces accidental discovery but isn't an access-control mechanism.
 
 ### Variant creation format
 
@@ -214,7 +220,8 @@ The in-request parsing in this sample is intended for demonstration-sized files.
 - Product image URLs must be reachable by Shopify over HTTP or HTTPS; local filesystem and `localhost` URLs can't be imported.
 - Bulk operations return top-level user errors immediately and per-record errors in output data; inspect both.
 - Poll with backoff instead of a tight loop.
-- Staged targets and result URLs are temporary.
+- Bulk mutation input is staged as a private object, but its signed POST parameters are temporary credentials and shouldn't be logged in production.
+- Result and partial-data URLs are temporary downloadable bearer URLs; protect them when output can contain customer or order data.
 - Shopify limits concurrent bulk operations by type and API rules; check current limits before production scheduling.
 
 ## Key Terms
