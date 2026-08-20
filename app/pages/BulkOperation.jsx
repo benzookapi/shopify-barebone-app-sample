@@ -219,12 +219,12 @@ function FileUploader({ onUploaded }) {
             {selectedFileName && <s-paragraph>Selected file: {selectedFileName}</s-paragraph>}
             {selectedOperation === PRODUCT_CREATE ? (
                 <p>
-                    Product creation format: each line is a native GraphQL variables object containing <b>product</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductCreateInput" target="_blank">ProductCreateInput</s-link>) and optional <b>media</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/CreateMediaInput" target="_blank">CreateMediaInput</s-link>). Put each public image URL in <b>media[].originalSource</b>. The bundled sample provides one media entry for every planned variant in the same JSONL row. You can't preassign <b>product.id</b>; Shopify generates and returns it after creation.
+                    Product creation format: each line is a native GraphQL variables object containing <b>product</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductCreateInput" target="_blank">ProductCreateInput</s-link>) and optional <b>media</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/CreateMediaInput" target="_blank">CreateMediaInput</s-link>). Put each public image URL in <b>media[].originalSource</b> and the corresponding planned variant SKU in <b>media[].alt</b>. The bundled sample provides one media entry for every planned variant. Shopify generates the product and media GIDs and returns them after creation.
                 </p>
             ) : (
                 <>
                     <p>
-                        Variant creation format: each line is a native <b>productVariantsBulkCreate</b> variables object with <b>productId</b> and one or more <b>variants</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput" target="_blank">ProductVariantsBulkInput</s-link>). Each variant supplies one value for every product option, its SKU, and a native <b>mediaSrc</b> array containing the exact <b>media[].originalSource</b> URL used for that variant in the product creation JSONL. The bundled sample uses <b>gid://shopify/Product/0</b> only as a visible product ID placeholder.
+                        Variant creation format: each line is a native <b>productVariantsBulkCreate</b> variables object with <b>productId</b> and one or more <b>variants</b> (<s-link href="https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductVariantsBulkInput" target="_blank">ProductVariantsBulkInput</s-link>). Each bundled variant supplies one value for every product option, its SKU, and a native <b>mediaId</b>. The sample makes both required generated IDs visible with <b>gid://shopify/Product/0</b> and <b>gid://shopify/MediaImage/0</b> placeholders.
                     </p>
                     <br />
                     <s-drop-zone
@@ -235,7 +235,7 @@ function FileUploader({ onUploaded }) {
                     ></s-drop-zone>
                     {selectedResultFileName && <s-paragraph>Selected file: {selectedResultFileName}</s-paragraph>}
                     <p>
-                        For the bundled sample, download the completed product creation operation's <b>Result data</b> in step 3 and upload it here. Before staging, this sample uses each result's <b>__lineNumber</b> to overwrite only the same variant row's product ID placeholder with the Shopify-generated GID. The native <b>mediaSrc</b> values remain unchanged; the app performs no media ID lookup or positional media mapping. A custom file that already contains a real <b>productId</b> doesn't require the Result data file.
+                        For the bundled sample, download the completed product creation operation's <b>Result data</b> in step 3 and upload it here. Before staging, the app uses <b>__lineNumber</b> to replace each product ID and matches <b>variant.inventoryItem.sku</b> to <b>product.media.nodes[].alt</b> to replace each media ID. This matching doesn't depend on media array position. A custom file that already contains real <b>productId</b> and <b>mediaId</b> values doesn't require the Result data file.
                     </p>
                 </>
             )}

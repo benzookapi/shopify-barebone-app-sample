@@ -5,6 +5,7 @@ import { callAdminGraphql } from './shopify-graphql.server.js';
 const PRODUCT_CREATE = 'productCreate';
 const PRODUCT_VARIANTS_BULK_CREATE = 'productVariantsBulkCreate';
 const PRODUCT_ID_PLACEHOLDER = 'gid://shopify/Product/0';
+const MEDIA_ID_PLACEHOLDER = 'gid://shopify/MediaImage/0';
 
 const BULK_MUTATIONS = {
   [PRODUCT_CREATE]: `mutation call($product: ProductCreateInput!, $media: [CreateMediaInput!]) {
@@ -13,6 +14,12 @@ const BULK_MUTATIONS = {
         id
         handle
         title
+        media(first: 250) {
+          nodes {
+            id
+            alt
+          }
+        }
       }
       userErrors {
         field
@@ -118,8 +125,19 @@ function productDataFromCreateResults(records) {
     const mutationResult = result?.data?.productCreate;
     const product = mutationResult?.product;
     const userErrors = mutationResult?.userErrors || [];
+    const mediaIdsByAlt = new Map();
+    for (const media of product?.media?.nodes || []) {
+      const alt = typeof media?.alt === 'string' ? media.alt.trim() : '';
+      const id = typeof media?.id === 'string' ? media.id : '';
+      if (!alt || !id) continue;
+      if (mediaIdsByAlt.has(alt)) {
+        throw new Error(`The productCreate result for __lineNumber ${lineNumber} contains duplicate media alt text "${alt}".`);
+      }
+      mediaIdsByAlt.set(alt, id);
+    }
     productsByLineNumber.set(lineNumber, {
       id: product?.id || '',
+      mediaIdsByAlt,
       error: userErrors.map((error) => error?.message).filter(Boolean).join('; '),
     });
   });
@@ -128,7 +146,9 @@ function productDataFromCreateResults(records) {
 }
 
 function requiresProductCreateResults(variables) {
-  return variables?.productId === PRODUCT_ID_PLACEHOLDER;
+  return variables?.productId === PRODUCT_ID_PLACEHOLDER
+    || (Array.isArray(variables?.variants)
+      && variables.variants.some((variant) => variant?.mediaId === MEDIA_ID_PLACEHOLDER));
 }
 
 function prepareVariantCreateJsonl(records, productCreateResults) {
@@ -165,13 +185,27 @@ function prepareVariantCreateJsonl(records, productCreateResults) {
       throw new Error(`Variant line ${index + 1} productId does not match the productCreate result for __lineNumber ${index}.`);
     }
 
-    variables.variants.forEach((variant, variantIndex) => {
+    const variants = variables.variants.map((variant, variantIndex) => {
       if (!variant || typeof variant !== 'object' || Array.isArray(variant)) {
         throw new Error(`Line ${index + 1} variant ${variantIndex + 1} must be an object.`);
       }
+      if (variant.mediaId !== MEDIA_ID_PLACEHOLDER) return variant;
+
+      const sku = typeof variant.inventoryItem?.sku === 'string'
+        ? variant.inventoryItem.sku.trim()
+        : '';
+      if (!sku) {
+        throw new Error(`Line ${index + 1} variant ${variantIndex + 1} must contain inventoryItem.sku to replace its mediaId placeholder.`);
+      }
+
+      const mediaId = resultProduct?.mediaIdsByAlt.get(sku);
+      if (!mediaId) {
+        throw new Error(`Product creation Result data for __lineNumber ${index} does not contain media whose alt text matches SKU "${sku}".`);
+      }
+      return { ...variant, mediaId };
     });
 
-    return JSON.stringify({ ...variables, productId });
+    return JSON.stringify({ ...variables, productId, variants });
   }).join('\n');
 }
 
@@ -186,7 +220,7 @@ function prepareJsonl(source, operationType, productResultSource = '') {
   if (operationType === PRODUCT_VARIANTS_BULK_CREATE) {
     const requiresResultData = records.some(requiresProductCreateResults);
     if (requiresResultData && !productResultSource.trim()) {
-      throw new Error(`Select the product creation Result data JSONL to replace the ${PRODUCT_ID_PLACEHOLDER} placeholder.`);
+      throw new Error(`Select the product creation Result data JSONL to replace ${PRODUCT_ID_PLACEHOLDER} and ${MEDIA_ID_PLACEHOLDER} placeholders.`);
     }
     const productCreateResults = requiresResultData
       ? parseJsonl(productResultSource, 'The product creation result JSONL')
