@@ -81,6 +81,8 @@ Select **Create products** and upload `sample.jsonl`. Each JSONL line is one nat
 
 The bundled sample contains ten products with one, two, or three options and different variant counts. Each product row has one media entry for every planned variant in its same-numbered variant row. Every media `alt` is unique within its product and exactly matches one `variants[].inventoryItem.sku` value in the variant file.
 
+> **Product media exposure:** After Shopify registers a file, it is served from a CDN URL that anyone who obtains the URL can access, regardless of whether the store or product is published, draft, or assigned to a sales channel. Product visibility controls discovery through Shopify surfaces, but they don't make the CDN URL private. Don't upload files that must remain confidential. To align image availability more closely with a product launch, create the product without media and add the images later through [`productUpdate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productUpdate), shortly before publishing the product. The final segment of a Shopify CDN URL is based on the uploaded filename, so use non-descriptive, difficult-to-guess filenames instead of product names, SKUs, launch dates, or other predictable values. A difficult-to-guess filename reduces accidental discovery but isn't an access-control mechanism.
+
 ### Variant creation format
 
 After product creation completes, download its **Result data**, select **Create product variants**, and upload both `sample-variants.jsonl` and the downloaded Result data JSONL. Each variant JSONL line is a variables object for one [`productVariantsBulkCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productVariantsBulkCreate) invocation:
