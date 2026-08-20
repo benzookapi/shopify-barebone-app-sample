@@ -111,32 +111,33 @@ The media relationship doesn't depend on Result-data order or media array positi
 
 ### JSONL row and array mapping
 
-The product creation file is organized as one product per JSONL row:
+The product creation file is organized as one product per JSONL row. Each row contains the product's options and its media source URLs, with the planned variant SKU stored as each media item's alt value:
 
-| JSONL row | Product | Contents of single line |
+| JSONL row | Product | Contents of single line (options and media URLs with alt) |
 | --- | --- | --- |
-| Line 1 | Bulk sample product 1 | `Size: Small, Medium, Large`; media alt values `BULK-001-S`, `BULK-001-M`, and `BULK-001-L` |
-| Line 2 | Bulk sample product 2 | `Color: Black, White`; media alt values `BULK-002-BLACK` and `BULK-002-WHITE` |
-| Line 3 | Bulk sample product 3 | `Size: Small, Medium`; `Color: Red, Blue`; four media alt values matching its four variant SKUs |
+| Line 1 | Bulk sample product 1 | `Size: Small, Medium, Large`; URL A (`alt: BULK-001-S`), URL B (`alt: BULK-001-M`), and URL C (`alt: BULK-001-L`) |
+| Line 2 | Bulk sample product 2 | `Color: Black, White`; URL D (`alt: BULK-002-BLACK`) and URL E (`alt: BULK-002-WHITE`) |
+| Line 3 | Bulk sample product 3 | `Size: Small, Medium`; `Color: Red, Blue`; four media URLs whose alt values match its four variant SKUs |
 
-The Result data carries generated IDs into the same-numbered variant row:
+URL A through URL E represent the complete public URLs in each `media[].originalSource` field.
 
-| Result correlation | Product | Returned product GID | Returned media mapping examples |
+The Result data returns the generated Product Id and each media Id with its alt value. The app carries the returned Product Id and media Ids into the same-numbered variant row:
+
+| Result correlation | Product | Returned product Id | Returned media Id and alt |
 | --- | --- | --- | --- |
-| `__lineNumber: 0` -> variant Line 1 | Bulk sample product 1 | `product.id: gid://shopify/Product/1000000000001` | `alt: BULK-001-S` -> `id: gid://shopify/MediaImage/2000000000001` |
-| `__lineNumber: 1` -> variant Line 2 | Bulk sample product 2 | `product.id: gid://shopify/Product/1000000000002` | `alt: BULK-002-BLACK` -> `id: gid://shopify/MediaImage/2000000000004` |
-| `__lineNumber: 2` -> variant Line 3 | Bulk sample product 3 | `product.id: gid://shopify/Product/1000000000003` | `alt: BULK-003-S-RED` -> `id: gid://shopify/MediaImage/2000000000006` |
+| `__lineNumber: 0` -> variant Line 1 | Bulk sample product 1 | `product.id: gid://shopify/Product/1000000000001` | `id: gid://shopify/MediaImage/2000000000001`; `alt: BULK-001-S` |
+| `__lineNumber: 1` -> variant Line 2 | Bulk sample product 2 | `product.id: gid://shopify/Product/1000000000002` | `id: gid://shopify/MediaImage/2000000000004`; `alt: BULK-002-BLACK` |
+| `__lineNumber: 2` -> variant Line 3 | Bulk sample product 3 | `product.id: gid://shopify/Product/1000000000003` | `id: gid://shopify/MediaImage/2000000000006`; `alt: BULK-003-S-RED` |
 
-The variant creation file is also one product per JSONL row. Variants are array elements within that row, conceptually arranged like columns:
+The variant creation file is also one product per JSONL row. After preprocessing, each row contains the resolved Product Id and a variants array. Its variants are conceptually arranged like columns and contain option values, SKUs, and resolved media Ids:
 
 <table>
   <thead>
     <tr>
       <th rowspan="2">JSONL row</th>
       <th rowspan="2">Product</th>
-      <th rowspan="2"><code>productId</code> before upload</th>
-      <th rowspan="2"><code>productId</code> after replacement</th>
-      <th colspan="4">Contents of single line</th>
+      <th rowspan="2">Product Id</th>
+      <th colspan="4">Contents of single line (variants made of options, SKUs, and media Ids)</th>
     </tr>
     <tr>
       <th><code>variants[0]</code></th>
@@ -149,7 +150,6 @@ The variant creation file is also one product per JSONL row. Variants are array 
     <tr>
       <td>Line 1</td>
       <td>Bulk sample product 1</td>
-      <td><code>gid://shopify/Product/0</code></td>
       <td><code>gid://shopify/Product/1000000000001</code></td>
       <td>Size: Small<br><code>SKU: BULK-001-S</code><br><code>mediaId: ...0001</code></td>
       <td>Size: Medium<br><code>SKU: BULK-001-M</code><br><code>mediaId: ...0002</code></td>
@@ -159,7 +159,6 @@ The variant creation file is also one product per JSONL row. Variants are array 
     <tr>
       <td>Line 2</td>
       <td>Bulk sample product 2</td>
-      <td><code>gid://shopify/Product/0</code></td>
       <td><code>gid://shopify/Product/1000000000002</code></td>
       <td>Color: Black<br><code>SKU: BULK-002-BLACK</code><br><code>mediaId: ...0004</code></td>
       <td>Color: White<br><code>SKU: BULK-002-WHITE</code><br><code>mediaId: ...0005</code></td>
@@ -169,7 +168,6 @@ The variant creation file is also one product per JSONL row. Variants are array 
     <tr>
       <td>Line 3</td>
       <td>Bulk sample product 3</td>
-      <td><code>gid://shopify/Product/0</code></td>
       <td><code>gid://shopify/Product/1000000000003</code></td>
       <td>Size: Small / Color: Red<br><code>SKU: BULK-003-S-RED</code><br><code>mediaId: ...0006</code></td>
       <td>Size: Small / Color: Blue<br><code>SKU: BULK-003-S-BLUE</code><br><code>mediaId: ...0007</code></td>
@@ -179,11 +177,11 @@ The variant creation file is also one product per JSONL row. Variants are array 
   </tbody>
 </table>
 
-Every bundled variant initially contains `mediaId: gid://shopify/MediaImage/0`. The IDs abbreviated as `...0001` through `...0009` represent the real GIDs inserted before staged upload. The app chooses each GID by matching the variant SKU to returned media alt text, not by using the variant or media array position.
+Before preprocessing, each bundled row contains `productId: gid://shopify/Product/0`, and every bundled variant contains `mediaId: gid://shopify/MediaImage/0`. The table shows the resolved Product Id and media Ids. The media Ids abbreviated as `...0001` through `...0009` are inserted before staged upload by matching each variant SKU to returned media alt text, not by using the variant or media array position.
 
 All four variants for Bulk sample product 3 must be inside the one `variants: [...]` array on that product's line. Each variant combines one Size value and one Color value; a Variant is not the list of values belonging to a single Option. Don't write those four variants as four separate JSONL lines. The array can continue with `variants[3]`, `variants[4]`, and so on, and each product row can contain a different number of variants. The sample doesn't impose an application-specific variant-count cap; Shopify's current mutation and product limits still apply.
 
-The two bundled files must keep corresponding products on the same line because Result data is correlated by `__lineNumber`. Product and variant creation cannot use one native Shopify JSONL file or one bulk mutation: [`productVariantsBulkCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productVariantsBulkCreate) requires a product GID that doesn't exist until [`productCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productCreate) completes.
+The two bundled files must keep corresponding products on the same line because Result data is correlated by `__lineNumber`. Product and variant creation cannot use one native Shopify JSONL file or one bulk mutation: [`productVariantsBulkCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productVariantsBulkCreate) requires a Product Id that doesn't exist until [`productCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productCreate) completes.
 
 Starting [`bulkOperationRunMutation`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/bulkOperationRunMutation) only queues work. The UI must query [`currentBulkOperation(type: MUTATION)`](https://shopify.dev/docs/api/admin-graphql/unstable/queries/currentBulkOperation) until Shopify reports a terminal state. Completed operations can expose a result file; failed or partially successful operations can expose partial data. Cancellation is also asynchronous and should be followed by another status query.
 
