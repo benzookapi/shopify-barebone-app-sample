@@ -69,12 +69,6 @@ sequenceDiagram
 
 The sample downloads use `.jsonl` filenames so that they remain selectable by the uploader's file filter.
 
-### Staged JSONL security
-
-This sample calls [`stagedUploadsCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/stagedUploadsCreate) with `resource: BULK_MUTATION_VARIABLES`. Shopify returns a storage endpoint and signed multipart form parameters, and the app must POST those parameters together with the JSONL file. For this resource type, the staged object uses `acl: private`, and both `url` and `resourceUrl` can be the storage bucket root rather than an object download URL. The returned `key` is the private object's path, which the app passes as `stagedUploadPath` to the authenticated [`bulkOperationRunMutation`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/bulkOperationRunMutation). Neither the bucket-root `resourceUrl` nor the `key` is a public download URL, and a direct unauthenticated GET doesn't retrieve the JSONL object.
-
-The signed POST parameters, including `policy` and `x-goog-signature`, temporarily authorize an upload to the specified private path and should not be logged in production. Bulk-operation output is different: `BulkOperation.url` and `partialDataUrl` are temporary downloadable URLs. Treat an output URL as a bearer URL, meaning anyone who obtains the valid URL can retrieve its file without additional app authentication. Download sensitive output server-side, don't expose its URL unnecessarily, and apply appropriate access controls and retention policies when the JSONL contains protected customer or order data.
-
 ### Product creation format
 
 Select **Create products** and upload `sample.jsonl`. Each JSONL line is one native variables object for one [`productCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productCreate) invocation, so one line represents one product:
@@ -220,8 +214,6 @@ The in-request parsing in this sample is intended for demonstration-sized files.
 - Product image URLs must be reachable by Shopify over HTTP or HTTPS; local filesystem and `localhost` URLs can't be imported.
 - Bulk operations return top-level user errors immediately and per-record errors in output data; inspect both.
 - Poll with backoff instead of a tight loop.
-- Bulk mutation input is staged as a private object, but its signed POST parameters are temporary credentials and shouldn't be logged in production.
-- Result and partial-data URLs are temporary downloadable bearer URLs; protect them when output can contain customer or order data.
 - Shopify limits concurrent bulk operations by type and API rules; check current limits before production scheduling.
 
 ## Key Terms
