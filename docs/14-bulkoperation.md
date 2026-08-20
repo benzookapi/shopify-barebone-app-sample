@@ -78,7 +78,7 @@ Select **Create products** and upload `sample.jsonl`. Each JSONL line is one nat
 
 `product` uses [`ProductCreateInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/ProductCreateInput). Its `handle` is a native optional product field, not an application mapping field. Optional `media` entries use [`CreateMediaInput`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/CreateMediaInput), so public image URLs belong in the JSONL file. The product GID can't be preassigned in this operation; Shopify generates it and returns it in Result data.
 
-The bundled sample contains ten products with one, two, or three options and different variant counts. Each product row has one media entry for every planned variant in its same-numbered variant row, cycling through five source URLs when necessary.
+The bundled sample contains ten products with one, two, or three options and different variant counts. Each product row has one media entry for every planned variant in its same-numbered variant row. For every association, the variant file repeats the exact product-media source URL in `mediaSrc`.
 
 ### Variant creation format
 
