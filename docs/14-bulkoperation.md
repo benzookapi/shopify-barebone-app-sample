@@ -69,6 +69,8 @@ sequenceDiagram
 
 The sample downloads use `.jsonl` filenames so that they remain selectable by the uploader's file filter.
 
+Selecting a file displays its filename below the upload area. For variants, the data file and the optional product Result data file each display their own filename. **Upload** sends the selected files to the app for staging; **Run the operation** starts the bulk mutation afterward.
+
 ### Product creation format
 
 Select **Create products** and upload `sample.jsonl`. Each JSONL line is one native variables object for one [`productCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/productCreate) invocation, so one line represents one product:
@@ -202,6 +204,7 @@ The in-request parsing in this sample is intended for demonstration-sized files.
 
 ## Common Pitfalls
 
+- This page uses the Polaris form controls' standard `input` event for React 18 compatibility after server-side rendering and hydration. Inactive boolean props are set to `undefined` so the HTML omits them; `disabled="false"` and `loading="false"` still enable those boolean attributes and can leave Upload disabled before any request is sent.
 - Upload success and bulk-operation success are separate events.
 - JSONL requires one valid JSON object per line, not a JSON array and not a multiline object.
 - Match the selected operation type to the uploaded file format.

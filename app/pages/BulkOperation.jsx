@@ -7,6 +7,7 @@ import sampleVariantsJsonl from '../assets/sample-variants.jsonl?raw';
 const PRODUCT_CREATE = 'productCreate';
 const PRODUCT_VARIANTS_BULK_CREATE = 'productVariantsBulkCreate';
 
+// Omit inactive boolean attributes: React 18 SSR otherwise emits disabled="false".
 // Bulk opearation sample for product impporting with a file uploader.
 // Read https://shopify.dev/docs/api/usage/bulk-operations/imports
 function BulkOperation() {
@@ -70,7 +71,7 @@ function BulkOperation() {
                                 Run the uploaded <s-badge>{operationType || 'operation type'}</s-badge> bulk operation with the key: <s-badge>{key || 'Upload required'}</s-badge>.
                             </p>
                             <p>&nbsp;</p>
-                            <s-button variant="primary" disabled={!key || accessing} onClick={() => {
+                            <s-button variant="primary" disabled={(!key || accessing) || undefined} onClick={() => {
                                 setAccessing(true);
                                 setId('');
                                 setUrl('');
@@ -114,7 +115,7 @@ function BulkOperation() {
                             </p>
                             <APIResult res={res} />
                             <p>&nbsp;</p>
-                            <s-button variant="primary" disabled={!id} onClick={() => {
+                            <s-button variant="primary" disabled={!id || undefined} onClick={() => {
                                 setRes(``);
                                 authenticatedJson(`/bulkoperation.json?id=${encodeURIComponent(id)}`).then((json) => {
                                     console.log(JSON.stringify(json, null, 4));
@@ -153,6 +154,7 @@ function downloadSample(contents, filename) {
 }
 
 function FileUploader({ onUploaded }) {
+    // Use input events so React 18 receives file and select updates after hydration.
     const [selectedOperation, setSelectedOperation] = useState(PRODUCT_CREATE);
     const [selectedFileName, setSelectedFileName] = useState('');
     const [selectedResultFileName, setSelectedResultFileName] = useState('');
@@ -188,15 +190,15 @@ function FileUploader({ onUploaded }) {
                 Upload a supported JSONL file to import products or variants.
             </p>
             <s-button-group gap="base" accessibilityLabel="Download sample JSONL files">
-                <s-button slot="secondary-actions" variant="secondary" icon="download" type="button" onClick={() => downloadSample(sampleJsonl, 'sample.jsonl')}>Download sample.jsonl</s-button>
-                <s-button slot="secondary-actions" variant="secondary" icon="download" type="button" onClick={() => downloadSample(sampleVariantsJsonl, 'sample-variants.jsonl')}>Download sample-variants.jsonl</s-button>
+                <s-button slot="secondary-actions" variant="secondary" icon="download" accessibilityLabel="Download sample.jsonl" type="button" onClick={() => downloadSample(sampleJsonl, 'sample.jsonl')}>Download sample.jsonl</s-button>
+                <s-button slot="secondary-actions" variant="secondary" icon="download" accessibilityLabel="Download sample-variants.jsonl" type="button" onClick={() => downloadSample(sampleVariantsJsonl, 'sample-variants.jsonl')}>Download sample-variants.jsonl</s-button>
             </s-button-group>
             <br />
             <s-select
                 label="JSONL operation"
                 name="operationType"
                 value={selectedOperation}
-                onChange={(event) => {
+                onInput={(event) => {
                     setSelectedOperation(event.currentTarget.value);
                     setSelectedFileName('');
                     setSelectedResultFileName('');
@@ -214,7 +216,7 @@ function FileUploader({ onUploaded }) {
                 label={selectedOperation === PRODUCT_CREATE ? 'Product creation JSONL file' : 'Variant creation JSONL file'}
                 name="file"
                 accept=".jsonl"
-                onChange={(event) => setSelectedFileName(event.currentTarget.files[0]?.name || '')}
+                onInput={(event) => setSelectedFileName(event.currentTarget.files[0]?.name || '')}
             ></s-drop-zone>
             {selectedFileName && <s-paragraph>Selected file: {selectedFileName}</s-paragraph>}
             {selectedOperation === PRODUCT_CREATE ? (
@@ -231,7 +233,7 @@ function FileUploader({ onUploaded }) {
                         label="Product creation Result data JSONL file"
                         name="productResultFile"
                         accept=".jsonl"
-                        onChange={(event) => setSelectedResultFileName(event.currentTarget.files[0]?.name || '')}
+                        onInput={(event) => setSelectedResultFileName(event.currentTarget.files[0]?.name || '')}
                     ></s-drop-zone>
                     {selectedResultFileName && <s-paragraph>Selected file: {selectedResultFileName}</s-paragraph>}
                     <p>
@@ -243,7 +245,7 @@ function FileUploader({ onUploaded }) {
                 You can convert JSON to JSONL with tools such as <s-link href="https://tableconvert.com/json-to-jsonlines" target="_blank">this converter</s-link>.
             </p>
             <br />
-            <s-button variant="primary" type="submit" loading={uploading} disabled={uploading}>Upload</s-button>
+            <s-button variant="primary" type="submit" loading={uploading || undefined} disabled={uploading || undefined}>Upload</s-button>
             &nbsp;<s-badge tone="info">Result: {uploadResult}</s-badge>
         </form>
     );
