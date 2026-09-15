@@ -83,7 +83,7 @@ sequenceDiagram
     Customer->>Page: Start Customer Account login
     Page->>App: GET /customer-account/login with entered Client ID
     App->>Discovery: Fetch OpenID configuration
-    App->>App: Create state and PKCE verifier; retain Client ID temporarily
+    App->>App: Create state and PKCE verifier, retain Client ID temporarily
     App-->>Account: Redirect authorization request with Client ID
     Account-->>App: Callback with code and state
     App->>App: Validate and consume state

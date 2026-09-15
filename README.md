@@ -82,15 +82,6 @@ For more detailed architecture and feature-by-feature sequence diagrams, continu
     | `SHOPIFY_MYSQL_PASSWORD` | `SHOPIFY_DB_TYPE=MYSQL` | `YOUR_PASSWORD` | MySQL password. |
     | `SHOPIFY_MYSQL_DATABASE` | `SHOPIFY_DB_TYPE=MYSQL` | `YOUR_DB_NAME` | MySQL database name. |
 
-    Customer Account API setup is optional and required only for customer login in the plain storefront sample:
-
-    - Open this app's **Storefront API** page and follow its **Headless** link to the current store's `/apps/headless` page. Create a storefront there, then open its **Customer Account API** settings and use a public client.
-    - Copy that storefront's **Client ID** into the **Customer Account API client ID** field in this app. Use the Client ID from the target store, not the app's `SHOPIFY_API_KEY` or an access token.
-    - In the same Headless storefront settings, add `YOUR_APP_URL/customer-account/callback` to the allowed callback URLs and `YOUR_APP_URL` to the JavaScript origins. The Storefront API page displays both URLs. See [Getting started with the Customer Account API](https://shopify.dev/docs/storefronts/headless/building-with-the-customer-account-api/getting-started) for the Shopify setup steps.
-    - Open the plain storefront page from this app, then select **Login with Customer Account API**. The entered Client ID is passed in the page URL and used for that login. It is not saved as an app setting, in a database, or in browser storage; re-enter it after reloading the management page. During login, the server retains it only in the pending OAuth state until the callback completes or the state expires, so authorization and token exchange use the same Client ID. The former `SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID` and `SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_ID` environment variables are no longer used.
-
-    The plain storefront page keeps the Customer Account API section after the tokenless/public/private Storefront API cart examples. After login, its **Apply logged-in customer to Cart buyerIdentity** action sends the HttpOnly-session Customer Account access token from the server to [`cartBuyerIdentityUpdate.customerAccessToken`](https://shopify.dev/docs/api/storefront/unstable/mutations/cartBuyerIdentityUpdate); the token is never exposed to page JavaScript. The page keeps the active cart ID in `sessionStorage` so the login redirect can return to and update the same cart.
-
 3.  If you run it locally, run the following build command (`pnpm install && pnpm run build`). If you use cloud hosting (e.g. Render), use `pnpm install --prod=false` so all project dependencies required by the React Router and Vite build toolchain remain available even when `NODE_ENV=production`. You can see the details of command definition in `package.json`.
     Use Node.js 20.19.0 or later because the React Router and Vite toolchain require it.
     ```
