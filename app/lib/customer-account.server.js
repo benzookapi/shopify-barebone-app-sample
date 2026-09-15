@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   CONTENT_TYPE_FORM,
   CONTENT_TYPE_JSON,
-  CUSTOMER_ACCOUNT_CLIENT_ID,
   CUSTOMER_ACCOUNT_SCOPE,
   CUSTOMER_ACCOUNT_SESSION_COOKIE,
   USER_AGENT,
@@ -13,14 +12,10 @@ import { getPublicOrigin } from './public-url.server.js';
 const pendingStates = new Map();
 const sessions = new Map();
 
-export function requireCustomerAccountClientId() {
-  if (!CUSTOMER_ACCOUNT_CLIENT_ID) {
-    throw new Response('SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID is not configured', { status: 500 });
+export async function startCustomerAccountLogin({ request, shop, publicToken, clientId }) {
+  if (!clientId) {
+    throw new Response('Enter a Customer Account API client ID on the app\'s Storefront API page before starting login.', { status: 400 });
   }
-}
-
-export async function startCustomerAccountLogin({ request, shop, publicToken }) {
-  requireCustomerAccountClientId();
 
   const url = new URL(request.url);
   const authConfig = await discoverCustomerAccountAuthConfig(shop);
@@ -28,11 +23,17 @@ export async function startCustomerAccountLogin({ request, shop, publicToken }) 
   const nonce = uuidv4();
   const verifier = createPkceVerifier();
   const challenge = createPkceChallenge(verifier);
-  const returnTo = url.searchParams.get('return_to') || `/storefront/plain?shop=${shop}&public_token=${publicToken || ''}`;
+  const storefrontParams = new URLSearchParams({
+    shop,
+    public_token: publicToken || '',
+    customer_account_client_id: clientId,
+  });
+  const returnTo = url.searchParams.get('return_to') || `/storefront/plain?${storefrontParams}`;
   const redirectUri = `${getPublicOrigin(request)}/customer-account/callback`;
 
   pendingStates.set(state, {
     shop,
+    clientId,
     nonce,
     verifier,
     redirectUri,
@@ -43,7 +44,7 @@ export async function startCustomerAccountLogin({ request, shop, publicToken }) 
 
   const authorizationUrl = new URL(authConfig.authorization_endpoint);
   authorizationUrl.searchParams.set('scope', CUSTOMER_ACCOUNT_SCOPE);
-  authorizationUrl.searchParams.set('client_id', CUSTOMER_ACCOUNT_CLIENT_ID);
+  authorizationUrl.searchParams.set('client_id', clientId);
   authorizationUrl.searchParams.set('response_type', 'code');
   authorizationUrl.searchParams.set('redirect_uri', redirectUri);
   authorizationUrl.searchParams.set('state', state);
@@ -55,8 +56,6 @@ export async function startCustomerAccountLogin({ request, shop, publicToken }) 
 }
 
 export async function completeCustomerAccountLogin(request) {
-  requireCustomerAccountClientId();
-
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
@@ -78,7 +77,7 @@ export async function completeCustomerAccountLogin(request) {
   const authConfig = await discoverCustomerAccountAuthConfig(pending.shop);
   const tokenBody = new URLSearchParams();
   tokenBody.set('grant_type', 'authorization_code');
-  tokenBody.set('client_id', CUSTOMER_ACCOUNT_CLIENT_ID);
+  tokenBody.set('client_id', pending.clientId);
   tokenBody.set('redirect_uri', pending.redirectUri);
   tokenBody.set('code', code);
   tokenBody.set('code_verifier', pending.verifier);

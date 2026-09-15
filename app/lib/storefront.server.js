@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { API_VERSION, CUSTOMER_ACCOUNT_CLIENT_ID } from './env.server.js';
+import { API_VERSION } from './env.server.js';
 import { callAdminGraphql, callStorefrontGraphql } from './shopify-graphql.server.js';
 import { getCustomerAccountSession } from './customer-account.server.js';
 import { htmlSecurityHeaders } from './http.server.js';
@@ -285,7 +285,6 @@ export async function prepareStorefrontAccess(shop, origin) {
     public_token: '',
     private_token_stored: false,
     tokenless_url: `https://${shop}/api/${API_VERSION}/graphql.json`,
-    customer_account_client_id: CUSTOMER_ACCOUNT_CLIENT_ID,
     customer_account_callback_url: `${origin}/customer-account/callback`,
     error_count: 0,
     error_messages: [],
@@ -360,14 +359,16 @@ async function getExistingStorefrontToken(shop) {
   return tokens.find((token) => token.title === 'Barebone App Storefront') || tokens[0] || null;
 }
 
-export async function renderStorefrontPage(request, { shop, publicToken }) {
+export async function renderStorefrontPage(request, { shop, publicToken, customerAccountClientId = '' }) {
   const template = await readFile(resolve(process.cwd(), 'views/storefront.html'), 'utf8');
   const customerSession = getCustomerAccountSession(request);
   const replacements = {
     shop,
     public_token: publicToken,
     api_version: API_VERSION,
-    customer_account_client_id: CUSTOMER_ACCOUNT_CLIENT_ID,
+    customer_account_client_id: customerAccountClientId.replace(/[&<>"']/g, (character) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    })[character]),
     customer_account_callback_url: `${getPublicOrigin(request)}/customer-account/callback`,
     customer_account_profile: JSON.stringify(customerSession != null ? customerSession.profile : null),
   };

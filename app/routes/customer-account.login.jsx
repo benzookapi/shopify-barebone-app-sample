@@ -12,6 +12,7 @@ export async function loader({ request }) {
     request,
     shop,
     publicToken: url.searchParams.get('public_token') || '',
+    clientId: (url.searchParams.get('customer_account_client_id') || '').trim(),
   });
   return redirect(authorizationUrl);
 }

@@ -15,6 +15,7 @@ export async function loader({ request }) {
   return renderStorefrontPage(request, {
     shop,
     publicToken: url.searchParams.get('public_token') || '',
+    customerAccountClientId: (url.searchParams.get('customer_account_client_id') || '').trim(),
   });
 }
 

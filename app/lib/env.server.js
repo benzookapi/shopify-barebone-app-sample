@@ -24,10 +24,6 @@ export const MYSQL_PASSWORD = process.env.SHOPIFY_MYSQL_PASSWORD || '';
 export const MYSQL_DATABASE = process.env.SHOPIFY_MYSQL_DATABASE || '';
 export const MYSQL_TABLE = 'shops';
 
-export const CUSTOMER_ACCOUNT_CLIENT_ID =
-  process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID ||
-  process.env.SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_ID ||
-  '';
 export const CUSTOMER_ACCOUNT_SCOPE = 'openid email customer-account-api:full';
 export const CUSTOMER_ACCOUNT_SESSION_COOKIE = 'barebone_customer_session';
 export const USER_AGENT = 'My_Shopify_Barebone_App';

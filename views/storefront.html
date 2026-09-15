@@ -326,7 +326,7 @@
     const SHOP = "<%= shop %>";
     const API_VERSION = "<%= api_version %>";
     const PUBLIC_TOKEN = "<%= public_token %>";
-    const CUSTOMER_ACCOUNT_CLIENT_ID = "<%= customer_account_client_id %>";
+    const CUSTOMER_ACCOUNT_CLIENT_ID = document.getElementById('customer_account_client_id').textContent;
     const INITIAL_CUSTOMER_PROFILE = <%= customer_account_profile %>;
     const CART_STORAGE_KEY = `barebone-storefront-cart:${SHOP}`;
     let customerProfile = INITIAL_CUSTOMER_PROFILE;
@@ -864,11 +864,11 @@
 
     const updateCustomerUI = () => {
       const applyButton = document.getElementById('apply_customer_identity');
-      document.getElementById('login_customer_account').disabled = customerProfile != null;
+      document.getElementById('login_customer_account').disabled = customerProfile != null || CUSTOMER_ACCOUNT_CLIENT_ID === '';
       document.getElementById('logout_customer_account').disabled = customerProfile == null;
       if (customerProfile == null) {
         document.getElementById('customer_status').textContent = CUSTOMER_ACCOUNT_CLIENT_ID === ''
-          ? 'Customer Account API client ID is not configured.'
+          ? 'Enter a Customer Account API client ID on the app\'s Storefront API page and reopen this page to log in.'
           : 'No Customer Account API session.';
         setJson('customer_profile', {});
         applyButton.classList.add('hidden');
@@ -904,7 +904,12 @@
 
     document.getElementById('login_customer_account').onclick = () => {
       const returnTo = `${window.location.pathname}${window.location.search}`;
-      window.location.href = `/customer-account/login?shop=${encodeURIComponent(SHOP)}&public_token=${encodeURIComponent(PUBLIC_TOKEN)}&return_to=${encodeURIComponent(returnTo)}`;
+      const loginUrl = new URL('/customer-account/login', window.location.origin);
+      loginUrl.searchParams.set('shop', SHOP);
+      loginUrl.searchParams.set('public_token', PUBLIC_TOKEN);
+      loginUrl.searchParams.set('customer_account_client_id', CUSTOMER_ACCOUNT_CLIENT_ID);
+      loginUrl.searchParams.set('return_to', returnTo);
+      window.location.href = loginUrl.toString();
     };
 
     document.getElementById('logout_customer_account').onclick = async () => {
