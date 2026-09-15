@@ -19,7 +19,7 @@ function Storefront() {
   }, []);
 
   const currentShop = shop || result?.shop;
-  const headlessUrl = currentShop ? `https://${getAdminFromShop(currentShop)}/apps/headless` : '';
+  const headlessUrl = currentShop ? `https://${getAdminFromShop(currentShop)}/headless` : '';
   const callbackUrl = result?.customer_account_callback_url || (appOrigin ? `${appOrigin}/customer-account/callback` : '');
   const storefrontPageUrl = buildStorefrontPageUrl(currentShop, result?.public_token?.accessToken, customerAccountClientId);
 
