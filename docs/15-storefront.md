@@ -2,11 +2,12 @@
 
 ## Purpose
 
-The `/storefront` management page prepares Storefront API access and opens a standalone plain HTML storefront laboratory. The laboratory compares tokenless browser access, public Storefront token access, and server-side delegated private token access while exercising product queries, Cart API mutations, Storefront Web Components, and Customer Account API login.
+The `/storefront` management page prepares Storefront API access, accepts an optional Customer Account API Client ID, and opens a standalone plain HTML storefront laboratory. The laboratory compares tokenless browser access, public Storefront token access, and server-side delegated private token access while exercising product queries, Cart API mutations, Storefront Web Components, and Customer Account API login.
 
 ## Runtime Locations
 
 - The embedded management page creates tokens through the Admin API.
+- The Customer Account API Client ID is entered in the management page and passed to the standalone page through its URL, without saving an app setting.
 - `views/storefront.html` runs as a standalone browser page without App Bridge or the embedded App shell.
 - Tokenless and public-token GraphQL calls go directly from the browser to Storefront API.
 - Private delegated-token calls go through `/storefront/plain`; the token stays on the app server.
@@ -24,14 +25,16 @@ sequenceDiagram
     participant Store as Shop metafield storage
     participant Plain as Standalone storefront page
 
+    Merchant->>UI: Enter Customer Account Client ID for optional login
     Merchant->>UI: Prepare Storefront access
     UI->>App: Authenticated request
     App->>AdminAPI: Query or create public Storefront access token
     App->>AdminAPI: delegateAccessTokenCreate for private scopes
     AdminAPI-->>App: Public and delegated private tokens
     App->>Store: Store delegated private token server-side
-    App-->>UI: Public token and standalone page URL
-    Merchant->>Plain: Open plain custom storefront page
+    App-->>UI: Public token and callback URL
+    Merchant->>UI: Open plain custom storefront page
+    UI->>Plain: URL with shop, public token, and entered Client ID
 ```
 
 ## Product and Cart Sequence
@@ -78,12 +81,13 @@ sequenceDiagram
     participant Storefront as Storefront Cart API
 
     Customer->>Page: Start Customer Account login
-    Page->>App: GET /customer-account/login
+    Page->>App: GET /customer-account/login with entered Client ID
     App->>Discovery: Fetch OpenID configuration
-    App->>App: Create state and PKCE verifier
-    App-->>Account: Redirect authorization request
+    App->>App: Create state and PKCE verifier; retain Client ID temporarily
+    App-->>Account: Redirect authorization request with Client ID
     Account-->>App: Callback with code and state
-    App->>App: Validate state and exchange code plus verifier
+    App->>App: Validate and consume state
+    App->>Account: Exchange code plus verifier using the same Client ID
     App->>Account: Query customer profile with customer token
     App->>Session: Store tokens and profile, then set HttpOnly session cookie
     App-->>Page: Redirect to standalone page
@@ -102,12 +106,17 @@ The Cart API flow lets the user select one of ten products, create a cart, updat
 
 Product tiles combine the explicit Storefront GraphQL response with Storefront Web Components. [`shopify-context`](https://shopify.dev/docs/api/storefront-web-components/components/shopify-context) establishes product context, [`shopify-data`](https://shopify.dev/docs/api/storefront-web-components/components/shopify-data) renders fields, [`shopify-media`](https://shopify.dev/docs/api/storefront-web-components/components/shopify-media) renders media, and [`shopify-money`](https://shopify.dev/docs/api/storefront-web-components/components/shopify-money) formats money. These components complement rather than replace the sample's hand-written Cart API mutations.
 
-The Customer Account API uses OpenID Connect discovery and authorization code flow with PKCE. Its client ID is created for the headless customer-account integration and is separate from the app's Shopify API key. The server stores the customer access token behind an HttpOnly session cookie, then uses it only when the user explicitly applies the logged-in identity to a cart.
+For Customer Account API setup, use the management page's **Headless** link to open `/apps/headless` in the current store's Shopify admin. Create a storefront, open its Customer Account API settings, and use a public client. Enter its Client ID in this app's **Customer Account API client ID** field. In the same Headless storefront settings, register the app's `/customer-account/callback` URL as an allowed callback URL and the app's origin as a JavaScript origin; the management page displays both values. See the [official setup guide](https://shopify.dev/docs/storefronts/headless/building-with-the-customer-account-api/getting-started).
+
+The Client ID identifies the headless customer-account integration and is separate from the app's Shopify API key and the Storefront access tokens. Token preparation doesn't generate it. The management page passes the entered value as `customer_account_client_id` in the standalone page URL. It isn't saved in a database or browser storage, and there is no environment-variable fallback; re-enter it after reloading the management page. Omitting it disables customer login but leaves the product and cart examples available.
+
+The Customer Account API uses OpenID Connect discovery and authorization code flow with PKCE. The login request carries the entered Client ID, which the server temporarily retains with the pending OAuth state, PKCE verifier, and return URL. The callback consumes that state and uses the same Client ID for token exchange, keeping concurrent login requests independent. Unused pending state expires after ten minutes. The server stores the resulting customer access token behind an HttpOnly session cookie, then uses it only when the user explicitly applies the logged-in identity to a cart.
 
 ## Common Pitfalls
 
 - Tokenless access can fail while the Online Store password is enabled; this does not prove the query is malformed.
 - A public Storefront token must be created before public-token mode can work.
+- Enter a Customer Account API Client ID for the same store as the plain storefront page, and register the displayed callback URL in that client's Headless settings. The former Customer Account Client ID environment variables are no longer read.
 - Never expose a private delegated token in HTML, JavaScript, query strings, or browser storage.
 - A Customer Account API authorization code has a different token prefix and purpose from its access token. Exchange the code before querying the profile.
 - Customer Account API authorization headers and token formats must follow that API's specification; do not reuse Admin OAuth conventions.
