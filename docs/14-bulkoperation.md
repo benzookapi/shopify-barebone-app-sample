@@ -193,14 +193,19 @@ Starting [`bulkOperationRunMutation`](https://shopify.dev/docs/api/admin-graphql
 
 The in-request parsing in this sample is intended for demonstration-sized files. For hundreds of thousands or millions of products, use a durable import pipeline:
 
-- Split input into chunks comfortably below Shopify's 100 MB JSONL limit and the 24-hour bulk-operation execution limit.
+- Split input into multiple JSONL files comfortably below Shopify's 100 MB file limit and sized to finish within the 24-hour bulk-operation execution limit. Split at complete JSONL line boundaries, keeping each product's variants array together.
+- Stage each file separately with [`stagedUploadsCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/stagedUploadsCreate), then start one [`bulkOperationRunMutation`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/bulkOperationRunMutation) per file using its own staged upload path. Independent chunks can reuse the same mutation template and run in parallel instead of waiting for one large file to finish.
+- Use a bounded job queue: [Shopify's bulk import limits](https://shopify.dev/docs/api/usage/bulk-operations/imports#limitations) allow up to **five concurrent bulk mutation operations per app and shop in API version 2026-01 and later**; earlier versions allow only one bulk mutation at a time. Count product and variant creation jobs together against that limit, start the next eligible chunk when a slot becomes available, and avoid concurrent writes to the same product.
 - Store each input chunk, operation ID, stage, and retry state in durable storage instead of browser or server memory.
 - Stream input and Result data files rather than loading complete files into memory.
-- Detect completion with ID-specific status polling or the [`bulk_operations/finish` webhook](https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-BULK_OPERATIONS_FINISH), then download and retain the temporary Result data before its URL expires.
-- Build each variant chunk from the corresponding product creation Result data, using `__lineNumber` or another durable source mapping to correlate product IDs. Resolve native `mediaId` values through an explicit, unique media key rather than relying on connection order; this sample uses matching SKU and media alt values.
+- Detect completion with ID-specific [`bulkOperation(id:)`](https://shopify.dev/docs/api/admin-graphql/unstable/queries/bulkOperation) polling or the [`bulk_operations/finish` webhook](https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-BULK_OPERATIONS_FINISH), then download and retain each operation's temporary Result data before its URL expires. Don't use the latest [`currentBulkOperation`](https://shopify.dev/docs/api/admin-graphql/unstable/queries/currentBulkOperation) result to track multiple concurrent jobs.
+- Build and submit each variant chunk only after its corresponding product creation operation completes and the required IDs have been resolved from successful Result data. Keep product and variant chunk boundaries and row order aligned. `__lineNumber` starts at zero in each input file, so correlate it together with the source chunk or operation ID, not as a globally unique row number. Resolve native `mediaId` values through an explicit, unique media key rather than relying on connection order; this sample uses matching SKU and media alt values.
 - Treat the use of media alt text as a correlation key as a documented sample tradeoff. If descriptive alt text is required for accessibility and storefront content, restore it after association or retain the SKU-to-media mapping in durable import data instead.
 - Retry only failed result lines and make retries idempotent so a restarted worker doesn't create duplicate products or variants.
-- Schedule within the API-version concurrency limit. API version 2026-01 and later allows up to five concurrent bulk mutation operations per app and shop.
+
+For example, product chunks A through E can run concurrently. When chunk A completes successfully, its variant chunk can use the freed slot while product chunks B through E continue. The total remains at most five running mutations, and each variant job depends only on its own product chunk.
+
+This parallel scheduling is production guidance, not an implemented feature of the sample UI. The current sample stages one data file at a time and uses `currentBulkOperation` for status checks; a production coordinator must retain and track every operation ID independently.
 
 ## Common Pitfalls
 
