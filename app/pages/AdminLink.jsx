@@ -40,6 +40,7 @@ function AdminLink() {
         ready: false,
         id: null,
         shop: '',
+        appServerUrl: '',
     });
     const [res, setRes] = useState('');
 
@@ -48,10 +49,11 @@ function AdminLink() {
             ready: true,
             id: getQueryParam("id"),
             shop: getShopFromLocation(),
+            appServerUrl: new URL('/adminlink', window.location.origin).href,
         });
     }, []);
 
-    const { ready, id, shop } = pageContext;
+    const { ready, id, shop, appServerUrl } = pageContext;
 
     useEffect(() => {
         if (!id) {
@@ -91,12 +93,20 @@ function AdminLink() {
         );
     }
 
+    const directAccessNotice = (
+        <s-paragraph>
+            App server URL: <s-link href={appServerUrl} target="_blank">{appServerUrl}</s-link>.
+            {' '}Opening this URL directly without a valid Shopify HMAC signature is rejected by server-side validation (HTTP 400: HMAC verification failed).
+        </s-paragraph>
+    );
+
     // This query parameter is supposed to be given by Admin Link extensions.
     // Supposed to be shown from the linked page like product details.
     if (id != null) {
         return (
             <s-page heading="You seem to have come through Admin Link!">
                 <s-stack direction="block" gap="base">
+                    {directAccessNotice}
                     <s-box>
                         <s-heading>Your selected data id: <s-badge tone='info'>{id}</s-badge></s-heading>
                         <s-text>
@@ -134,6 +144,7 @@ function AdminLink() {
                             Once you click your extension label in <s-badge tone="info">More actions</s-badge> in your selected product details, this page shows up again in a diffrent UI checking if the <s-badge tone="info">id</s-badge> parameter is given or not.
                         </s-list-item>
                     </s-unordered-list>
+                    {directAccessNotice}
                 </s-section>
             </s-stack>
         </s-page>

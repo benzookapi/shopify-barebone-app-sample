@@ -37,6 +37,8 @@ sequenceDiagram
 
 The product extension targets [`admin.product-details.action.link`](https://shopify.dev/docs/api/admin-extensions/unstable/extension-targets) and points to `app://adminlink`. Shopify resolves the app URL and appends context, including the selected resource ID. The order extension targets [`admin.order-details.action.link`](https://shopify.dev/docs/api/admin-extensions/unstable/extension-targets) and routes to the order-management sample.
 
+The `/adminlink` UI also displays its absolute app server URL without query parameters. Opening this link directly, without a valid Shopify HMAC signature, is rejected by server-side validation with HTTP 400 (`HMAC verification failed`) before the page is rendered. Validation checks the signed query parameters, not whether the visitor clicked a link inside Shopify Admin.
+
 The page calls the standard `fetch()` API with a `shopify:admin/api/{version}/graphql.json` URL. App Bridge intercepts this request and handles Shopify authentication. The page never receives an Admin access token, and the product query does not use the app server or its stored OAuth token.
 
 Direct API access must be enabled in `shopify.app.toml` with `[access.admin].embedded_app_direct_api_access = true`. This sample sets `direct_api_mode = "offline"` to preserve the app-level authorization behavior of the previous server endpoint. Shopify defaults to online mode when the mode is omitted.
