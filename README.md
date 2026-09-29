@@ -119,7 +119,7 @@ For extensions like Theme App Extensions, Shopify Functions, and Checkout UI Ext
 
     Admin Link extensions cannot use `app://` when `embedded = false`. Follow the commented examples in [my-admin-link-order-details](./extensions/my-admin-link-order-details/shopify.extension.toml) and [my-admin-link-product-details](./extensions/my-admin-link-product-details/shopify.extension.toml): replace the `app://` URL with your app server's absolute HTTPS URL (`YOUR_APP_URL/` for this Home demo).
 
-    In embedded mode, use the Session Token page's **Connect to your service with the session token** button to try the separate [external service connector flow](../../wiki#for-external-service-connection) that authenticates the shop through an App Bridge Session Token.
+    In embedded mode, use the Session Token page's **Connect to your service with the session token** button to try the separate [external service connector flow](../../wiki#session-token-id-token) that authenticates the shop through an App Bridge Session Token.
 
 7. Install [Shopify CLI](https://shopify.dev/docs/api/shopify-cli) and the current stable [Rust toolchain](https://www.rust-lang.org/tools/install). Prepare the WebAssembly target used by the Function extensions, then execute `shopify app deploy` and follow its instructions (choose your partner account, connect to the existing app, include your configuration on deploy = YES, etc.).
     ```
@@ -141,6 +141,8 @@ Access the following endpoint.
 Or 
 
 you can install to your development stores from the app home `Install app` button in [dev. dashboard](https://dev.shopify.com/dashboard).
+
+See the [OAuth flow demo](../../wiki#oauth-flow).
 
 # How to update
 - For app UI or server-side updates (`app/` or `views`), run the build command (`pnpm run build`) and start command (`pnpm run start`) again. Some cloud services like Render enable it with `git commit & git push`.

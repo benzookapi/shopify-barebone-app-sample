@@ -80,3 +80,7 @@ The separate [non-embedded Service Connector](00-ARCHITECTURE.md#non-embedded-se
 - [Authenticate requests from Shopify embedded apps](https://shopify.dev/docs/apps/build/authentication-authorization/session-tokens/set-up-session-tokens)
 - [OAuth authorization code grant](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/authorization-code-grant)
 - [App Bridge ID token API](https://shopify.dev/docs/api/app-bridge-library/apis/id-token)
+
+## Demo
+
+See the [Session Token (ID Token) demo](../../../wiki#session-token-id-token).
