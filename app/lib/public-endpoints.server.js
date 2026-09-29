@@ -1,6 +1,10 @@
-import { json } from './http.server.js';
+import jwt from 'jsonwebtoken';
+import { API_KEY, API_SECRET } from './env.server.js';
+import { htmlSecurityHeaders, json } from './http.server.js';
 import { requireAuthenticatedShop } from './session-token.server.js';
 import { callAdminGraphql } from './shopify-graphql.server.js';
+import { isCurrentAppInstallation } from './oauth.server.js';
+import { getShopData } from './shop-store.server.js';
 import {
   decodeAppJwt,
   getAdminFromShop,
@@ -52,38 +56,77 @@ export async function appProxy(request, body) {
 
 export async function mockLogin(request) {
   const url = new URL(request.url);
-  let target = '';
+  const appToken = url.searchParams.get('my_token');
+  const responseHeaders = {
+    // POS printing needs CORS; the non-embedded app-JWT page doesn't.
+    ...(appToken ? htmlSecurityHeaders('', false) : mockLoginCorsHeaders),
+    'Cache-Control': 'no-store',
+    'Referrer-Policy': 'no-referrer',
+    'Content-Disposition': 'inline; filename="mocklogin.html"',
+    'Content-Type': 'text/html; charset=utf-8',
+  };
+  let shop = '';
+  let shopData = null;
   let details = '';
 
   const querySessionToken = url.searchParams.get('sessiontoken');
   const sessionToken = querySessionToken || getBearerToken(request);
   if (sessionToken) {
+    try {
+      jwt.verify(sessionToken, API_SECRET, { algorithms: ['HS256'], audience: API_KEY });
+    } catch {
+      return new Response('Invalid or expired Shopify session token.', { status: 400, headers: responseHeaders });
+    }
     const headers = new Headers(request.headers);
     headers.set('Authorization', `Bearer ${sessionToken}`);
     const context = await requireAuthenticatedShop(new Request(request.url, { headers }));
     if (!context.ok) {
       return new Response('Signature unmatched. Incorrect session token sent', {
         status: 400,
-        headers: mockLoginCorsHeaders,
+        headers: responseHeaders,
       });
     }
-    target = `<p>You are connecting to:</p><h3>${context.shop}</h3>`;
+    shop = context.shop;
+    shopData = context.shopData;
     details = querySessionToken
       ? `<p><b>The following is the received session token with the shop data above which you can never falsify.</b></p>
-        <pre>${sessionToken}</pre>
-        <p><a href="https://${getAdminFromShop(context.shop)}">Go back to Shopify admin</a></p>`
+        <pre>${sessionToken}</pre>`
       : '<p><b>This request was authenticated with the Shopify session token in its Authorization header.</b></p>';
   }
 
-  const appToken = url.searchParams.get('my_token');
   if (appToken) {
-    const payload = decodeAppJwt(appToken);
-    const shop = payload.shop;
-    target = `<p>You are connecting to:</p><h3>${shop}</h3>`;
+    try {
+      shop = normalizeShopDomain(decodeAppJwt(appToken).shop);
+    } catch {
+      return new Response('Invalid or expired app token. Open the app from Shopify Admin again.', {
+        status: 400,
+        headers: responseHeaders,
+      });
+    }
+    if (!shop) {
+      return new Response('Invalid shop in app token.', { status: 400, headers: responseHeaders });
+    }
+
+    shopData = await getShopData(shop);
+    if (!isCurrentAppInstallation(shopData)) {
+      return new Response('No access token is stored for this app and shop. Open the app from Shopify Admin to authorize it again.', {
+        status: 401,
+        headers: responseHeaders,
+      });
+    }
+
     details = `<p><b>The following is your own JWT token with the shop.</b></p>
-      <pre>${appToken}</pre>
+      <pre>${appToken}</pre>`;
+  }
+
+  if (shopData) {
+    details += `<p><b>The following is your access token stored in this app's database.</b>
+        Use it to call the Shopify Admin API from your server.</p>
+      <pre style="white-space: pre-wrap; overflow-wrap: anywhere;">${escapeHtml(shopData.access_token)}</pre>
+      <p>Demo only: Admin API access tokens are secrets. Keep them server-side and do not display them in production.</p>
       <p><a href="https://${getAdminFromShop(shop)}">Go back to Shopify admin</a></p>`;
   }
+  const target = shop ? `<p>You are connecting to:</p><h3>${shop}</h3>` : '';
 
   return new Response(`<!doctype html>
 <html lang="en">
@@ -101,13 +144,13 @@ export async function mockLogin(request) {
     ${details}
   </body>
 </html>`, {
-    headers: {
-      ...mockLoginCorsHeaders,
-      'Cache-Control': 'no-store',
-      'Content-Disposition': 'inline; filename="mocklogin.html"',
-      'Content-Type': 'text/html; charset=utf-8',
-    },
+    headers: responseHeaders,
   });
+}
+
+function escapeHtml(value) {
+  const entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  return String(value).replace(/[&<>"']/g, (character) => entities[character]);
 }
 
 export async function webhookAction(request) {
