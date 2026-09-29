@@ -84,7 +84,7 @@ function SessionToken() {
           <s-stack direction="block" gap="base">
             <s-box>
               <s-paragraph>
-                If you want to connect to your own service like <s-link href={`https://${getCurrentHost()}/mocklogin`} target="_blank">this</s-link> outside Shopify Admin,
+                If you want to connect to your own service outside Shopify Admin,
                 you can use the session token validation for passing <s-badge tone="info">shop</s-badge> in a secure way as the following button does.
               </s-paragraph>
             </s-box>
