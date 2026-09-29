@@ -44,6 +44,8 @@ sequenceDiagram
 
 The sample also exposes `/mocklogin` to demonstrate a service-connector pattern. The embedded app can pass a session token to that endpoint, and the server can use the verified shop identity to issue its own service-specific login or JWT. In production, avoid putting reusable credentials in URLs because URLs can appear in history and logs.
 
+The separate [non-embedded Service Connector](00-ARCHITECTURE.md#non-embedded-service-connector) opens `/mocklogin` with an app-owned `my_token` JWT. Both that path and the Shopify session-token path display the database's Admin OAuth access token with a server-side usage explanation, including in POS printouts. The session-token path validates the HS256 signature, audience, expiry, and not-before claims before reading the installation. The shop comes from the verified token, not an unsigned `shop` parameter, and the installation must belong to the current app. This credential display is for test stores only; keep Admin tokens server-side in production.
+
 ## Common Pitfalls
 
 - A session token is not an Admin API access token. Sending it to Admin GraphQL will fail.

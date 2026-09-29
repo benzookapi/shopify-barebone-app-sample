@@ -85,10 +85,16 @@ sequenceDiagram
     App-->>Browser: Redirect to /mocklogin with app JWT
     Browser->>Service: Open plain external service page
     Service->>Service: Verify app JWT and resolve shop
-    Service-->>Merchant: Render service login or dashboard
+    Service->>Store: Load installation for the verified shop and current app
+    Store-->>Service: Stored Admin OAuth access token
+    Service-->>Merchant: Render demo login page with app JWT and stored access token
 ```
 
-The sample hosts `/mocklogin` on the same server, but it represents a separate external system in this architecture. The app-owned JWT is not a Shopify session token and does not grant Admin API access. A production connector should use the verified shop to establish its own server-side session, keep the handoff token short-lived and single-purpose, and avoid retaining it in URLs or logs. This differs from the embedded Session Token page's connector demonstration, where App Bridge supplies a Shopify-signed session token before opening the external page.
+The sample hosts `/mocklogin` on the same server, but it represents a separate external system in this architecture. The app-owned JWT is not a Shopify session token and cannot itself be used as an Admin API access token. A production connector should use the verified shop to establish its own server-side session, keep the handoff token short-lived and single-purpose, and avoid retaining it in URLs or logs. This differs from the embedded Session Token page's connector demonstration, where App Bridge supplies a Shopify-signed session token before opening the external page.
+
+For learning purposes, the `my_token` path verifies the app JWT's signature and expiry, derives the shop from its signed payload, and reads the current app's installation record from the database. Below the JWT, the page displays the stored Admin OAuth access token and explains that it is used for server-side Admin API calls. An unsigned `shop` query parameter cannot select the record. Invalid JWTs and missing or mismatched installations are rejected. The session-token connector and POS print paths also display the stored token after authenticating the request and resolving its shop.
+
+**Test stores only:** Admin OAuth access tokens are secrets. This page intentionally reveals the token to the holder of a valid app JWT or Shopify session token, including in POS printouts. Don't share the page, its URL, or its printed output. Responses are not cacheable and suppress referrer information. The app-JWT response also disallows framing and omits the cross-origin read permission required by POS printing. These controls don't make a displayed or printed token safe for production: remove this display and keep the token server-side in a real service connector.
 
 ### Linking a Shopify Shop to an External Service User
 
