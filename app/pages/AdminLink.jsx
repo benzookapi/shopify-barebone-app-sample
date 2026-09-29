@@ -94,10 +94,10 @@ function AdminLink() {
     }
 
     const directAccessNotice = (
-        <s-paragraph>
+        <s-box>
             App server URL: <s-link href={appServerUrl} target="_blank">{appServerUrl}</s-link>.
             {' '}Opening this URL directly without a valid Shopify HMAC signature is rejected by server-side validation (HTTP 400: HMAC verification failed).
-        </s-paragraph>
+        </s-box>
     );
 
     // This query parameter is supposed to be given by Admin Link extensions.
