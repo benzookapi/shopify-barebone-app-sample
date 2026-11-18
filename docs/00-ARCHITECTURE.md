@@ -101,27 +101,11 @@ Private Storefront delegation also holds the parent lock while checking or creat
 
 ### Related Credentials: Application-only and CLI Automation Tokens
 
-The refresh diagram above describes this sample's implementation. Application-only access and CLI service accounts are explained here for comparison; this repository does not implement an application-only token sample.
-
-| Credential | What it authorizes | Renewal and typical use |
+| Credential | Typical use | Key restriction |
 | --- | --- | --- |
-| Expiring offline Admin API access token | Store data operations within the app installation's granted scopes | Store and rotate the access/refresh pair. Use for scheduled jobs and webhook follow-up work, including a custom-distribution app installed on a customer's store in another organization. |
-| Application-only access token | Admin API operations for an eligible installed store | Obtain with the `client_credentials` grant and a private-key-signed client assertion. Request another token before expiry; no refresh token is returned. Useful for unattended jobs without storing a refresh pair per shop. |
-| CLI service account token, including former App Automation Tokens | Supported Shopify CLI development and deployment operations | Rotate the CLI credential separately. Use for app deployment/release and, with the appropriate permission, dev store provisioning. It cannot read or write store data through the Admin API. |
-
-[Application-only access tokens](https://shopify.dev/docs/apps/build/authentication-authorization/application-only-access-tokens) require an installed app and approved scopes. Register a public JWK in the Dev Dashboard and retain the private key on the server. The signed client assertion authenticates the token request; send the resulting access token to Admin API. Public-distribution apps can use this flow for any store that has installed them, with tokens lasting up to one hour. Custom-distribution and other apps remain limited to stores in their own organization, with 24-hour tokens. Always use the returned `expires_in`.
-
-For an SI-owned custom app, a customer store transferred to another organization falls outside that same-organization condition. Retaining collaborator access does not satisfy it. Use the offline OAuth flow above for that integration. The rule concerns organization ownership, not whether a store is in development or production: an app and production store owned by the same merchant organization can qualify. The [client credentials grant](https://shopify.dev/docs/apps/build/authentication-authorization/client-credentials-grant) also supports client ID/secret authentication for same-organization integrations.
-
-The Dev Dashboard's **App CLI automation token** setting now leads to [service accounts](https://shopify.dev/docs/apps/build/cli-for-apps/service-accounts). Existing App Automation Tokens were migrated with their app-development permission. The current environment variable is `SHOPIFY_SERVICE_ACCOUNT_TOKEN`; the legacy `SHOPIFY_APP_AUTOMATION_TOKEN` remains accepted but is deprecated. Do not set both. These credentials support operations such as `app deploy` and `app release`; dev store management requires its own permission. While a service account token is set, personal-login commands such as `store auth` and `store execute` do not run. See the [service account limitations](https://shopify.dev/docs/apps/build/cli-for-apps/service-accounts#limitations).
-
-Choose credentials by the work a CI/CD or background job performs:
-
-- **Deploy an app or provision E2E dev stores:** use a CLI service account with the required permissions.
-- **Read or update data in the app's own organization's stores:** an installed app can obtain a client-credentials token when the job runs.
-- **Read or update a transferred customer's store with an SI-owned custom app:** use that installation's offline access token and refresh it as needed. Public-distribution apps can also consider application-only access for installed stores.
-
-For data operations in CI, obtain an app access token in the job or through a trusted token provider. Keep the issuing credentials or managed refresh state in protected storage, and apply the same expiry handling and IP restrictions as server-side jobs. A CLI deployment token cannot substitute for the app access token.
+| [Expiring offline access token](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens) | Admin API calls from batches and webhook follow-up jobs | Maintain the access/refresh pair. Supports custom apps installed on customers' stores. |
+| [Application-only access token](https://shopify.dev/docs/apps/build/authentication-authorization/application-only-access-tokens) | Background Admin API calls without storing refresh tokens | **For customers' production stores in another organization, public-distribution apps only.** Custom apps are limited to stores in their own organization. |
+| [App CLI automation / service account token](https://shopify.dev/docs/apps/build/cli-for-apps/service-accounts) | CI/CD deployment, release, and permitted dev store management | **Cannot read or write store data through the Admin API.** |
 
 ## Non-embedded Service Connector
 
