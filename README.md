@@ -176,8 +176,6 @@ The `[network_access]` domain declarations do not enforce an allowlist that bloc
 - `allowed_sources` contributes to the `Content-Security-Policy-Report-Only` HTTP response header on storefront pages. The browser can log console warnings and send violation reports for undeclared destinations while still allowing those requests. These request warnings do not display a warning screen to customers.
 - `allowed_navigation_hosts` lets external links to declared hosts skip the exit confirmation screen. Links to undeclared hosts may show that screen before the customer continues; other Shopify or merchant trust rules can also suppress it. Shopify's separate protection against malicious hosts still applies, even to declared hosts.
 
-See the [Learn Shopify with PSE app security explanation](https://shopify-apac-ts.github.io/shopify-partner-enablement-assets/learn-shopify-with-pse/20261112_agentic_commerce_app_security/) for the distinction between request reporting and navigation warnings.
-
 The local app TOML files are intentionally Git-ignored. Add the following to each app configuration you deploy, replacing the example host and origin with your own values. The three origins correspond to direct app-server requests, the IP-address demonstration, and the GA4 web pixel. Remove a third-party origin if you remove its sample feature. Shopify-hosted assets and store-domain App Proxy URLs do not need entries.
 
 ```toml
