@@ -56,7 +56,7 @@ The OAuth access token belongs on the server. App Bridge session tokens are shor
 
 ### Offline Token Refresh Before API Use
 
-[`offline-token.server.js`](../app/lib/offline-token.server.js) centralizes the stored offline token lifecycle. The GraphQL client and authenticated installation helpers obtain fresh installation data through it. Refresh happens on demand, with no cron job or periodic batch. The refresh threshold is five minutes before access-token expiry. An already-expired access token can still be refreshed while its refresh token is valid.
+[`offline-token.server.js`](../app/lib/offline-token.server.js) centralizes the stored offline token lifecycle. The GraphQL client and authenticated installation helpers obtain fresh installation data through it. [Token refresh](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-refresh) happens on demand, with no cron job or periodic batch. The refresh threshold is five minutes before access-token expiry. An already-expired access token can still be refreshed while its refresh token is valid.
 
 ```mermaid
 sequenceDiagram
