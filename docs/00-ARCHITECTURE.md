@@ -91,13 +91,9 @@ sequenceDiagram
     API-->>Caller: API result when an operation was sent
 ```
 
-Both initial acquisition (`expiring=1`) and refresh use the same per-shop lock, including requests in different Render processes. PostgreSQL and MySQL use transaction row locks (InnoDB is required for MySQL); MongoDB uses a 60-second lease with a unique owner and guarded saves/releases. Lock acquisition waits at most about 15 seconds. OAuth and GraphQL HTTP requests have 12-second timeouts so bounded token/delegation work fits within the lease. An abandoned MongoDB lease can be reclaimed after expiry. All expiry timestamps are calculated from Shopify's returned lifetimes, conservatively measured from request start.
-
-Each successful refresh replaces the stored access/refresh pair before API use. A rejected refresh token (`401` or `invalid_grant`) requires reauthorization. Network failures, rate limits, and upstream server errors leave the stored pair intact for a later request; the server does not blindly retry Admin mutations. A failure after Shopify rotates credentials but before the database saves them can still require reauthorization if a later refresh cannot recover. Keep the installation database available and protected as credential storage.
-
-The signed app entry redirects to OAuth when reauthorization is needed; authenticated API requests report that the app must be reopened. Installations with only an old non-expiring access token follow the same reauthorization path. Refresh tokens also expire, so a shop that remains idle beyond its stored refresh expiry must reconnect. This mechanism is separate from App Bridge's browser session-token renewal and from Customer Account API tokens.
-
-Private Storefront delegation also holds the parent lock while checking or creating a token, bounds its lifetime to the parent's remaining lifetime, and stores the parent's generation. A failed delegated-token operation still commits any successful parent refresh. See [Storefront API](15-storefront.md#delegated-token-lifecycle).
+- Serialize token acquisition and refresh per shop, and save each new access/refresh pair with its expiry times before API use.
+- If the refresh token expires or is rejected, reopen the app to reauthorize.
+- On temporary failures, retain stored credentials and retry later; do not automatically replay Admin API mutations.
 
 ### Related Credentials: Application-only and CLI Automation Tokens
 
