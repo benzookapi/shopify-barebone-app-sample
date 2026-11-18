@@ -26,7 +26,8 @@
   },
   "scripts": {
     "build": "react-router build",
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "test": "node --test app/lib/*.test.js extensions/my-web-pixel-ext/src/*.test.js"
   },
   "keywords": [],
   "author": "",

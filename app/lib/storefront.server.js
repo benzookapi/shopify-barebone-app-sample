@@ -5,6 +5,7 @@ import { callAdminGraphql, callStorefrontGraphql } from './shopify-graphql.serve
 import { getCustomerAccountSession } from './customer-account.server.js';
 import { htmlSecurityHeaders } from './http.server.js';
 import { getPublicOrigin } from './public-url.server.js';
+import { createDelegatedStorefrontToken, getDelegatedStorefrontToken } from './delegated-token.server.js';
 
 const STOREFRONT_TOKEN_CREATE = `mutation StorefrontAccessTokenCreate($input: StorefrontAccessTokenInput!) {
   storefrontAccessTokenCreate(input: $input) {
@@ -37,47 +38,6 @@ const STOREFRONT_TOKENS_QUERY = `query StorefrontAccessTokens {
         id
         title
       }
-    }
-  }
-}`;
-
-const DELEGATE_TOKEN_CREATE = `mutation DelegateAccessTokenCreate($input: DelegateAccessTokenInput!) {
-  delegateAccessTokenCreate(input: $input) {
-    delegateAccessToken {
-      accessScopes
-      accessToken
-      createdAt
-    }
-    shop {
-      id
-      name
-    }
-    userErrors {
-      field
-      message
-    }
-  }
-}`;
-
-const SHOP_PRIVATE_TOKEN_QUERY = `query BareboneDelegatedToken {
-  shop {
-    id
-    metafield(namespace: "barebone_app", key: "delegated_private_token") {
-      id
-      value
-    }
-  }
-}`;
-
-const METAFIELDS_SET = `mutation MetafieldsSet($metafields: [MetafieldsSetInput!]!) {
-  metafieldsSet(metafields: $metafields) {
-    metafields {
-      id
-      value
-    }
-    userErrors {
-      field
-      message
     }
   }
 }`;
@@ -290,7 +250,7 @@ export async function prepareStorefrontAccess(shop, origin) {
     error_messages: [],
   };
 
-  let result = await callAdminGraphql(shop, STOREFRONT_TOKEN_CREATE, {
+  const result = await callAdminGraphql(shop, STOREFRONT_TOKEN_CREATE, {
     input: {
       title: 'Barebone App Storefront',
     },
@@ -312,42 +272,12 @@ export async function prepareStorefrontAccess(shop, origin) {
     response.public_token = tokenCreate.storefrontAccessToken;
   }
 
-  result = await callAdminGraphql(shop, DELEGATE_TOKEN_CREATE, {
-    input: {
-      delegateAccessScope: [
-        'write_products',
-        'write_discounts',
-        'write_orders',
-        'write_payment_customizations',
-        'unauthenticated_read_product_listings',
-        'unauthenticated_read_selling_plans',
-      ],
-      expiresIn: 60 * 60 * 24,
-    },
-  });
-  if (result.data.delegateAccessTokenCreate.userErrors.length > 0) {
+  try {
+    await createDelegatedStorefrontToken(shop);
+    response.private_token_stored = true;
+  } catch (error) {
     response.error_count += 1;
-    response.error_messages.push(`delegateAccessTokenCreate: ${JSON.stringify(result.data.delegateAccessTokenCreate.userErrors[0])}`);
-  } else {
-    const shopId = result.data.delegateAccessTokenCreate.shop.id;
-    const privateToken = result.data.delegateAccessTokenCreate.delegateAccessToken;
-    const metafieldResult = await callAdminGraphql(shop, METAFIELDS_SET, {
-      metafields: [
-        {
-          key: 'delegated_private_token',
-          namespace: 'barebone_app',
-          ownerId: shopId,
-          type: 'json',
-          value: JSON.stringify(privateToken),
-        },
-      ],
-    });
-    if (metafieldResult.data.metafieldsSet.userErrors.length > 0) {
-      response.error_count += 1;
-      response.error_messages.push(`metafieldsSet: ${JSON.stringify(metafieldResult.data.metafieldsSet.userErrors[0])}`);
-    } else {
-      response.private_token_stored = true;
-    }
+    response.error_messages.push(error.message);
   }
 
   return response;
@@ -457,12 +387,7 @@ export async function callPrivateStorefrontAction({
 }
 
 async function getPrivateStorefrontToken(shop) {
-  const result = await callAdminGraphql(shop, SHOP_PRIVATE_TOKEN_QUERY);
-  const value = result.data?.shop?.metafield?.value;
-  if (!value) {
-    throw new Response('No delegated private Storefront token is stored. Prepare tokens first.', { status: 400 });
-  }
-  return JSON.parse(value);
+  return getDelegatedStorefrontToken(shop);
 }
 
 function parseLocale(locale) {

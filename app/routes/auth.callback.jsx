@@ -1,8 +1,8 @@
 import { redirect } from '../lib/http.server.js';
 import { getAdminFromShop, normalizeShopDomain } from '../lib/shopify-auth.server.js';
-import { buildStoredShopData, exchangeOAuthCode, getAppHandle } from '../lib/oauth.server.js';
+import { getAppHandle } from '../lib/oauth.server.js';
 import { verifyShopifyHmac } from '../lib/shopify-auth.server.js';
-import { upsertShopData } from '../lib/shop-store.server.js';
+import { authorizeOfflineShop } from '../lib/offline-token.server.js';
 
 export async function loader({ request }) {
   const params = new URL(request.url).searchParams;
@@ -18,26 +18,10 @@ export async function loader({ request }) {
 
   console.info('[oauth] callback received', JSON.stringify({ shop, hasCode: Boolean(code) }));
 
-  const tokenResponse = await exchangeOAuthCode(shop, code);
-  if (!tokenResponse.access_token) {
-    return new Response('Shopify did not return an access token', { status: 502 });
-  }
-  console.info('[oauth] token exchange succeeded', JSON.stringify({
-    shop,
-    tokenPresent: true,
-    tokenLength: tokenResponse.access_token.length,
-    scope: tokenResponse.scope || '',
-  }));
+  const shopData = await authorizeOfflineShop(shop, code);
+  console.info('[oauth] expiring token pair stored', JSON.stringify({ shop }));
 
-  try {
-    await upsertShopData(shop, buildStoredShopData(shop, tokenResponse));
-    console.info('[oauth] shop data stored', JSON.stringify({ shop }));
-  } catch (error) {
-    console.error('[oauth] shop data store failed', JSON.stringify({ shop, message: error.message }));
-    throw error;
-  }
-
-  const appHandle = await getAppHandle(shop, tokenResponse.access_token);
+  const appHandle = await getAppHandle(shop, shopData.access_token);
   if (!appHandle) {
     return new Response('Unable to resolve app handle', { status: 502 });
   }

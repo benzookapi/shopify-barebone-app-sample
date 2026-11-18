@@ -1,6 +1,8 @@
 import mongo from 'mongodb';
 import pg from 'pg';
 import mysql from 'mysql';
+import { randomUUID } from 'node:crypto';
+import { setTimeout as delay } from 'node:timers/promises';
 import {
   DB_TYPE,
   MONGO_COLLECTION,
@@ -15,6 +17,96 @@ import {
   POSTGRESQL_URL,
 } from './env.server.js';
 import { normalizeShopDomain } from './shopify-auth.server.js';
+
+// Serialize token acquisition and rotation across all app processes, per shop.
+export async function withLockedShopData(shop, handler) {
+  const key = shopKey(shop);
+  switch (DB_TYPE) {
+    case 'POSTGRESQL':
+      return withPostgreSQL(async (client) => {
+        await client.query('BEGIN');
+        try {
+          await client.query("SET LOCAL lock_timeout = '15s'");
+          await client.query(
+            `INSERT INTO ${POSTGRESQL_TABLE} (_id, data, created_at, updated_at) VALUES ($1, 'null', NOW(), NOW()) ON CONFLICT (_id) DO NOTHING`,
+            [key],
+          );
+          const { rows } = await client.query(`SELECT data FROM ${POSTGRESQL_TABLE} WHERE _id = $1 FOR UPDATE`, [key]);
+          const result = await handler(rows[0].data, (data) => client.query(
+            `UPDATE ${POSTGRESQL_TABLE} SET data = $1, updated_at = NOW() WHERE _id = $2`, [data, key],
+          ));
+          await client.query('COMMIT');
+          return result;
+        } catch (error) {
+          await client.query('ROLLBACK');
+          throw error;
+        }
+      });
+    case 'MYSQL':
+      return withMySQL((connection, done) => {
+        const query = (sql, values = []) => new Promise((resolve, reject) => {
+          connection.query(sql, values, (error, result) => error ? reject(error) : resolve(result));
+        });
+        (async () => {
+          await query('SET SESSION innodb_lock_wait_timeout = 15');
+          await query('START TRANSACTION');
+          try {
+            await query(
+              `INSERT INTO ${MYSQL_TABLE} (_id, data, created_at, updated_at) VALUES (?, 'null', NOW(), NOW()) ON DUPLICATE KEY UPDATE _id = _id`, [key],
+            );
+            const rows = await query(`SELECT data FROM ${MYSQL_TABLE} WHERE _id = ? FOR UPDATE`, [key]);
+            const data = typeof rows[0].data === 'string' ? JSON.parse(rows[0].data) : rows[0].data;
+            const result = await handler(data, (next) => query(
+              `UPDATE ${MYSQL_TABLE} SET data = ?, updated_at = NOW() WHERE _id = ?`, [JSON.stringify(next), key],
+            ));
+            await query('COMMIT');
+            return result;
+          } catch (error) {
+            await query('ROLLBACK');
+            throw error;
+          }
+        })().then((result) => done(null, result), done);
+      });
+    default:
+      return withMongo((collection) => withMongoShopLock(collection, key, handler));
+  }
+}
+
+export async function withMongoShopLock(collection, key, handler) {
+  const owner = randomUUID();
+  const deadline = Date.now() + 15_000;
+  try {
+    await collection.updateOne({ _id: key }, {
+      $setOnInsert: { data: null, created_at: new Date(), updated_at: new Date() },
+    }, { upsert: true });
+  } catch (error) {
+    if (error.code !== 11000) throw error; // Another process created the placeholder.
+  }
+  let document;
+  while (!document) {
+    const now = new Date();
+    document = await collection.findOneAndUpdate({
+      _id: key,
+      $or: [{ token_lock: { $exists: false } }, { 'token_lock.expires_at': { $lte: now } }],
+    }, {
+      $set: { token_lock: { owner, expires_at: new Date(Date.now() + 60_000) } },
+    }, { returnDocument: 'after', includeResultMetadata: false });
+    if (!document) {
+      if (Date.now() >= deadline) throw new Error('Timed out waiting for the shop token lock. Retry the request.');
+      await delay(100);
+    }
+  }
+  try {
+    return await handler(document.data, async (data) => {
+      const result = await collection.updateOne({
+        _id: key, 'token_lock.owner': owner, 'token_lock.expires_at': { $gt: new Date() },
+      }, { $set: { data, updated_at: new Date() } });
+      if (result.matchedCount !== 1) throw new Error('Shop token lock expired before saving. Retry the request.');
+    });
+  } finally {
+    await collection.updateOne({ _id: key, 'token_lock.owner': owner }, { $unset: { token_lock: '' } });
+  }
+}
 
 export async function getShopData(shop) {
   const key = shopKey(shop);

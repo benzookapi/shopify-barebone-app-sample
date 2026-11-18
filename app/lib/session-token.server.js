@@ -4,8 +4,7 @@ import {
   getShopFromSessionToken,
   verifySessionToken,
 } from './shopify-auth.server.js';
-import { isCurrentAppInstallation } from './oauth.server.js';
-import { getShopData } from './shop-store.server.js';
+import { getOfflineShopData, isReauthorizationRequired } from './offline-token.server.js';
 
 export function getAuthenticatedFetchContext(request) {
   const token = getBearerToken(request);
@@ -55,28 +54,15 @@ export async function requireAuthenticatedShop(request) {
     return context;
   }
 
-  const shopData = await getShopData(context.shop);
-  if (shopData == null) {
-    return {
-      ok: false,
-      status: 400,
-      response: {
-        result: {
-          message: 'Authorization failed. No shop data',
-        },
-      },
-    };
-  }
-
-  if (!isCurrentAppInstallation(shopData)) {
+  let shopData;
+  try {
+    shopData = await getOfflineShopData(context.shop);
+  } catch (error) {
+    if (!isReauthorizationRequired(error)) throw error;
     return {
       ok: false,
       status: 401,
-      response: {
-        result: {
-          message: 'Authorization failed. Stored OAuth data is missing or belongs to a different app client. Reload the embedded app to restart OAuth.',
-        },
-      },
+      response: { result: { message: error.message } },
     };
   }
 

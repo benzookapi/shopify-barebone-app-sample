@@ -3,8 +3,7 @@ import { API_KEY, API_SECRET } from './env.server.js';
 import { htmlSecurityHeaders, json } from './http.server.js';
 import { requireAuthenticatedShop } from './session-token.server.js';
 import { callAdminGraphql } from './shopify-graphql.server.js';
-import { isCurrentAppInstallation } from './oauth.server.js';
-import { getShopData } from './shop-store.server.js';
+import { getOfflineShopData, isReauthorizationRequired } from './offline-token.server.js';
 import {
   decodeAppJwt,
   getAdminFromShop,
@@ -107,8 +106,10 @@ export async function mockLogin(request) {
       return new Response('Invalid shop in app token.', { status: 400, headers: responseHeaders });
     }
 
-    shopData = await getShopData(shop);
-    if (!isCurrentAppInstallation(shopData)) {
+    try {
+      shopData = await getOfflineShopData(shop);
+    } catch (error) {
+      if (!isReauthorizationRequired(error)) throw error;
       return new Response('No access token is stored for this app and shop. Open the app from Shopify Admin to authorize it again.', {
         status: 401,
         headers: responseHeaders,

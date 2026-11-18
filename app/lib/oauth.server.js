@@ -1,11 +1,10 @@
 import {
   API_KEY,
-  API_VERSION,
   API_SECRET,
-  CONTENT_TYPE_JSON,
 } from './env.server.js';
 import { callAdminGraphql } from './shopify-graphql.server.js';
 import { getShopData } from './shop-store.server.js';
+import { isReauthorizationRequired } from './offline-token.server.js';
 import { normalizeShopDomain } from './shopify-auth.server.js';
 
 const APP_HANDLE_QUERY = `query AppHandle {
@@ -44,28 +43,9 @@ export async function hasValidInstallation(shop) {
       status: error.status || null,
       message: error.message,
     }));
-    return false;
+    if (isReauthorizationRequired(error) || error.status === 401) return false;
+    throw error;
   }
-}
-
-export async function exchangeOAuthCode(shop, code) {
-  const shopDomain = normalizeShopDomain(shop);
-  if (!shopDomain) throw new Response('Invalid shop', { status: 400 });
-  const response = await fetch(`https://${shopDomain}/admin/oauth/access_token`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': CONTENT_TYPE_JSON,
-    },
-    body: JSON.stringify({
-      client_id: API_KEY,
-      client_secret: API_SECRET,
-      code,
-    }),
-  });
-  if (!response.ok) {
-    throw new Response(`Token exchange failed: ${await response.text()}`, { status: 502 });
-  }
-  return response.json();
 }
 
 export async function getAppHandle(shop, accessToken) {
@@ -81,16 +61,6 @@ export function createOAuthAuthorizeUrl(shop, origin) {
   redirectUrl.searchParams.set('state', '');
   redirectUrl.searchParams.append('grant_options[]', '');
   return redirectUrl.toString();
-}
-
-export function buildStoredShopData(shop, tokenResponse) {
-  return {
-    ...tokenResponse,
-    shop: normalizeShopDomain(shop),
-    client_id: API_KEY,
-    api_version: API_VERSION,
-    stored_at: new Date().toISOString(),
-  };
 }
 
 export function isCurrentAppInstallation(shopData) {

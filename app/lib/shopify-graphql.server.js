@@ -4,13 +4,13 @@ import {
   GRAPHQL_PATH_STOREFRONT,
   USER_AGENT,
 } from './env.server.js';
-import { getShopData } from './shop-store.server.js';
+import { getOfflineShopData } from './offline-token.server.js';
 import { normalizeShopDomain } from './shopify-auth.server.js';
 
 export async function callAdminGraphql(shop, query, variables = null, token = null) {
   const shopDomain = normalizeShopDomain(shop);
   if (!shopDomain) throw new Error(`Invalid Shopify shop domain: ${shop || '(empty)'}`);
-  const accessToken = token || (await getShopData(shopDomain))?.access_token;
+  const accessToken = token || (await getOfflineShopData(shopDomain))?.access_token;
   if (!accessToken) throw new Error(`No Admin API token stored for ${shopDomain}`);
   return callShopifyGraphql(`https://${shopDomain}/${GRAPHQL_PATH_ADMIN}`, query, variables, {
     'X-Shopify-Access-Token': accessToken,
@@ -39,6 +39,7 @@ async function callShopifyGraphql(endpoint, query, variables, headers, context =
 
   const response = await fetch(endpoint, {
     method: 'POST',
+    signal: AbortSignal.timeout(12_000),
     headers: {
       'Content-Type': CONTENT_TYPE_JSON,
       'User-Agent': USER_AGENT,
