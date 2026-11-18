@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The `/sessiontoken` sample demonstrates how an embedded browser proves its current Shopify identity to the app server. It also contrasts that short-lived proof with the long-lived Admin OAuth token stored by the server.
+The `/sessiontoken` sample demonstrates how an embedded browser proves its current Shopify identity to the app server. It also contrasts that short-lived proof with the separately expiring offline Admin OAuth token and refresh token stored by the server.
 
 For the shared embedded-app entry flow, see [Application Architecture](00-ARCHITECTURE.md).
 
@@ -40,7 +40,7 @@ sequenceDiagram
 
 ## How It Works
 
-`authenticatedFetch()` obtains a fresh token from [`window.shopify.idToken()`](https://shopify.dev/docs/api/app-bridge-library/apis/id-token) and sends it as a Bearer token. `requireAuthenticatedShop()` verifies that token, derives the shop from its destination claim, and rejects installations that are missing or belong to a different app client. Only after those checks does server code use the stored Admin OAuth token.
+`authenticatedFetch()` obtains a fresh token from [`window.shopify.idToken()`](https://shopify.dev/docs/api/app-bridge-library/apis/id-token) and sends it as a Bearer token. `requireAuthenticatedShop()` verifies that token, derives the shop from its destination claim, and rejects installations that are missing or belong to a different app client. It then obtains fresh offline credentials, rotating the stored pair when five minutes or less remain. Missing expiry metadata or an expired/rejected refresh token requires reopening the app for OAuth. This request-time refresh does not use the browser session token as an Admin credential. See the [offline refresh sequence](00-ARCHITECTURE.md#offline-token-refresh-before-api-use).
 
 The sample also exposes `/mocklogin` to demonstrate a service-connector pattern. The embedded app can pass a session token to that endpoint, and the server can use the verified shop identity to issue its own service-specific login or JWT. In production, avoid putting reusable credentials in URLs because URLs can appear in history and logs.
 

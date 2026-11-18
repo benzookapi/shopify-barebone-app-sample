@@ -29,13 +29,20 @@ sequenceDiagram
     Merchant->>UI: Prepare Storefront access
     UI->>App: Authenticated request
     App->>AdminAPI: Query or create public Storefront access token
-    App->>AdminAPI: delegateAccessTokenCreate for private scopes
+    App->>App: Ensure fresh offline parent token under shop lock
+    App->>AdminAPI: delegateAccessTokenCreate with bounded lifetime
     AdminAPI-->>App: Public and delegated private tokens
-    App->>Store: Store delegated private token server-side
+    App->>Store: Store private token, expiry, and parent generation
     App-->>UI: Public token and callback URL
     Merchant->>UI: Open plain custom storefront page
     UI->>Plain: URL with shop, public token, and entered Client ID
 ```
+
+### Delegated Token Lifecycle
+
+Delegated private tokens cannot outlive their parent Admin token. [`delegated-token.server.js`](../app/lib/delegated-token.server.js) limits the requested lifetime to the smaller of 24 hours or the parent's remaining seconds minus a 60-second margin. It stores `expires_at` and `parent_token_generation` with the token in the existing shop metafield.
+
+Before a private Storefront action, the server refreshes the offline parent if necessary, then checks the metafield under the same per-shop lock used for OAuth rotation. An existing delegated token is regenerated when it has one minute or less remaining, lacks the new metadata, or belongs to an earlier parent generation. This also serializes simultaneous regeneration across server processes. A shop without the metafield must still run **Prepare Storefront access** first. Private tokens remain server-side, and cart mutations are sent once rather than automatically replayed on failure. See the [offline refresh sequence](00-ARCHITECTURE.md#offline-token-refresh-before-api-use).
 
 ## Product and Cart Sequence
 
@@ -54,7 +61,7 @@ sequenceDiagram
         Page->>API: Product query directly from browser
     else Private delegated mode
         Page->>Server: POST action=show_product
-        Server->>Server: Load delegated private token
+        Server->>Server: Load or regenerate delegated private token
         Server->>API: Product query with private token
     end
     API-->>Page: Ten products and variants
@@ -142,6 +149,7 @@ The Customer Account API uses OpenID Connect discovery and authorization code fl
 - [`app/routes/storefront-json.jsx`](../app/routes/storefront-json.jsx): authenticated token-preparation endpoint
 - [`app/routes/storefront-plain.jsx`](../app/routes/storefront-plain.jsx): standalone HTML and private-call route
 - [`app/lib/storefront.server.js`](../app/lib/storefront.server.js): tokens, Storefront queries, and Cart API actions
+- [`app/lib/delegated-token.server.js`](../app/lib/delegated-token.server.js): delegated-token lifetime, parent generation, and regeneration
 - [`views/storefront.html`](../views/storefront.html): plain HTML UI, direct API calls, and web components
 - [`app/routes/customer-account.login.jsx`](../app/routes/customer-account.login.jsx): Customer Account login start
 - [`app/routes/customer-account.callback.jsx`](../app/routes/customer-account.callback.jsx): code callback

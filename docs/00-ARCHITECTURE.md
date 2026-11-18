@@ -21,7 +21,7 @@ React Router route modules can contain both server and browser code. A route's `
 
 ## First Embedded Access and OAuth
 
-The Admin initially opens the app with a Shopify-signed query. The app verifies that query before trusting `shop`, checks whether the installation belongs to the current app client, and starts OAuth when an Admin API access token is missing or stale.
+The Admin initially opens the app with a Shopify-signed query. The app verifies that query before trusting `shop`, checks the installation, and refreshes an expiring offline token when necessary. Missing, legacy, mismatched, or no-longer-refreshable installations start OAuth.
 
 ```mermaid
 sequenceDiagram
@@ -41,17 +41,63 @@ sequenceDiagram
     Store-->>App: Missing or not owned by current client ID
     App-->>Browser: Redirect to OAuth authorization URL
     Browser->>OAuth: Merchant authorizes requested scopes
-    OAuth-->>Browser: Redirect to /auth/callback with code and HMAC
-    Browser->>App: GET /auth/callback
+    OAuth-->>Browser: Redirect to /callback with code and HMAC
+    Browser->>App: GET /callback
     App->>App: Verify callback HMAC
-    App->>OAuth: Exchange authorization code
-    OAuth-->>App: Admin API access token and granted scopes
-    App->>Store: Store installation securely
+    App->>Store: Acquire per-shop token lock
+    App->>OAuth: Exchange authorization code with expiring=1
+    OAuth-->>App: Access token, refresh token, scopes, both lifetimes
+    App->>Store: Save pair and absolute expiries, then release lock
     App->>OAuth: Resolve the app handle
     App-->>Browser: Redirect to Shopify Admin app URL
 ```
 
 The OAuth access token belongs on the server. App Bridge session tokens are short-lived browser-to-app assertions and are not substitutes for the stored Admin API token.
+
+### Offline Token Refresh Before API Use
+
+[`offline-token.server.js`](../app/lib/offline-token.server.js) centralizes the stored offline token lifecycle. The GraphQL client and authenticated installation helpers obtain fresh installation data through it. Refresh happens on demand, with no cron job or periodic batch. The refresh threshold is five minutes before access-token expiry. An already-expired access token can still be refreshed while its refresh token is valid.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Caller as Authenticated route or server task
+    participant Tokens as Offline token manager
+    participant DB as Installation database
+    participant OAuth as Shopify OAuth
+    participant API as Admin GraphQL API
+
+    Caller->>Tokens: Get offline credentials for shop
+    Tokens->>DB: Read installation and expiry timestamps
+    alt Missing, legacy, other app, or expired refresh token
+        Tokens-->>Caller: Reauthorization required
+        Note over Caller,OAuth: Reopen app in Shopify Admin to restart OAuth
+    else Access token has more than 5 minutes left
+        Tokens-->>Caller: Current access token
+        Caller->>API: Execute API operation once
+    else Access token is near expiry or expired
+        Tokens->>DB: Lock shop and reread current pair
+        alt Another request already refreshed
+            DB-->>Tokens: Fresh pair
+        else Refresh still required
+            Tokens->>OAuth: POST access_token with grant_type=refresh_token
+            OAuth-->>Tokens: New access and refresh tokens with lifetimes
+            Tokens->>DB: Save complete pair, expiries, and generation
+        end
+        Tokens->>DB: Commit and release shop lock
+        Tokens-->>Caller: Fresh access token after persistence
+        Caller->>API: Execute API operation once
+    end
+    API-->>Caller: API result when an operation was sent
+```
+
+Both initial acquisition (`expiring=1`) and refresh use the same per-shop lock, including requests in different Render processes. PostgreSQL and MySQL use transaction row locks (InnoDB is required for MySQL); MongoDB uses a 60-second lease with a unique owner and guarded saves/releases. Lock acquisition waits at most about 15 seconds. OAuth and GraphQL HTTP requests have 12-second timeouts so bounded token/delegation work fits within the lease. An abandoned MongoDB lease can be reclaimed after expiry. All expiry timestamps are calculated from Shopify's returned lifetimes, conservatively measured from request start.
+
+Each successful refresh replaces the stored access/refresh pair before API use. A rejected refresh token (`401` or `invalid_grant`) requires reauthorization. Network failures, rate limits, and upstream server errors leave the stored pair intact for a later request; the server does not blindly retry Admin mutations. A failure after Shopify rotates credentials but before the database saves them can still require reauthorization if a later refresh cannot recover. Keep the installation database available and protected as credential storage.
+
+The signed app entry redirects to OAuth when reauthorization is needed; authenticated API requests report that the app must be reopened. Installations with only an old non-expiring access token follow the same reauthorization path. Refresh tokens also expire, so a shop that remains idle beyond its stored refresh expiry must reconnect. This mechanism is separate from App Bridge's browser session-token renewal and from Customer Account API tokens.
+
+Private Storefront delegation also holds the parent lock while checking or creating a token, bounds its lifetime to the parent's remaining lifetime, and stores the parent's generation. A failed delegated-token operation still commits any successful parent refresh. See [Storefront API](15-storefront.md#delegated-token-lifecycle).
 
 ## Non-embedded Service Connector
 
@@ -129,7 +175,7 @@ sequenceDiagram
     Bridge-->>Browser: Short-lived session token
     Browser->>Endpoint: Request with Authorization: Bearer token
     Endpoint->>Endpoint: Verify JWT signature, audience, destination, and time
-    Endpoint->>Store: Load shop's Admin OAuth token
+    Endpoint->>Store: Load shop's Admin OAuth token and refresh if needed
     Endpoint->>API: GraphQL request with OAuth token
     API-->>Endpoint: GraphQL response
     Endpoint-->>Browser: JSON response
@@ -270,6 +316,8 @@ Render, Node.js, React Router, and MongoDB are this repository's concrete choice
 | Embedded navigation | [`app/AppShell.jsx`](../app/AppShell.jsx) |
 | Initial authentication and OAuth start | [`app/routes/auth.jsx`](../app/routes/auth.jsx) |
 | OAuth callback | [`app/routes/auth.callback.jsx`](../app/routes/auth.callback.jsx) |
+| Offline token acquisition and refresh | [`app/lib/offline-token.server.js`](../app/lib/offline-token.server.js) |
+| Installation storage and per-shop locks | [`app/lib/shop-store.server.js`](../app/lib/shop-store.server.js) |
 | Non-embedded JWT handoff | [`app/routes/auth.jsx`](../app/routes/auth.jsx) and [`app/lib/public-endpoints.server.js`](../app/lib/public-endpoints.server.js) |
 | Embedded and authenticated endpoint helpers | [`app/lib/embedded.server.js`](../app/lib/embedded.server.js) |
 | Session-token verification | [`app/lib/session-token.server.js`](../app/lib/session-token.server.js) |
@@ -281,6 +329,8 @@ Render, Node.js, React Router, and MongoDB are this repository's concrete choice
 
 - [App surfaces](https://shopify.dev/docs/apps/build/app-surfaces)
 - [OAuth authorization code grant](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/authorization-code-grant)
+- [Migrate to expiring offline access tokens](https://shopify.dev/docs/apps/build/authentication-authorization/migrate-to-expiring-offline-access-tokens)
+- [Access token lifetimes and rotation](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens)
 - [Session tokens](https://shopify.dev/docs/apps/build/authentication-authorization/session-tokens)
 - [App Bridge](https://shopify.dev/docs/api/app-bridge-library)
 - [App Bridge Resource Fetching API](https://shopify.dev/docs/api/app-home/apis/authentication-and-data/resource-fetching-api)

@@ -106,6 +106,8 @@ For extensions like Theme App Extensions, Shopify Functions, and Checkout UI Ext
     | `[access.admin].embedded_app_direct_api_access` | `true` | Enables App Bridge Direct API access used by the Admin Link query and the Function, Web Pixel, and post-purchase setup actions. |
     | `[access.admin].direct_api_mode` | `offline` | Gives these Direct API operations app-level offline access. Use `online` when they should instead be evaluated with the current Admin user's access. |
     | `[auth].redirect_urls` | `["YOUR_APP_URL/callback"]` | OAuth callback URL. |
+    | `[network_access].allowed_navigation_hosts` | `["YOUR_APP_HOST"]` | Lowercase host names controlled by your app; no scheme or path. See [Security](#security). |
+    | `[network_access].allowed_sources` | `["YOUR_APP_URL", "https://api.ipify.org", "https://www.google-analytics.com"]` | HTTPS origins used by browser pages and extensions. See [Security](#security). |
     | `[webhooks].api_version` | `SHOPIFY_API_VERSION` | Same value as the environment variable. |
     | `[[webhooks.subscriptions]].uri` | `/webhookcommon` | Shared webhook endpoint for the sample topics and compliance topics. |
     | `[app_proxy].url` | `YOUR_APP_URL/appproxy` | App proxy endpoint. |
@@ -181,6 +183,35 @@ The workflow covers more than Polaris web component conversion. It inventories a
 The skill supports audit, planning, implementation, and migration-review modes. When the user explicitly invokes the skill by name or invocation syntax and implementation requires file changes, it first works on a dedicated migration branch so the current source branch remains untouched. Audit and planning modes do not create a branch. Normal repository work continues to use the current branch unless the prompt explicitly requests a separate branch.
 
 The Shopify AI Toolkit remains the source for supported, surface-specific migrations such as the official [Admin UI extension upgrade to API version 2025-10](https://shopify.dev/docs/apps/build/admin/upgrading-to-2025-10). This repository's skill coordinates those tools with server-side migration decisions and application-wide regression testing.
+
+# Security
+
+Follow Shopify's [app security guide](https://shopify.dev/docs/apps/build/security). This sample implements the items below; it is still a learning sample and does not resolve every finding from a security review.
+
+| Item | Implementation and operation |
+| --- | --- |
+| Expiring offline Admin API tokens | OAuth code exchange requests `expiring=1`. The server stores the access token, refresh token, and absolute expiry timestamps in the installation record. Before server-side Admin API use, it refreshes when five minutes or less remain, including after access-token expiry if the refresh token is valid. Each rotation persists both replacement tokens together. No scheduled batch is required. |
+| Concurrent rotation | OAuth acquisition and refresh use the same per-shop database lock across app processes. PostgreSQL and MySQL use transaction row locks; MySQL requires InnoDB. MongoDB uses a bounded lease with an owner-checked save. The existing `shops.data` JSON structure needs no new SQL columns. |
+| Reauthorization and migration | Installations without refresh/expiry metadata, with another client ID, or with expired/rejected refresh credentials must reopen the app from Shopify Admin for OAuth. Existing non-expiring installations migrate this way. Temporary network, rate-limit, and server failures preserve the stored pair for a later retry; Admin mutations are not automatically replayed. A refresh token can expire during a long idle period; use the expiry returned by Shopify rather than assuming an unlimited lifetime. |
+| Delegated private Storefront tokens | Preparation stores expiry and parent-generation metadata. Private Storefront calls regenerate an existing delegated token when it nears expiry or its parent changes. Its requested lifetime stays below the parent's remaining lifetime. See [Storefront API](./docs/15-storefront.md). |
+| Network domain declarations | The app's `[network_access]` lists app-controlled navigation hosts and browser/extension request origins. Existing UI extensions call the app server's HTTPS domain directly; those requests need that origin in `allowed_sources`. App-level declarations are separate from an extension's `network_access = true` capability. |
+| Admin API IP allowlist | Configure this manually in the [Dev Dashboard IP allowlist](https://shopify.dev/docs/apps/build/dev-dashboard/ip-allowlist), using the hosted service's outbound IP addresses/CIDR ranges. For Render, use the ranges shown under **Connect → Outbound**, including every range used by services or workers that call Admin API. IP rules are not installed by this code. App Bridge `shopify:admin` Direct API access is exempt from this allowlist and remains enabled where configured. |
+
+The local app TOML files are intentionally Git-ignored. Add the following to each app configuration you deploy, replacing the example host and origin with your own values. The three origins correspond to direct app-server requests, the IP-address demonstration, and the GA4 web pixel. Remove a third-party origin if you remove its sample feature. Shopify-hosted assets and store-domain App Proxy URLs do not need entries.
+
+```toml
+[network_access]
+allowed_navigation_hosts = ["your-app.onrender.com"]
+allowed_sources = [
+  "https://your-app.onrender.com",
+  "https://api.ipify.org",
+  "https://www.google-analytics.com",
+]
+```
+
+Validate with `shopify app config validate --json` (add `--config=<name>` for a named app). Publish these declarations with `shopify app deploy` and release the resulting app version; pushing the Node.js server to Render does not publish Shopify app configuration. When the app domain changes, update these entries along with the app URL, callback URLs, and extension backend URLs. See [Declare your app's network access](https://shopify.dev/docs/apps/build/security/storefront/declare-network-access).
+
+The [OAuth architecture and refresh sequence](./docs/00-ARCHITECTURE.md#offline-token-refresh-before-api-use) explains the request-time refresh flow. Run `pnpm test` for offline token-rotation, delegation, locking, and web-pixel regression tests. These tests use simulated Shopify responses and persistence; verify OAuth and the selected database against a development installation before production use.
 
 # Disclaimer
 - This code is fully _unofficial_ and NOT guaranteed to pass [the public app review](https://shopify.dev/apps/store/review) for Shopify app store. The official requirements are described [here](https://shopify.dev/apps/store/requirements). 
