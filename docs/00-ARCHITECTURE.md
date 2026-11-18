@@ -4,20 +4,20 @@ This document explains where each part of the sample runs and how requests move 
 
 ## Runtime Map
 
-| Area | Runs in | Responsibility |
-| --- | --- | --- |
-| React route `loader` and `action` functions | Remote app server | Verify requests, load installation data, call Shopify APIs, and return HTTP responses |
-| React route components and `app/pages/` | Merchant browser | Render the embedded App Home UI and initiate authenticated requests |
-| `app/lib/*.server.js` | Remote app server | OAuth, JWT/HMAC verification, token storage, GraphQL calls, webhook handling, and business logic |
-| `app/utils/` | Merchant browser unless otherwise noted | App Bridge access, session-token fetches, navigation, and browser helpers |
-| App Bridge and Polaris web components | Merchant browser inside Shopify Admin | Embed the app, provide Shopify context, navigation, and Admin UI components |
-| Theme app extension | Online Store theme runtime and storefront browser | Render Liquid blocks and run storefront JavaScript |
-| Checkout, Customer Account, and POS UI extensions | Isolated Shopify-hosted extension sandboxes in the surface's browser or app | Execute bundled JavaScript in Web Worker-based runtimes, communicate through remote-dom, and use target APIs supplied by Shopify |
-| Web Pixel app extension | Strict Web Worker sandbox in the visitor's browser | Subscribe to permitted customer events and send analytics requests without direct DOM access |
-| Shopify Functions | Shopify infrastructure | Run deterministic WebAssembly (Wasm) modules during cart and checkout processing |
-| Post-purchase extension | Shopify-hosted Web Worker-based post-purchase runtime | Render remote UI after checkout and request a signed order change |
+Use this map to find a feature's entry points; the linked guides explain each sample in detail.
 
-React Router route modules can contain both server and browser code. A route's `loader` and `action` execute on the app server, while its default React component and imported page components can be included in the browser bundle. The `.server.js` suffix makes the server-only boundary explicit.
+| Feature | Runs in | Entry points and guides |
+| --- | --- | --- |
+| App Home and navigation | Merchant browser and app server | [Route map](../app/routes.js), [UI pages](../app/pages/), [app shell](../app/AppShell.jsx) |
+| OAuth and token storage | App server | [OAuth](../app/lib/oauth.server.js), [token refresh](../app/lib/offline-token.server.js), [installation storage](../app/lib/shop-store.server.js) |
+| Authenticated Admin API calls | Browser through App Bridge, or app server | [Direct API helper](../app/utils/direct-admin-graphql.js), [server GraphQL client](../app/lib/shopify-graphql.server.js), [session-token guide](01-sessiontoken.md) |
+| Webhooks and App Proxy | App server | [Request handlers](../app/lib/public-endpoints.server.js), [webhook guide](12-eventsubscription.md), [App Proxy example](03-themeapp.md) |
+| Storefront and customer login | Customer browser and app server | [Storefront guide](15-storefront.md) |
+| Order and bulk operations | App server, managed from App Home | [Order management](13-ordermanage.md), [bulk operations](14-bulkoperation.md) |
+| UI, theme, and analytics extensions | Shopify surfaces | [Extension samples](../extensions/), [runtime flow](#storefront-and-ui-extension-runtimes) |
+| Shopify Functions | Shopify infrastructure (Wasm) | [Discount example](../extensions/my-function-discount-ext/), [runtime flow](#shopify-functions-runtime) |
+
+Route `loader` and `action` functions run on the app server; route components and `app/pages/` render in the browser. Keep secrets and database access in `.server.js` modules.
 
 ## First Embedded Access and OAuth
 
@@ -310,24 +310,6 @@ Render, Node.js, React Router, and MongoDB are this repository's concrete choice
 - Implement the OAuth callback and persist installation state safely.
 - Return correct content types, CORS headers, status codes, and response shapes.
 - Treat extension configuration and deployed artifacts as part of the app version.
-
-## Source Map
-
-| Concern | Source |
-| --- | --- |
-| Route definitions | [`app/routes.js`](../app/routes.js) |
-| HTML shell and conditional App Bridge loading | [`app/root.jsx`](../app/root.jsx) |
-| Embedded navigation | [`app/AppShell.jsx`](../app/AppShell.jsx) |
-| Initial authentication and OAuth start | [`app/routes/auth.jsx`](../app/routes/auth.jsx) |
-| OAuth callback | [`app/routes/auth.callback.jsx`](../app/routes/auth.callback.jsx) |
-| Offline token acquisition and refresh | [`app/lib/offline-token.server.js`](../app/lib/offline-token.server.js) |
-| Installation storage and per-shop locks | [`app/lib/shop-store.server.js`](../app/lib/shop-store.server.js) |
-| Non-embedded JWT handoff | [`app/routes/auth.jsx`](../app/routes/auth.jsx) and [`app/lib/public-endpoints.server.js`](../app/lib/public-endpoints.server.js) |
-| Embedded and authenticated endpoint helpers | [`app/lib/embedded.server.js`](../app/lib/embedded.server.js) |
-| Session-token verification | [`app/lib/session-token.server.js`](../app/lib/session-token.server.js) |
-| Browser App Bridge helpers | [`app/utils/app-bridge.js`](../app/utils/app-bridge.js) |
-| Browser Direct Admin API helper | [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js) |
-| Shopify GraphQL client | [`app/lib/shopify-graphql.server.js`](../app/lib/shopify-graphql.server.js) |
 
 ## Official References
 

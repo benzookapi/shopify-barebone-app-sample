@@ -17,34 +17,8 @@ For quick start with automatically generated code, go to the [official CLI tutor
 Even with a scratch-built app, this sample uses [Shopify CLI](https://shopify.dev/docs/api/shopify-cli) to generate, configure, develop, and deploy app [extensions](./extensions/).
 
 # Code structure
-| Area | Source | Role |
-| --- | --- | --- |
-| App server root | [app/](./app/) | React Router route modules, embedded admin UI pages, and server helpers for OAuth, session token validation, Storefront API, Customer Account API, GraphQL calls, and DB access. No Shopify CLI generated app template is used. |
-| HTTP server entry | [server.mjs](./server.mjs) | Thin Express entry that handles the `/postpurchase` and POS `/mocklogin` CORS preflights, plus the authenticated post-purchase extension POST, before delegating all other requests to React Router. |
-| HTML shell | [app/root.jsx](./app/root.jsx) | React Router HTML shell that loads the sample stylesheet, App Bridge, and Polaris web components from Shopify CDN. |
-| Embedded app chrome | [app/AppShell.jsx](./app/AppShell.jsx) | React Router layout route that renders the App Bridge title bar and `<s-app-nav>` sidebar navigation. |
-| Route map | [app/routes.js](./app/routes.js) | Central React Router route definition. |
-| HTTP route modules | [app/routes/](./app/routes/) | Thin HTTP entry points. UI routes render pages, selected resource routes ending in `.json` return JSON for authenticated App Bridge fetches, and public routes handle webhooks, app proxy, and callbacks. Simple embedded Admin API operations use Direct API access instead of resource routes. |
-| Embedded UI pages | [app/pages/](./app/pages/) | Admin UI samples written directly with Polaris web components such as `<s-page>`, `<s-section>`, and `<s-button>`. |
-| Server helpers | [app/lib/](./app/lib/) | Server-side Shopify logic grouped by topic, including OAuth, iframe protection, token validation, Admin GraphQL, Storefront API, Customer Account API, and DB access. |
-| Browser helpers | [app/utils/](./app/utils/) | Browser-side App Bridge, Direct Admin API, and URL helpers used by the embedded UI pages. |
-| Static app assets | [app/assets/](./app/assets/) | Static source assets imported by route modules, such as the bulk operation sample JSONL files. |
-| Global stylesheet | [app/styles.css](./app/styles.css) | Minimal shared stylesheet and a small example of using React Router stylesheet links. |
-| Plain storefront view | [views/storefront.html](./views/storefront.html) | Plain custom storefront sample rendered by [app/routes/storefront-plain.jsx](./app/routes/storefront-plain.jsx) using Storefront API Cart API, tokenless access, Storefront Web Components product tiles, and Customer Account API login. |
-| Build and runtime config | [package.json](./package.json), [vite.config.js](./vite.config.js), [react-router.config.js](./react-router.config.js) | pnpm scripts, React Router build tooling, Vite plugin setup, and server bundle configuration. |
-| App extensions root | [extensions/](./extensions/) | Shopify CLI generated extension samples and configuration. These are deployed with `shopify app deploy`. |
-| Admin link extensions | [extensions/my-admin-link-product-details/](./extensions/my-admin-link-product-details/), [extensions/my-admin-link-order-details/](./extensions/my-admin-link-order-details/) | Admin link extension samples that deep-link into this app's embedded pages. |
-| Checkout and customer account extensions | [extensions/my-checkout-ui-ext/](./extensions/my-checkout-ui-ext/), [extensions/my-checkout-ui-ext-2/](./extensions/my-checkout-ui-ext-2/), [extensions/my-checkout-ui-ext-3/](./extensions/my-checkout-ui-ext-3/), [extensions/my-customer-account-ui-ext/](./extensions/my-customer-account-ui-ext/) | Preact and Polaris web component samples for checkout behavior and order-based Customer Account upsells with Storefront API cart creation. |
-| Function extensions | [extensions/my-function-discount-ext/](./extensions/my-function-discount-ext/), [extensions/my-function-shipping-ext/](./extensions/my-function-shipping-ext/), [extensions/my-function-payment-ext/](./extensions/my-function-payment-ext/), [extensions/my-function-cart-ext/](./extensions/my-function-cart-ext/) | Discount, Delivery Customization, Payment Customization, and Cart Transform Functions written in Rust/Wasm. The Discount and Cart Transform samples share a configurable Customer metafield: the former applies a percentage discount, while the latter increases eligible cart line prices by the same percentage. |
-| Theme, web pixel, POS, and post-purchase extensions | [extensions/my-theme-app-ext/](./extensions/my-theme-app-ext/), [extensions/my-web-pixel-ext/](./extensions/my-web-pixel-ext/), [extensions/my-pos-ui-ext/](./extensions/my-pos-ui-ext/), [extensions/my-post-purchase-ext/](./extensions/my-post-purchase-ext/) | Additional extension samples that use Shopify CLI extension structure. The POS sample uses Preact with Polaris web components; post-purchase retains its dedicated React library. |
 
-[React Router](https://reactrouter.com/), [React](https://react.dev/) ([JSX](https://react.dev/learn/writing-markup-with-jsx), [Props](https://react.dev/learn/passing-props-to-a-component), [State](https://react.dev/learn/state-a-components-memory), [Hooks](https://react.dev/reference/react/hooks), etc.), [Preact](https://preactjs.com/), [Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components), [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers), [Wasm (WebAssembly)](https://webassembly.org/), and [GraphQL](https://graphql.org/) ([Query](https://graphql.org/learn/queries/), [Edges](https://graphql.org/learn/pagination/#pagination-and-edges), [Union](https://graphql.org/learn/schema/#union-types), etc.) are used across this sample.
-
-For creating the embedded app UI, the following contents might help you.
-- [App Bridge APIs](https://shopify.dev/docs/api/app-home)
-- [Polaris web components](https://shopify.dev/docs/api/app-home/web-components)
-
-For extensions like Theme App Extensions, Shopify Functions, and Checkout UI Extensions, refer to the [App extensions](https://shopify.dev/docs/apps/build/app-extensions) and [List of app extensions](https://shopify.dev/docs/apps/build/app-extensions/list-of-app-extensions).
+See the [architecture guide](./docs/00-ARCHITECTURE.md#runtime-map) for the runtime overview, key source files, and feature guides.
 
 # How to run
 0. Create your Shopify partner account from [here](https://www.shopify.com/partners) and create a Shopify app **manually** (not choosing Shopify CLI) in the app menu of [your dev. dashboard](https://dev.shopify.com/dashboard). Also, [create a development store](https://shopify.dev/docs/api/development-stores#create-a-development-store-to-test-your-app) to install this app too. If you want to customize this sample code, don't forget to clone (fork) this repository to make your own one.
