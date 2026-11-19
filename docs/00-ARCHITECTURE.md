@@ -1,6 +1,6 @@
 # Application Architecture
 
-This document explains where each part of the sample runs and how requests move between Shopify, the browser, the app server, and deployed extensions. The sample uses Node.js, React Router, and Render, but the security and protocol boundaries apply equally to apps written in other languages or hosted elsewhere.
+Request flows and runtime boundaries for this Node.js / React Router sample, hosted on Render. The same authentication boundaries apply to other stacks.
 
 ## Runtime Map
 
@@ -21,7 +21,7 @@ Route `loader` and `action` functions run on the app server; route components an
 
 ## First Embedded Access and OAuth
 
-The Admin initially opens the app with a Shopify-signed query. The app verifies that query before trusting `shop`, checks the installation, and refreshes an expiring offline token when necessary. Missing, legacy, mismatched, or no-longer-refreshable installations start OAuth.
+The app verifies Shopify's signed entry request before trusting the shop. Missing, legacy, mismatched, or unrefreshable installations start OAuth.
 
 ```mermaid
 sequenceDiagram
@@ -52,11 +52,11 @@ sequenceDiagram
     App-->>Browser: Redirect to Shopify Admin app URL
 ```
 
-The OAuth access token belongs on the server. App Bridge session tokens are short-lived browser-to-app assertions and are not substitutes for the stored Admin API token.
+Keep Admin OAuth credentials on the server. App Bridge session tokens authenticate browser-to-app requests separately.
 
 ### Offline Token Refresh Before API Use
 
-[`offline-token.server.js`](../app/lib/offline-token.server.js) centralizes the stored offline token lifecycle. The GraphQL client and authenticated installation helpers obtain fresh installation data through it. [Token refresh](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-refresh) happens on demand, with no cron job or periodic batch. The refresh threshold is five minutes before access-token expiry. An already-expired access token can still be refreshed while its refresh token is valid.
+[Token refresh](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-refresh) runs on demand when five minutes or less remain; no periodic batch is needed. An expired access token can still be refreshed while its refresh token is valid.
 
 ```mermaid
 sequenceDiagram
@@ -91,9 +91,9 @@ sequenceDiagram
     API-->>Caller: API result when an operation was sent
 ```
 
-- Serialize token acquisition and refresh per shop, and save each new access/refresh pair with its expiry times before API use.
-- If the refresh token expires or is rejected, reopen the app to reauthorize.
-- On temporary failures, retain stored credentials and retry later; do not automatically replay Admin API mutations.
+- Serialize acquisition/refresh per shop and save the new token pair before API use.
+- Reopen the app for OAuth if refresh expires or is rejected.
+- Preserve credentials on temporary failures; do not automatically replay Admin mutations.
 
 ### Related Credentials: Application-only and CLI Automation Tokens
 
@@ -105,7 +105,7 @@ sequenceDiagram
 
 ## Non-embedded Service Connector
 
-When the app configuration uses `embedded = false`, Shopify opens App Home as a top-level external page instead of inside the Admin iframe. App Bridge and its session-token API are unavailable in that page, so this sample verifies the signed Shopify entry request, completes OAuth if necessary, and then issues a separate short-lived JWT owned by the app. The JWT carries the verified shop identity to the dummy external service page.
+Set `embedded = false` to open App Home outside the Admin iframe. App Bridge is unavailable, so the server verifies Shopify's signed entry, completes OAuth, and passes a short-lived app JWT to `/mocklogin`.
 
 ```mermaid
 sequenceDiagram
@@ -140,26 +140,24 @@ sequenceDiagram
     Service-->>Merchant: Render demo login page with app JWT and stored access token
 ```
 
-The sample hosts `/mocklogin` on the same server, but it represents a separate external system in this architecture. The app-owned JWT is not a Shopify session token and cannot itself be used as an Admin API access token. A production connector should use the verified shop to establish its own server-side session, keep the handoff token short-lived and single-purpose, and avoid retaining it in URLs or logs. This differs from the embedded Session Token page's connector demonstration, where App Bridge supplies a Shopify-signed session token before opening the external page.
+The [entry route](../app/routes/auth.jsx) and [mock login handler](../app/lib/public-endpoints.server.js) simulate an external service. The app JWT is neither a Shopify session token nor an Admin API token. Use the verified shop to establish the service's own session; avoid retaining handoff tokens in URLs or logs.
 
-For learning purposes, the `my_token` path verifies the app JWT's signature and expiry, derives the shop from its signed payload, and reads the current app's installation record from the database. Below the JWT, the page displays the stored Admin OAuth access token and explains that it is used for server-side Admin API calls. An unsigned `shop` query parameter cannot select the record. Invalid JWTs and missing or mismatched installations are rejected. The session-token connector and POS print paths also display the stored token after authenticating the request and resolving its shop.
+**Test stores only:** This demo exposes the stored Admin token after authenticating the app JWT or Shopify session token, including on POS printouts. Remove the display in production and do not share pages, URLs, or printouts.
 
-**Test stores only:** Admin OAuth access tokens are secrets. This page intentionally reveals the token to the holder of a valid app JWT or Shopify session token, including in POS printouts. Don't share the page, its URL, or its printed output. Responses are not cacheable and suppress referrer information. The app-JWT response also disallows framing and omits the cross-origin read permission required by POS printing. These controls don't make a displayed or printed token safe for production: remove this display and keep the token server-side in a real service connector.
+For non-embedded mode, change Admin Link `app://` destinations to absolute HTTPS URLs. The embedded alternative uses the Session Token page's **Connect to your service with the session token** button. See the [connector demo](../../../wiki#for-external-service-connection).
 
 ### Linking a Shopify Shop to an External Service User
 
-For a public app whose external service requires its own user account, treat the connector as an installation and onboarding handoff rather than a recurring login dependency:
+1. Hand off a signed, short-lived, single-purpose token containing the verified shop. Validate signature, expiry, issuer/audience, and one-time use in the external service.
+2. After external login, persist the user-to-shop association. Support multiple shops where needed and resolve later visits from that association.
+3. Offer reconnect/disconnect controls and remove or disable links on uninstall.
+4. Keep account linking in installation/onboarding. Follow Shopify's [sign-up guidance](https://shopify.dev/docs/apps/build/integrating-with-shopify#enable-seamless-sign-up-based-on-shopify-credentials) and [installation requirements](https://shopify.dev/docs/apps/launch/shopify-app-store/app-store-requirements#2-installation-and-setup).
 
-1. After verifying the Shopify entry request and completing OAuth, send the external login page a short-lived app-signed JWT containing the canonical `*.myshopify.com` shop domain. Sign the JWT with a server-held secret or private key; do not merely encode the shop in an unsigned token. Before trusting it, verify its signature, expiry, intended issuer and audience, purpose, and one-time identifier.
-2. When the external service user signs in, or when an existing service session is already authenticated, store the association between the external user ID and the verified shop domain in the service database. Use a one-to-many or many-to-many relationship if one user can manage multiple shops.
-3. On later visits or logins, resolve the user's linked shops from that stored association. The user should not need to return to Shopify App Home merely to identify the shop again. Provide explicit reconnect and disconnect controls, and disable or remove the association when the app is uninstalled.
-4. Keep the initial account connection available from the Shopify installation or in-admin onboarding flow. Shopify expects self-service apps to support seamless sign-up with Shopify credentials. When a business-to-business service legitimately requires existing external credentials, the first in-admin onboarding step must let the merchant link the current shop to those credentials. Review Shopify's [seamless sign-up and external account guidance](https://shopify.dev/docs/apps/build/integrating-with-shopify#enable-seamless-sign-up-based-on-shopify-credentials) and [App Store installation and setup requirements](https://shopify.dev/docs/apps/launch/shopify-app-store/app-store-requirements#2-installation-and-setup).
-
-A fully non-embedded Admin app cannot meet the current Built for Shopify requirements for an embedded, App Bridge-integrated merchant experience. A public Service Connector can still be distributed through the Shopify App Store if it meets the applicable App Store requirements, but it should not be expected to receive Built for Shopify status while its primary Admin experience remains non-embedded. See the [Built for Shopify requirements](https://shopify.dev/docs/apps/launch/built-for-shopify/requirements).
+A non-embedded service connector may qualify for App Store distribution, but not [Built for Shopify](https://shopify.dev/docs/apps/launch/built-for-shopify/requirements) while its primary Admin experience remains non-embedded.
 
 ## Normal Embedded Page and Server-backed API Request
 
-After installation, the signed initial page request establishes the embedded document. Browser-side code then obtains a fresh App Bridge token for each protected app-server request. This flow remains in use when a feature needs application secrets, stored installation data, external integrations, or server-side orchestration.
+Use this path for operations needing app secrets, stored data, external integrations, or server orchestration.
 
 ```mermaid
 sequenceDiagram
@@ -185,15 +183,13 @@ sequenceDiagram
     Endpoint-->>Browser: JSON response
 ```
 
-The initial HMAC and later JWT solve different problems:
-
-- The query HMAC protects the server-rendered entry request from forged Shopify parameters.
-- The session-token JWT authenticates a browser or extension request to the app server.
-- The offline Admin OAuth token authorizes the app server to call the Admin API for that shop.
+- Query HMAC: verifies the initial Shopify entry.
+- Session JWT: authenticates browser/extension requests to the app server.
+- Offline OAuth token: authorizes server-to-Admin API calls.
 
 ## Direct Admin API Request
 
-The Admin Link product query and the merchant-triggered Function, Web Pixel, and post-purchase setup operations use the App Bridge Resource Fetching API and the [`shopify:admin`](https://shopify.dev/docs/api/app-home/apis/authentication-and-data/resource-fetching-api) URL scheme. Shopify authenticates these GraphQL requests without sending them through the app server. The deployed app configuration must enable Direct API access and declare the required Admin API scopes.
+Admin Link queries and merchant-triggered Function, Web Pixel, and post-purchase setup use [`shopify:admin`](https://shopify.dev/docs/api/app-home/apis/authentication-and-data/resource-fetching-api) through App Bridge. Enable Direct API access and the required scopes in the deployed app TOML.
 
 ```mermaid
 sequenceDiagram
@@ -208,7 +204,7 @@ sequenceDiagram
     Bridge-->>Browser: GraphQL JSON response
 ```
 
-This flow does not expose an Admin access token to the browser. It removes the need for one-purpose app-server endpoints for these operations, but it does not replace server routes used by OAuth, the non-embedded Service Connector, App Proxy, webhooks, Storefront token management, post-purchase runtime processing, POS printing, or other backend-dependent samples.
+No Admin token is exposed to the browser. Backend-dependent features, including OAuth, webhooks, and signing, still need server routes.
 
 ## Browser and Server Module Boundaries
 
@@ -244,7 +240,7 @@ Do not import secrets or server-only modules into page components. Environment v
 
 ## Storefront and UI Extension Runtimes
 
-Theme, Web Pixel, Checkout UI, Customer Account UI, and POS UI extensions are delivered by Shopify and run on their target surfaces. They do not execute inside the Render process, although selected extensions can call the app server over HTTPS. UI extensions execute in isolated Web Worker-based sandboxes and describe UI through remote-dom rather than directly controlling the host DOM. App Web Pixels run in a strict Web Worker sandbox with no direct DOM access.
+Extensions run on their Shopify surfaces, outside the app-server process. UI extensions and app Web Pixels use isolated Worker runtimes without host DOM access; theme code runs on the storefront.
 
 ```mermaid
 sequenceDiagram
@@ -269,11 +265,11 @@ sequenceDiagram
     Runtime-->>Surface: Render web components or perform target action
 ```
 
-Capabilities such as network access, Storefront API access, metafield access, and buyer-journey blocking must be declared in each extension's configuration. Browser or Worker requests can trigger an `OPTIONS` preflight, which the server must answer before routing the actual request. Each placed extension block is an isolated runtime instance, so in-memory state and side effects must not assume one global singleton.
+Declare required capabilities and metafields in each extension's TOML. External requests need CORS preflight support. Each placed block has isolated state; do not assume one global instance.
 
 ## Shopify Functions Runtime
 
-The management UI registers a Function and its configuration through the Admin API. The Rust source is compiled to a WebAssembly (Wasm) module when the extension is built and deployed. Later, Shopify invokes that module directly while evaluating a cart or checkout; the remote app server is not in that execution path.
+The browser registers configuration through Admin API. Shopify later executes the deployed Rust/Wasm Function during cart or checkout processing.
 
 ```mermaid
 sequenceDiagram
@@ -298,18 +294,11 @@ sequenceDiagram
     Checkout->>Checkout: Apply allowed operations
 ```
 
-Functions must be deterministic and use only the input declared by their input query. They must comply with Shopify's Wasm ABI and resource limits. Logging, arbitrary network calls unless explicitly supported by that Function API, and reading the app database are not part of the normal runtime path.
+Use the declared input and follow the Function API's Wasm/resource limits. The app database and arbitrary network access are unavailable unless explicitly supported.
 
 ## Infrastructure Independence
 
-Render, Node.js, React Router, and MongoDB are this repository's concrete choices. Another implementation can replace all of them if it preserves the same contracts:
-
-- Verify Shopify HMAC signatures before trusting signed query strings or webhook bodies.
-- Verify session-token JWTs and bind them to the expected app client and shop.
-- Keep Admin and private Storefront access tokens on a trusted server.
-- Implement the OAuth callback and persist installation state safely.
-- Return correct content types, CORS headers, status codes, and response shapes.
-- Treat extension configuration and deployed artifacts as part of the app version.
+Other languages and hosts can use the same design: verify HMAC/JWTs, protect server credentials and installation state, preserve HTTP/CORS contracts, and deploy app configuration with its extensions.
 
 ## Official References
 

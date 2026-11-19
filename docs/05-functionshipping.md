@@ -2,13 +2,7 @@
 
 ## Purpose
 
-The `/functionshipping` sample registers a Delivery Customization Function. When the checkout destination contains the configured postal code, the Function keeps the configured delivery-rate title and hides the other delivery options.
-
-## Runtime Locations
-
-- The merchant configures the sample in the embedded browser.
-- App Bridge Direct API access creates the delivery customization through Admin GraphQL without an app-server API route.
-- Shopify executes the Rust/Wasm Function while calculating checkout delivery options.
+The `/functionshipping` sample keeps one delivery-rate title and hides other options when the destination matches a configured postal code.
 
 ## Registration and Execution
 
@@ -37,35 +31,22 @@ sequenceDiagram
 
 ## How It Works
 
-The app registers `my-function-shipping-ext` and stores `{zip, rate}` in `barebone_app_function_shipping.filter`. Its input query asks Shopify for delivery addresses, delivery option handles and titles, and the customization metafield.
+The registration form stores the postal code and rate title. If any delivery group matches, the Function hides options with other titles. It does not create shipping rates.
 
-If any delivery group has the configured postal code, the Function creates hide operations for options whose titles do not equal the configured title. Returning no operations leaves Shopify's original delivery options unchanged.
+Registration uses [App Bridge Direct API access](00-ARCHITECTURE.md#direct-admin-api-request); checkout executes the deployed Wasm on Shopify, without calling the app server.
 
 ## Common Pitfalls
 
-- The configured string must match the delivery option title Shopify provides at runtime.
-- Postal-code formats vary by market. Production code should define normalization and matching rules explicitly.
-- Hiding the wrong side of the comparison reverses the behavior. The sample hides nonmatching handles, not the configured option.
-- A delivery option must exist before a customization can retain it; this Function does not create shipping rates.
-- Checkout invokes the Function whenever relevant inputs change, not only after a customer visits the cart page.
-- Direct API registration requires an embedded App Bridge context and the app's configured Direct API access and Admin scopes.
-
-## Key Terms
-
-| Term | Meaning |
-| --- | --- |
-| Delivery customization | An Admin resource that activates a delivery customization Function and stores its settings |
-| Delivery group | A set of cart lines and delivery options for one delivery destination |
-| Delivery option handle | Runtime identifier used in hide operations |
-| Rate title | Buyer-visible delivery option name used by this sample's matching rule |
+- Registration requires an embedded app, deployed Direct API configuration, and the required Admin scopes.
+- Match Shopify's runtime rate title exactly and define postal-code normalization for each market.
+- Ensure the rate you want to keep exists; test destinations with multiple delivery groups.
+- Checkout can rerun the Function whenever relevant inputs change.
 
 ## Source Map
 
-- [`app/pages/FunctionShipping.jsx`](../app/pages/FunctionShipping.jsx): configuration UI and [`deliveryCustomizationCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/deliveryCustomizationCreate) mutation
-- [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js): shared App Bridge Direct API client
-- [`extensions/my-function-shipping-ext/src/cart_delivery_options_transform_run.graphql`](../extensions/my-function-shipping-ext/src/cart_delivery_options_transform_run.graphql): runtime input
-- [`extensions/my-function-shipping-ext/src/cart_delivery_options_transform_run.rs`](../extensions/my-function-shipping-ext/src/cart_delivery_options_transform_run.rs): filtering logic and tests
-- [`extensions/my-function-shipping-ext/shopify.extension.toml`](../extensions/my-function-shipping-ext/shopify.extension.toml): Function target configuration
+- [Registration UI](../app/pages/FunctionShipping.jsx)
+- [Function input](../extensions/my-function-shipping-ext/src/cart_delivery_options_transform_run.graphql)
+- [Rust logic and tests](../extensions/my-function-shipping-ext/src/cart_delivery_options_transform_run.rs)
 
 ## Official Shopify References
 

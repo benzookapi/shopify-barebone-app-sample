@@ -2,15 +2,7 @@
 
 ## Purpose
 
-The `/sessiontoken` sample demonstrates how an embedded browser proves its current Shopify identity to the app server. It also contrasts that short-lived proof with the separately expiring offline Admin OAuth token and refresh token stored by the server.
-
-For the shared embedded-app entry flow, see [Application Architecture](00-ARCHITECTURE.md).
-
-## Runtime Locations
-
-- App Bridge obtains a session token in the embedded browser.
-- The app server verifies the JWT and reads the installation record.
-- Shopify issues both the session token and the OAuth access token, but they authorize different hops.
+The `/sessiontoken` sample authenticates browser-to-app requests with an App Bridge session token. Server-to-Admin API calls use a separate offline OAuth token; see the [architecture guide](00-ARCHITECTURE.md).
 
 ## Request Sequence
 
@@ -40,39 +32,26 @@ sequenceDiagram
 
 ## How It Works
 
-`authenticatedFetch()` obtains a fresh token from [`window.shopify.idToken()`](https://shopify.dev/docs/api/app-bridge-library/apis/id-token) and sends it as a Bearer token. `requireAuthenticatedShop()` verifies that token, derives the shop from its destination claim, and rejects installations that are missing or belong to a different app client. It then obtains fresh offline credentials, rotating the stored pair when five minutes or less remain. Missing expiry metadata or an expired/rejected refresh token requires reopening the app for OAuth. This request-time refresh does not use the browser session token as an Admin credential. See the [offline refresh sequence](00-ARCHITECTURE.md#offline-token-refresh-before-api-use).
+`authenticatedFetch()` gets a fresh token from [`shopify.idToken()`](https://shopify.dev/docs/api/app-bridge-library/apis/id-token) and sends it as a Bearer token. The server verifies it before loading the shop's installation and [refreshing offline credentials](00-ARCHITECTURE.md#offline-token-refresh-before-api-use).
 
-The sample also exposes `/mocklogin` to demonstrate a service-connector pattern. The embedded app can pass a session token to that endpoint, and the server can use the verified shop identity to issue its own service-specific login or JWT. In production, avoid putting reusable credentials in URLs because URLs can appear in history and logs.
+The `/mocklogin` demo accepts a Shopify session token or the [non-embedded connector's app JWT](00-ARCHITECTURE.md#non-embedded-service-connector).
 
-The separate [non-embedded Service Connector](00-ARCHITECTURE.md#non-embedded-service-connector) opens `/mocklogin` with an app-owned `my_token` JWT. Both that path and the Shopify session-token path display the database's Admin OAuth access token with a server-side usage explanation, including in POS printouts. The session-token path validates the HS256 signature, audience, expiry, and not-before claims before reading the installation. The shop comes from the verified token, not an unsigned `shop` parameter, and the installation must belong to the current app. This credential display is for test stores only; keep Admin tokens server-side in production.
+> **Test stores only:** `/mocklogin` and POS printouts expose the stored Admin token after authentication. Remove that display in production; do not share the page, URL, or printout.
 
 ## Common Pitfalls
 
-- A session token is not an Admin API access token. Sending it to Admin GraphQL will fail.
-- Session tokens expire quickly. Get a new token immediately before each app-server request.
-- Decoding a JWT is not verification. Validate its signature, audience, destination, and time claims on the server.
-- Do not trust a browser-provided `shop` value independently of the verified token.
-- An OAuth token from an earlier app client ID must not be reused after the app credentials change.
-
-## Key Terms
-
-| Term | Meaning |
-| --- | --- |
-| Session token | A short-lived JWT issued for the current embedded app user and shop |
-| ID token | The App Bridge method name used by this sample to obtain the session token |
-| Offline Admin token | A server-held OAuth token used to call Admin APIs without depending on one browser session |
-| Bearer token | The HTTP `Authorization` scheme used for browser-to-app authentication |
-| `dest` claim | The JWT claim identifying the Shopify shop for which the token was issued |
+- Session tokens authenticate app-server requests; they cannot call Admin GraphQL.
+- Get a fresh session token before each request.
+- Verify JWT signature, audience, destination, and time claims. Derive the shop from the verified token.
+- Reauthorize when the app client changes or offline refresh is no longer possible.
+- URL tokens can leak through browser history and logs; avoid reusable credentials in URLs.
 
 ## Source Map
 
-- [`app/pages/SessionToken.jsx`](../app/pages/SessionToken.jsx): browser UI and sample requests
-- [`app/routes/sessiontoken.jsx`](../app/routes/sessiontoken.jsx): embedded page loader
-- [`app/routes/authenticated.jsx`](../app/routes/authenticated.jsx): protected demonstration endpoint
-- [`app/routes/mocklogin.jsx`](../app/routes/mocklogin.jsx): external service login demonstration
-- [`app/utils/app-bridge.js`](../app/utils/app-bridge.js): App Bridge token and authenticated fetch helpers
-- [`app/lib/session-token.server.js`](../app/lib/session-token.server.js): server verification and installation lookup
-- [`app/lib/shopify-auth.server.js`](../app/lib/shopify-auth.server.js): JWT and shop helpers
+- [Demo UI](../app/pages/SessionToken.jsx)
+- [Browser token and fetch helpers](../app/utils/app-bridge.js)
+- [Server verification](../app/lib/session-token.server.js)
+- [Service connector handler](../app/lib/public-endpoints.server.js)
 
 ## Official Shopify References
 

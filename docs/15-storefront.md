@@ -2,16 +2,7 @@
 
 ## Purpose
 
-The `/storefront` management page prepares Storefront API access, accepts an optional Customer Account API Client ID, and opens a standalone plain HTML storefront laboratory. The laboratory compares tokenless browser access, public Storefront token access, and server-side delegated private token access while exercising product queries, Cart API mutations, Storefront Web Components, and Customer Account API login.
-
-## Runtime Locations
-
-- The embedded management page creates tokens through the Admin API.
-- The Customer Account API Client ID is entered in the management page and passed to the standalone page through its URL, without saving an app setting.
-- `views/storefront.html` runs as a standalone browser page without App Bridge or the embedded App shell.
-- Tokenless and public-token GraphQL calls go directly from the browser to Storefront API.
-- Private delegated-token calls go through `/storefront/plain`; the token stays on the app server.
-- Customer Account API discovery, PKCE callback exchange, and session storage run on the app server.
+The `/storefront` sample opens a plain HTML storefront comparing tokenless, public-token, and server-side private-token access. It includes cart operations, Storefront Web Components, and optional Customer Account API login.
 
 ## Access Preparation
 
@@ -40,9 +31,9 @@ sequenceDiagram
 
 ### Delegated Token Lifecycle
 
-Delegated private tokens cannot outlive their parent Admin token. [`delegated-token.server.js`](../app/lib/delegated-token.server.js) limits the requested lifetime to the smaller of 24 hours or the parent's remaining seconds minus a 60-second margin. It stores `expires_at` and `parent_token_generation` with the token in the existing shop metafield.
+Private tokens cannot outlive the parent Admin token. The server refreshes the parent when needed and regenerates delegated tokens near expiry or when the parent changes, under a per-shop lock. Run **Prepare Storefront access** once before using this mode.
 
-Before a private Storefront action, the server refreshes the offline parent if necessary, then checks the metafield under the same per-shop lock used for OAuth rotation. An existing delegated token is regenerated when it has one minute or less remaining, lacks the new metadata, or belongs to an earlier parent generation. This also serializes simultaneous regeneration across server processes. A shop without the metafield must still run **Prepare Storefront access** first. Private tokens remain server-side, and cart mutations are sent once rather than automatically replayed on failure. See the [offline refresh sequence](00-ARCHITECTURE.md#offline-token-refresh-before-api-use).
+See the [offline refresh sequence](00-ARCHITECTURE.md#offline-token-refresh-before-api-use) and [delegated-token helper](../app/lib/delegated-token.server.js).
 
 ## Product and Cart Sequence
 
@@ -107,55 +98,30 @@ sequenceDiagram
 
 ## How It Works
 
-The plain page defaults to public-token mode because password-protected development storefronts can reject tokenless catalog access with `Online Store channel is locked`. Public tokens are designed for browser use. Delegated private tokens are kept in a shop metafield accessible only to the server and are never injected into HTML.
+The page defaults to public-token mode because password-protected development stores can reject tokenless access. Private calls stay on the app server. Product tiles use [Storefront Web Components](https://shopify.dev/docs/api/storefront-web-components); cart actions use explicit GraphQL mutations.
 
-The Cart API flow lets the user select one of ten products, create a cart, update buyer identity, add an editable delivery address, and choose a returned delivery option. The response's `checkoutUrl` is rendered as a link. A second link appends `sso=silent`, which asks checkout to use an active Customer Accounts browser session when available; this is independent of the cart's stored buyer identity.
+To enable customer login:
 
-Product tiles combine the explicit Storefront GraphQL response with Storefront Web Components. [`shopify-context`](https://shopify.dev/docs/api/storefront-web-components/components/shopify-context) establishes product context, [`shopify-data`](https://shopify.dev/docs/api/storefront-web-components/components/shopify-data) renders fields, [`shopify-media`](https://shopify.dev/docs/api/storefront-web-components/components/shopify-media) renders media, and [`shopify-money`](https://shopify.dev/docs/api/storefront-web-components/components/shopify-money) formats money. These components complement rather than replace the sample's hand-written Cart API mutations.
+1. Open **Headless** from the management page and create a storefront with a public Customer Account API client.
+2. Register the displayed `/customer-account/callback` URL and JavaScript origin in that client's settings.
+3. Enter its Client ID in the management page. This is separate from the app API key; it is passed in the page URL and must be re-entered after reload. No environment-variable fallback is used.
 
-For Customer Account API setup, use the management page's **Headless** link to open `https://admin.shopify.com/store/{store-handle}/headless` for the current store. Create a storefront, open its Customer Account API settings, and use a public client. Enter its Client ID in this app's **Customer Account API client ID** field. In the same Headless storefront settings, register the app's `/customer-account/callback` URL as an allowed callback URL and the app's origin as a JavaScript origin; the management page displays both values. See the [official setup guide](https://shopify.dev/docs/storefronts/headless/building-with-the-customer-account-api/getting-started).
-
-The Client ID identifies the headless customer-account integration and is separate from the app's Shopify API key and the Storefront access tokens. Token preparation doesn't generate it. The management page passes the entered value as `customer_account_client_id` in the standalone page URL. It isn't saved in a database or browser storage, and there is no environment-variable fallback; re-enter it after reloading the management page. Omitting it disables customer login but leaves the product and cart examples available.
-
-The Customer Account API uses OpenID Connect discovery and authorization code flow with PKCE. The login request carries the entered Client ID, which the server temporarily retains with the pending OAuth state, PKCE verifier, and return URL. The callback consumes that state and uses the same Client ID for token exchange, keeping concurrent login requests independent. Unused pending state expires after ten minutes. The server stores the resulting customer access token behind an HttpOnly session cookie, then uses it only when the user explicitly applies the logged-in identity to a cart.
+The server handles PKCE/OIDC login and stores customer credentials behind an HttpOnly session cookie. Apply the logged-in identity to the cart explicitly; login alone does not update it. Without a Client ID, product and cart samples still work. See the [official setup guide](https://shopify.dev/docs/storefronts/headless/building-with-the-customer-account-api/getting-started).
 
 ## Common Pitfalls
 
-- Tokenless access can fail while the Online Store password is enabled; this does not prove the query is malformed.
-- A public Storefront token must be created before public-token mode can work.
-- Enter a Customer Account API Client ID for the same store as the plain storefront page, and register the displayed callback URL in that client's Headless settings. The former Customer Account Client ID environment variables are no longer read.
-- Never expose a private delegated token in HTML, JavaScript, query strings, or browser storage.
-- A Customer Account API authorization code has a different token prefix and purpose from its access token. Exchange the code before querying the profile.
-- Customer Account API authorization headers and token formats must follow that API's specification; do not reuse Admin OAuth conventions.
-- Login alone does not mutate an existing cart. Call [`cartBuyerIdentityUpdate`](https://shopify.dev/docs/api/storefront/unstable/mutations/cartBuyerIdentityUpdate) with the customer access token.
-- Cart delivery options can change after identity or address updates. Render the latest options rather than assuming the first option.
-- Market context such as country and language affects catalog, price, and delivery results.
-
-## Key Terms
-
-| Term | Meaning |
-| --- | --- |
-| Tokenless access | Supported Storefront API operations sent without an access-token header |
-| Public Storefront token | Browser-safe token created for Storefront API access |
-| Delegated private token | Server-only Storefront token with delegated scopes |
-| Cart buyer identity | Email, country, company, or customer token associated with a cart |
-| PKCE | Authorization-code protection using a verifier and derived challenge |
-| Customer Account client ID | Identifier for the headless Customer Account API integration, separate from the app API key |
-| Storefront Web Components | Shopify HTML custom elements that fetch and render storefront commerce data |
+- Run **Prepare Storefront access** before token-based calls. An Online Store password can block tokenless access.
+- Keep private tokens out of HTML, URLs, JavaScript, and browser storage.
+- Use a Customer Account API client for the same store and its own token/header conventions, not Admin OAuth conventions.
+- Refresh cart delivery choices after buyer identity or address changes; country and language affect results.
+- The `sso=silent` checkout link uses an existing Customer Accounts browser session independently of the cart's stored buyer identity.
 
 ## Source Map
 
-- [`app/pages/Storefront.jsx`](../app/pages/Storefront.jsx): token preparation and standalone-page link
-- [`app/routes/storefront-json.jsx`](../app/routes/storefront-json.jsx): authenticated token-preparation endpoint
-- [`app/routes/storefront-plain.jsx`](../app/routes/storefront-plain.jsx): standalone HTML and private-call route
-- [`app/lib/storefront.server.js`](../app/lib/storefront.server.js): tokens, Storefront queries, and Cart API actions
-- [`app/lib/delegated-token.server.js`](../app/lib/delegated-token.server.js): delegated-token lifetime, parent generation, and regeneration
-- [`views/storefront.html`](../views/storefront.html): plain HTML UI, direct API calls, and web components
-- [`app/routes/customer-account.login.jsx`](../app/routes/customer-account.login.jsx): Customer Account login start
-- [`app/routes/customer-account.callback.jsx`](../app/routes/customer-account.callback.jsx): code callback
-- [`app/routes/customer-account.session.jsx`](../app/routes/customer-account.session.jsx): browser session status
-- [`app/routes/customer-account.logout.jsx`](../app/routes/customer-account.logout.jsx): local logout
-- [`app/lib/customer-account.server.js`](../app/lib/customer-account.server.js): discovery, PKCE, token exchange, profile, and session
+- [Preparation UI](../app/pages/Storefront.jsx) and [plain storefront](../views/storefront.html)
+- [Storefront and cart operations](../app/lib/storefront.server.js)
+- [Delegated token management](../app/lib/delegated-token.server.js)
+- [Customer login and session](../app/lib/customer-account.server.js)
 
 ## Official Shopify References
 

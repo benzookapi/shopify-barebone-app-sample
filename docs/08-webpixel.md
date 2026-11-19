@@ -2,14 +2,7 @@
 
 ## Purpose
 
-The `/webpixel` sample registers a custom Web Pixel and forwards selected standard customer events to Google Analytics 4 through the Measurement Protocol.
-
-## Runtime Locations
-
-- The management UI runs in the embedded Admin browser.
-- App Bridge Direct API access registers pixel settings through Admin GraphQL without an app-server API route.
-- The app Web Pixel extension runs in a strict Web Worker sandbox in the visitor's browser on buyer-facing pages.
-- Measurement requests go from the pixel runtime to Google's GA4 endpoint.
+The `/webpixel` sample registers an app Web Pixel and sends selected customer events to Google Analytics 4 through Measurement Protocol.
 
 ## Registration and Event Sequence
 
@@ -38,39 +31,21 @@ sequenceDiagram
 
 ## How It Works
 
-The Admin page calls [`webPixelCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/webPixelCreate) through App Bridge Direct API access. Shopify then supplies those settings to the deployed extension. The pixel subscribes to customer events, maps supported Shopify payloads into GA4 event parameters, and sends them with `fetch`, including `keepalive` where supported.
-
-The extension explicitly declares its customer privacy behavior. An app Web Pixel's strict Web Worker sandbox exposes only a controlled set of globals and APIs; it cannot read or write the storefront DOM. Event availability and field visibility depend on consent state and the surface that emitted the event.
+App Bridge Direct API access registers the pixel settings. The deployed extension maps Shopify customer events to GA4 payloads and sends them directly to Google.
 
 ## Common Pitfalls
 
-- A successful [`webPixelCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/webPixelCreate) response proves registration, not that GA4 accepted a later event.
-- Pixel code runs in a sandbox, not as unrestricted theme JavaScript. DOM and browser APIs are limited.
-- Browser console output can be difficult to find because the extension runs in an isolated context.
-- Consent and regional privacy rules can prevent or delay events.
-- Measurement IDs and API secrets are pixel settings visible to the pixel runtime; do not treat them as server-only credentials.
-- Direct API registration requires an embedded App Bridge context and the app's configured Direct API access and Admin scopes.
-- The shared Direct API logger redacts the complete `settings` value so the GA4 API secret is not written to browser logs.
-- Validate both the request payload and GA4 DebugView or Realtime reports when troubleshooting.
-
-## Key Terms
-
-| Term | Meaning |
-| --- | --- |
-| Web Pixel | A Shopify-managed analytics extension running in a strict Web Worker customer-events sandbox |
-| Customer event | A standardized event published by Shopify, such as checkout or cart activity |
-| Measurement Protocol | Google's HTTP interface for sending GA4 events |
-| Pixel settings | Merchant-configured values passed to the extension by Shopify |
-| Customer privacy | Consent and data-processing rules controlling pixel activation and data access |
+- Registration requires embedded Direct API access and Admin scopes; success does not prove GA4 accepted events.
+- The pixel runs in a strict Worker sandbox without storefront DOM access.
+- Consent and regional privacy rules affect event availability and data.
+- Pixel settings, including the GA4 API secret, are visible to the runtime. The sample redacts settings from Direct API logs.
+- Check the isolated extension console, request payloads, and GA4 DebugView or Realtime reports.
 
 ## Source Map
 
-- [`app/pages/WebPixel.jsx`](../app/pages/WebPixel.jsx): registration UI and [`webPixelCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/webPixelCreate) mutation
-- [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js): shared App Bridge Direct API client and secret-safe logging
-- [`extensions/my-web-pixel-ext/src/index.js`](../extensions/my-web-pixel-ext/src/index.js): event subscriptions
-- [`extensions/my-web-pixel-ext/src/ga4.js`](../extensions/my-web-pixel-ext/src/ga4.js): GA4 payload conversion and delivery
-- [`extensions/my-web-pixel-ext/src/index.test.js`](../extensions/my-web-pixel-ext/src/index.test.js): pixel behavior tests
-- [`extensions/my-web-pixel-ext/shopify.extension.toml`](../extensions/my-web-pixel-ext/shopify.extension.toml): settings schema and privacy declaration
+- [Registration UI](../app/pages/WebPixel.jsx)
+- [Event subscriptions](../extensions/my-web-pixel-ext/src/index.js) and [GA4 mapping](../extensions/my-web-pixel-ext/src/ga4.js)
+- [Settings and privacy configuration](../extensions/my-web-pixel-ext/shopify.extension.toml)
 
 ## Official Shopify References
 

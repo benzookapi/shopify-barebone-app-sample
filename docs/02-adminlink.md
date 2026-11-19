@@ -2,14 +2,7 @@
 
 ## Purpose
 
-The `/adminlink` sample connects contextual actions on Shopify Admin product and order detail pages to the app. The product action demonstrates how the destination page receives a resource ID and then uses App Bridge Direct API access to load protected product data without an app-server GraphQL round trip.
-
-## Runtime Locations
-
-- Shopify Admin renders the Admin Link action.
-- The link opens the embedded React Router page in the browser.
-- The embedded page converts the product ID to a GraphQL global ID.
-- App Bridge authenticates and forwards the browser's [`shopify:admin`](https://shopify.dev/docs/api/app-home/apis/authentication-and-data/resource-fetching-api) request to Admin GraphQL.
+The `/adminlink` sample opens this app from product and order actions in Shopify Admin. The product page loads data through App Bridge Direct API access.
 
 ## Request Sequence
 
@@ -35,39 +28,23 @@ sequenceDiagram
 
 ## How It Works
 
-The product extension targets [`admin.product-details.action.link`](https://shopify.dev/docs/api/admin-extensions/unstable/extension-targets) and points to `app://adminlink`. Shopify resolves the app URL and appends context, including the selected resource ID. The order extension targets [`admin.order-details.action.link`](https://shopify.dev/docs/api/admin-extensions/unstable/extension-targets) and routes to the order-management sample.
+The product action points to `app://adminlink`; the order action opens order management. Shopify adds the selected resource ID to the destination URL.
 
-The `/adminlink` UI also displays its absolute app server URL without query parameters. Opening this link directly, without a valid Shopify HMAC signature, is rejected by server-side validation with HTTP 400 (`HMAC verification failed`) before the page is rendered. Validation checks the signed query parameters, not whether the visitor clicked a link inside Shopify Admin.
-
-The page calls the standard `fetch()` API with a `shopify:admin/api/{version}/graphql.json` URL. App Bridge intercepts this request and handles Shopify authentication. The page never receives an Admin access token, and the product query does not use the app server or its stored OAuth token.
-
-Direct API access must be enabled in `shopify.app.toml` with `[access.admin].embedded_app_direct_api_access = true`. This sample sets `direct_api_mode = "offline"` to preserve the app-level authorization behavior of the previous server endpoint. Shopify defaults to online mode when the mode is omitted.
+Enable `[access.admin].embedded_app_direct_api_access = true` in the deployed app TOML. This sample uses `direct_api_mode = "offline"`; omitting the mode defaults to online authorization.
 
 ## Common Pitfalls
 
-- Admin Link targets and URLs must match the app's embedded setting. A non-embedded app requires an absolute `https` URL instead of an `app://` URL.
-- Direct API access works only in the embedded App Bridge context and must be enabled in the deployed app configuration.
-- Shopify can provide a numeric resource ID, while Admin GraphQL expects a global ID such as `gid://shopify/Product/...`.
-- Pin the `shopify:admin` request to the intended API version instead of relying on an implicit default.
-- Direct requests no longer appear in the Render server log. Inspect the browser console entries prefixed with `[shopify-admin-direct]` and the Admin GraphQL response shown on the page.
-- Do not expose the Admin OAuth token to the linked page.
-
-## Key Terms
-
-| Term | Meaning |
-| --- | --- |
-| Admin Link | An extension that adds a contextual link to a supported Shopify Admin resource page |
-| Extension target | The named Shopify surface where an extension is mounted |
-| `app://` URL | An embedded-app-relative target resolved by Shopify |
-| GID | Shopify's GraphQL global identifier format |
+- Non-embedded apps require an absolute HTTPS link instead of `app://`.
+- Direct API access requires App Bridge and the configured scopes; keep Admin tokens out of the page.
+- Convert numeric IDs to GraphQL GIDs and specify the intended API version.
+- An unsigned direct visit returns HTTP 400 (`HMAC verification failed`).
+- Direct API requests appear in the browser's `[shopify-admin-direct]` logs, not the app-server logs.
 
 ## Source Map
 
-- [`extensions/my-admin-link-product-details/shopify.extension.toml`](../extensions/my-admin-link-product-details/shopify.extension.toml): product action target
-- [`extensions/my-admin-link-order-details/shopify.extension.toml`](../extensions/my-admin-link-order-details/shopify.extension.toml): order action target
-- [`app/pages/AdminLink.jsx`](../app/pages/AdminLink.jsx): browser UI
-- [`app/routes/adminlink.jsx`](../app/routes/adminlink.jsx): embedded page route
-- [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js): browser-side Direct Admin API helper
+- [Product action](../extensions/my-admin-link-product-details/shopify.extension.toml) and [order action](../extensions/my-admin-link-order-details/shopify.extension.toml)
+- [Demo UI](../app/pages/AdminLink.jsx)
+- [Direct API helper](../app/utils/direct-admin-graphql.js)
 
 ## Official Shopify References
 

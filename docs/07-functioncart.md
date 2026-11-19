@@ -2,13 +2,7 @@
 
 ## Purpose
 
-The `/functioncart` sample registers a Cart Transform Function that increases eligible product prices by a percentage stored on the logged-in customer. It complements the discount sample: the Discount Function demonstrates a dynamic reduction, while this Cart Transform demonstrates a dynamic increase.
-
-## Runtime Locations
-
-- The embedded UI chooses the customer metafield namespace and key.
-- App Bridge Direct API access registers the Cart Transform through Admin GraphQL without an app-server API route.
-- Shopify executes the Rust/Wasm Function whenever it recalculates the cart.
+The `/functioncart` sample increases eligible cart-line prices using a percentage from the logged-in customer's metafield. Use the [Discount Function](04-functiondiscount.md) sample for reductions.
 
 ## Registration and Execution
 
@@ -36,36 +30,23 @@ sequenceDiagram
 
 ## How It Works
 
-The app registers `my-function-cart-ext` and stores the selected namespace and key in `barebone_app_function_cart.customer_meta`. The Function input query uses that configuration to request the logged-in customer's metafield along with each cart line's current unit price and selling-plan state.
+For a valid positive percentage, the Function returns `price × (1 + percentage / 100)` as the fixed unit price. Selling-plan lines are skipped.
 
-For a valid positive percentage, the Function calculates `price * (1 + percentage / 100)` and returns a fixed-price-per-unit line update for each eligible product variant. Lines with a selling plan are skipped so the sample does not overwrite subscription or other purchase-option pricing.
+Registration uses [App Bridge Direct API access](00-ARCHITECTURE.md#direct-admin-api-request); checkout executes the deployed Wasm on Shopify, without calling the app server.
 
 ## Common Pitfalls
 
-- Cart Transform changes are constrained by Shopify's API and merchant eligibility. They are not a general-purpose arbitrary pricing engine.
-- The buyer must be associated with a customer whose configured metafield contains a parseable positive number.
-- Cart Transform cannot use a negative fixed price to implement a normal discount. Use the Discount Function API for reductions.
-- Money rounding and currency behavior require deliberate production rules.
-- Shopify can invoke the Function during cart recalculation without the buyer first opening a cart page.
-- Selling-plan lines are intentionally excluded in this sample.
-- Direct API registration requires an embedded App Bridge context and the app's configured Direct API access and Admin scopes.
-
-## Key Terms
-
-| Term | Meaning |
-| --- | --- |
-| Cart Transform | A Function API that can alter supported cart-line presentation and pricing properties |
-| [`lineUpdate`](https://shopify.dev/docs/api/functions/unstable/cart-transform) | The operation this sample returns for an eligible cart line |
-| Fixed price per unit | A replacement unit price supplied by the transform operation |
-| Selling plan | A purchase option such as a subscription with its own pricing behavior |
+- Registration requires an embedded app, deployed Direct API configuration, and the required Admin scopes.
+- Check merchant eligibility and Cart Transform restrictions before adopting this pricing pattern.
+- The customer must be logged in with a valid value at the configured metafield namespace/key.
+- Define currency rounding rules and retain the selling-plan exclusion.
+- Use the Discount Function API for reductions.
 
 ## Source Map
 
-- [`app/pages/FunctionCart.jsx`](../app/pages/FunctionCart.jsx): registration UI and [`cartTransformCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/cartTransformCreate) mutation
-- [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js): shared App Bridge Direct API client
-- [`extensions/my-function-cart-ext/src/cart_transform_run.graphql`](../extensions/my-function-cart-ext/src/cart_transform_run.graphql): runtime input
-- [`extensions/my-function-cart-ext/src/cart_transform_run.rs`](../extensions/my-function-cart-ext/src/cart_transform_run.rs): pricing logic and tests
-- [`extensions/my-function-cart-ext/shopify.extension.toml`](../extensions/my-function-cart-ext/shopify.extension.toml): extension configuration
+- [Registration UI](../app/pages/FunctionCart.jsx)
+- [Function input](../extensions/my-function-cart-ext/src/cart_transform_run.graphql)
+- [Rust logic and tests](../extensions/my-function-cart-ext/src/cart_transform_run.rs)
 
 ## Official Shopify References
 

@@ -2,15 +2,7 @@
 
 ## Purpose
 
-The `/postpurchase` sample prepares metafields and server endpoints for an offer shown after payment but before the Thank you page. The extension looks up upsell products, can add accepted variants through a signed changeset, records a customer review score, and then completes the post-purchase flow.
-
-## Runtime Locations
-
-- The preparation UI runs in the embedded Admin app.
-- App Bridge Direct API access writes the shop-level setup metafield without an app-server setup route.
-- The post-purchase extension runs in Shopify's dedicated Web Worker-based post-purchase runtime and renders Shopify-provided remote UI rather than the host DOM.
-- Product lookup, changeset signing, and customer metafield updates run on the remote app server.
-- Shopify applies the signed changeset to the completed purchase.
+The `/postpurchase` sample offers products after payment, applies accepted changes through a signed changeset, and records a review score.
 
 ## Preparation Sequence
 
@@ -67,44 +59,25 @@ sequenceDiagram
 
 ## How It Works
 
-[`Checkout::PostPurchase::ShouldRender`](https://shopify.dev/docs/api/checkout-extensions/extension-points) receives purchase input, reads each purchased product's `barebone_app_upsell.product_id`, and fetches corresponding product data from the app server. The response is stored for [`Checkout::PostPurchase::Render`](https://shopify.dev/docs/api/checkout-extensions/extension-points).
+`ShouldRender` loads products referenced by `barebone_app_upsell.product_id`; `Render` displays the stored offers. The server verifies the input token, signs accepted changes, and updates the review metafield.
 
-When the buyer accepts, the extension builds [`add_variant`](https://shopify.dev/docs/api/checkout-extensions/extension-points) changes. The app server signs those changes with the app secret and purchase reference, and Shopify applies the resulting token. The review score is written to `barebone_app_review.score` after the server derives the customer from the verified token. Calling [`done()`](https://shopify.dev/docs/api/checkout-extensions/extension-points) is what releases the buyer to the next checkout page.
-
-The app handles `OPTIONS /postpurchase` before React Router. Extension runtimes often trigger a CORS preflight, so the actual `POST` is never sent if the preflight fails.
-
-Only the merchant-facing setup action uses Direct API access. Product lookup, changeset signing, and customer review updates remain on the app server because they process verified post-purchase tokens and, for signing, require the app secret.
+Only merchant setup uses Direct API access. Buyer-facing operations need the app server for token verification and signing.
 
 ## Common Pitfalls
 
-- Post-purchase eligibility has payment-method and checkout limitations; the extension is not guaranteed to appear after every order.
-- Product metafield values can be missing, producing `null` entries. Filter them before building the Admin search query.
-- A [`ShouldRender`](https://shopify.dev/docs/api/checkout-extensions/extension-points) result without usable stored product data can flash an empty page and immediately continue.
-- The Bearer input token must be verified before deriving shop, purchase, or customer identity.
-- CORS requires the preflight response, allowed headers, and actual response headers to agree.
-- Never let the browser sign its own changeset; signing requires the app secret.
-- [`done()`](https://shopify.dev/docs/api/checkout-extensions/extension-points) must be called after both acceptance and rejection paths.
-- Direct API setup requires an embedded App Bridge context and the app's configured Direct API access and Admin scopes.
-
-## Key Terms
-
-| Term | Meaning |
-| --- | --- |
-| [`ShouldRender`](https://shopify.dev/docs/api/checkout-extensions/extension-points) | Pre-render target that decides whether the post-purchase page should appear |
-| [`Render`](https://shopify.dev/docs/api/checkout-extensions/extension-points) | Target that displays the post-purchase offer |
-| Changeset | A list of supported changes to the completed checkout |
-| Changeset token | App-signed JWT authorizing Shopify to apply those changes |
-| Input token | Shopify-signed token containing trusted post-purchase context |
+- Payment and checkout restrictions can prevent the offer from appearing; see the official limitations below.
+- Skip missing product metafields and avoid rendering an empty offer page.
+- Verify the Bearer input token before trusting shop, purchase, or customer identity. Keep changeset signing on the server.
+- Handle `OPTIONS` preflight and actual-response CORS headers consistently.
+- Call `done()` on both acceptance and rejection paths.
+- Merchant setup requires embedded Direct API access and Admin scopes.
 
 ## Source Map
 
-- [`app/pages/PostPurchase.jsx`](../app/pages/PostPurchase.jsx): setup UI, shop query, and [`metafieldsSet`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/metafieldsSet) mutation
-- [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js): shared App Bridge Direct API client
-- [`app/routes/postpurchase.jsx`](../app/routes/postpurchase.jsx): extension-facing action route
-- [`app/lib/post-purchase.server.js`](../app/lib/post-purchase.server.js): product lookup, token signing, and review update
-- [`server.mjs`](../server.mjs): early CORS preflight handling
-- [`extensions/my-post-purchase-ext/src/index.jsx`](../extensions/my-post-purchase-ext/src/index.jsx): post-purchase targets and offer UI
-- [`extensions/my-post-purchase-ext/shopify.extension.toml`](../extensions/my-post-purchase-ext/shopify.extension.toml): extension and metafield configuration
+- [Setup UI](../app/pages/PostPurchase.jsx)
+- [Offer extension](../extensions/my-post-purchase-ext/src/index.jsx)
+- [Server lookup and signing](../app/lib/post-purchase.server.js)
+- [CORS preflight handling](../server.mjs)
 
 ## Official Shopify References
 

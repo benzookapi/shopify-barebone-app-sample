@@ -2,13 +2,7 @@
 
 ## Purpose
 
-The `/functiondiscount` sample registers an automatic order-discount Function. At checkout, the Function reads a percentage from a configured customer metafield or a cart attribute and returns an order discount operation.
-
-## Runtime Locations
-
-- The registration form runs in the embedded browser.
-- App Bridge Direct API access registers the Function owner and configuration through Admin GraphQL without an app-server API route.
-- The Rust Function is compiled to Wasm and runs on Shopify infrastructure.
+The `/functiondiscount` sample applies a percentage order discount from a customer metafield or cart attribute.
 
 ## Registration and Execution
 
@@ -35,37 +29,22 @@ sequenceDiagram
 
 ## How It Works
 
-The Admin mutation registers `my-function-discount-ext` and saves the merchant-selected customer metafield namespace and key in the Function owner's `barebone_app_function_discount.customer_meta` JSON metafield. Shopify uses the Function input query to resolve that dynamic customer metafield.
+The merchant selects a customer metafield namespace and key. A cart attribute takes precedence when present; only percentages greater than zero and at most 100 produce a discount.
 
-At runtime, the Function checks that order discounts are supported, prefers the configured cart attribute when present, otherwise reads the logged-in customer's metafield, parses a value greater than zero and no more than 100, and applies that percentage to the order subtotal.
+Registration uses [App Bridge Direct API access](00-ARCHITECTURE.md#direct-admin-api-request); checkout executes the deployed Wasm on Shopify, without calling the app server.
 
 ## Common Pitfalls
 
-- Registering the Function and executing it are separate phases. Checkout does not call this app server.
-- Direct API registration requires an embedded App Bridge context and the app's configured Direct API access and Admin scopes.
-- A customer metafield is available only when checkout has a matching authenticated customer and the Function input query requests it.
-- Namespace and key must match the metafield definition and stored customer value exactly.
-- Invalid, missing, zero, negative, or greater-than-100 values intentionally return no operations.
-- Discount classes and combination settings determine whether an otherwise valid operation can apply.
-- Cart attributes are buyer-controlled input; do not use one as an unrestricted discount authority in production.
-
-## Key Terms
-
-| Term | Meaning |
-| --- | --- |
-| Function handle | Stable extension identifier used by Admin API registration |
-| Function owner | The discount or customization resource that stores settings and invokes the Function |
-| Input query | GraphQL selection compiled with the Function to define its runtime input |
-| Operation | A typed instruction returned to Shopify, such as adding an order discount |
-| Wasm | The deployed WebAssembly artifact executed by Shopify |
+- Registration requires an embedded app, deployed Direct API configuration, and the required Admin scopes.
+- Customer metafields require a matching logged-in customer and the correct namespace/key in the Function input.
+- Missing or invalid percentages produce no discount; discount classes and combination rules still apply.
+- **Cart attributes are buyer-controlled.** Do not trust them as discount authority in production.
 
 ## Source Map
 
-- [`app/pages/FunctionDiscount.jsx`](../app/pages/FunctionDiscount.jsx): registration UI and [`discountAutomaticAppCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/discountAutomaticAppCreate) mutation
-- [`app/utils/direct-admin-graphql.js`](../app/utils/direct-admin-graphql.js): shared App Bridge Direct API client
-- [`extensions/my-function-discount-ext/src/cart_lines_discounts_generate_run.graphql`](../extensions/my-function-discount-ext/src/cart_lines_discounts_generate_run.graphql): runtime input query
-- [`extensions/my-function-discount-ext/src/cart_lines_discounts_generate_run.rs`](../extensions/my-function-discount-ext/src/cart_lines_discounts_generate_run.rs): Function logic and tests
-- [`extensions/my-function-discount-ext/shopify.extension.toml`](../extensions/my-function-discount-ext/shopify.extension.toml): extension configuration
+- [Registration UI](../app/pages/FunctionDiscount.jsx)
+- [Function input](../extensions/my-function-discount-ext/src/cart_lines_discounts_generate_run.graphql)
+- [Rust logic and tests](../extensions/my-function-discount-ext/src/cart_lines_discounts_generate_run.rs)
 
 ## Official Shopify References
 

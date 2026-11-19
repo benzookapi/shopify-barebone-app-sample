@@ -2,17 +2,11 @@
 
 ## Purpose
 
-The `/ordermanage` sample combines several Admin API workflows: reading order state, creating fulfillments, capturing authorized transactions, creating a fulfillment service, adjusting inventory at its location, and exposing fulfillment-service callback endpoints.
-
-## Runtime Locations
-
-- The management UI runs in the embedded Admin browser and can also be entered from an order Admin Link.
-- The app server performs all Admin GraphQL operations with the stored shop OAuth token.
-- Shopify calls fulfillment-service notification, stock, and tracking endpoints from Shopify infrastructure.
+The `/ordermanage` sample covers fulfillment, payment capture, fulfillment-service registration, and inventory updates through server-side Admin API calls.
 
 ## Order Action Sequence
 
-This sequence demonstrates the fulfillment and payment-capture operations that a custom order management system (OMS) can use to manage orders without relying on Shopify's order details page. The sample enters the workflow through an Admin order action, but an external OMS can replace that UI and use the same server-side Admin API operations.
+An order Admin Link opens the sample. An external OMS can use the same server-side fulfillment and capture operations.
 
 ```mermaid
 sequenceDiagram
@@ -42,7 +36,7 @@ sequenceDiagram
 
 ## Fulfillment Service Sequence
 
-A [Fulfillment Service](https://shopify.dev/docs/apps/build/orders-fulfillment/fulfillment-service-apps) delegates inventory and fulfillment operations to an app-managed external system instead of relying on manual inventory management in Shopify. Creating a fulfillment service also registers an app location in Shopify. Products stocked at that location can then have inventory changes and fulfillment requests handled through the remote app server, allowing an external ERP, WMS, or OMS to remain the operational system of record. Routing these operations through the integration keeps Shopify inventory and shipment status synchronized with the external system and helps prevent data divergence caused by merchants entering the same changes manually in separate systems.
+A [fulfillment service](https://shopify.dev/docs/apps/build/orders-fulfillment/fulfillment-service-apps) creates an app-managed location and delegates fulfillment to an external ERP, WMS, or OMS. Assign product inventory to that location before testing.
 
 ```mermaid
 sequenceDiagram
@@ -71,7 +65,7 @@ sequenceDiagram
 
 ## External ERP Inventory Synchronization
 
-When an external ERP, warehouse management system, or other core system is the inventory master, the integration must synchronize changes in both directions. A master quantity change should update the matching Shopify inventory item and location, while checkout activity, an Admin edit, or another app that changes Shopify's available quantity should notify the external system.
+When an ERP is the inventory master, synchronize ERP changes to Shopify and Shopify sellable-quantity changes back to the ERP.
 
 ```mermaid
 sequenceDiagram
@@ -94,28 +88,21 @@ sequenceDiagram
     end
 ```
 
-When the ERP reports a master quantity change, the remote app server runs the same inventory adjustment flow that starts at step 7 of the Fulfillment Service Sequence: it queries the Shopify location and inventory items, calculates the required change, and calls [`inventoryAdjustQuantities`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/inventoryAdjustQuantities) with an idempotency key for each inventory level. Shopify can emit `inventory_levels/update` for changes made by this app server as well as changes made elsewhere, so persist event IDs or synchronization metadata and prevent webhook-driven writes from creating an update loop.
+Map quantities by inventory item and location IDs. The ERP path reuses the inventory adjustment flow above; deduplicate events and suppress echoes of your own writes.
 
 ### TIPS: Inventory Status Transformation
 
-The normal lifecycle of a unit sold through Shopify is:
+`Available` → `Committed when ordered` → `Removed from on_hand when fulfilled`
 
-`Before checkout: available` -> `After order creation: committed` -> `After fulfillment: removed from on_hand`
+Order creation reduces `available` without changing `on_hand`; fulfillment reduces `committed` and `on_hand`. Shopify manages `committed` through orders and fulfillment, not direct inventory adjustments.
 
-- Before checkout, `available` represents inventory that can be sold.
-- When the order is created, the ordered quantity moves from `available` to `committed`; total `on_hand` inventory remains unchanged.
-- When the order is fulfilled, `committed` and `on_hand` decrease because the physical unit leaves the location. Shopify doesn't expose a separate `fulfilled` inventory state.
-- The Admin API can't directly adjust or move `committed`; Shopify changes it through order creation and fulfillment.
-
-Subscribe to the [`inventory_levels/update` webhook](https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-INVENTORY_LEVELS_UPDATE) and treat its `available` payload value as a sellable-inventory change notification. After verifying the webhook HMAC, query the current [Inventory Item and Inventory Level quantity states](https://shopify.dev/docs/apps/build/orders-fulfillment/inventory-management-apps/manage-quantities-states), then send the latest relevant quantities and status to the external system. Do not use this topic as a detailed fulfillment or delivery-status signal: it might not be emitted when later `committed` or `on_hand` transitions leave `available` unchanged.
+Use [`inventory_levels/update`](https://shopify.dev/docs/api/admin-graphql/unstable/enums/WebhookSubscriptionTopic#enums-INVENTORY_LEVELS_UPDATE) as a sellable-quantity notification, then query current quantities. It may not fire for later shipment transitions that leave `available` unchanged; track those by fulfillment order and delivery events.
 
 ## Fulfillment Request and Delivery Sequence
 
-This sequence requires the app to register a [Fulfillment Service](https://shopify.dev/docs/apps/build/orders-fulfillment/fulfillment-service-apps) in Shopify and implement its notification handling and background fulfillment workflow on the remote app server. In the tested flow, requesting fulfillment and moving through fulfilled and delivered states did not emit `inventory_levels/update` because the ordered quantity had already moved out of `available` when the order was created. For shipment and delivery details beyond sellable inventory, use the fulfillment order IDs and merchant-request data retrieved when the fulfillment-service notification arrives as correlation keys for the external system. The same app server later creates the fulfillment and delivered event, so it can return those operation results through the existing external workflow without additional fulfillment webhook subscriptions.
+Register a fulfillment service first. The merchant's fulfillment action triggers Shopify's callback; the optional request message is available in `merchantRequests`.
 
-The merchant starts this workflow with the same `Select fulfillment action` shown in the Order Action Sequence in Shopify. An optional fulfillment request message can still be included and is returned by the later merchant-request query. Shopify then sends the fulfillment-service notification to the remote app server; this sample doesn't call a separate request-submission API between the merchant action and that callback.
-
-The fulfillment-service callback endpoints and background processing run on the same remote app server. They are shown as one participant below rather than as a separate fulfillment-service process.
+The sample accepts requests, then simulates fulfillment and delivery with short delays. Correlate real external jobs by fulfillment order ID. A callback `200` acknowledges receipt; Admin API mutations change shipment state.
 
 ```mermaid
 sequenceDiagram
@@ -152,48 +139,24 @@ sequenceDiagram
 
 ## How It Works
 
-When an order ID is present, the server converts it to a Shopify order GID and queries fulfillment, transaction, and fulfillment-order state. Fulfillment creation uses fulfillment order IDs rather than raw line-item IDs. Payment capture uses each authorization's parent transaction ID and amount.
-
-The fulfillment-service registration returns an app location. The sample stores the service ID in a shop metafield, lets the merchant associate product inventory with that location, and adjusts quantities using [`inventoryAdjustQuantities`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/inventoryAdjustQuantities). Each adjustment includes a UUID idempotency key and explicitly uses [`changeFromQuantity: null`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/InventoryChangeInput) to skip a compare-and-set check.
-
-When Shopify sends a `FULFILLMENT_REQUEST` notification, the callback verifies the raw-body HMAC and returns `200` without waiting for Admin API work. A per-shop background job retrieves requested fulfillment orders together with each `merchantRequests` connection, including the merchant's optional message, request options, and send time. It logs those details and accepts the requests. In a production integration, persist the fulfillment order ID with the corresponding external job, instruct the ERP, WMS, fulfillment provider, or carrier, and return the resulting shipment and delivery state while the app calls [`fulfillmentCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/fulfillmentCreate) and [`fulfillmentEventCreate`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/fulfillmentEventCreate). This sample uses two short delays to simulate those external operations. The callback response only acknowledges the notification; the Admin API mutations perform the actual state transitions.
+Fulfillment uses fulfillment order IDs; capture uses eligible authorization transactions and their parent IDs. Inventory changes use [`inventoryAdjustQuantities`](https://shopify.dev/docs/api/admin-graphql/unstable/mutations/inventoryAdjustQuantities) with a UUID idempotency key and [`changeFromQuantity: null`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/InventoryChangeInput), which intentionally skips compare-and-set checks.
 
 ## Common Pitfalls
 
-- Fulfillment orders are the unit used for modern fulfillment workflows; order line items alone are insufficient.
-- An order can contain multiple fulfillment orders and multiple transactions with different eligibility states.
-- Capture only manually capturable authorization transactions and use the correct parent transaction ID.
-- A fulfillment service location must be assigned inventory before quantity adjustment or fulfillment testing is meaningful.
-- Inventory adjustment name, reason, and ledger-document requirements depend on the chosen adjustment type.
-- Do not send an empty ledger URI; send `null` or omit it where permitted.
-- Fulfillment callbacks and webhook deliveries are server-to-server requests and must not depend on an embedded browser session.
-- Both two-second in-process fulfillment delays are suitable only for this demo. Use a durable queue and idempotent worker in production so acknowledged work survives restarts and duplicate notifications.
-- An inventory webhook can be delivered more than once and can be caused by the integration's own write. Deduplicate events and prevent synchronization loops.
-- Map inventory by Shopify inventory item and location IDs. A SKU alone might not uniquely identify a location-specific inventory level.
-
-## Key Terms
-
-| Term | Meaning |
-| --- | --- |
-| Fulfillment order | Shopify's assigned unit of fulfillment work for a location or service |
-| Fulfillment service | App-managed service and location that can receive fulfillment requests |
-| Authorization transaction | Payment authorization that can later be captured |
-| Inventory level | Quantity state for one inventory item at one location |
-| Idempotency key | Unique key preventing duplicate mutation effects across retries |
-| [`changeFromQuantity`](https://shopify.dev/docs/api/admin-graphql/unstable/input-objects/InventoryChangeInput) | Optional compare-and-set baseline for an inventory quantity change |
+- One order can have multiple fulfillment orders and transactions; check each one's eligibility.
+- Capture only manually capturable authorizations using the correct parent transaction.
+- Match inventory by item and location IDs; SKU alone is insufficient.
+- Check adjustment name, reason, and ledger requirements. Omit an optional ledger URI or send `null`, not an empty string.
+- Verify callback/webhook HMAC without relying on a browser session.
+- Replace demo delays with durable, idempotent jobs before production.
+- Deduplicate inventory events and prevent webhook-driven synchronization loops.
 
 ## Source Map
 
-- [`app/pages/OrderManage.jsx`](../app/pages/OrderManage.jsx): browser workflows
-- [`app/routes/ordermanage.jsx`](../app/routes/ordermanage.jsx): page route and order-link entry
-- [`app/routes/ordermanage-json.jsx`](../app/routes/ordermanage-json.jsx): authenticated data route
-- [`app/lib/order-manage.server.js`](../app/lib/order-manage.server.js): order, fulfillment service, capture, and inventory GraphQL
-- [`app/routes/fulfillment-order-notification.jsx`](../app/routes/fulfillment-order-notification.jsx): fulfillment notification callback
-- [`app/routes/fetch-stock.jsx`](../app/routes/fetch-stock.jsx): stock callback
-- [`app/routes/fetch-tracking-numbers.jsx`](../app/routes/fetch-tracking-numbers.jsx): tracking callback
-- [`app/routes/webhook-action.jsx`](../app/routes/webhook-action.jsx): shared webhook route used by `/webhookcommon`
-- [`app/lib/public-endpoints.server.js`](../app/lib/public-endpoints.server.js): webhook verification and logging plus fulfillment-service notification processing
-- [`extensions/my-admin-link-order-details/shopify.extension.toml`](../extensions/my-admin-link-order-details/shopify.extension.toml): order detail action
+- [Management UI](../app/pages/OrderManage.jsx)
+- [Order, capture, and inventory operations](../app/lib/order-manage.server.js)
+- [Fulfillment and webhook callbacks](../app/lib/public-endpoints.server.js)
+- [Order Admin Link](../extensions/my-admin-link-order-details/shopify.extension.toml)
 
 ## Official Shopify References
 
