@@ -138,27 +138,6 @@ After installation and scope approval, a custom app can export orders to the mer
 - **Partner-owned app, client-owned store (custom distribution).** Obtain an expiring offline token at installation and refresh it on the server. [Standalone or API-only app authentication](https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node) · [Non-embedded Service Connector](#non-embedded-service-connector)
 - **App and store in the merchant's Shopify organization.** The server can also use its client ID and secret to request a fresh token after months of inactivity, without a stored refresh token or a merchant session. [Client credentials grant](https://shopify.dev/docs/apps/build/authentication-authorization/client-credentials-grant?lang=node) · [Compare with the application-only access token below](#four-token-types-compared)
 
-<a name="unattended-custom-app-flows"></a>
-
-*Unattended custom app flows*
-
-```mermaid
-flowchart TD
-    Install["Merchant installs the app<br/>and approves scopes once"]
-    subgraph Runtime["Sync runs without a merchant session"]
-        Nightly["Scheduled order export<br/>Shopify → merchant backend"]
-        Webhook["Inventory webhook<br/>Merchant backend → Shopify"]
-        Nightly --> Method{"How will the custom app<br/>get its access token?"}
-        Webhook --> Method
-        Method -->|Any installed store| Offline["Use the offline token from installation<br/>Refresh and save both tokens if needed"]
-        Method -->|Same organization only| Credentials["Reuse the access token or request one<br/>with client credentials"]
-        Offline --> API["Call the Shopify Admin API"]
-        Credentials --> API
-    end
-    Install -.-> Nightly
-    Install -.-> Webhook
-```
-
 **Is an expiring offline token enough for background GraphQL Admin API calls?**
 
 Yes. With the same approved scopes, an expiring offline token can make the same calls as a token issued through the client credentials grant, whether the app uses its client secret or a signed JWT (application-only access). [Shopify app authentication](https://shopify.dev/docs/apps/build/authentication-authorization#how-it-works)
