@@ -56,52 +56,63 @@ Keep Admin OAuth credentials on the server. App Bridge session tokens authentica
 
 ### Offline Token Refresh Before API Use
 
-Each installation stores a **token pair**. The app server sends the **access token** to the Admin API and the **refresh token** to Shopify OAuth to obtain a new pair. It saves both replacement tokens together.
+Each installation stores a **token pair**. The server sends the **access token** to the Admin API and uses the **refresh token** to obtain a new pair from Shopify OAuth. A valid refresh token can renew an expired access token. [Shopify's token refresh guide](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-refresh)
 
-The server refreshes on demand when the access token has five minutes or less left. Refresh also works after access token expiry while the refresh token is valid. See [Shopify's token refresh guide](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-refresh).
+#### On-demand refresh with a per-shop lock (this sample)
+
+App requests and webhook handlers that need the Admin API can call the [token manager](../app/lib/offline-token.server.js) directly, without a refresh batch or queue. Both use the same per-shop lock when the access token has five minutes or less left. Receiving a webhook by itself requires no token lock.
+
+```mermaid
+flowchart TD
+    Request["Authenticated app request"] --> Read["Read the shop's stored token pair"]
+    Webhook["Verified webhook needing Admin API access"] --> Read
+    Read --> Fresh{"Access token has more<br/>than 5 minutes left?"}
+    Fresh -->|Yes| API["Call Admin API with the saved access token"]
+    Fresh -->|No| Lock["Lock this shop's token record<br/>and reread the pair"]
+    Lock --> Due{"Still needs refresh?"}
+    Due -->|Yes| Rotate["Refresh with Shopify OAuth<br/>Save both tokens and expiry times"]
+    Due -->|No| Release["Release the shop lock"]
+    Rotate --> Release
+    Release --> API
+```
+
+#### Scheduled refresh by a single worker (alternative)
+
+Only the batch refreshes tokens. Schedule it ahead of expiry. For each shop, serialize refresh and OAuth acquisition from the initial read through the final save, including retries on other instances. Webhook and app request handlers can then read the saved access token without a refresh lock.
 
 ```mermaid
 sequenceDiagram
-    autonumber
-    participant Caller as Authenticated route or server task
-    participant Tokens as Offline token manager
+    participant Caller as Webhook or app request handler
     participant DB as Installation database
-    participant OAuth as Shopify OAuth
-    participant API as Admin GraphQL API
+    participant Batch as Refresh batch
+    participant Shopify as Shopify
 
-    Caller->>Tokens: Get offline credentials for shop
-    Tokens->>DB: Read installation and expiry timestamps
-    alt Missing, legacy, other app, or expired refresh token
-        Tokens-->>Caller: Reauthorization required
-        Note over Caller,OAuth: Reopen app in Shopify Admin to restart OAuth
-    else Access token has more than 5 minutes left
-        Tokens-->>Caller: Current access token
-        Caller->>API: Execute API operation once
-    else Access token is near expiry or expired
-        Tokens->>DB: Lock this shop's token record and reread it
-        DB-->>Tokens: Latest tokens and expiry times
-        alt Another request refreshed while this one waited
-            Tokens->>Tokens: Reuse the saved access token
-        else Access token still needs refresh
-            Tokens->>OAuth: POST access_token with grant_type=refresh_token
-            OAuth-->>Tokens: New access and refresh tokens with lifetimes
-            Tokens->>DB: Save both tokens, expiry times, and generation
+    par Scheduled run for a shop
+        Batch->>DB: Read the latest token pair and expiry
+        opt Access token due for refresh
+            Batch->>Shopify: Refresh at Shopify OAuth
+            Shopify-->>Batch: New token pair and lifetimes
+            Batch->>DB: Save both tokens and expiries atomically
         end
-        Tokens->>DB: Release this shop's token lock
-        Tokens-->>Caller: Fresh access token after persistence
-        Caller->>API: Execute API operation once
+    and Webhook or request needs the Admin API
+        Caller->>DB: Read saved access token and expiry
+        DB-->>Caller: Access token and expiry
+        alt Access token still valid
+            Caller->>Shopify: Call Admin API
+        else Batch is late and access token has expired
+            Caller->>Caller: Defer API work, then reread after batch refresh
+        end
     end
-    API-->>Caller: API result when an operation was sent
 ```
 
-- Reopen the app for OAuth if refresh expires or is rejected.
+- Reopen the app for OAuth if installation credentials are missing or unusable, or if Shopify rejects the refresh token.
 - Preserve credentials on temporary failures; do not automatically replay Admin mutations.
 
 #### How the per-shop token lock works
 
 When two workers refresh tokens for the same shop, the slower worker can save a token the other has already replaced. The next refresh may then fail and require the merchant to reauthorize. See [Shopify's guidance on concurrent refreshes](https://shopify.dev/docs/apps/build/authentication-authorization/implement-token-exchange?lang=node#send-the-refresh-request).
 
-OAuth acquisition and refresh share one database lock per shop across server processes. A scheduled job can use the same lock to reread the tokens, refresh if needed, and save the new pair before releasing it. Other shops can refresh in parallel. See the [lock implementation](../app/lib/shop-store.server.js).
+In this sample, OAuth acquisition and refresh share one database lock per shop across server processes. A batch that shares refresh duties with request handlers must use the same lock. Other shops can refresh in parallel. See the [lock implementation](../app/lib/shop-store.server.js).
 
 ```mermaid
 flowchart TD
@@ -156,7 +167,7 @@ If an inventory webhook arrives after months of inactivity and the refresh token
 
 **Should we refresh offline tokens hourly, daily, or when work arrives?**
 
-A nightly sync can refresh at startup. For webhooks, check the access token before the API call and refresh if needed, since even an hourly job can run late. If events may stop for months, a daily scan can refresh just the shops whose **refresh tokens** are nearing expiry. [Shopify's guidance for background jobs and idle stores](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-refresh)
+With on-demand refresh, check expiry when the nightly sync starts or the webhook needs the API. With a dedicated refresh batch, allow for scheduling delays when choosing how early to renew. If events may stop for months, a daily scan can refresh just the shops whose **refresh tokens** are nearing expiry. [Shopify's guidance for background jobs and idle stores](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-refresh)
 
 **Can one batch or webhook worker handle all refreshes without a separate DB lock?**
 
