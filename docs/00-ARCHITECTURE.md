@@ -31,7 +31,7 @@ sequenceDiagram
     participant Browser as Merchant browser
     participant App as Remote app server
     participant Store as Installation store
-    participant OAuth as Shopify OAuth
+    participant Shopify as Shopify OAuth and Admin API
 
     Merchant->>Admin: Open the app
     Admin->>Browser: Load app URL with shop, host, embedded, HMAC
@@ -40,19 +40,21 @@ sequenceDiagram
     App->>Store: Read stored installation
     Store-->>App: Missing or not owned by current client ID
     App-->>Browser: Redirect to OAuth authorization URL
-    Browser->>OAuth: Merchant authorizes requested scopes
-    OAuth-->>Browser: Redirect to /callback with code and HMAC
+    Browser->>Shopify: Merchant authorizes requested scopes
+    Shopify-->>Browser: Redirect to /callback with code and HMAC
     Browser->>App: GET /callback
     App->>App: Verify callback HMAC
-    App->>Store: Acquire per-shop token lock
-    App->>OAuth: Exchange authorization code with expiring=1
-    OAuth-->>App: Access token, refresh token, scopes, both lifetimes
-    App->>Store: Save both tokens and their expiry times, then release lock
-    App->>OAuth: Resolve the app handle
+    rect rgba(255, 210, 50, 0.30)
+        App->>Store: Acquire the per-shop token lock
+        App->>Shopify: Exchange authorization code with expiring=1
+        Shopify-->>App: Initial access and refresh tokens, scopes, and lifetimes
+        App->>Store: Save the pair and expiry times, then release the lock
+    end
+    App->>Shopify: Resolve the app handle via the Admin API
     App-->>Browser: Redirect to Shopify Admin app URL
 ```
 
-Keep Admin OAuth credentials on the server. App Bridge session tokens authenticate browser-to-app requests separately.
+The OAuth callback saves the initial token pair on the server. Later access token refreshes use the same lock. See [on-demand refresh](#on-demand-refresh-with-a-per-shop-lock-this-sample) and [how the per-shop lock works](#how-the-per-shop-token-lock-works).
 
 ### Offline Token Refresh Before API Use
 
@@ -76,9 +78,26 @@ flowchart TD
     Release --> API
 ```
 
+##### How the per-shop token lock works
+
+When two workers refresh tokens for the same shop, the slower worker can save a token the other has already replaced. The next refresh may then fail and require the merchant to reauthorize. See [Shopify's guidance on concurrent refreshes](https://shopify.dev/docs/apps/build/authentication-authorization/implement-token-exchange?lang=node#send-the-refresh-request).
+
+In this sample, OAuth acquisition and on-demand refresh share one database lock per shop across server processes. Other shops can refresh in parallel. See the [lock implementation](../app/lib/shop-store.server.js).
+
+```mermaid
+flowchart TD
+    Workers["Two workers try to refresh the same shop"]
+    Workers --> SQL["PostgreSQL / MySQL (InnoDB)<br/>SELECT … FOR UPDATE locks the shop's row"]
+    Workers --> Mongo["MongoDB<br/>findOneAndUpdate claims a 60-second lease<br/>if the shop's lease is absent or expired"]
+    SQL --> Commit["Save the new pair and commit<br/>to release the row lock"]
+    Mongo --> Release["Only the current lease owner can save the pair.<br/>It then clears the lease using its owner ID."]
+    Commit --> Next["The waiting worker acquires the lock,<br/>rereads the record and reuses the fresh access token"]
+    Release --> Next
+```
+
 #### Scheduled refresh by a single worker (alternative)
 
-Only the batch refreshes tokens. Schedule it ahead of expiry. For each shop, serialize refresh and OAuth acquisition from the initial read through the final save, including retries on other instances. Webhook and app request handlers can then read the saved access token without a refresh lock.
+Only the batch refreshes tokens. Schedule it before expiry. A separate database lock is unnecessary if each shop's OAuth acquisitions, refreshes, and retries run one at a time across all instances, from read through save. Webhook and app request handlers only read the saved access token.
 
 ```mermaid
 sequenceDiagram
@@ -107,23 +126,6 @@ sequenceDiagram
 
 - Reopen the app for OAuth if installation credentials are missing or unusable, or if Shopify rejects the refresh token.
 - Preserve credentials on temporary failures; do not automatically replay Admin mutations.
-
-#### How the per-shop token lock works
-
-When two workers refresh tokens for the same shop, the slower worker can save a token the other has already replaced. The next refresh may then fail and require the merchant to reauthorize. See [Shopify's guidance on concurrent refreshes](https://shopify.dev/docs/apps/build/authentication-authorization/implement-token-exchange?lang=node#send-the-refresh-request).
-
-In this sample, OAuth acquisition and refresh share one database lock per shop across server processes. A batch that shares refresh duties with request handlers must use the same lock. Other shops can refresh in parallel. See the [lock implementation](../app/lib/shop-store.server.js).
-
-```mermaid
-flowchart TD
-    Workers["Two workers try to refresh the same shop"]
-    Workers --> SQL["PostgreSQL / MySQL (InnoDB)<br/>SELECT … FOR UPDATE locks the shop's row"]
-    Workers --> Mongo["MongoDB<br/>findOneAndUpdate claims a 60-second lease<br/>if the shop's lease is absent or expired"]
-    SQL --> Commit["Save the new pair and commit<br/>to release the row lock"]
-    Mongo --> Release["Only the current lease owner can save the pair.<br/>It then clears the lease using its owner ID."]
-    Commit --> Next["The waiting worker acquires the lock,<br/>rereads the record and reuses the fresh access token"]
-    Release --> Next
-```
 
 #### Offline token refresh FAQ
 
@@ -236,7 +238,7 @@ sequenceDiagram
     participant Bridge as App Bridge
     participant Endpoint as App JSON endpoint
     participant Store as Installation store
-    participant API as Shopify Admin GraphQL API
+    participant Shopify as Shopify OAuth and Admin API
 
     Admin->>Loader: GET page with signed embedded parameters
     Loader->>Loader: Verify HMAC and installation
@@ -245,15 +247,20 @@ sequenceDiagram
     Bridge-->>Browser: Short-lived session token
     Browser->>Endpoint: Request with Authorization: Bearer token
     Endpoint->>Endpoint: Verify JWT signature, audience, destination, and time
-    Endpoint->>Store: Load shop's Admin OAuth token and refresh if needed
-    Endpoint->>API: GraphQL request with OAuth token
-    API-->>Endpoint: GraphQL response
+    Endpoint->>Store: Read the shop's offline token pair and expiry
+    rect rgba(255, 210, 50, 0.30)
+        opt Access token has 5 minutes or less left
+            Endpoint->>Store: Lock this shop and reread the pair
+            Endpoint->>Shopify: Refresh via OAuth if still due
+            Endpoint->>Store: Save any new pair and release the lock
+        end
+    end
+    Endpoint->>Shopify: Call the GraphQL Admin API with the access token
+    Shopify-->>Endpoint: GraphQL response
     Endpoint-->>Browser: JSON response
 ```
 
-- Query HMAC: verifies the initial Shopify entry.
-- Session JWT: authenticates browser/extension requests to the app server.
-- Offline OAuth token: authorizes server-to-Admin API calls.
+The HMAC verifies the page entry, and the session JWT authenticates the browser's request to the app. The server reuses a fresh offline access token without locking. See [on-demand refresh](#on-demand-refresh-with-a-per-shop-lock-this-sample) and [how the per-shop lock works](#how-the-per-shop-token-lock-works).
 
 ## Direct Admin API Request
 
