@@ -122,10 +122,10 @@ flowchart TD
     subgraph Runtime["Sync runs without a merchant session"]
         Nightly["Scheduled order export<br/>Shopify → merchant backend"]
         Webhook["Inventory webhook<br/>Merchant backend → Shopify"]
-        Nightly --> Owner{"App and store in the<br/>same Shopify organization?"}
-        Webhook --> Owner
-        Owner -->|No| Offline["Use the offline token from installation<br/>Refresh and save both tokens if needed"]
-        Owner -->|Yes| Credentials["Reuse the access token or request one<br/>with client credentials"]
+        Nightly --> Method{"How will the custom app<br/>get its access token?"}
+        Webhook --> Method
+        Method -->|Any installed store| Offline["Use the offline token from installation<br/>Refresh and save both tokens if needed"]
+        Method -->|Same organization only| Credentials["Reuse the access token or request one<br/>with client credentials"]
         Offline --> API["Call the Shopify Admin API"]
         Credentials --> API
     end
@@ -137,14 +137,14 @@ flowchart TD
 
 **Does the merchant have to sign in every 90 days?**
 
-Each successful refresh issues a new pair without a sign-in. The access token currently lasts one hour, and the new refresh token expires 90 days after that refresh. Use the returned `expires_in` and `refresh_token_expires_in` values. If the stored refresh token expires, the merchant must reconnect the app. [Token lifetimes](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-lifetimes) · [Refresh token rotation](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#how-refresh-token-rotation-works)
+Each successful refresh issues a new pair without a sign-in. The access token currently lasts one hour, and the new refresh token expires 90 days after that refresh. Use the returned `expires_in` and `refresh_token_expires_in` values. An app relying on this pair needs the merchant to reconnect if the refresh token expires. [Token lifetimes](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-lifetimes) · [Refresh token rotation](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#how-refresh-token-rotation-works)
 
 **How should a merchant backend integration authenticate to Shopify?**
 
-After installation and scope approval, a custom app can export orders or receive inventory webhooks from the merchant's backend system (such as an ERP or another core business system) without a signed-in user.
+An expiring offline token is sufficient for scheduled order exports and inventory webhooks from the merchant's backend system (such as an ERP or another core business system). With the same approved scopes, both forms of the client credentials grant allow the same GraphQL Admin API calls. [Shopify app authentication](https://shopify.dev/docs/apps/build/authentication-authorization#how-it-works)
 
 - **Partner-owned app, client-owned store (custom distribution).** Obtain an expiring offline token at installation and refresh it on the server. [Standalone or API-only app authentication](https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node)
-- **App and store in the merchant's Shopify organization.** With the client credentials grant, the server can request a new 24-hour access token using its client ID and secret, even after months of inactivity. There is no refresh token to store. [Client credentials grant](https://shopify.dev/docs/apps/build/authentication-authorization/client-credentials-grant?lang=node)
+- **App and store in the merchant's Shopify organization.** The server can also use its client ID and secret to request a fresh token after months of inactivity, without a stored refresh token or a merchant session. [Client credentials grant](https://shopify.dev/docs/apps/build/authentication-authorization/client-credentials-grant?lang=node) · [Compare with the application-only access token below](#related-credentials-application-only-and-cli-automation-tokens)
 
 **Should we refresh offline tokens hourly, daily, or when work arrives?**
 
@@ -160,10 +160,11 @@ Save the event to a queue before acknowledging delivery. One active job per app 
 
 ### Related Credentials: Application-only and CLI Automation Tokens
 
-| Credential | Typical use | Key restriction |
+| Credential | How it works | Use and limits |
 | --- | --- | --- |
-| [Expiring offline access token](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens) | Admin API calls from batches and webhook follow-up jobs | Maintain the access/refresh pair. Supports custom apps installed on customers' stores. |
-| [Application-only access token](https://shopify.dev/docs/apps/build/authentication-authorization/application-only-access-tokens) | Background Admin API calls without storing refresh tokens | **For customers' production stores in another organization, public-distribution apps only.** Custom apps are limited to stores in their own organization. |
+| [Expiring offline access token](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-refresh) | Refresh the stored pair. If no usable refresh token remains, the merchant must reconnect to use this flow. | Background Admin API calls on installed stores, including custom apps on clients' stores. |
+| [Client credentials with a client secret](https://shopify.dev/docs/apps/build/authentication-authorization/client-credentials-grant?lang=node) | Request a token on demand with `grant_type=client_credentials`, the client ID, and the client secret. No refresh token. | Installed stores in the app's own organization only (24 hours). |
+| [Application-only access token](https://shopify.dev/docs/apps/build/authentication-authorization/application-only-access-tokens) | Same grant, using a JWT signed with the app's private key (`client_assertion`). Request a fresh token on demand without a refresh token. | **Public distribution** covers any installed store (up to 1 hour). **Custom apps** cover only stores in their own organization (24 hours). |
 | [App CLI automation / service account token](https://shopify.dev/docs/apps/build/cli-for-apps/service-accounts) | CI/CD deployment, release, and permitted dev store management | **Cannot read or write store data through the Admin API.** |
 
 ## Non-embedded Service Connector
