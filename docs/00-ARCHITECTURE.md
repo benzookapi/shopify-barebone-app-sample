@@ -47,7 +47,7 @@ sequenceDiagram
     App->>Store: Acquire per-shop token lock
     App->>OAuth: Exchange authorization code with expiring=1
     OAuth-->>App: Access token, refresh token, scopes, both lifetimes
-    App->>Store: Save pair and absolute expiries, then release lock
+    App->>Store: Save both tokens and their expiry times, then release lock
     App->>OAuth: Resolve the app handle
     App-->>Browser: Redirect to Shopify Admin app URL
 ```
@@ -56,7 +56,9 @@ Keep Admin OAuth credentials on the server. App Bridge session tokens authentica
 
 ### Offline Token Refresh Before API Use
 
-[Token refresh](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-refresh) runs on demand when five minutes or less remain; no periodic batch is needed. An expired access token can still be refreshed while its refresh token is valid.
+Each installation stores a **token pair**. The app server sends the **access token** to the Admin API and the **refresh token** to Shopify OAuth to obtain a new pair. It saves both replacement tokens together.
+
+The server refreshes on demand when the access token has five minutes or less left. Refresh also works after access token expiry while the refresh token is valid. See [Shopify's token refresh guide](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-refresh).
 
 ```mermaid
 sequenceDiagram
@@ -76,22 +78,23 @@ sequenceDiagram
         Tokens-->>Caller: Current access token
         Caller->>API: Execute API operation once
     else Access token is near expiry or expired
-        Tokens->>DB: Lock shop and reread current pair
-        alt Another request already refreshed
-            DB-->>Tokens: Fresh pair
-        else Refresh still required
+        Tokens->>DB: Lock this shop's token record and reread it
+        DB-->>Tokens: Latest tokens and expiry times
+        alt Another request refreshed while this one waited
+            Tokens->>Tokens: Reuse the saved access token
+        else Access token still needs refresh
             Tokens->>OAuth: POST access_token with grant_type=refresh_token
             OAuth-->>Tokens: New access and refresh tokens with lifetimes
-            Tokens->>DB: Save complete pair, expiries, and generation
+            Tokens->>DB: Save both tokens, expiry times, and generation
         end
-        Tokens->>DB: Commit and release shop lock
+        Tokens->>DB: Release this shop's token lock
         Tokens-->>Caller: Fresh access token after persistence
         Caller->>API: Execute API operation once
     end
     API-->>Caller: API result when an operation was sent
 ```
 
-- Serialize acquisition/refresh per shop and save the new token pair before API use.
+- The app database lets one request at a time acquire or refresh tokens for a given shop, even across server processes. Other shops can refresh in parallel. See the [lock implementation](../app/lib/shop-store.server.js).
 - Reopen the app for OAuth if refresh expires or is rejected.
 - Preserve credentials on temporary failures; do not automatically replay Admin mutations.
 
@@ -105,7 +108,7 @@ sequenceDiagram
 
 ## Non-embedded Service Connector
 
-Set `embedded = false` to open App Home outside the Admin iframe. App Bridge is unavailable, so the server verifies Shopify's signed entry, completes OAuth, and passes a short-lived app JWT to `/mocklogin`.
+With `embedded = false`, App Home opens outside the Admin iframe without App Bridge. The app issues a short-lived JWT for the handoff to `/mocklogin`. Both the installation check and `/mocklogin` obtain the shop's Admin access token through the [same refresh flow as the embedded app](#offline-token-refresh-before-api-use).
 
 ```mermaid
 sequenceDiagram
@@ -114,7 +117,7 @@ sequenceDiagram
     participant Admin as Shopify Admin
     participant Browser as Top-level browser page
     participant App as Remote app server
-    participant Store as Installation store
+    participant Tokens as Offline token manager
     participant OAuth as Shopify OAuth
     participant Service as External service page
 
@@ -122,12 +125,16 @@ sequenceDiagram
     Admin->>Browser: Open app URL outside an iframe with signed parameters
     Browser->>App: GET app URL
     App->>App: Verify Shopify query HMAC and shop
-    App->>Store: Check installation and stored Admin token
-    opt Installation is missing or stale
+    App->>Tokens: Get Admin access token for installation check
+    Tokens-->>App: Current access token or reauthorization required
+    opt Installation requires authorization
         App-->>Browser: Redirect to Shopify OAuth
         Browser->>OAuth: Authorize app
         OAuth-->>App: Callback with code and HMAC
-        App->>OAuth: Exchange code and store Admin token
+        App->>Tokens: Authorize this shop with the callback code
+        Tokens->>OAuth: Exchange code for access and refresh tokens
+        OAuth-->>Tokens: Both tokens and their lifetimes
+        Tokens-->>App: Both tokens saved for this shop
         App-->>Browser: Redirect to Shopify Admin app URL
         Browser->>App: GET signed non-embedded app URL again
     end
@@ -135,8 +142,8 @@ sequenceDiagram
     App-->>Browser: Redirect to /mocklogin with app JWT
     Browser->>Service: Open plain external service page
     Service->>Service: Verify app JWT and resolve shop
-    Service->>Store: Load installation for the verified shop and current app
-    Store-->>Service: Stored Admin OAuth access token
+    Service->>Tokens: Get Admin access token for the verified shop
+    Tokens-->>Service: Current access token (refresh if needed)
     Service-->>Merchant: Render demo login page with app JWT and stored access token
 ```
 
