@@ -114,6 +114,46 @@ flowchart TD
     Release --> Next
 ```
 
+#### Unattended custom app flows
+
+```mermaid
+flowchart TD
+    Install["Merchant installs the app<br/>and approves scopes once"]
+    subgraph Runtime["Sync runs without a merchant session"]
+        Nightly["Scheduled job<br/>Shopify orders → ERP"]
+        Webhook["Webhook from the ERP<br/>ERP inventory → Shopify"]
+        Nightly --> Owner{"App and store in the<br/>same Shopify organization?"}
+        Webhook --> Owner
+        Owner -->|No| Offline["Use the offline token from installation<br/>Refresh and save both tokens if needed"]
+        Owner -->|Yes| Credentials["Reuse the access token or request one<br/>with client credentials"]
+        Offline --> API["Call the Shopify Admin API"]
+        Credentials --> API
+    end
+    Install -.-> Nightly
+    Install -.-> Webhook
+```
+
+#### Offline token refresh FAQ
+
+**Does the merchant have to sign in every 90 days?**
+
+Each successful refresh issues a new pair without a sign-in. The access token currently lasts one hour, and the new refresh token expires 90 days after that refresh. Use the returned `expires_in` and `refresh_token_expires_in` values. If the stored refresh token expires, the merchant must reconnect the app. [Token lifetimes](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-lifetimes) · [Refresh token rotation](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#how-refresh-token-rotation-works)
+
+**Which credentials should a custom ERP integration use?**
+
+Nightly exports and incoming ERP webhooks can both run unattended after installation and scope approval.
+
+- **Partner-owned app, client-owned store (custom distribution).** Obtain an expiring offline token at installation and refresh it on the server. [Standalone or API-only app authentication](https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node)
+- **App and store in the merchant's Shopify organization.** With the client credentials grant, the server can request a new 24-hour access token using its client ID and secret, even after months of inactivity. There is no refresh token to store. [Client credentials grant](https://shopify.dev/docs/apps/build/authentication-authorization/client-credentials-grant?lang=node)
+
+**Should we refresh offline tokens hourly, daily, or when work arrives?**
+
+A nightly sync can refresh at startup. For webhooks, check the access token before the API call and refresh if needed, since even an hourly job can run late. If events may stop for months, a daily scan can refresh just the shops whose **refresh tokens** are nearing expiry. [Shopify's guidance for background jobs and idle stores](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-refresh)
+
+**Can one batch job handle all refreshes?**
+
+Yes. Prevent overlapping runs and coordinate with OAuth acquisition for the same shop. The job saves one current pair, and other workers can read the access token without a refresh lock. The previous access token remains usable until its own expiry. [Concurrent refreshes and token validity](https://shopify.dev/docs/apps/build/authentication-authorization/implement-token-exchange?lang=node#send-the-refresh-request)
+
 ### Related Credentials: Application-only and CLI Automation Tokens
 
 | Credential | Typical use | Key restriction |
