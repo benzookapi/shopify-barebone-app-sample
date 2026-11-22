@@ -36,7 +36,7 @@ sequenceDiagram
 
 ## Fulfillment Service Sequence
 
-A [fulfillment service](https://shopify.dev/docs/apps/build/orders-fulfillment/fulfillment-service-apps) creates an app-managed location and delegates fulfillment to an external ERP, WMS, or OMS. Assign product inventory to that location before testing.
+A [fulfillment service](https://shopify.dev/docs/apps/build/orders-fulfillment/fulfillment-service-apps) creates an app-managed location and delegates fulfillment to the merchant's backend system, such as a warehouse or order management system. Assign product inventory to that location before testing.
 
 ```mermaid
 sequenceDiagram
@@ -63,24 +63,26 @@ sequenceDiagram
     end
 ```
 
-## External ERP Inventory Synchronization
+<a name="external-erp-inventory-synchronization"></a>
 
-When an ERP is the inventory master, synchronize ERP changes to Shopify and Shopify sellable-quantity changes back to the ERP.
+## Inventory Sync with Merchant Backend Systems
+
+When the merchant's backend system (such as an ERP or another core business system) is the source of truth for inventory, send its stock changes to Shopify and sync Shopify's sellable quantities back to it.
 
 For a production integration, save each webhook to a durable queue before acknowledging receipt. Run **one job at a time per app and shop** in a worker or scheduled batch. Refresh the offline access token when needed and pace Admin API calls using Shopify's rate-limit feedback (`extensions.cost.throttleStatus`). See [Offline token refresh before API use](00-ARCHITECTURE.md#offline-token-refresh-before-api-use).
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant ERP as External ERP or WMS
+    participant Backend as Merchant backend system
     participant App as Webhook handler
     participant Jobs as Per-shop queue and worker
     participant Shopify as Shopify
 
-    alt Master inventory changes in the external system
-        ERP->>App: Inventory webhook with item, location, and quantity change
+    alt Inventory changes in the merchant's backend
+        Backend->>App: Inventory webhook with item, location, and quantity change
         App->>Jobs: Persist adjustment job
-        App-->>ERP: Acknowledge receipt
+        App-->>Backend: Acknowledge receipt
         Jobs->>Shopify: inventoryAdjustQuantities with idempotency key
     else Inventory changes in Shopify
         Note over Shopify: Checkout, Admin edit, or another app changes available inventory
@@ -89,12 +91,12 @@ sequenceDiagram
         App-->>Shopify: Acknowledge receipt
         Jobs->>Shopify: Query InventoryItem and InventoryLevel quantities
         Shopify-->>Jobs: Latest available, committed, and on-hand values
-        Jobs->>ERP: Update the external inventory record
-        ERP->>ERP: Store the new master or allocation state
+        Jobs->>Backend: Update the inventory record
+        Backend->>Backend: Store the new master or allocation state
     end
 ```
 
-Map quantities by inventory item and location IDs. The ERP path reuses the inventory adjustment flow above; deduplicate events and suppress echoes of your own writes.
+Map quantities by inventory item and location IDs. Apply changes from the merchant's backend using the inventory adjustment flow above. Deduplicate events and suppress echoes of your own writes.
 
 ### TIPS: Inventory Status Transformation
 
@@ -116,7 +118,7 @@ sequenceDiagram
     actor Merchant as Merchant (OMS)
     participant Shopify as Shopify
     participant App as Remote app server
-    participant ERP as External ERP or WMS
+    participant Backend as Merchant backend system
 
     Merchant->>Shopify: Select fulfillment action
     Shopify->>App: POST /fulfillment_order_notification
@@ -127,16 +129,16 @@ sequenceDiagram
         App->>Shopify: fulfillmentOrderAcceptFulfillmentRequest
         Shopify-->>App: Request accepted
     end
-    App->>ERP: Instruct the external system to prepare and ship the fulfillment
-    ERP-->>App: Shipment result and tracking information
-    Note over App,ERP: The sample simulates this external processing time with a two-second delay
+    App->>Backend: Request preparation and shipment
+    Backend-->>App: Shipment result and tracking information
+    Note over App,Backend: The sample simulates this external processing time with a two-second delay
     loop Each accepted fulfillment order
         App->>Shopify: fulfillmentCreate with tracking information
         Shopify-->>App: Fulfillment created
     end
-    App->>ERP: Continue the delivery workflow and wait for its status
-    ERP-->>App: Delivery completed
-    Note over App,ERP: The sample simulates this delivery wait with another two-second delay
+    App->>Backend: Continue the delivery workflow and wait for its status
+    Backend-->>App: Delivery completed
+    Note over App,Backend: The sample simulates this delivery wait with another two-second delay
     loop Each created fulfillment
         App->>Shopify: fulfillmentEventCreate with DELIVERED status
         Shopify-->>App: Delivered event created

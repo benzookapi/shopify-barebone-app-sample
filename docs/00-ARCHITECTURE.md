@@ -120,8 +120,8 @@ flowchart TD
 flowchart TD
     Install["Merchant installs the app<br/>and approves scopes once"]
     subgraph Runtime["Sync runs without a merchant session"]
-        Nightly["Scheduled job<br/>Shopify orders → ERP"]
-        Webhook["Webhook from the ERP<br/>ERP inventory → Shopify"]
+        Nightly["Scheduled order export<br/>Shopify → merchant backend"]
+        Webhook["Inventory webhook<br/>Merchant backend → Shopify"]
         Nightly --> Owner{"App and store in the<br/>same Shopify organization?"}
         Webhook --> Owner
         Owner -->|No| Offline["Use the offline token from installation<br/>Refresh and save both tokens if needed"]
@@ -139,9 +139,9 @@ flowchart TD
 
 Each successful refresh issues a new pair without a sign-in. The access token currently lasts one hour, and the new refresh token expires 90 days after that refresh. Use the returned `expires_in` and `refresh_token_expires_in` values. If the stored refresh token expires, the merchant must reconnect the app. [Token lifetimes](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-lifetimes) · [Refresh token rotation](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#how-refresh-token-rotation-works)
 
-**Which credentials should a custom ERP integration use?**
+**How should a merchant backend integration authenticate to Shopify?**
 
-Nightly exports and incoming ERP webhooks can both run unattended after installation and scope approval.
+After installation and scope approval, a custom app can export orders or receive inventory webhooks from the merchant's backend system (such as an ERP or another core business system) without a signed-in user.
 
 - **Partner-owned app, client-owned store (custom distribution).** Obtain an expiring offline token at installation and refresh it on the server. [Standalone or API-only app authentication](https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node)
 - **App and store in the merchant's Shopify organization.** With the client credentials grant, the server can request a new 24-hour access token using its client ID and secret, even after months of inactivity. There is no refresh token to store. [Client credentials grant](https://shopify.dev/docs/apps/build/authentication-authorization/client-credentials-grant?lang=node)
