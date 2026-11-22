@@ -150,9 +150,13 @@ Nightly exports and incoming ERP webhooks can both run unattended after installa
 
 A nightly sync can refresh at startup. For webhooks, check the access token before the API call and refresh if needed, since even an hourly job can run late. If events may stop for months, a daily scan can refresh just the shops whose **refresh tokens** are nearing expiry. [Shopify's guidance for background jobs and idle stores](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-refresh)
 
-**Can one batch job handle all refreshes?**
+**Can one batch or webhook worker handle all refreshes without a separate DB lock?**
 
-Yes. Prevent overlapping runs and coordinate with OAuth acquisition for the same shop. The job saves one current pair, and other workers can read the access token without a refresh lock. The previous access token remains usable until its own expiry. [Concurrent refreshes and token validity](https://shopify.dev/docs/apps/build/authentication-authorization/implement-token-exchange?lang=node#send-the-refresh-request)
+Yes, if only one operation per app and shop can acquire or refresh tokens at a time, from reading the credentials through saving the new pair. This must hold across OAuth callbacks, retries, and all worker instances. Keep the shared lock if any of those paths can overlap. The previous access token remains usable until expiry. [Token acquisition and refresh](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-refresh) · [Concurrent refreshes and token validity](https://shopify.dev/docs/apps/build/authentication-authorization/implement-token-exchange?lang=node#send-the-refresh-request)
+
+**Should webhook-driven Admin API calls go through a queue?**
+
+Save the event to a queue before acknowledging delivery. One active job per app and shop is a simple way to smooth bursts while other shops run in parallel. Even serial calls can exhaust the GraphQL query-cost budget. Use `extensions.cost.throttleStatus` to pace requests and back off when throttled. [Queueing webhook deliveries](https://shopify.dev/docs/apps/build/webhooks/verify-deliveries#queue-webhooks-to-handle-traffic-bursts) · [GraphQL Admin API rate limits](https://shopify.dev/docs/apps/build/apis/graphql-admin/rate-limits#graphql-response)
 
 ### Related Credentials: Application-only and CLI Automation Tokens
 
