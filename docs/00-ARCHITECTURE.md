@@ -124,7 +124,7 @@ Each successful refresh issues a new pair without a sign-in. The access token cu
 
 After installation and scope approval, a custom app can export orders to the merchant's backend system (such as an ERP or another core business system) and process incoming inventory webhooks without a signed-in user.
 
-- **Partner-owned app, client-owned store (custom distribution).** Obtain an expiring offline token at installation and refresh it on the server. [Standalone or API-only app authentication](https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node)
+- **Partner-owned app, client-owned store (custom distribution).** Obtain an expiring offline token at installation and refresh it on the server. [Standalone or API-only app authentication](https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node) · [Non-embedded Service Connector](#non-embedded-service-connector)
 - **App and store in the merchant's Shopify organization.** The server can also use its client ID and secret to request a fresh token after months of inactivity, without a stored refresh token or a merchant session. [Client credentials grant](https://shopify.dev/docs/apps/build/authentication-authorization/client-credentials-grant?lang=node) · [Compare with the application-only access token below](#related-credentials-application-only-and-cli-automation-tokens)
 
 <a name="unattended-custom-app-flows"></a>
