@@ -99,7 +99,9 @@ sequenceDiagram
 
 #### How the per-shop token lock works
 
-OAuth acquisition and refresh share one lock per shop across server processes. This keeps a late write from overwriting a newer token pair. Other shops can refresh in parallel. See the [lock implementation](../app/lib/shop-store.server.js) and [Shopify's guidance on concurrent refreshes](https://shopify.dev/docs/apps/build/authentication-authorization/implement-token-exchange?lang=node#send-the-refresh-request).
+When two workers refresh tokens for the same shop, the slower worker can save a token the other has already replaced. The next refresh may then fail and require the merchant to reauthorize. See [Shopify's guidance on concurrent refreshes](https://shopify.dev/docs/apps/build/authentication-authorization/implement-token-exchange?lang=node#send-the-refresh-request).
+
+OAuth acquisition and refresh share one database lock per shop across server processes. A scheduled job can use the same lock to reread the tokens, refresh if needed, and save the new pair before releasing it. Other shops can refresh in parallel. See the [lock implementation](../app/lib/shop-store.server.js).
 
 ```mermaid
 flowchart TD
