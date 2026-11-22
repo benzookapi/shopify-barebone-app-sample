@@ -94,9 +94,23 @@ sequenceDiagram
     API-->>Caller: API result when an operation was sent
 ```
 
-- The app database lets one request at a time acquire or refresh tokens for a given shop, even across server processes. Other shops can refresh in parallel. See the [lock implementation](../app/lib/shop-store.server.js).
 - Reopen the app for OAuth if refresh expires or is rejected.
 - Preserve credentials on temporary failures; do not automatically replay Admin mutations.
+
+#### How the per-shop token lock works
+
+OAuth acquisition and refresh share one lock per shop across server processes. This keeps a late write from overwriting a newer token pair. Other shops can refresh in parallel. See the [lock implementation](../app/lib/shop-store.server.js) and [Shopify's guidance on concurrent refreshes](https://shopify.dev/docs/apps/build/authentication-authorization/implement-token-exchange?lang=node#send-the-refresh-request).
+
+```mermaid
+flowchart TD
+    Workers["Two workers try to refresh the same shop"]
+    Workers --> SQL["PostgreSQL / MySQL (InnoDB)<br/>SELECT … FOR UPDATE locks the shop's row"]
+    Workers --> Mongo["MongoDB<br/>findOneAndUpdate claims a 60-second lease<br/>if the shop's lease is absent or expired"]
+    SQL --> Commit["Save the new pair and commit<br/>to release the row lock"]
+    Mongo --> Release["Only the current lease owner can save the pair.<br/>It then clears the lease using its owner ID."]
+    Commit --> Next["The waiting worker acquires the lock,<br/>rereads the record and reuses the fresh access token"]
+    Release --> Next
+```
 
 ### Related Credentials: Application-only and CLI Automation Tokens
 
