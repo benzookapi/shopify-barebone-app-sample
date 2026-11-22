@@ -67,23 +67,29 @@ sequenceDiagram
 
 When an ERP is the inventory master, synchronize ERP changes to Shopify and Shopify sellable-quantity changes back to the ERP.
 
+For a production integration, save each webhook to a durable queue before acknowledging receipt. Run **one job at a time per app and shop** in a worker or scheduled batch. Refresh the offline access token when needed and pace Admin API calls using Shopify's rate-limit feedback (`extensions.cost.throttleStatus`). See [Offline token refresh before API use](00-ARCHITECTURE.md#offline-token-refresh-before-api-use).
+
 ```mermaid
 sequenceDiagram
     autonumber
     participant ERP as External ERP or WMS
-    participant App as Remote app server
+    participant App as Webhook handler
+    participant Jobs as Per-shop queue and worker
     participant Shopify as Shopify
 
     alt Master inventory changes in the external system
-        ERP->>App: Publish item, location, and quantity change
-        Note over App,Shopify: Same inventory adjustment flow that starts at step 7 above
+        ERP->>App: Inventory webhook with item, location, and quantity change
+        App->>Jobs: Persist adjustment job
+        App-->>ERP: Acknowledge receipt
+        Jobs->>Shopify: inventoryAdjustQuantities with idempotency key
     else Inventory changes in Shopify
         Note over Shopify: Checkout, Admin edit, or another app changes available inventory
         Shopify->>App: inventory_levels/update webhook to /webhookcommon
-        App->>App: Verify HMAC and deduplicate delivery
-        App->>Shopify: Query InventoryItem and InventoryLevel quantities
-        Shopify-->>App: Latest available, committed, and on-hand values
-        App->>ERP: Update the external inventory record
+        App->>Jobs: Verify HMAC, deduplicate, and enqueue inventory lookup
+        App-->>Shopify: Acknowledge receipt
+        Jobs->>Shopify: Query InventoryItem and InventoryLevel quantities
+        Shopify-->>Jobs: Latest available, committed, and on-hand values
+        Jobs->>ERP: Update the external inventory record
         ERP->>ERP: Store the new master or allocation state
     end
 ```
