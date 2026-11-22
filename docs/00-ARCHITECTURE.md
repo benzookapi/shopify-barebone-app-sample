@@ -141,10 +141,16 @@ Each successful refresh issues a new pair without a sign-in. The access token cu
 
 **How should a merchant backend integration authenticate to Shopify?**
 
-An expiring offline token is sufficient for scheduled order exports and inventory webhooks from the merchant's backend system (such as an ERP or another core business system). With the same approved scopes, both forms of the client credentials grant allow the same GraphQL Admin API calls. [Shopify app authentication](https://shopify.dev/docs/apps/build/authentication-authorization#how-it-works)
+After installation and scope approval, a custom app can export orders to the merchant's backend system (such as an ERP or another core business system) and process incoming inventory webhooks without a signed-in user.
 
 - **Partner-owned app, client-owned store (custom distribution).** Obtain an expiring offline token at installation and refresh it on the server. [Standalone or API-only app authentication](https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node)
 - **App and store in the merchant's Shopify organization.** The server can also use its client ID and secret to request a fresh token after months of inactivity, without a stored refresh token or a merchant session. [Client credentials grant](https://shopify.dev/docs/apps/build/authentication-authorization/client-credentials-grant?lang=node) · [Compare with the application-only access token below](#related-credentials-application-only-and-cli-automation-tokens)
+
+**Is an expiring offline token enough for background GraphQL Admin API calls?**
+
+Yes. With the same approved scopes, an expiring offline token can make the same calls as a token issued through the client credentials grant, whether the app uses its client secret or a signed JWT (application-only access). [Shopify app authentication](https://shopify.dev/docs/apps/build/authentication-authorization#how-it-works)
+
+If the refresh token expires or is lost, the merchant must reconnect to resume offline refresh. For an eligible store where the app is still installed, client credentials let the server obtain a fresh token without a merchant session. [Shopify's token recovery guidance](https://shopify.dev/docs/apps/build/authentication-authorization/implement-token-exchange?lang=node#send-the-refresh-request) · [Eligibility by credential](#related-credentials-application-only-and-cli-automation-tokens)
 
 **Should we refresh offline tokens hourly, daily, or when work arrives?**
 
