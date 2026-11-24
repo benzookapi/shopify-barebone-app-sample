@@ -60,6 +60,9 @@ The OAuth callback saves the initial token pair on the server. Later access toke
 
 Each installation stores a **token pair**. The server sends the **access token** to the Admin API and uses the **refresh token** to obtain a new pair from Shopify OAuth. A valid refresh token can renew an expired access token. [Shopify's token refresh guide](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-refresh)
 
+- After a timeout or other temporary failure, retry only the token refresh with the stored refresh token. Replaying an Admin API mutation can duplicate a write. [Refresh failure guidance](https://shopify.dev/docs/apps/build/authentication-authorization/implement-token-exchange?lang=node#send-the-refresh-request)
+- If the installation has no usable credentials or Shopify rejects the refresh token as invalid, reopen the sample app to reauthorize. [Four token types compared](#four-token-types-compared)
+
 #### On-demand refresh with a per-shop lock (this sample)
 
 App requests and webhook handlers that need the Admin API can call the [token manager](../app/lib/offline-token.server.js) directly, without a refresh batch or queue. Both use the same per-shop lock when the access token has five minutes or less left. Receiving a webhook by itself requires no token lock.
@@ -80,7 +83,7 @@ flowchart TD
 
 ##### How the per-shop token lock works
 
-When two workers refresh tokens for the same shop, the slower worker can save a token the other has already replaced. The next refresh may then fail and require the merchant to reauthorize. See [Shopify's guidance on concurrent refreshes](https://shopify.dev/docs/apps/build/authentication-authorization/implement-token-exchange?lang=node#send-the-refresh-request).
+If a webhook refreshes tokens while an OAuth callback acquires a new pair for the same shop, one operation can invalidate the other's refresh token. Two concurrent refreshes can also save token pairs out of order. [Token acquisition and refresh](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-refresh) · [Concurrent refreshes](https://shopify.dev/docs/apps/build/authentication-authorization/implement-token-exchange?lang=node#send-the-refresh-request)
 
 In this sample, OAuth acquisition and on-demand refresh share one database lock per shop across server processes. Other shops can refresh in parallel. See the [lock implementation](../app/lib/shop-store.server.js).
 
@@ -123,9 +126,6 @@ sequenceDiagram
         end
     end
 ```
-
-- Reopen the app for OAuth if installation credentials are missing or unusable, or if Shopify rejects the refresh token.
-- Preserve credentials on temporary failures; do not automatically replay Admin mutations.
 
 #### Offline token refresh FAQ
 
