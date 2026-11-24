@@ -129,6 +129,10 @@ sequenceDiagram
 
 #### Offline token refresh FAQ
 
+**Do only embedded apps need to refresh offline access tokens?**
+
+No. Any app using an expiring offline access token must refresh it to keep calling the Admin API. This includes API-only apps with no UI and non-embedded apps that connect to external services. [Non-embedded Service Connector](#non-embedded-service-connector) · [Shopify's standalone app guide](https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps?lang=node)
+
 **Does the merchant have to sign in every 90 days?**
 
 Each successful refresh issues a new pair without a sign-in. The access token currently lasts one hour, and the new refresh token expires 90 days after that refresh. Use the returned `expires_in` and `refresh_token_expires_in` values. An app relying on this pair needs the merchant to reconnect if the refresh token expires. [Token lifetimes](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#token-lifetimes) · [Refresh token rotation](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens#how-refresh-token-rotation-works)
